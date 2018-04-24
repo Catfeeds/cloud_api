@@ -826,7 +826,7 @@ class Carbon extends DateTime implements JsonSerializable
 
         $lastErrors = parent::getLastErrors();
 
-        if ($date instanceof DateTime) {
+        if ($date instanceof DateTime || $date instanceof DateTimeInterface) {
             $instance = static::instance($date);
             $instance::setLastErrors($lastErrors);
 
@@ -2149,6 +2149,26 @@ class Carbon extends DateTime implements JsonSerializable
     }
 
     /**
+     * Determines if the instance is within the next quarter
+     *
+     * @return bool
+     */
+    public function isNextQuarter()
+    {
+        return $this->quarter === $this->nowWithSameTz()->addQuarter()->quarter;
+    }
+
+    /**
+     * Determines if the instance is within the last quarter
+     *
+     * @return bool
+     */
+    public function isLastQuarter()
+    {
+        return $this->quarter === $this->nowWithSameTz()->subQuarter()->quarter;
+    }
+
+    /**
      * Determines if the instance is within the next month
      *
      * @return bool
@@ -2276,15 +2296,45 @@ class Carbon extends DateTime implements JsonSerializable
      *
      * @return bool
      */
+    public function isCurrentQuarter()
+    {
+        return $this->isSameQuarter();
+    }
+
+    /**
+     * Checks if the passed in date is in the same quarter as the instance quarter (and year if needed).
+     *
+     * @param \Carbon\Carbon|\DateTimeInterface|null $date       The instance to compare with or null to use current day.
+     * @param bool                                   $ofSameYear Check if it is the same month in the same year.
+     *
+     * @return bool
+     */
+    public function isSameQuarter($date = null, $ofSameYear = false)
+    {
+        $date = $date ? static::instance($date) : static::now($this->tz);
+
+        static::expectDateTime($date);
+
+        return $this->quarter === $date->quarter && (!$ofSameYear || $this->isSameYear($date));
+    }
+
+    /**
+     * Determines if the instance is in the current month
+     *
+     * @return bool
+     */
     public function isCurrentMonth()
     {
         return $this->isSameMonth();
     }
 
     /**
-     * Checks if the passed in date is in the same month as the instance month (and year if needed).
+     * Checks if the passed in date is in the same month as the instance´s month.
      *
-     * @param \Carbon\Carbon|\DateTimeInterface|null $date       The instance to compare with or null to use current day.
+     * Note that this defaults to only comparing the month while ignoring the year.
+     * To test if it is the same exact month of the same year, pass in true as the second parameter.
+     *
+     * @param \Carbon\Carbon|\DateTimeInterface|null $date       The instance to compare with or null to use the current date.
      * @param bool                                   $ofSameYear Check if it is the same month in the same year.
      *
      * @return bool
@@ -2295,15 +2345,91 @@ class Carbon extends DateTime implements JsonSerializable
     }
 
     /**
-     * Checks if the passed in date is the same day as the instance current day.
-     *
-     * @param \Carbon\Carbon|\DateTimeInterface $date
+     * Determines if the instance is in the current day.
      *
      * @return bool
      */
-    public function isSameDay($date)
+    public function isCurrentDay()
+    {
+        return $this->isSameDay();
+    }
+
+    /**
+     * Checks if the passed in date is the same exact day as the instance´s day.
+     *
+     * @param \Carbon\Carbon|\DateTimeInterface|null $date The instance to compare with or null to use the current date.
+     *
+     * @return bool
+     */
+    public function isSameDay($date = null)
     {
         return $this->isSameAs('Y-m-d', $date);
+    }
+
+    /**
+     * Determines if the instance is in the current hour.
+     *
+     * @return bool
+     */
+    public function isCurrentHour()
+    {
+        return $this->isSameHour();
+    }
+
+    /**
+     * Checks if the passed in date is the same exact hour as the instance´s hour.
+     *
+     * @param \Carbon\Carbon|\DateTimeInterface|null $date The instance to compare with or null to use the current date.
+     *
+     * @return bool
+     */
+    public function isSameHour($date = null)
+    {
+        return $this->isSameAs('Y-m-d H', $date);
+    }
+
+    /**
+     * Determines if the instance is in the current minute.
+     *
+     * @return bool
+     */
+    public function isCurrentMinute()
+    {
+        return $this->isSameMinute();
+    }
+
+    /**
+     * Checks if the passed in date is the same exact minute as the instance´s minute.
+     *
+     * @param \Carbon\Carbon|\DateTimeInterface|null $date The instance to compare with or null to use the current date.
+     *
+     * @return bool
+     */
+    public function isSameMinute($date = null)
+    {
+        return $this->isSameAs('Y-m-d H:i', $date);
+    }
+
+    /**
+     * Determines if the instance is in the current second.
+     *
+     * @return bool
+     */
+    public function isCurrentSecond()
+    {
+        return $this->isSameSecond();
+    }
+
+    /**
+     * Checks if the passed in date is the same exact second as the instance´s second.
+     *
+     * @param \Carbon\Carbon|\DateTimeInterface|null $date The instance to compare with or null to use the current date.
+     *
+     * @return bool
+     */
+    public function isSameSecond($date = null)
+    {
+        return $this->isSameAs('Y-m-d H:i:s', $date);
     }
 
     /**
@@ -4326,7 +4452,7 @@ class Carbon extends DateTime implements JsonSerializable
     public static function __callStatic($method, $parameters)
     {
         if (!static::hasMacro($method)) {
-            throw new \BadMethodCallException("Method {$method} does not exist.");
+            throw new \BadMethodCallException("Method $method does not exist.");
         }
 
         if (static::$localMacros[$method] instanceof Closure && method_exists('Closure', 'bind')) {
@@ -4349,15 +4475,19 @@ class Carbon extends DateTime implements JsonSerializable
     public function __call($method, $parameters)
     {
         if (!static::hasMacro($method)) {
-            throw new \BadMethodCallException("Method {$method} does not exist.");
+            throw new \BadMethodCallException("Method $method does not exist.");
         }
 
         $macro = static::$localMacros[$method];
 
         $reflexion = new \ReflectionFunction($macro);
         $reflectionParameters = $reflexion->getParameters();
-        $parametersCount = count($reflectionParameters);
-        if ($parametersCount > count($parameters) && $reflectionParameters[$parametersCount - 1]->name === 'self') {
+        $expectedCount = count($reflectionParameters);
+        $actualCount = count($parameters);
+        if ($expectedCount > $actualCount && $reflectionParameters[$expectedCount - 1]->name === 'self') {
+            for ($i = $actualCount; $i < $expectedCount - 1; $i++) {
+                $parameters[] = $reflectionParameters[$i]->getDefaultValue();
+            }
             $parameters[] = $this;
         }
 

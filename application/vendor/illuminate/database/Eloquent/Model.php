@@ -12,7 +12,6 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Routing\UrlRoutable;
 use Illuminate\Contracts\Queue\QueueableEntity;
 use Illuminate\Database\Eloquent\Relations\Pivot;
-use Illuminate\Contracts\Queue\QueueableCollection;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Database\ConnectionResolverInterface as Resolver;
 
@@ -230,10 +229,7 @@ abstract class Model implements ArrayAccess, Arrayable, Jsonable, JsonSerializab
             if ($this->isFillable($key)) {
                 $this->setAttribute($key, $value);
             } elseif ($totallyGuarded) {
-                throw new MassAssignmentException(sprintf(
-                    'Add [%s] to fillable property to allow mass assignment on [%s].',
-                    $key, get_class($this)
-                ));
+                throw new MassAssignmentException($key);
             }
         }
 
@@ -905,9 +901,11 @@ abstract class Model implements ArrayAccess, Arrayable, Jsonable, JsonSerializab
      */
     public function newQueryForRestoration($ids)
     {
-        return is_array($ids)
-                ? $this->newQueryWithoutScopes()->whereIn($this->getQualifiedKeyName(), $ids)
-                : $this->newQueryWithoutScopes()->whereKey($ids);
+        if (is_array($ids)) {
+            return $this->newQueryWithoutScopes()->whereIn($this->getQualifiedKeyName(), $ids);
+        }
+
+        return $this->newQueryWithoutScopes()->whereKey($ids);
     }
 
     /**
@@ -1035,8 +1033,6 @@ abstract class Model implements ArrayAccess, Arrayable, Jsonable, JsonSerializab
         );
 
         $this->load(collect($this->relations)->except('pivot')->keys()->toArray());
-
-        $this->syncOriginal();
 
         return $this;
     }
@@ -1295,36 +1291,6 @@ abstract class Model implements ArrayAccess, Arrayable, Jsonable, JsonSerializab
     }
 
     /**
-     * Get the queueable relationships for the entity.
-     *
-     * @return array
-     */
-    public function getQueueableRelations()
-    {
-        $relations = [];
-
-        foreach ($this->getRelations() as $key => $relation) {
-            if (method_exists($this, $key)) {
-                $relations[] = $key;
-            }
-
-            if ($relation instanceof QueueableCollection) {
-                foreach ($relation->getQueueableRelations() as $collectionValue) {
-                    $relations[] = $key.'.'.$collectionValue;
-                }
-            }
-
-            if ($relation instanceof QueueableEntity) {
-                foreach ($relation->getQueueableRelations() as $entityKey => $entityValue) {
-                    $relations[] = $key.'.'.$entityValue;
-                }
-            }
-        }
-
-        return array_unique($relations);
-    }
-
-    /**
      * Get the queueable connection for the entity.
      *
      * @return mixed
@@ -1372,7 +1338,7 @@ abstract class Model implements ArrayAccess, Arrayable, Jsonable, JsonSerializab
      */
     public function getForeignKey()
     {
-        return Str::snake(class_basename($this)).'_'.$this->getKeyName();
+        return Str::snake(class_basename($this)).'_'.$this->primaryKey;
     }
 
     /**

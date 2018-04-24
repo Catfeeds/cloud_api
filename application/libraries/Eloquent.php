@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-use Illuminate\Events\Dispatcher;
+// use Illuminate\Events\Dispatcher;
 use Illuminate\Container\Container;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Pagination\Paginator;
@@ -21,10 +21,8 @@ class Eloquent
     {
         // var_dump(config_item('eloquent'));exit;
         $this->capsule = new Capsule();
-
         $this->capsule->addConnection(config_item('eloquent'));
-
-        $this->capsule->setEventDispatcher(new Dispatcher(new Container));
+        // $this->capsule->setEventDispatcher(new Dispatcher(new Container));
         $this->capsule->setAsGlobal();
         $this->capsule->bootEloquent();
     }
