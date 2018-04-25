@@ -52,10 +52,10 @@ class AuthHook {
             'company/querylicense',
             'company/licenseupload',
 
-            'boss/servicetype/index',
-            'boss/servicetype/imageupload',
-            'boss/servicetype/addservicetype',
-            'boss/servicetype/updateservicetype',
+            'service/servicetype/index',
+            'service/servicetype/imageupload',
+            'service/servicetype/addservicetype',
+            'service/servicetype/updateservicetype',
 
         );
 

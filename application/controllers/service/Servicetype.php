@@ -17,9 +17,13 @@ class Servicetype extends MY_Controller
 
     public function index()
     {
-        $type = Servicetypemodel::all();
-
-        $this->api_res(0,$type);
+        $input  = $this->input->post(NULL,TRUE);
+        $page   = isset($input['page'])?$input['page']:1;
+        $offset = PAGINATE*($page-1);
+        $field  = ['id','name','feature','description','image_url'];
+        $count  = ceil(Servicetypemodel::count()/PAGINATE);
+        $type   = Servicetypemodel::take(PAGINATE)->skip($offset)->orderBy('id','desc')->get($field)->toArray();
+        $this->api_res(0,['count'=>$count,'list'=>$type]);
     }
 
     /**
@@ -27,32 +31,24 @@ class Servicetype extends MY_Controller
      */
     public function addServicetype()
     {
-        try
+        $post           = $this->input->post(NULL,true);
+        if(!$this->validation())
         {
-            $post       = $this->input->post(NULL,true);
-            if(!$this->validation())
-            {
-                $fieldarr   = ['name','feature','description'];
-                $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
-                return false;
-            }
-            $service                = new Servicetypemodel();
-            $service->name          = $post['name'];
-            $service->feature       = $post['feature'];
-            $service->description   = $post['description'];
-            $service->image_url     = trim($post['image_url']);
+            $fieldarr   = ['name','feature','description'];
+            $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
+            return false;
+        }
+        $service                = new Servicetypemodel();
+        $service->name          = $post['name'];
+        $service->feature       = $post['feature'];
+        $service->description   = $post['description'];
+        $service->image_url     = substr(trim($post['image_url']),strlen(config_item('cdn_path')));
 
-            if($service->save())
-            {
-                $this->api_res(0);
-                return true;
-            }else{
-                $this->api_res(10102);
-                return false;
-            }
-        }catch (Exception $e)
+        if($service->save())
         {
-            $this->api_res(500);
+            $this->api_res(0);
+        }else{
+            $this->api_res(10102);
             return false;
         }
     }
@@ -74,8 +70,7 @@ class Servicetype extends MY_Controller
 
         $data = $this->alioss->data();
         $image_path = $data['oss_path'];
-        $this->api_res(0,['image_url'=>$image_path]);
-        return true;
+        $this->api_res(0,['image_url'=>config_item('cdn_path').$image_path]);
     }
 
     /**
@@ -83,7 +78,6 @@ class Servicetype extends MY_Controller
      */
     public function updateServicetype()
     {
-        try{
             $post = $this->input->post(NULL,true);
 
             if(!$this->validation())
@@ -98,21 +92,15 @@ class Servicetype extends MY_Controller
             $service->name          = $post['name'];
             $service->feature       = $post['feature'];
             $service->description   = $post['description'];
-            $service->image_url     = trim($post['image_url']);
+            $service->image_url     = substr(trim($post['image_url']),strlen(config_item('cdn_path')));
 
             if($service->save())
             {
                 $this->api_res(0);
-                return true;
             }else{
                 $this->api_res(10102);
                 return false;
             }
-        }catch (Exception $e)
-        {
-            $this->api_res(500);
-            return false;
-        }
     }
 
     /**
