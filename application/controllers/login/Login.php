@@ -1,4 +1,3 @@
-
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 /**
@@ -61,7 +60,7 @@ class Login extends MY_Controller
                     $this->api_res(10002);
                     return false;
                 }
-                $phone  = intval(trim($input['phone']));
+                $phone  = trim($input['phone']);
                 $code   = intval(trim($input['code']));
                 $this->verifyPhoneCode($phone,$code);
                 break;
@@ -130,17 +129,16 @@ class Login extends MY_Controller
     {
         if($user=$this->getInfo('phone',$phone))
         {
-            /*if(!$this->m_redis->ttlSmsCode($phone))
+            if(!$this->m_redis->ttlSmsCode($phone))
             {
 
                 $this->api_res(10007);
                 return false;
-            }*/
+            }
             $this->load->library('sms');
             $code   = str_pad(rand(1,9999),4,0,STR_PAD_LEFT);
             $str    = SMSTEXT.$code;
-            echo $str;die();
-            //$this->m_redis->storeSmsCode($phone,$code);
+            $this->m_redis->storeSmsCode($phone,$code);
             $this->sms->send($str,$phone);
             $this->api_res(0);
         }
@@ -165,7 +163,6 @@ class Login extends MY_Controller
             {
                 $this->api_res(1006);
             }
-
             //判断用户的身份
             $position   = $user->position;
             $bxid       = $user->bxid;
@@ -202,7 +199,6 @@ class Login extends MY_Controller
      */
     public function getInfo($type,$sign)
     {
-
         switch ($type) {
             case 'wechat':
                 //查找employee表 有无信息
@@ -211,9 +207,7 @@ class Login extends MY_Controller
                     $info = $this->companymodel->getInfo('wechat', $sign);
                 }
                 break;
-                //如果有 查看公司信息，如果没有查看公司表是否有该用户，如果有把公司信息同步到redis 以公司id区分，把bxid信息更新到redis 以s_区分
             case 'phone':
-                //$info   = $this->employeemodel->where('phone','18710714253')->first();
                 $info = $this->employeemodel->getInfo('phone', $sign);
                 if (!$info) {
                     $info = $this->companymodel->getInfo('phone', $sign);

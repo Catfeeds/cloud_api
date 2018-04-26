@@ -1,5 +1,5 @@
 <?php
-
+defined('BASEPATH') OR exit('No direct script access allowed');
 class Companymodel extends Basemodel
 {
     protected $table    = 'fx_company';
