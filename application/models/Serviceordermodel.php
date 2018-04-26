@@ -10,4 +10,9 @@ class Serviceordermodel extends Basemodel
 {
     protected $table    = 'boss_service_order';
     protected $hidden   = ['created_at','updated_at','deleted_at'];
+
+    public function store()
+    {
+        return $this->belongsTo(Storemodel::class,'store_id');
+    }
 }
