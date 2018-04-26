@@ -13,7 +13,7 @@ class Login extends MY_Controller
         parent::__construct();
         $this->load->model('employeemodel');
         $this->load->model('companymodel');
-        //$this->load->library('m_redis');
+        $this->load->library('m_redis');
     }
     /**
      * 手机或者微信登陆
