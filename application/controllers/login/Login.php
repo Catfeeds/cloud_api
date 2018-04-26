@@ -61,7 +61,7 @@ class Login extends MY_Controller
                     return false;
                 }
                 $phone  = trim($input['phone']);
-                $code   = intval(trim($input['code']));
+                $code   = trim($input['code']);
                 $this->verifyPhoneCode($phone,$code);
                 break;
 
@@ -155,14 +155,14 @@ class Login extends MY_Controller
      */
 
     public function verifyPhoneCode($phone,$code){
+        $user=$this->getInfo('phone',$phone);
+        if(!$user)
+        {
+            $this->api_res(1006);
+        }
         //暂时关闭验证短信验证码功能
         if($this->m_redis->verifySmsCode($phone,$code))
         {
-            $user=$this->getInfo('phone',$phone);
-            if(!$user)
-            {
-                $this->api_res(1006);
-            }
             //判断用户的身份
             $position   = $user->position;
             $bxid       = $user->bxid;
