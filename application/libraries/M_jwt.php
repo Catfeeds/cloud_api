@@ -26,7 +26,7 @@ class M_jwt
                 "iss" => config_item('jwt_iss'),
                 "exp" => config_item('jwt_exp'),
                 "nbf" => config_item('jwt_nbf'),
-                "fxid" => $fxid  //自添加字段，租户ID
+                "bxid" => $fxid  //自添加字段，租户ID
             );
 
             return JWT::encode($token, $key);

@@ -24,7 +24,7 @@ $config['wx_web_secret']    = '11c0ca3432e9d0d96f1dd94a9120d20b';
 
 //云片信息
 //https://sms.yunpian.com/v1/sms/send.json
-$config['yunpian_api_url']  = 'https://sms.yunpian.com/v2/sms/single_send.json';
+$config['yunpian_api_url']  = 'http://sms.yunpian.com/v2/sms/single_send.json';
 $config['yunpian_api_key']  = 'a91819aaea5b684dfb571442c279a9a3';
 
 //jwt相关

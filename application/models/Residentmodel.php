@@ -10,7 +10,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  */
  class Residentmodel extends Basemodel{
 
-     protected $table   = 'residents';
+     protected $table   = 'web_resident';
 
      protected $hidden  = [];
 

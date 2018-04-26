@@ -12,7 +12,7 @@ class Roommodel extends Basemodel{
     const HALF = 'HALF';    //合租
     const FULL = 'FULL';    //整租
 
-    protected $table    = 'rooms';
+    protected $table    = 'boss_room';
 
     protected $hidden   = [];
 

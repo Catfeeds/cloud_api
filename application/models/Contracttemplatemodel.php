@@ -9,7 +9,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  */
 class Contracttemplatemodel extends Basemodel{
 
-    protected $table    = 'contract_templates';
+    protected $table    = 'boss_contract_template';
 
     protected $hidden   = [];
 

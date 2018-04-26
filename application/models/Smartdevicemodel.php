@@ -11,7 +11,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Smartdevicemodel extends Basemodel{
 
-    protected $table    = 'smart_devices';
+    protected $table    = 'boss_smart_device';
 
     protected $hidden   = [];
 }

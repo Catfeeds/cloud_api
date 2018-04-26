@@ -9,25 +9,10 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  */
 class MY_Controller extends CI_Controller {
 
-    protected $current_user;
-
     public function __construct()
     {
-
         parent::__construct();
-
-        $this->load->model('funxadminmodel');
-
-        if(defined('CURRENT_ID')){
-            $this->current_user = Funxadminmodel::where('fxid',CURRENT_ID)->all();
-            if($this->current_user)
-            {
-                $this->api_res(10004);
-                exit;
-            }
-        }
     }
-
 
     //API返回统一方法
     public function api_res($code,$data = false)
@@ -98,19 +83,6 @@ class MY_Controller extends CI_Controller {
             if($OBJ->error($field)){
                 return $OBJ->error($field);
             }
-        }
-    }
-
-    /**
-     * 对前端传入的fxid进行过滤
-     */
-    public function fiterFxid($fxid=NULL){
-
-        $fxid   = intval(trim($fxid));
-        if(strlen($fxid)==6){
-            return $fxid;
-        }else{
-            return false;
         }
     }
 

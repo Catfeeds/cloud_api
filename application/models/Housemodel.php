@@ -10,7 +10,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Housemodel extends Basemodel{
 
-    protected $table    = 'houses';
+    protected $table    = 'boss_house';
 
     //房屋的房间信息
     public function room(){

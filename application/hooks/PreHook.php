@@ -12,7 +12,6 @@ class PreHook {
   
      public function proc(){
 
-         
              if(IS_OPTIONS){
                 header("Access-Control-Allow-Origin: * ");
                 header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Token");
@@ -44,7 +43,7 @@ class PreHook {
              $this->check_data($_POST,$this->args_arr);
              $this->check_data($_COOKIE,$this->args_arr);
              $this->check_data($referer,$this->args_arr);
-         
+
      }
 
 
