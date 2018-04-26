@@ -8,7 +8,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  */
 class Servicetypemodel extends Basemodel
 {
-    protected $table = 'service_type';
+    protected $table = 'boss_service_type';
     protected $hidden   = ['created_at','updated_at','deleted_at'];
 
     public function services()

@@ -29,12 +29,14 @@ class AuthHook {
         //格式2 类/方法
         //注意，所有url统一用小写，不要大写
         $authArr = array(
+
             'demo/base_demo/index',
             'demo/jwt_demo/login',
             'demo/upload/index',
             'demo/upload/do_upload',
 
             'login/login/login',
+
 
         );
 

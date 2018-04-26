@@ -1,0 +1,8 @@
+application/logs/
+application/cache/
+public/.htaccess
+application/config/config.php
+
+.gitignore
+.DS_Store
+.idea/
