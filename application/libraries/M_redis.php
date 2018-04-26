@@ -47,7 +47,7 @@ class M_redis
      */
     public function verifySmsCode($phone,$code){
         $key    = PHONECODE.$phone;
-        if($code !== $this->redis->get($key)){
+        if($code != $this->redis->get($key)){
             return false;
         }
         $this->redis->expire($key,-1);
