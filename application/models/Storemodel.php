@@ -10,7 +10,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Storemodel extends Basemodel{
 
-    protected $table    = 'stores';
+    protected $table    = 'boss_store';
 
     protected $hidden   = '';
 

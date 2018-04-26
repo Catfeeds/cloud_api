@@ -87,19 +87,21 @@ defined('EXIT__AUTO_MAX')      OR define('EXIT__AUTO_MAX', 125); // highest auto
 //定义请求数据的方法
 define('IS_POST',strtolower($_SERVER["REQUEST_METHOD"]) == 'post');//判断是否是post方法
 define('IS_GET',strtolower($_SERVER["REQUEST_METHOD"]) == 'get');//判断是否是get方法
+define('IS_OPTIONS',strtolower($_SERVER["REQUEST_METHOD"]) == 'options');//判断是否是post方法
 define('IS_AJAX',isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');//判断是否是ajax请求
 
 //自定义常量
 define('WXID','openid');    //验证用户的用到的微信标识 （openid/unionid）
-//define('FXID','fxid');      //梵响员工id
-//员工职位
-define('ADMIN','ADMIN');
-define('PRODUCT','PRODUCT');
-//员工状态
-define('ENABLE','ENABLE');      //在职
-define('DISABLE','DISABLE');    //离职
+
+define('SMSTEXT','【火花草莓社区】您的验证码是'); //发送短信的文本内容
+
+define('SUPERPRE','S_'); //区分公司超级用户区分的前缀
 //Redis 空间
-define('FXPHONE','FUNXDATA:FUNXADMIN:LOGIN:PHONE_CODE:'); //手机验证码
-//define('FXTOKEN','FUNXDATA:FUNXADMIN:LOGIN:JWT_TOKEN:'); //token
+define('PHONECODE','FUNXDATA:BOSS:LOGIN:PHONE_CODE:'); //手机验证码
+define('USERINFO','FUNXDATA:BOSS:USER:INFO:');      //用户信息
+define('COMPANYINFO','FUNXDATA:BOSS:COMPANY:INFO:'); //公司信息
+define('COMPANYPRIVILEGE','FUNXDATA:BOSS:COMPANY:PRIVILEGE:'); //公司权限
+
+
 //分页
 define('PAGINATE',10);          //分页页码

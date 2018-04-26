@@ -12,6 +12,13 @@ class PreHook {
   
      public function proc(){
 
+             if(IS_OPTIONS){
+                 header("Access-Control-Allow-Origin: * ");
+                 header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Token");
+                 header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
+                 header('HTTP/1.1 200 OK');
+                 exit;
+             }
          
              //对于非post请求进行拦截报错
              if(!IS_POST){
@@ -37,7 +44,7 @@ class PreHook {
              $this->check_data($_POST,$this->args_arr);
              $this->check_data($_COOKIE,$this->args_arr);
              $this->check_data($referer,$this->args_arr);
-         
+
      }
 
 

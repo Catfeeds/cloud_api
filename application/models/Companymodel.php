@@ -1,16 +1,8 @@
 <?php
 
-/**
- * Author:      hfq<1326432154@qq.com>
- * Date:        2018/4/12
- * Time:        13:14
- * Describe:    [FUNX/BOSS]
- * 公司表
- */
-
 class Companymodel extends Basemodel
 {
-    protected $table    = 'fx_companies';
+    protected $table    = 'fx_company';
 
     protected $hidden   = [];
 
@@ -24,5 +16,24 @@ class Companymodel extends Basemodel
     public function store(){
 
         return $this->hasMany(Storemodel::class,'company_id');
+    }
+
+    //查找公司信息
+    public function getInfo($type,$sign){
+
+        switch ($type){
+            case 'id':
+                $info   = $this->find($sign);
+                break;
+            case 'phone':
+                $info   = $this->where('phone',$sign)->first();
+                break;
+            case 'wechat':
+                $info   = $this->where(WXID,$sign)->first();
+                break;
+            default:
+                $info   = null;
+        }
+        return $info;
     }
 }

@@ -10,7 +10,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  */
 class Employeemodel extends Basemodel{
 
-    protected $table    = 'employees';
+    protected $table    = 'boss_employee';
 
     protected $hidden  = [];
 
@@ -19,4 +19,25 @@ class Employeemodel extends Basemodel{
 
         return $this->hasMany(Residentmodel::class,'employee_id');
     }
+    //员工所属的公司
+    public function company(){
+
+        return $this->belongsTo(Companymodel::class,'company_id');
+    }
+
+    //查询员工信息
+   /* public function getInfo($type,$sign){
+        switch ($type){
+            case 'wechat':
+                $info   = $this->where(WXID,$sign)->first();
+                break;
+            case 'phone':
+                $info   = $this->where('phone',$sign)->first();
+                break;
+            default:
+                $info   = null;
+        }
+        return $info;
+    }*/
+
 }
