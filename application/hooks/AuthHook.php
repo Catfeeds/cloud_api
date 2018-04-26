@@ -37,11 +37,18 @@ class AuthHook {
 
             'login/login/login',
 
+            'service/servicetype/index',
+            'service/servicetype/addservicetype',
+            'service/servicetype/imageupload',
+            'service/servicetype/updateservicetype',
 
             'service/serviceorder/index',
             'service/serviceorder/getcity',
             'service/serviceorder/getstore',
             'service/serviceorder/getservicetype',
+            'service/serviceorder/getdetail',
+
+            'service/reserveorder/index'
 
         );
 
