@@ -10,9 +10,9 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Storemodel extends Basemodel{
 
-    protected $table    = 'stores';
+    protected $table    = 'boss_store';
 
-    protected $hidden   = '';
+    protected $hidden   = ['created_at','updated_at','deleted_at'];
 
     //门店所管辖的楼栋
     public function building(){
@@ -38,5 +38,4 @@ class Storemodel extends Basemodel{
         return $this->hasMany(Roommodel::class,'store_id');
     }
 
-    //
 }

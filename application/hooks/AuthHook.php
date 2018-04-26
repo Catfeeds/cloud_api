@@ -53,6 +53,11 @@ class AuthHook {
             'service/servicetype/addservicetype',
             'service/servicetype/updateservicetype',
 
+            'service/serviceorder/index',
+            'service/serviceorder/getcity',
+            'service/serviceorder/getstore',
+            'service/serviceorder/getservicetype',
+
         );
 
         $directory  = $this->CI->router->fetch_directory();
