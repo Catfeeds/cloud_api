@@ -13,14 +13,6 @@ class PreHook {
      public function proc(){
 
              if(IS_OPTIONS){
-                 header("Access-Control-Allow-Origin: * ");
-                 header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Token");
-                 header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
-                 header('HTTP/1.1 200 OK');
-                 exit;
-             }
-         
-             if(IS_OPTIONS){
                 header("Access-Control-Allow-Origin: * ");
                 header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Token");
 		        header('Access-Control-Allow-Methods: POST, GET, OPTIONS');

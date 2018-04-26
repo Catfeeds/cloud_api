@@ -19,7 +19,7 @@ class AuthHook {
 
         header("Access-Control-Allow-Origin: * ");
         header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Token");
-		header('Access-Control-Allow-Methods: GET, POST');
+		header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
     }
 
     public function isAuth()
