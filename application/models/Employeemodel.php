@@ -26,7 +26,7 @@ class Employeemodel extends Basemodel{
     }
 
     //查询员工信息
-   /* public function getInfo($type,$sign){
+    public function getInfo($type,$sign){
         switch ($type){
             case 'wechat':
                 $info   = $this->where(WXID,$sign)->first();
@@ -38,6 +38,6 @@ class Employeemodel extends Basemodel{
                 $info   = null;
         }
         return $info;
-    }*/
+    }
 
 }
