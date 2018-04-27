@@ -52,8 +52,18 @@ class AuthHook {
             'service/serviceorder/getstore',
             'service/serviceorder/getservicetype',
             'service/serviceorder/getdetail',
+            'service/serviceorder/test',
 
-            'service/reserveorder/index'
+            'service/reserveorder/index',
+
+            'shop/goodscategory/goodscategory',
+            'shop/goodscategory/addcategory',
+            'shop/goodscategory/updatecategory',
+
+            'shop/goods/index',
+            'shop/goods/update',
+            'shop/goods/update',
+
 
         );
 

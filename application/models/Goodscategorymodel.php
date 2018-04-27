@@ -2,13 +2,12 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 /**
  * Author:      hfq<1326432154@qq.com>
- * Date:        2018/4/26
- * Time:        15:19
- * Describe:    服务管理-预约订单model
+ * Date:        2018/4/27
+ * Time:        9:38
+ * Describe:    商品管理-商品分类model
  */
-
-class Reserveordermodel extends Basemodel
+class Goodscategorymodel extends Basemodel
 {
-    protected $table    = 'boss_reserve_order';
+    protected $table    = 'boss_shop_category';
     protected $hidden   = ['created_at','updated_at','deleted_at'];
 }
