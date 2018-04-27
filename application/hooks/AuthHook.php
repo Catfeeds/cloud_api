@@ -35,7 +35,12 @@ class AuthHook {
             'demo/upload/index',
             'demo/upload/do_upload',
 
+            'common/imageupload',
             'login/login/login',
+            'store/store/liststore',
+            'store/store/addstoredot',
+            'store/store/addstoreunion',
+            'store/store/deletestore',
 
             'service/servicetype/index',
             'service/servicetype/addservicetype',
