@@ -20,12 +20,15 @@ class Goodscategory extends MY_Controller
      */
     public function goodsCategory()
     {
-        $post = $this->input->post(NULL,true);
+        $post       = $this->input->post(NULL,true);
 
-        $filed = ['name','is_show','sort'];
+        $page       = isset($post['page'])?$post['page']:1;
+        $offset     = PAGINATE*($page-1);
+        $count      = ceil(Goodscategorymodel::count()/PAGINATE);
+        $filed      = ['name','is_show','sort'];
 
-        $goodscate = Goodscategorymodel::get($filed);
-        $this->api_res(0,$goodscate);
+        $goodscate  = Goodscategorymodel::take(PAGINATE)->skip($offset)->orderBy('id','desc')->get($filed);
+        $this->api_res(0,['list'=>$goodscate,'count'=>$count]);
     }
 
     /**

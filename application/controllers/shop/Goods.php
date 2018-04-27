@@ -19,12 +19,105 @@ class Goods extends MY_Controller
      */
     public function index()
     {
-        $post = $this->input->post(NULL,true);
-        $filed = ['goods_thumb','name','shop_price','market_price','quantity','on_sale'];
+        $post   = $this->input->post(NULL,TRUE);
+        $page   = isset($post['page'])?$post['page']:1;
+        $name   = isset($post['name'])?$post['name']:NULL;
+        $offset = PAGINATE*($page-1);
+        $count  = ceil(Goodsmodel::count()/PAGINATE);
+        $filed  = ['goods_thumb','name','shop_price','market_price','quantity','on_sale'];
+        $where  = array();
+        if(isset($post['category_id'])){$where['category_id']=$post['category_id'];}
+        if(isset($post['on_sale'])){$where['on_sale']=$post['on_sale'];}
 
-        $goods = Goodsmodel::get($filed);
-        $this->api_res(0,$goods);
+        if(empty($where)) {
+            $goods  = Goodsmodel::where('name','like','%'."$name".'%')->take(PAGINATE)->skip($offset)->orderBy('id','desc')->get($filed)->toArray();
+            $this->api_res(0,['list'=>$goods,'count'=>$count,'cdn_path'=>config_item('cdn_path')]);
+            return;
+        }
+        $goods  = Goodsmodel::where('name','like','%'."$name".'%')->where($where)->take(PAGINATE)->skip($offset)->orderBy('id','desc')->get($filed)->toArray();
+        $this->api_res(0,['list'=>$goods,'count'=>$count,'cdn_path'=>config_item('cdn_path')]);
     }
 
-    
+    /**
+     *  商品分类列表
+     */
+    public function getCategory()
+    {
+        $this->load->model('goodscategorymodel');
+        $filed = ['id','name'];
+
+        $category = Goodscategorymodel::get($filed);
+        $this->api_res(0,$category);
+    }
+
+    /**
+     * 添加商品
+     */
+    public function addGoods()
+    {
+        $post = $this->input->post(NULL,true);
+        if(!$this->validation())
+        {
+            $fieldarr   = ['name','category_id','market_price','shop_price','quantity','sale_num','description','detail'];
+            $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
+            return false;
+        }
+        $goods = new Goodsmodel();
+
+
+    }
+
+    private function validation()
+    {
+        $this->load->library('form_validation');
+        $config = array(
+            array(
+                'field' => 'name',
+                'label' => '商品名称',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'category_id',
+                'label' => '商品类型',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'market_price',
+                'label' => '市场价格',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'shop_price',
+                'label' => '售价',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'quantity',
+                'label' => '数量',
+                'rules' => 'trim|required|integer',
+            ),
+            array(
+                'field' => 'sale_num',
+                'label' => '已售数量',
+                'rules' => 'trim|required|integer',
+            ),
+            array(
+                'field' => 'description',
+                'label' => '描述',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'detail',
+                'label' => '详情',
+                'rules' => 'trim|required',
+            ),
+        );
+
+        $this->form_validation->set_rules($config);
+
+        if (!$this->form_validation->run()) {
+            $error = $this->form_validation->error_array();
+            Util::error(current($error));
+        }
+    }
 }

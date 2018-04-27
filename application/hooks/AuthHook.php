@@ -57,7 +57,7 @@ class AuthHook {
 
             'shop/goods/index',
             'shop/goods/update',
-            'shop/goods/update',
+            'shop/goods/getcategory',
 
 
         );

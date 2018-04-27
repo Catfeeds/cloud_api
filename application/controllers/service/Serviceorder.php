@@ -12,6 +12,7 @@ class Serviceorder extends MY_Controller
     {
         parent::__construct();
         $this->load->model('serviceordermodel');
+        $this->load->model('storemodel');
     }
 
     /**
@@ -19,6 +20,7 @@ class Serviceorder extends MY_Controller
      */
     public function index()
     {
+
         $post       = $this->input->post(NULL,true);
         $where      = array();
         $filed      = ['id','sequence_number','store_id','room_id','estimate_money','pay_money','service_type_id','status','deal'];
@@ -50,7 +52,7 @@ class Serviceorder extends MY_Controller
     {
         $this->load->model('storemodel');
         $filed      = ['city'];
-        $city       = Storemodel::get($filed);
+        $city       = Storemodel::get($filed)->groupBy('city')->toArray();
         $this->api_res(0,$city);
     }
 
@@ -61,14 +63,7 @@ class Serviceorder extends MY_Controller
     {
         $this->load->model('storemodel');
         $filed      = ['id','name'];
-        $post       = $this->input->post(NULL,true);
-
-        if (isset($post['city'])){
-            $store  = Storemodel::where('city',$post['city'])->get($filed);
-            $this->api_res(0,$store);
-            return;
-        }
-        $store      = Storemodel::get($filed);
+        $store  = Storemodel::get($filed);
         $this->api_res(0,$store);
     }
 
@@ -101,13 +96,13 @@ class Serviceorder extends MY_Controller
     public function test()
     {
         $this->load->model('storemodel');
-        $result = Serviceordermodel::find(1);
+        /*$result = Serviceordermodel::find(1);
         $store_name=$result->store()->get(['name'])->toArray()[0]['name'];
         //var_dump(compact('store_name'));die();
         $result = array_merge($result->toArray(),compact('store_name'));
-        var_dump($result);
-
-        //$result = Serviceordermodel::with('store')->get();
+        var_dump($result);*/
+        //$order = Serviceordermodel::get();
+        $result = Serviceordermodel::with('store')->get();
 
         //$name = $result->name;
         //$stname = $result->store->name;
