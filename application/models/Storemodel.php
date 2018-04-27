@@ -12,6 +12,11 @@ class Storemodel extends Basemodel{
 
     protected $table    = 'boss_store';
 
+    protected $fillable = [
+        'rent_type','status','name','theme','province','city','district','address', 'contact_user',
+        'contact_phone','counsel_phone','counsel_time','images','describe','history','shop','relax','bus',
+    ];
+
     protected $hidden   = ['created_at','updated_at','deleted_at'];
 
     //门店所管辖的楼栋

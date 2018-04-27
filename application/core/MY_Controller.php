@@ -9,9 +9,23 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  */
 class MY_Controller extends CI_Controller {
 
+    protected $position;
+
     public function __construct()
     {
         parent::__construct();
+
+        if(defined('CURRENT_ID'))
+        {
+            $pre    = substr(CURRENT_ID,0,2);
+            if($pre == SUPERPRE){
+                //super 拥有所有的权限
+                $this->position = 'SUPER';
+            }else{
+                $this->position = 'EMPLOYEE';
+            }
+
+        }
     }
 
     //API返回统一方法
@@ -70,6 +84,26 @@ class MY_Controller extends CI_Controller {
     }
 
     /**
+     * 表单验证
+     * 传入config数组
+     * config数组中包含 field 和config 两个类型
+     * example $config=['filed'=>['a','b','c'],'config'=>[['field'=>'a'....],['field'=>'b'....]]]
+     */
+    public function validationText($config)
+    {
+        $this->load->library('form_validation');
+        $this->form_validation->set_rules($config);
+        if(!$this->form_validation->run())
+        {
+            return false;
+        }else{
+            return true;
+        }
+    }
+
+
+
+    /**
      * @param array $fieldarr 传入验证字段的数组
      * @return string 返回验证表单的第一个错误信息方便 ajax返回
      */
@@ -81,17 +115,26 @@ class MY_Controller extends CI_Controller {
         }
         foreach ($fieldarr as $field){
             if($OBJ->error($field)){
-                return $OBJ->error($field);
+                return $OBJ->error($field,NULL,NULL);
             }
         }
     }
 
     /**
-     * 拼接完整的 alioss URL
+     * 将alioss路径 拼接成完整的URL
      */
     public function fullAliossUrl($oss_path){
 
         $full_url   = config_item('cdn_path').$oss_path;
         return $full_url;
+    }
+
+    /**
+     * 对上传的文件url拆解成alioss路径
+     */
+    public function splitAliossUrl($full_path){
+
+        $alioss_path    = substr($full_path,strlen(config_item('cdn_path')));;
+        return $alioss_path;
     }
 }
