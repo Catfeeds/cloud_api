@@ -20,7 +20,7 @@ class Goodsorder extends MY_Controller
         $page   = isset($post['page'])?$post['page']:1;
         $offset = PAGINATE*($page-1);
         $count  = ceil(Goodsordermodel::count()/PAGINATE);
-        $filed  = ['id','number',''];
+        $filed  = ['id','number','customer_id','address_id','status','goods_money'];
 
         if(!empty($post['begin_time'])){$bt=$post['begin_time'];}else{$bt = date('Y-m-d H:i:s',0);};
         if(!empty($post['end_time'])){$et=$post['end_time'];}else{$et = date('Y-m-d H:i:s',time());};
@@ -31,14 +31,18 @@ class Goodsorder extends MY_Controller
                         ->take(PAGINATE)->skip($offset)->orderBy('id','desc')->get($filed)->toArray();
             $this->api_res(0,['list'=>$goods,'count'=>$count,'cdn_path'=>config_item('cdn_path')]);
         }
-        if(!empty($post['number'])){
+        else if(!empty($post['number'])){
             $number = $post['number'];
+            var_dump($number);
             $goods  = Goodsordermodel::where('number',$number)->take(PAGINATE)->skip($offset)->orderBy('id','desc')
                         ->get($filed)->toArray();
             $this->api_res(0,['list'=>$goods,'count'=>$count,'cdn_path'=>config_item('cdn_path')]);
+        }else{
+            $goods  = Goodsordermodel::whereBetween('created_at',[$bt,$et])->take(PAGINATE)->skip($offset)
+                        ->orderBy('id','desc')->get($filed)->toArray();
+            $this->api_res(0,['list'=>$goods,'count'=>$count,'cdn_path'=>config_item('cdn_path')]);
         }
-        $goods  = Goodsordermodel::whereBetween('created_at',[$bt,$et])->take(PAGINATE)->skip($offset)
-                    ->orderBy('id','desc')->get($filed)->toArray();
-        $this->api_res(0,['list'=>$goods,'count'=>$count,'cdn_path'=>config_item('cdn_path')]);
     }
+
+
 }
