@@ -56,6 +56,24 @@ class Goodscategory extends MY_Controller
     }
 
     /**
+     * 删除商品分类
+     */
+    public function deleteCategory()
+    {
+        $post       = $this->input->post(NULL,TRUE);
+        $post       = $post['id'];
+        $id         = isset($post)?explode(',',$post):NULL;
+        $category    = Goodscategorymodel::destroy($id);
+
+        if($category){
+            $this->api_res(0);
+        }else{
+            $this->api_res(666);
+            return false;
+        }
+    }
+
+    /**
      * 编辑商品分类
      */
     public function updateCategory()

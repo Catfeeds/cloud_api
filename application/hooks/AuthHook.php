@@ -61,6 +61,7 @@ class AuthHook {
             'shop/goodscategory/goodscategory',
             'shop/goodscategory/addcategory',
             'shop/goodscategory/updatecategory',
+            'shop/goodscategory/deletecategory',
 
             'shop/goods/index',
             'shop/goods/getcategory',
