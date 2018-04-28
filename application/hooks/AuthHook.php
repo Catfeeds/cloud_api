@@ -41,7 +41,10 @@ class AuthHook {
             'store/store/addstoredot',
             'store/store/addstoreunion',
             'store/store/deletestore',
+            'store/store/showstore',
             'store/roomtype/listroomtype',
+            'store/roomtype/addroomtype',
+            'store/roomtype/deleteroomtype',
 
             'service/servicetype/index',
             'service/servicetype/addservicetype',
