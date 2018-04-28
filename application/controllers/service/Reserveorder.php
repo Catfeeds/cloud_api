@@ -25,7 +25,7 @@ class Reserveorder extends MY_Controller
         $offset = PAGINATE*($page-1);
         $count  = ceil(Reserveordermodel::count()/PAGINATE);
         $where  = array();
-        $filed  = ['id','time','name','phone','work_address','require','info_source','employee_id','status','remark'];
+        $filed  = ['id','time','name','phone','visit_by','work_address','require','info_source','employee_id','status','remark'];
 
         if(isset($post['store_id'])){$where['store_id']=$post['store_id'];}
         if(isset($post['visit_type'])){$where['visit_by']=$post['visit_type'];}
