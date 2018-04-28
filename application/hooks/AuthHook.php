@@ -62,11 +62,10 @@ class AuthHook {
             'shop/goodscategory/updatecategory',
 
             'shop/goods/index',
-            'shop/goods/update',
             'shop/goods/getcategory',
             'shop/goods/addgoods',
             'shop/goods/updateonsale',
-
+            'shop/goods/deletegoods',
         );
 
         $directory  = $this->CI->router->fetch_directory();
