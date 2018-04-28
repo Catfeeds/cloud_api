@@ -21,8 +21,13 @@ class Servicetype extends MY_Controller
         $page   = isset($input['page'])?$input['page']:1;
         $offset = PAGINATE*($page-1);
         $filed  = ['id','name','feature','description','image_url'];
+        $sum    = Servicetypemodel::count();
         $count  = ceil(Servicetypemodel::count()/PAGINATE);
         $type   = Servicetypemodel::take(PAGINATE)->skip($offset)->orderBy('id','desc')->get($filed)->toArray();
+
+        for ($i = 0;$i<$sum;$i++){
+            $type[$i]['description']    = htmlspecialchars_decode($type[$i]['description']);
+        }
         $this->api_res(0,['count'=>$count,'list'=>$type,'cdn_path'=>config_item('cdn_path')]);
     }
 
@@ -91,7 +96,7 @@ class Servicetype extends MY_Controller
             $service                = Servicetypemodel::where('id',$id)->first();
             $service->name          = $post['name'];
             $service->feature       = $post['feature'];
-            $service->description   = $post['description'];
+            $service->description   = htmlspecialchars($post['description']);
             $service->image_url     = substr(trim($post['image_url']),strlen(config_item('cdn_path')));
 
             if($service->save())
