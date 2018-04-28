@@ -11,12 +11,17 @@ class Roomtypemodel extends Basemodel{
 
     protected $table    = 'boss_room_type';
 
-    protected $hidden   = '';
+    protected $hidden   = [];
 
     //房型的合同模板
     public function contracttemplate(){
         //保留历史模板，只显示最后更新的模板
         return $this->hasMany(Contracttemplatemodel::class,'room_type_id');
+    }
+
+    //房型的门店
+    public function store(){
+        return $this->belongsTo(Storemodel::class,'store_id')->select('id','name');
     }
 
     //房型的房间
