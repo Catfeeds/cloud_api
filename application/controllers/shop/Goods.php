@@ -24,10 +24,10 @@ class Goods extends MY_Controller
         $name   = isset($post['name'])?$post['name']:NULL;
         $offset = PAGINATE*($page-1);
         $count  = ceil(Goodsmodel::count()/PAGINATE);
-        $filed  = ['goods_thumb','name','shop_price','market_price','quantity','on_sale'];
+        $filed  = ['id','goods_thumb','name','shop_price','market_price','quantity','on_sale'];
         $where  = array();
-        if(isset($post['category_id'])){$where['category_id']=$post['category_id'];}
-        if(isset($post['on_sale'])){$where['on_sale']=$post['on_sale'];}
+        if(!empty($post['category_id'])){$where['category_id']=$post['category_id'];}
+        if(!empty($post['on_sale'])){$where['on_sale']=$post['on_sale'];}
 
         if(empty($where)) {
             $goods  = Goodsmodel::where('name','like','%'."$name".'%')->take(PAGINATE)->skip($offset)->orderBy('id','desc')->get($filed)->toArray();
@@ -71,10 +71,10 @@ class Goods extends MY_Controller
         $goods->quantity        = trim($post['quantity']);  //商品数量
         $goods->sale_num        = trim($post['sale_num']);  //已经卖出数量
         $goods->description     = trim($post['description']);//描述
-        $goods->detail          = trim($post['detail']);     //商品详情
+        $goods->detail          = htmlspecialchars(trim($post['detail']));     //商品详情
         $goods->original_link   = trim($post['original_link']);//商品原始链接
         $goods->on_sale         = trim($post['on_sale']);     //是否上架
-        $goods->goods_thumb     = trim($post['goods_thumb']); //商品缩略图
+        $goods->goods_thumb     = $this->splitAliossUrl(trim($post['goods_thumb'])); //商品缩略图
         $goods->goods_carousel  = trim($post['goods_carousel']);//商品轮播图
 
         if ($goods->save())
@@ -101,9 +101,30 @@ class Goods extends MY_Controller
             foreach ($id as $ids){
                 $goods  = Goodsmodel::findOrFail($ids);
                 $goods->on_sale = $status;
-                $this->api_res(0);
+                if($goods->save()){
+                    $this->api_res(0);
+                }else{
+                    $this->api_res(666);
+                }
             }
+        }
+    }
 
+    /**
+     * 删除商品
+     */
+    public function deleteGoods()
+    {
+        $post       = $this->input->post(NULL,TRUE);
+        $post       = $post['id'];
+        $id         = isset($post)?explode(',',$post):NULL;
+        $company    = Goodsmodel::destroy($id);
+
+        if($company){
+            $this->api_res(0);
+        }else{
+            $this->api_res(666);
+            return false;
         }
     }
 

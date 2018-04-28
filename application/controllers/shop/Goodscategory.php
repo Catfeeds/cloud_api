@@ -4,7 +4,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Author:      hfq<1326432154@qq.com>
  * Date:        2018/4/26
  * Time:        19:08
- * Describe:    商品管理-商品分类
+ * Describe:    商品管理-商品管理
  */
 
 class Goodscategory extends MY_Controller
@@ -25,9 +25,9 @@ class Goodscategory extends MY_Controller
         $page       = isset($post['page'])?$post['page']:1;
         $offset     = PAGINATE*($page-1);
         $count      = ceil(Goodscategorymodel::count()/PAGINATE);
-        $filed      = ['name','is_show','sort'];
+        $filed      = ['id','name','is_show','sort'];
 
-        $goodscate  = Goodscategorymodel::take(PAGINATE)->skip($offset)->orderBy('id','desc')->get($filed);
+        $goodscate  = Goodscategorymodel::take(PAGINATE)->skip($offset)->orderBy('sort','desc')->get($filed);
         $this->api_res(0,['list'=>$goodscate,'count'=>$count]);
     }
 
@@ -48,6 +48,23 @@ class Goodscategory extends MY_Controller
         $category->is_show  = trim($post['is_show']);
         $category->sort     = trim($post['sort']);
         if($category->save()){
+            $this->api_res(0);
+        }else{
+            $this->api_res(666);
+            return false;
+        }
+    }
+
+    /**
+     * 删除商品分类
+     */
+    public function deleteCategory()
+    {
+        $post       = $this->input->post(NULL,TRUE);
+        $id         = isset($post['id'])?$post['id']:NULL;
+        $category   = Goodscategorymodel::destroy($id);
+
+        if($category){
             $this->api_res(0);
         }else{
             $this->api_res(666);
