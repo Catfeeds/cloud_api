@@ -70,6 +70,15 @@ class Store extends MY_Controller
         $post    = $this->input->post(null,true);
         $insert  = new Storemodel();
         $insert->fill($post);
+        /*$images =str_replace(config_item('cdn_path'),'',$post['images']);
+        $insert->images=$images;*/
+        $images_post = json_decode($post['images']);
+        $images =[];
+        foreach ($images_post as $image){
+            $images[]=$this->splitAliossUrl($image);
+        }
+        $images= json_encode($images);
+        $insert->images=$images;
         $insert->save();
         $this->api_res(0,['store_id'=>$insert->id]);
     }
