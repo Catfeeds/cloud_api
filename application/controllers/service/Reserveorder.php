@@ -27,8 +27,8 @@ class Reserveorder extends MY_Controller
         $where  = array();
         $filed  = ['id','time','name','phone','visit_by','work_address','require','info_source','employee_id','status','remark'];
 
-        if(isset($post['store_id'])){$where['store_id']=$post['store_id'];}
-        if(isset($post['visit_type'])){$where['visit_by']=$post['visit_type'];}
+        if(!empty($post['store_id'])){$where['store_id']=$post['store_id'];}
+        if(!empty($post['visit_type'])){$where['visit_by']=$post['visit_type'];}
 
         if(empty($where)){
             $reserve = Reserveordermodel::take(PAGINATE)->skip($offset)

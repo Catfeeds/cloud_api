@@ -92,21 +92,18 @@ class Goods extends MY_Controller
     {
         $post   = $this->input->post(NULL,true);
         $id     = isset($post['id'])?explode(',',trim($post['id'])):null;
-        var_dump($id);
         $status = isset($post['on_sale'])?trim($post['on_sale']):null;
         if(empty($status)){
             $this->api_res(666);
             return false;
         }
         else{
-            $goods  = new Goodsmodel();
-            $goods->on_sale = $status;
-            if ($goods->save())
-            {
+            foreach ($id as $ids){
+                $goods  = Goodsmodel::findOrFail($ids);
+                $goods->on_sale = $status;
                 $this->api_res(0);
-            }else{
-                $this->api_res(666);
             }
+
         }
     }
 
