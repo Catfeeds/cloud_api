@@ -61,9 +61,8 @@ class Goodscategory extends MY_Controller
     public function deleteCategory()
     {
         $post       = $this->input->post(NULL,TRUE);
-        $post       = $post['id'];
-        $id         = isset($post)?explode(',',$post):NULL;
-        $category    = Goodscategorymodel::destroy($id);
+        $id         = isset($post['id'])?$post['id']:NULL;
+        $category   = Goodscategorymodel::destroy($id);
 
         if($category){
             $this->api_res(0);

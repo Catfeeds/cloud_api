@@ -24,7 +24,7 @@ class Goods extends MY_Controller
         $name   = isset($post['name'])?$post['name']:NULL;
         $offset = PAGINATE*($page-1);
         $count  = ceil(Goodsmodel::count()/PAGINATE);
-        $filed  = ['goods_thumb','name','shop_price','market_price','quantity','on_sale'];
+        $filed  = ['id','goods_thumb','name','shop_price','market_price','quantity','on_sale'];
         $where  = array();
         if(!empty($post['category_id'])){$where['category_id']=$post['category_id'];}
         if(!empty($post['on_sale'])){$where['on_sale']=$post['on_sale'];}
