@@ -47,6 +47,14 @@ class Store extends MY_Controller
     }
 
     /**
+     * 展示门店
+     */
+    public function showStore(){
+        $store  = Storemodel::all(['id','name']);
+        $this->api_res(0,['stores'=>$store]);
+    }
+
+    /**
      * 查找门店
      */
     public function searchStore(){
