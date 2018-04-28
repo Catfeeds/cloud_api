@@ -29,9 +29,6 @@ class Store extends MY_Controller
         $offset = PAGINATE*($page-1);
         $field  = ['id','name','city','rent_type','address','contact_user','contact_phone','status'];
         $count  = ceil(Storemodel::count()/PAGINATE);
-        if($page>$count){
-            throw new Exception();
-        }
         $stores = Storemodel::offset($offset)->limit(PAGINATE)->orderBy('id','desc')->get($field)->toArray();
         $this->api_res(0,['count'=>$count,'list'=>$stores]);
     }
