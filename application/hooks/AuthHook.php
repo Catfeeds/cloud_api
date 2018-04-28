@@ -56,6 +56,7 @@ class AuthHook {
             'service/serviceorder/test',
 
             'service/reserveorder/index',
+            'service/reserveorder/getvisittype',
 
             'shop/goodscategory/goodscategory',
             'shop/goodscategory/addcategory',
@@ -64,7 +65,8 @@ class AuthHook {
             'shop/goods/index',
             'shop/goods/update',
             'shop/goods/getcategory',
-
+            'shop/goods/addgoods',
+            'shop/goods/updateonsale',
 
         );
 

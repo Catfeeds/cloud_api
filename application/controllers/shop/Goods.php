@@ -58,15 +58,58 @@ class Goods extends MY_Controller
         $post = $this->input->post(NULL,true);
         if(!$this->validation())
         {
-            $fieldarr   = ['name','category_id','market_price','shop_price','quantity','sale_num','description','detail'];
+            $fieldarr   = ['name','category_id','market_price','shop_price','quantity','sale_num',
+                            'description','detail','original_link'];
             $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
             return false;
         }
-        $goods = new Goodsmodel();
+        $goods                  = new Goodsmodel();
+        $goods->name            = trim($post['name']);      //商品名称
+        $goods->category_id     = trim($post['category_id']);//商品分类ID
+        $goods->market_price    = trim($post['market_price']);//市场价格
+        $goods->shop_price      = trim($post['shop_price']);//商品价格
+        $goods->quantity        = trim($post['quantity']);  //商品数量
+        $goods->sale_num        = trim($post['sale_num']);  //已经卖出数量
+        $goods->description     = trim($post['description']);//描述
+        $goods->detail          = trim($post['detail']);     //商品详情
+        $goods->original_link   = trim($post['original_link']);//商品原始链接
+        $goods->on_sale         = trim($post['on_sale']);     //是否上架
+        $goods->goods_thumb     = trim($post['goods_thumb']); //商品缩略图
+        $goods->goods_carousel  = trim($post['goods_carousel']);//商品轮播图
 
-
+        if ($goods->save())
+        {
+            $this->api_res(0);
+        }else{
+            $this->api_res(666);
+        }
     }
 
+    /**
+     * 批量上架/下架
+     */
+    public function updateOnsale()
+    {
+        $post   = $this->input->post(NULL,true);
+        $id     = isset($post['id'])?explode(',',trim($post['id'])):null;
+        $status = isset($post['on_sale'])?trim($post['on_sale']):null;
+        if(empty($status)){
+            $this->api_res(666);
+            return false;
+        }
+        else{
+            foreach ($id as $ids){
+                $goods  = Goodsmodel::findOrFail($ids);
+                $goods->on_sale = $status;
+                $this->api_res(0);
+            }
+
+        }
+    }
+
+    /**
+     *  表单验证规则
+     */
     private function validation()
     {
         $this->load->library('form_validation');
@@ -113,11 +156,8 @@ class Goods extends MY_Controller
             ),
         );
 
-        $this->form_validation->set_rules($config);
+        $this->form_validation->set_rules($config)->set_error_delimiters('','');
 
-        if (!$this->form_validation->run()) {
-            $error = $this->form_validation->error_array();
-            Util::error(current($error));
-        }
+        return $this->form_validation->run();
     }
 }
