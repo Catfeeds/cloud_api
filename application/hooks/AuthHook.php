@@ -14,12 +14,7 @@ class AuthHook {
 
 	public function __construct()
   	{
-
         $this->CI = &get_instance();   //获取CI对象
-
-        header("Access-Control-Allow-Origin: * ");
-        header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Token");
-		header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
     }
 
     public function isAuth()
@@ -29,11 +24,6 @@ class AuthHook {
         //格式2 类/方法
         //注意，所有url统一用小写，不要大写
         $authArr = array(
-
-            'demo/base_demo/index',
-            'demo/jwt_demo/login',
-            'demo/upload/index',
-            'demo/upload/do_upload',
 
             'common/imageupload',
             'login/login/login',

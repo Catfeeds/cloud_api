@@ -11,11 +11,11 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class PreHook {
   
      public function proc(){
-
+            header("Access-Control-Allow-Origin: * ");
+            header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Token");
+            header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
+                
              if(IS_OPTIONS){
-                header("Access-Control-Allow-Origin: * ");
-                header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Token");
-		        header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
                 header('HTTP/1.1 200 OK');
                 exit;
             }
