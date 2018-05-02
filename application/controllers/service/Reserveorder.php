@@ -33,12 +33,12 @@ class Reserveorder extends MY_Controller
 
         if(empty($where)){
             $reserve = Reserveordermodel::with('employee')->take(PAGINATE)->skip($offset)
-                        ->orderBy('id','desc')->get($filed)->toArray();
+                                            ->orderBy('id','desc')->get($filed)->toArray();
             $this->api_res(0,['list'=>$reserve,'count'=>$count]);
             return;
         }
-        $reserve = Reserveordermodel::where($where)->take(PAGINATE)->skip($offset)
-                    ->orderBy('id','desc')->get($filed)->toArray();
+        $reserve = Reserveordermodel::with('employee')->where($where)->take(PAGINATE)->skip($offset)
+                                        ->orderBy('id','desc')->get($filed)->toArray();
         $this->api_res(0,['list'=>$reserve,'count'=>$count]);
     }
 

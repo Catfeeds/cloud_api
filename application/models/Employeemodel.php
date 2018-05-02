@@ -11,7 +11,7 @@ class Employeemodel extends Basemodel{
 
     protected $table    = 'boss_employee';
 
-    protected $hidden  = [];
+    protected $hidden  = ['created_at','update_at','deleted_at'];
 
     //员工办理的客户
     public function resident(){
