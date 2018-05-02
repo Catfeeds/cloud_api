@@ -36,6 +36,8 @@ class AuthHook {
             'demo/upload/do_upload',
 
             'common/imageupload',
+            'common/fileupload',
+
             'login/login/login',
             'store/store/liststore',
             'store/store/addstoredot',

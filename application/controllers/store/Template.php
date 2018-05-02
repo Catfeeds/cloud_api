@@ -31,7 +31,19 @@ class Template extends MY_Controller
      * 添加模板
      */
     public function addTemplate(){
-
+        $post   = $this->input->post(NULL,true);
+        $name   = isset($post['name'])?$post['name']:null;
+        $file_url   = isset($post['file_url'])?$post['file_url']:null;
+        if(empty($name) || empty($file_url)){
+            $this->api_res(1002);
+            return;
+        }
+        $template   = new Contracttemplatemodel();
+        $template->name = $name;
+        $template->url  = $file_url;
+        if($template->save()){
+            $this->api_res(0);
+        }
     }
 
     /**
