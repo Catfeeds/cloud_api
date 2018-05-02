@@ -21,7 +21,7 @@ class Template extends MY_Controller
         $post   = $this->input->post(null,true);
         $page   = isset($post['page'])?$post['page']:1;
         $offset = PAGINATE*($page-1);
-        $field  = ['id','store_id','name','room_type_id'];
+        $field  = ['id','name'];
         $count  = ceil(Contracttemplatemodel::count()/PAGINATE);
         $stores = Contracttemplatemodel::offset($offset)->limit(PAGINATE)->orderBy('id','desc')->get($field)->toArray();
         $this->api_res(0,['count'=>$count,'list'=>$stores]);
@@ -40,7 +40,7 @@ class Template extends MY_Controller
         }
         $template   = new Contracttemplatemodel();
         $template->name = $name;
-        $template->url  = $file_url;
+        $template->url  = $this->splitAliossUrl($file_url);
         if($template->save()){
             $this->api_res(0);
         }
@@ -57,12 +57,18 @@ class Template extends MY_Controller
     }
 
     /**
-     * 查找模板
+     * 查找模板（按名称 模糊查询）
      */
     public function searchTemplate(){
-
-
+        $name   = $this->input->post('name',true);
+        if(!$name){
+            $this->api_res(1005);
+            return;
+        }
+        $filed  = ['id','name'];
+        $query  = Contracttemplatemodel::where('name','like',"%$name%")->get($filed);
+        if($query){
+            $this->api_res(0,$query);
+        }
     }
-
-
 }

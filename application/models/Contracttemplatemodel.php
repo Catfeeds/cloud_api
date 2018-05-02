@@ -11,7 +11,7 @@ class Contracttemplatemodel extends Basemodel{
 
     protected $table    = 'boss_contract_template';
 
-    protected $hidden   = [];
+    protected $hidden   = ['created_at','updated_at','deleted_at','fdd_tpl_id','fdd_tpl_path'];
 
 
 }

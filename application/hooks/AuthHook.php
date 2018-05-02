@@ -39,6 +39,8 @@ class AuthHook {
             'store/roomtype/deleteroomtype',
             'store/template/listtemplate',
             'store/template/deletetemplate',
+            'store/template/addtemplate',
+            'store/template/searchtemplate',
 
             'service/servicetype/index',
             'service/servicetype/addservicetype',

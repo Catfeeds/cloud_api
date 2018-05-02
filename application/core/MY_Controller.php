@@ -137,4 +137,9 @@ class MY_Controller extends CI_Controller {
         $alioss_path    = substr($full_path,strlen(config_item('cdn_path')));;
         return $alioss_path;
     }
+
+    /**
+     * 判断文件类型
+     */
+
 }
