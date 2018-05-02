@@ -26,11 +26,43 @@ class Store extends MY_Controller
     {
         $post   = $this->input->post(null,true);
         $page   = isset($post['page'])?$post['page']:1;
+        $where  = [];
+        isset($post['city'])?$where['city']=$post['city']:null;
+        isset($post['type'])?$where['rent_type']=$post['type']:null;
+        isset($post['status'])?$where['status']=$post['status']:null;
         $offset = PAGINATE*($page-1);
         $field  = ['id','name','city','rent_type','address','contact_user','contact_phone','status'];
-        $count  = ceil(Storemodel::count()/PAGINATE);
-        $stores = Storemodel::offset($offset)->limit(PAGINATE)->orderBy('id','desc')->get($field)->toArray();
-        $this->api_res(0,['count'=>$count,'list'=>$stores]);
+        $stores = Storemodel::offset($offset)->where($where)->limit(PAGINATE)->orderBy('id','desc')->get($field);
+        $count  = ceil($stores->count()/PAGINATE);
+        $cities = Storemodel::groupBy('city')->get(['city']);
+        $types  = Storemodel::groupBy('rent_type')->get(['rent_type']);
+        $status = Storemodel::groupBy('status')->get(['status']);
+        $this->api_res(0,['count'=>$count,'city'=>$cities,'type'=>$types,'status'=>$status,'list'=>$stores]);
+
+    }
+
+    /**
+     * 查找门店（按名称模糊查询）
+     */
+    public function searchStore(){
+        $name   = $this->input->post('name',true);
+        if(!$name){
+            $this->api_res(1005);
+            return;
+        }
+        $page   = $this->input->post('page',true)?$this->input->post('page',true):1;
+        $offset = PAGINATE*($page-1);
+        $field  = ['id','name','city','rent_type','address','contact_user','contact_phone','status'];
+        $stores  = Storemodel::where('name','like',"%$name%")->offset($offset)->limit(PAGINATE)->orderBy('id','desc')->get($field);
+        $count  = ceil($stores->count()/PAGINATE);
+        if(!$count){
+            $this->api_res(1007);
+            return;
+        }
+        $cities = Storemodel::groupBy('city')->get(['city']);
+        $types  = Storemodel::groupBy('rent_type')->get(['rent_type']);
+        $status = Storemodel::groupBy('status')->get(['status']);
+        $this->api_res(0,['count'=>$count,'city'=>$cities,'type'=>$types,'status'=>$status,'list'=>$stores]);
     }
 
     /**
@@ -49,13 +81,6 @@ class Store extends MY_Controller
     public function showStore(){
         $store  = Storemodel::all(['id','name']);
         $this->api_res(0,['stores'=>$store]);
-    }
-
-    /**
-     * 查找门店
-     */
-    public function searchStore(){
-
     }
 
     /**
