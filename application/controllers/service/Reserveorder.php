@@ -32,7 +32,7 @@ class Reserveorder extends MY_Controller
         if(!empty($post['visit_type'])){$where['visit_by']=$post['visit_type'];}
 
         if(empty($where)){
-            $reserve = Reserveordermodel::/*with('employee')->*/take(PAGINATE)->skip($offset)
+            $reserve = Reserveordermodel::with('employee')->take(PAGINATE)->skip($offset)
                         ->orderBy('id','desc')->get($filed)->toArray();
             $this->api_res(0,['list'=>$reserve,'count'=>$count]);
             return;

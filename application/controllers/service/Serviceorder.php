@@ -36,7 +36,7 @@ class Serviceorder extends MY_Controller
         if(!empty($post['end_time'])){$et=$post['end_time'];}else{$et = date('Y-m-d H:i:s',time());};
 
         if(empty($where)){
-            $order = Serviceordermodel::with('serviceType')->with('store')->whereBetween('created_at',[$bt,$et])->take(PAGINATE)->skip($offset)
+            $order = Serviceordermodel::with('store')->with('serviceType')->whereBetween('created_at',[$bt,$et])->take(PAGINATE)->skip($offset)
                                         ->orderBy('id','desc')->get($filed);
             $this->api_res(0,['list'=>$order,'count'=>$count]);
             return;

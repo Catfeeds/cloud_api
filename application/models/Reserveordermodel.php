@@ -14,6 +14,6 @@ class Reserveordermodel extends Basemodel
 
     public function employee()
     {
-        return $this->belongsTo(Employeemodel::class,'employee_id')->select('id','name');
+        return $this->hasMany(Employeemodel::class,'id')->select('id','name');
     }
 }
