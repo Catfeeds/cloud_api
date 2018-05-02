@@ -14,6 +14,8 @@ class Goodsorder extends MY_Controller
         $this->load->model('goodsordermodel');
         $this->load->model('customermodel');
         $this->load->model('shopaddressmodel');
+        $this->load->model('shopgoodsordermodel');
+        $this->load->model('goodsmodel');
     }
 
     public function index()
@@ -27,16 +29,6 @@ class Goodsorder extends MY_Controller
         if(!empty($post['begin_time'])){$bt=$post['begin_time'];}else{$bt = date('Y-m-d H:i:s',0);};
         if(!empty($post['end_time'])){$et=$post['end_time'];}else{$et = date('Y-m-d H:i:s',time());};
 
-        /*if(!empty($post['name'])){
-            $name     = $post['name'];
-            $goods  = Goodsordermodel::with('customer')->with('address')
-                                        ->where('name','like','%'."$name".'%')
-                                        ->whereBetween('created_at',[$bt,$et])
-                                        ->take(PAGINATE)->skip($offset)
-                                        ->orderBy('id','desc')
-                                        ->get($filed)->toArray();
-            $this->api_res(0,['list'=>$goods,'count'=>$count,'cdn_path'=>config_item('cdn_path')]);
-        }*/
         if(!empty($post['number'])){
             $number = $post['number'];
             $goods  = Goodsordermodel::with('customer')->with('address')
@@ -66,9 +58,10 @@ class Goodsorder extends MY_Controller
         $order  = Goodsordermodel::with('customer')->with('address')->where('id',$id)
                                     ->get($filed)->toArray();
 
-
-        $order[$id-1]['goods_name'] = [];
-
+        $goods_id = Shopgoodsordermodel::where('order_id',$id)->get(['goods_id'])->toArray();
+        $goods_id = $goods_id[0]['goods_id'];
+        $goods_name = Goodsmodel::where('id',$goods_id)->get(['name']);
+        $order[$id-1]['goods_name'] = $goods_name[0]['name'];
         $this->api_res(0,$order);
     }
 
