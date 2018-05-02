@@ -65,10 +65,13 @@ class Template extends MY_Controller
             $this->api_res(1005);
             return;
         }
-        $filed  = ['id','name'];
-        $query  = Contracttemplatemodel::where('name','like',"%$name%")->get($filed);
-        if($query){
-            $this->api_res(0,$query);
+        $field  = ['id','name'];
+        $stores  = Contracttemplatemodel::where('name','like',"%$name%")->limit(PAGINATE)->orderBy('id','desc')->get($field);
+        $count  = ceil($stores->count()/PAGINATE);
+        if(!$count){
+            $this->api_res(1007);
+            return;
         }
+        $this->api_res(0,['count'=>$count,'list'=>$stores]);
     }
 }
