@@ -25,9 +25,9 @@ class Serviceorder extends MY_Controller
         $where      = array();
         $filed      = ['id','sequence_number','store_id','room_id','estimate_money','pay_money','service_type_id','status','deal'];
 
-        $page = isset($post['page'])?$post['page']:1;
-        $offset         = PAGINATE*($page-1);
-        $count          = ceil(Serviceordermodel::count()/PAGINATE);
+        $page       = isset($post['page'])?$post['page']:1;
+        $offset     = PAGINATE*($page-1);
+        $count      = ceil(Serviceordermodel::count()/PAGINATE);
 
         if(!empty($post['store_id'])){$where['store_id']=$post['store_id'];}
         if(!empty($post['service_id'])){$where['service_type_id']=$post['service_id'];}

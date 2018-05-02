@@ -13,6 +13,6 @@ class Serviceordermodel extends Basemodel
 
     public function store()
     {
-        return $this->belongsTo(Storemodel::class,'store_id');
+        return $this->belongsTo(Storemodel::class,'store_id')->select('id','name');
     }
 }

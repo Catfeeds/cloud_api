@@ -21,7 +21,7 @@ class Company extends MY_Controller
      */
     public function listCompany()
     {
-        try{
+   
             $input          = $this->input->post(NULL,TRUE);
             $page           = isset($input['page'])?$input['page']:1;
             $name           = isset($input['name'])?$input['name']:NULL;
@@ -41,10 +41,7 @@ class Company extends MY_Controller
                             ->orderBy('id','desc')->get($field)->toArray();
             $this->api_res(0,['count'=>$count,'list'=>$company]);
 
-        }catch (Exception $e){
-            $this->api_res(500);
-            return false;
-        }
+     
     }
 
     /**
@@ -52,7 +49,7 @@ class Company extends MY_Controller
      */
     public function addCompany()
     {
-        try{
+        
             $post   = $this->input->post(NULL,TRUE);
             if(!$this->validateText($post)){
                 $fieldarr=['name','address','contact_user','contact_phone'];
@@ -68,17 +65,11 @@ class Company extends MY_Controller
             $company->license       = $post['license_path'];
 
             if($company->save()){
-
                 $this->api_res(0,['id'=>$company->id]);
-                return true;
             }else{
                 $this->api_res(10102);
-                return false;
             }
-        }catch (Exception $e){
-            $this->api_res(500);
-            return false;
-        }
+  
     }
 
     /**
@@ -100,7 +91,6 @@ class Company extends MY_Controller
         $data = $this->alioss->data();
         $license_path = $data['oss_path'];
         $this->api_res(0,['license_path'=>$license_path]);
-        return true;
     }
 
     /**
@@ -123,7 +113,7 @@ class Company extends MY_Controller
             $this->api_res(10006);
             return false;
         }
-        try{
+       
             $company             = Companymodel::where('id',$id)->first();
             $company->openid     = $user['openid'];
             $company->unionid    = $user['unionid'];
@@ -134,9 +124,7 @@ class Company extends MY_Controller
             }else{
                 $this->api_res(10105);
             }
-        }catch (Exception $e){
-            $this->api_res(500);
-        }
+     
     }
 
     /**
@@ -144,7 +132,7 @@ class Company extends MY_Controller
      */
     public function updateCompany()
     {
-        try{
+        
             $post   = $this->input->post(NULL,TRUE);
             if(!$this->validateText($post)){
                 $fieldarr=['name','address','contact_user','contact_phone'];
@@ -162,15 +150,10 @@ class Company extends MY_Controller
 
             if($company->save()){
                 $this->api_res(0);
-                return true;
             }else{
                 $this->api_res(10103);
-                return false;
             }
-        }catch (Exception $e){
-            $this->api_res(500);
-            return false;
-        }
+      
     }
 
     /**
@@ -178,7 +161,7 @@ class Company extends MY_Controller
      */
     public function queryLicense()
     {
-        try{
+ 
             $post       = $this->input->post(NULL,TRUE);
             $company_id         = isset($post['company_id'])?$post['company_id']:NULL;
             if(!$company_id){
@@ -191,15 +174,10 @@ class Company extends MY_Controller
 
             if($license_path){
                 $this->api_res(0,['path'=>$license_pre.$license_path]);
-                return true;
             }else{
                 $this->api_res(10101);
-                return false;
             }
-        }catch (Exception $e){
-            $this->api_res(500);
-            return false;
-        }
+      
     }
 
     /**
@@ -208,7 +186,7 @@ class Company extends MY_Controller
      */
     public function deleteCompany()
     {
-        try{
+     
             $post       = $this->input->post(NULL,TRUE);
             $post       = $post['id'];
             $id         = isset($post)?explode(',',$post):NULL;
@@ -216,15 +194,10 @@ class Company extends MY_Controller
 
             if($company){
                 $this->api_res(0);
-                return true;
             }else{
                 $this->api_res(10104);
-                return false;
             }
-        }catch (Exception $e){
-            $this->api_res(500);
-            return false;
-        }
+      
     }
 
     /**

@@ -23,6 +23,7 @@ class Servicetype extends MY_Controller
         $filed  = ['id','name','feature','description','image_url'];
         $count  = ceil(Servicetypemodel::count()/PAGINATE);
         $type   = Servicetypemodel::take(PAGINATE)->skip($offset)->orderBy('id','desc')->get($filed)->toArray();
+
         $this->api_res(0,['count'=>$count,'list'=>$type,'cdn_path'=>config_item('cdn_path')]);
     }
 
@@ -41,7 +42,7 @@ class Servicetype extends MY_Controller
         $service                = new Servicetypemodel();
         $service->name          = $post['name'];
         $service->feature       = $post['feature'];
-        $service->description   = htmlspecialchars($post['description']);
+        $service->description   = $post['description'];
         $service->image_url     = substr(trim($post['image_url']),strlen(config_item('cdn_path')));
 
         if($service->save())
