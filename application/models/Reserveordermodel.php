@@ -11,4 +11,9 @@ class Reserveordermodel extends Basemodel
 {
     protected $table    = 'boss_reserve_order';
     protected $hidden   = ['created_at','updated_at','deleted_at'];
+
+    public function employee()
+    {
+        return $this->hasMany(Employeemodel::class,'id')->select('id','name');
+    }
 }

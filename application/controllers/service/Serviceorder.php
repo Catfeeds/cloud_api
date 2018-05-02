@@ -13,6 +13,7 @@ class Serviceorder extends MY_Controller
         parent::__construct();
         $this->load->model('serviceordermodel');
         $this->load->model('storemodel');
+        $this->load->model('servicetypemodel');
     }
 
     /**
@@ -35,12 +36,12 @@ class Serviceorder extends MY_Controller
         if(!empty($post['end_time'])){$et=$post['end_time'];}else{$et = date('Y-m-d H:i:s',time());};
 
         if(empty($where)){
-            $order = Serviceordermodel::whereBetween('created_at',[$bt,$et])->take(PAGINATE)->skip($offset)
-                                        ->orderBy('id','desc')->with('store')->get($filed)->toArray();
+            $order = Serviceordermodel::with('store')->with('serviceType')->whereBetween('created_at',[$bt,$et])->take(PAGINATE)->skip($offset)
+                                        ->orderBy('id','desc')->get($filed);
             $this->api_res(0,['list'=>$order,'count'=>$count]);
             return;
         }
-        $order = Serviceordermodel::where($where)->whereBetween('created_at',[$bt,$et])->take(PAGINATE)
+        $order = Serviceordermodel::with('serviceType')->with('store')->where($where)->whereBetween('created_at',[$bt,$et])->take(PAGINATE)
                                     ->skip($offset)->orderBy('id','desc')->get($filed)->toArray();
         $this->api_res(0,['list'=>$order,'count'=>$count]);
     }
@@ -85,28 +86,9 @@ class Serviceorder extends MY_Controller
     {
         $post   = $this->input->post(NULL,true);
         $id     = $post['id'];
-        $filed  = ['sequence_number','store_id','room_id','estimate_money','pay_money','status','deal'];
-        $order  = Serviceordermodel::where('id',$id)->get([$filed]);
+        $filed  = ['number','sequence_number','store_id','room_id','name','estimate_money','pay_money','status','deal'];
+        $order  = Serviceordermodel::with('store')->where('id',$id)->get($filed)->toArray();
         $this->api_res(0,$order);
     }
 
-    /**
-     *
-     */
-    public function test()
-    {
-        $this->load->model('storemodel');
-        /*$result = Serviceordermodel::find(1);
-        $store_name=$result->store()->get(['name'])->toArray()[0]['name'];
-        //var_dump(compact('store_name'));die();
-        $result = array_merge($result->toArray(),compact('store_name'));
-        var_dump($result);*/
-        //$order = Serviceordermodel::get();
-        $result = Serviceordermodel::with('store')->get();
-
-        //$name = $result->name;
-        //$stname = $result->store->name;
-
-        $this->api_res(0,$result);
-    }
 }

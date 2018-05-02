@@ -12,6 +12,7 @@ class Reserveorder extends MY_Controller
     {
         parent::__construct();
         $this->load->model('reserveordermodel');
+        $this->load->model('employeemodel');
     }
 
     /**
@@ -31,7 +32,7 @@ class Reserveorder extends MY_Controller
         if(!empty($post['visit_type'])){$where['visit_by']=$post['visit_type'];}
 
         if(empty($where)){
-            $reserve = Reserveordermodel::take(PAGINATE)->skip($offset)
+            $reserve = Reserveordermodel::with('employee')->take(PAGINATE)->skip($offset)
                         ->orderBy('id','desc')->get($filed)->toArray();
             $this->api_res(0,['list'=>$reserve,'count'=>$count]);
             return;
@@ -44,21 +45,21 @@ class Reserveorder extends MY_Controller
     /**
      * 获取公寓列表
      */
-    public function getStore()
+/*    public function getStore()
     {
         $this->load->model('storemodel');
         $filed =['id','name'];
         $store = Storemodel::get($filed);
         $this->api_res(0,$store);
-    }
+    }*/
 
     /**
      * 获取来访类型列表
      */
-    public function getVisittype()
+/*    public function getVisittype()
     {
         $filed = ['visit_by'];
         $visit_type = Reserveordermodel::get($filed)->groupBy('visit_by')->toArray();
         $this->api_res(0,$visit_type);
-    }
+    }*/
 }

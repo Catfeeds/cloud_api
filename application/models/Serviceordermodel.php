@@ -15,4 +15,8 @@ class Serviceordermodel extends Basemodel
     {
         return $this->belongsTo(Storemodel::class,'store_id')->select('id','name');
     }
+    public function serviceType()
+    {
+        return $this->belongsTo(Servicetypemodel::class,'service_type_id')->select('id','name');
+    }
 }

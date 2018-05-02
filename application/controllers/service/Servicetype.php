@@ -57,7 +57,7 @@ class Servicetype extends MY_Controller
     /**
      * 上传图片
      */
-    public function imageUpload()
+    /*public function imageUpload()
     {
         $config     = [
             'allowed_types' => 'gif|jpg|png',
@@ -72,7 +72,7 @@ class Servicetype extends MY_Controller
         $data = $this->alioss->data();
         $image_path = $data['oss_path'];
         $this->api_res(0,['image_url'=>config_item('cdn_path').$image_path]);
-    }
+    }*/
 
     /**
      * 编辑服务类型
