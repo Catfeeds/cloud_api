@@ -27,24 +27,49 @@ class Goodsorder extends MY_Controller
         if(!empty($post['begin_time'])){$bt=$post['begin_time'];}else{$bt = date('Y-m-d H:i:s',0);};
         if(!empty($post['end_time'])){$et=$post['end_time'];}else{$et = date('Y-m-d H:i:s',time());};
 
-        if(!empty($post['name'])){
+        /*if(!empty($post['name'])){
             $name     = $post['name'];
-            $goods  = Goodsordermodel::with('customer')->with('address')->where('name','like','%'."$name".'%')->whereBetween('created_at',[$bt,$et])
-                        ->take(PAGINATE)->skip($offset)->orderBy('id','desc')->get($filed)->toArray();
+            $goods  = Goodsordermodel::with('customer')->with('address')
+                                        ->where('name','like','%'."$name".'%')
+                                        ->whereBetween('created_at',[$bt,$et])
+                                        ->take(PAGINATE)->skip($offset)
+                                        ->orderBy('id','desc')
+                                        ->get($filed)->toArray();
             $this->api_res(0,['list'=>$goods,'count'=>$count,'cdn_path'=>config_item('cdn_path')]);
-        }
-        else if(!empty($post['number'])){
+        }*/
+        if(!empty($post['number'])){
             $number = $post['number'];
-            var_dump($number);
-            $goods  = Goodsordermodel::with('customer')->with('address')->where('number',$number)->take(PAGINATE)->skip($offset)->orderBy('id','desc')
-                        ->get($filed)->toArray();
+            $goods  = Goodsordermodel::with('customer')->with('address')
+                                        ->where('number',$number)
+                                        ->take(PAGINATE)->skip($offset)
+                                        ->orderBy('id','desc')
+                                        ->get($filed)->toArray();
             $this->api_res(0,['list'=>$goods,'count'=>$count,'cdn_path'=>config_item('cdn_path')]);
         }else{
-            $goods  = Goodsordermodel::with('customer')->with('address')->whereBetween('created_at',[$bt,$et])->take(PAGINATE)->skip($offset)
-                        ->orderBy('id','desc')->get($filed)->toArray();
+            $goods  = Goodsordermodel::with('customer')->with('address')
+                                        ->whereBetween('created_at',[$bt,$et])
+                                        ->take(PAGINATE)->skip($offset)
+                                        ->orderBy('id','desc')
+                                        ->get($filed)->toArray();
             $this->api_res(0,['list'=>$goods,'count'=>$count,'cdn_path'=>config_item('cdn_path')]);
         }
     }
 
+    /**
+     * 返回详细信息
+     */
+    public function detail()
+    {
+        $post   = $this->input->post(NULL,true);
+        $id     = $post['id'];
+        $filed  = ['id','number','customer_id','address_id','goods_quantity','status','goods_money','pay_money'];
+        $order  = Goodsordermodel::with('customer')->with('address')->where('id',$id)
+                                    ->get($filed)->toArray();
+
+
+        $order[$id-1]['goods_name'] = [];
+
+        $this->api_res(0,$order);
+    }
 
 }
