@@ -29,10 +29,10 @@ class Serviceorder extends MY_Controller
         $offset         = PAGINATE*($page-1);
         $count          = ceil(Serviceordermodel::count()/PAGINATE);
 
-        if(!empty($post['store_id'])){$where['store_id']=$post['store_id'];}
-        if(!empty($post['service_id'])){$where['service_type_id']=$post['service_id'];}
-        if(!empty($post['begin_time'])){$bt=$post['begin_time'];}else{$bt = date('Y-m-d H:i:s',0);};
-        if(!empty($post['end_time'])){$et=$post['end_time'];}else{$et = date('Y-m-d H:i:s',time());};
+        if(isset($post['store_id'])){$where['store_id']=$post['store_id'];}
+        if(isset($post['service_id'])){$where['service_type_id']=$post['service_id'];}
+        if(isset($post['begin_time'])){$bt=$post['begin_time'];}else{$bt = date('Y-m-d H:i:s',0);};
+        if(isset($post['end_time'])){$et=$post['end_time'];}else{$et = date('Y-m-d H:i:s',time());};
 
         if(empty($where)){
             $order = Serviceordermodel::whereBetween('created_at',[$bt,$et])->take(PAGINATE)->skip($offset)

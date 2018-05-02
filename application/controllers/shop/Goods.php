@@ -86,6 +86,42 @@ class Goods extends MY_Controller
     }
 
     /**
+     * 编辑商品
+     */
+    public function updateGoods()
+    {
+        $post = $this->input->post(NULL,true);
+        if(!$this->validation())
+        {
+            $fieldarr   = ['name','category_id','market_price','shop_price','quantity','sale_num',
+                'description','detail','original_link'];
+            $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
+            return false;
+        }
+        $id                     = trim($post['id']);
+        $goods                  = Goodsmodel::where('id',$id)->first();
+        $goods->name            = trim($post['name']);      //商品名称
+        $goods->category_id     = trim($post['category_id']);//商品分类ID
+        $goods->market_price    = trim($post['market_price']);//市场价格
+        $goods->shop_price      = trim($post['shop_price']);//商品价格
+        $goods->quantity        = trim($post['quantity']);  //商品数量
+        $goods->sale_num        = trim($post['sale_num']);  //已经卖出数量
+        $goods->description     = trim($post['description']);//描述
+        $goods->detail          = htmlspecialchars(trim($post['detail']));     //商品详情
+        $goods->original_link   = trim($post['original_link']);//商品原始链接
+        $goods->on_sale         = trim($post['on_sale']);     //是否上架
+        $goods->goods_thumb     = $this->splitAliossUrl(trim($post['goods_thumb'])); //商品缩略图
+        $goods->goods_carousel  = trim($post['goods_carousel']);//商品轮播图
+
+        if ($goods->save())
+        {
+            $this->api_res(0);
+        }else{
+            $this->api_res(666);
+        }
+    }
+
+    /**
      * 批量上架/下架
      */
     public function updateOnsale()

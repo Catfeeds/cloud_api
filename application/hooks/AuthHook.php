@@ -71,6 +71,7 @@ class AuthHook {
             'shop/goods/index',
             'shop/goods/getcategory',
             'shop/goods/addgoods',
+            'shop/goods/updategoods',
             'shop/goods/updateonsale',
             'shop/goods/deletegoods',
 
