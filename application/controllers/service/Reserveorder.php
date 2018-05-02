@@ -58,7 +58,7 @@ class Reserveorder extends MY_Controller
     public function getVisittype()
     {
         $filed = ['visit_by'];
-        $visit_type = Reserveordermodel::get($filed);
+        $visit_type = Reserveordermodel::get($filed)->groupBy('visit_by')->toArray();
         $this->api_res(0,$visit_type);
     }
 }
