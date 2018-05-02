@@ -21,8 +21,6 @@ class Funxadmin extends MY_Controller
      */
     public function updateAdmin()
     {
-
-        try{
             $post   = $this->input->post(NULL,TRUE);
             if(!$this->validateText($post)){
 
@@ -49,9 +47,7 @@ class Funxadmin extends MY_Controller
             }else{
                 $this->api_res(500);
             }
-        }catch (Exception $e){
-            $this->api_res(500);
-        }
+      
     }
 
     /**
@@ -70,7 +66,7 @@ class Funxadmin extends MY_Controller
             $this->api_res(10006);
             return false;
         }
-        try{
+      
             $admin_user     = new Funxadminmodel();
             //$access_token   = $user['access_token'];
             //$refresh_token  = $user['refresh_token'];
@@ -83,10 +79,7 @@ class Funxadmin extends MY_Controller
                 $this->api_res(500);
             }
 
-        }catch (Exception $e){
-
-            $this->api_res(500);
-        }
+ 
     }
 
     /**
@@ -95,7 +88,7 @@ class Funxadmin extends MY_Controller
     public function listAdmin()
     {
 
-        try{
+      
             $input          = $this->input->post(NULL, FALSE);
             $page           = isset($input['page'])?$input['page']:1;
             if(!$page){
@@ -108,11 +101,7 @@ class Funxadmin extends MY_Controller
             $admin_users    = Funxadminmodel::offset($offset)->limit(PAGINATE)->orderBy('id','desc')->get($field)->toArray();
             $this->api_res(0,['count'=>$count,'list'=>$admin_users]);
 
-            return false;
-        }catch (Exception $e){
-            $this->api_res(500);
-
-        }
+   
 
     }
 
@@ -129,7 +118,7 @@ class Funxadmin extends MY_Controller
             return false;
         }
         $name   = str_replace(' ','',trim(strip_tags($name)));
-        try{
+     
             $search_user = Funxadminmodel::where('name',$name)->first()->toArray();
             if(!$search_user){
                 $this->api_res(1003);
@@ -137,9 +126,7 @@ class Funxadmin extends MY_Controller
             }
 
             $this->api_res(0,[$search_user]);
-        }catch (Exception $e){
-            $this->api_res(500);
-        }
+       
 
     }
 
@@ -156,16 +143,14 @@ class Funxadmin extends MY_Controller
             $this->api_res(1004);
             return false;
         }
-        try{
+       
             if((Funxadminmodel::where('fxid',$fxid)->delete())==1){
                 $this->api_res(0);
             }else{
                 $this->api_res(10013);
             }
 
-        }catch (Exception $e){
-            $this->api_res(500);
-        }
+      
 
     }
 
