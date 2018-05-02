@@ -36,7 +36,7 @@ class Serviceorder extends MY_Controller
 
         if(empty($where)){
             $order = Serviceordermodel::whereBetween('created_at',[$bt,$et])->take(PAGINATE)->skip($offset)
-                                        ->orderBy('id','desc')->get($filed)->toArray();
+                                        ->orderBy('id','desc')->with('store')->get($filed)->toArray();
             $this->api_res(0,['list'=>$order,'count'=>$count]);
             return;
         }
