@@ -75,11 +75,21 @@ class Store extends MY_Controller
     }
 
     /**
-     * 展示门店
+     * 获取门店
      */
     public function showStore(){
-        $store  = Storemodel::all(['id','name']);
+        $city   = $this->input->post('city',true);
+        $where  = $city?$city:[];
+        $store  = Storemodel::where($where)->get(['id','name']);
         $this->api_res(0,['stores'=>$store]);
+    }
+
+    /**
+     * 获取城市
+     */
+    public function showCity(){
+        $city   = Storemodel::groupBy('city')->get(['city']);
+        $this->api_res(0,['cities'=>$city]);
     }
 
     /**

@@ -19,27 +19,18 @@ class Roomtype extends MY_Controller
      */
     public function listRoomType()
     {
+        $this->load->model('storemodel');
         $post   = $this->input->post(null,true);
         $page   = isset($post['page'])?$post['page']:1;
-        /*$where  = [];
-        isset($post['city'])?$where['city']=$post['city']:null;
-        isset($post['store_id'])?$where['store_id']=$post['store_id']:null;*/
         $offset = PAGINATE*($page-1);
         $field  = ['id','store_id','name','feature'];
         $this->load->model('storemodel');
-        $roomtypes = Roomtypemodel::with('store')->offset($offset)->limit(PAGINATE)->orderBy('id','desc')->get($field);
-        //$roomtypes = Roomtypemodel::find(3)->store()->get();
-        //$count  = ceil(($roomtypes->count())/PAGINATE);
-        //$this->api_res(0,['count'=>$count,'list'=>$roomtypes]);
-        $this->api_res(0,['list'=>$roomtypes]);
+        $where  = isset($post['store_id'])?['store_id'=>$post['store_id']]:[];
+        $roomtypes = Roomtypemodel::with('store')->where($where)->offset($offset)->limit(PAGINATE)->orderBy('id','desc')->get($field);
+        $count  = ceil(($roomtypes->count())/PAGINATE);
+        $this->api_res(0,['count'=>$count,'list'=>$roomtypes]);
     }
 
-    /*
-     *test房型列表
-     */
-    public function listRoomtype2(){
-
-    }
 
     /**
      * 新增房型
