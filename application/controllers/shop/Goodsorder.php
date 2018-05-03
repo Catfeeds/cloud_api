@@ -52,6 +52,7 @@ class Goodsorder extends MY_Controller
         $this->load->model('shopgoodsordermodel');
         $this->load->model('goodsmodel');
         $this->load->model('customermodel');
+        $this->load->model('shopaddressmodel');
         $post   = $this->input->post(NULL,true);
         $id     = $post['id'];
         $filed  = ['id','number','customer_id','address_id','goods_quantity','status','goods_money','pay_money'];
