@@ -71,7 +71,7 @@ class Goods extends MY_Controller
         $goods->quantity        = trim($post['quantity']);  //商品数量
         $goods->sale_num        = trim($post['sale_num']);  //已经卖出数量
         $goods->description     = trim($post['description']);//描述
-        $goods->detail          = htmlspecialchars(trim($post['detail']));     //商品详情
+        $goods->detail          = trim($post['detail']);     //商品详情
         $goods->original_link   = trim($post['original_link']);//商品原始链接
         $goods->on_sale         = trim($post['on_sale']);     //是否上架
         $goods->goods_thumb     = $this->splitAliossUrl(trim($post['goods_thumb'])); //商品缩略图
@@ -107,11 +107,11 @@ class Goods extends MY_Controller
         $goods->quantity        = trim($post['quantity']);  //商品数量
         $goods->sale_num        = trim($post['sale_num']);  //已经卖出数量
         $goods->description     = trim($post['description']);//描述
-        $goods->detail          = htmlspecialchars(trim($post['detail']));     //商品详情
+        $goods->detail          = trim($post['detail']);     //商品详情
         $goods->original_link   = trim($post['original_link']);//商品原始链接
         $goods->on_sale         = trim($post['on_sale']);     //是否上架
         $goods->goods_thumb     = $this->splitAliossUrl(trim($post['goods_thumb'])); //商品缩略图
-        $goods->goods_carousel  = trim($post['goods_carousel']);//商品轮播图
+        $goods->goods_carousel  = $this->splitAliossUrl(trim($post['goods_carousel']));//商品轮播图
 
         if ($goods->save())
         {
