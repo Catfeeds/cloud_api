@@ -66,6 +66,21 @@ class Goods extends MY_Controller
             $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
             return false;
         }
+        if(!empty($post['goods_thumb']))
+        {
+            $goods_thumb = $this->splitAliossUrl($post['goods_thumb']);
+        }else{
+            $this->api_res(1002);
+            return false;
+        }
+
+        if(!empty($post['goods_carousel']))
+        {
+            $goods_carousel = json_decode($this->splitAliossUrl($post['goods_carousel'],true));
+        }else{
+            $this->api_res(1002);
+            return false;
+        }
         $goods                  = new Goodsmodel();
         $goods->name            = trim($post['name']);      //商品名称
         $goods->category_id     = trim($post['category_id']);//商品分类ID
@@ -77,8 +92,8 @@ class Goods extends MY_Controller
         $goods->detail          = trim($post['detail']);     //商品详情
         $goods->original_link   = trim($post['original_link']);//商品原始链接
         $goods->on_sale         = trim($post['on_sale']);     //是否上架
-        $goods->goods_thumb     = $this->splitAliossUrl(trim($post['goods_thumb'])); //商品缩略图
-        $goods->goods_carousel  = $this->splitAliossUrl(trim($post['goods_carousel']));//商品轮播图
+        $goods->goods_thumb     = $goods_thumb; //商品缩略图
+        $goods->goods_carousel  = $goods_carousel;//商品轮播图
         if ($goods->save())
         {
             $this->api_res(0);
@@ -100,6 +115,21 @@ class Goods extends MY_Controller
             $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
             return false;
         }
+        if(!empty($post['goods_thumb']))
+        {
+            $goods_thumb = $this->splitAliossUrl($post['goods_thumb']);
+        }else{
+            $this->api_res(1002);
+            return false;
+        }
+
+        if(!empty($post['goods_carousel']))
+        {
+            $goods_carousel = json_encode($this->splitAliossUrl($post['goods_carousel'],true));
+        }else{
+            $this->api_res(1002);
+            return false;
+        }
         $id                     = trim($post['id']);
         $goods                   = Goodsmodel::where('id',$id)->first();
         $goods->name            = trim($post['name']);      //商品名称
@@ -112,8 +142,8 @@ class Goods extends MY_Controller
         $goods->detail          = trim($post['detail']);     //商品详情
         $goods->original_link   = trim($post['original_link']);//商品原始链接
         $goods->on_sale         = trim($post['on_sale']);     //是否上架
-        $goods->goods_thumb     = $this->splitAliossUrl(trim($post['goods_thumb'])); //商品缩略图
-        $goods->goods_carousel  = $this->splitAliossUrl(trim($post['goods_carousel']));//商品轮播图
+        $goods->goods_thumb     = $goods_thumb; //商品缩略图
+        $goods->goods_carousel  = $goods_carousel;//商品轮播图
 
         if ($goods->save())
         {
