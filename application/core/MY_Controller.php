@@ -138,13 +138,18 @@ class MY_Controller extends CI_Controller {
         if($bool==true){
             $alioss_path = [];
             foreach ($full_path as $path){
-                $alioss_path[]=substr($path,strlen(config_item('cdn_path')));
+                $split   = substr($path,strlen(config_item('cdn_path')));
+                if(!$split){
+                    throw new Exception('截取url失败');
+                }
+                $alioss_path[]=$split;
             }
         }else{
-            $alioss_path    = substr($full_path,strlen(config_item('cdn_path')));
+            if(!$alioss_path    = substr($full_path,strlen(config_item('cdn_path')))){
+                throw new Exception('截取url失败');
+            }
         }
         return $alioss_path;
     }
-
 
 }
