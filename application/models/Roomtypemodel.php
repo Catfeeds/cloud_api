@@ -26,7 +26,7 @@ class Roomtypemodel extends Basemodel{
 
     //房型的门店
     public function store(){
-        return $this->belongsTo(Storemodel::class,'store_id')->select('id','name');
+        return $this->belongsTo(Storemodel::class,'store_id')->select('id','name','city');
     }
 
     //房型的房间

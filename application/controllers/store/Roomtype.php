@@ -17,18 +17,21 @@ class Roomtype extends MY_Controller
     /**
      * 房型列表
      */
-    public function listRoomType(){
+    public function listRoomType()
+    {
         $post   = $this->input->post(null,true);
         $page   = isset($post['page'])?$post['page']:1;
+        /*$where  = [];
+        isset($post['city'])?$where['city']=$post['city']:null;
+        isset($post['store_id'])?$where['store_id']=$post['store_id']:null;*/
         $offset = PAGINATE*($page-1);
         $field  = ['id','store_id','name','feature'];
-        $count  = ceil(Roomtypemodel::count()/PAGINATE);
-        if($page>$count){
-            throw new Exception();
-        }
         $this->load->model('storemodel');
         $roomtypes = Roomtypemodel::with('store')->offset($offset)->limit(PAGINATE)->orderBy('id','desc')->get($field);
-        $this->api_res(0,['count'=>$count,'list'=>$roomtypes]);
+        //$roomtypes = Roomtypemodel::find(3)->store()->get();
+        //$count  = ceil(($roomtypes->count())/PAGINATE);
+        //$this->api_res(0,['count'=>$count,'list'=>$roomtypes]);
+        $this->api_res(0,['list'=>$roomtypes]);
     }
 
     /**

@@ -131,15 +131,19 @@ class MY_Controller extends CI_Controller {
 
     /**
      * 对上传的文件url拆解成alioss路径
+     * true传入数组 对数组进行遍历拆解
      */
-    public function splitAliossUrl($full_path){
-
-        $alioss_path    = substr($full_path,strlen(config_item('cdn_path')));;
+    public function splitAliossUrl($full_path,$bool=false){
+        if($bool==true){
+            $alioss_path = [];
+            foreach ($full_path as $path){
+                $alioss_path[]=substr($path,strlen(config_item('cdn_path')));
+            }
+        }else{
+            $alioss_path    = substr($full_path,strlen(config_item('cdn_path')));
+        }
         return $alioss_path;
     }
 
-    /**
-     * 判断文件类型
-     */
 
 }
