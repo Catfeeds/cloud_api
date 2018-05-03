@@ -34,6 +34,10 @@ class Roomtype extends MY_Controller
         $this->api_res(0,['list'=>$roomtypes]);
     }
 
+    /*
+     *
+     */
+
     /**
      * 新增房型
      * store_id,
