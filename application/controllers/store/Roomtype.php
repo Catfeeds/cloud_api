@@ -35,8 +35,11 @@ class Roomtype extends MY_Controller
     }
 
     /*
-     *
+     *test房型列表
      */
+    public function listRoomtype2(){
+
+    }
 
     /**
      * 新增房型
