@@ -35,6 +35,8 @@ class AuthHook {
             'store/store/deletestore',
             'store/store/showstore',
             'store/store/showcity',
+            'store/store/getstore',
+            'store/store/updatestore',
             'store/store/searchstore',
             'store/store/seachbymulti',
             'store/roomtype/listroomtype',

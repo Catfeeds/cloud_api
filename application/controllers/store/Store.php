@@ -101,8 +101,12 @@ class Store extends MY_Controller
             $this->api_res(1005);
             return;
         }
-        $store  = Storemodel::find($store_id);
-
+        $field  = [
+            'rent_type','status','name','theme','province','city','district','address', 'contact_user',
+            'counsel_phone','counsel_time','images','describe'
+        ];
+        $store  = Storemodel::select($field)->find($store_id);
+        $store->images  = $this->fullAliossUrl(json_decode($store->images,true),true);
         $this->api_res(0,['store'=>$store]);
     }
 
