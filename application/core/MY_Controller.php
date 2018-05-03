@@ -14,7 +14,8 @@ class MY_Controller extends CI_Controller {
     public function __construct()
     {
         parent::__construct();
-
+        $this->output->set_content_type('application/json');
+        
         if(defined('CURRENT_ID'))
         {
             $pre    = substr(CURRENT_ID,0,2);

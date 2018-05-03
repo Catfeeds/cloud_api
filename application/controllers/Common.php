@@ -21,7 +21,7 @@ class Common extends MY_Controller
      */
     public function imageUpload(){
         $config = [
-            'allowed_types' => 'gif|jpg|png',
+            'allowed_types' => 'gif|jpg|png|jpeg',
             'max_size'  => 4*1024,
         ];
         $this->load->library('alioss',$config);
