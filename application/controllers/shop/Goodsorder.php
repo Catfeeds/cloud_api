@@ -12,14 +12,12 @@ class Goodsorder extends MY_Controller
     {
         parent::__construct();
         $this->load->model('goodsordermodel');
-        $this->load->model('customermodel');
-        $this->load->model('shopaddressmodel');
-        $this->load->model('shopgoodsordermodel');
-        $this->load->model('goodsmodel');
     }
 
     public function index()
     {
+        $this->load->model('customermodel');
+        $this->load->model('shopaddressmodel');
         $post   = $this->input->post(NULL,true);
         $page   = isset($post['page'])?$post['page']:1;
         $offset = PAGINATE*($page-1);
@@ -36,15 +34,14 @@ class Goodsorder extends MY_Controller
                                         ->take(PAGINATE)->skip($offset)
                                         ->orderBy('id','desc')
                                         ->get($filed)->toArray();
-            $this->api_res(0,['list'=>$goods,'count'=>$count,'cdn_path'=>config_item('cdn_path')]);
         }else{
             $goods  = Goodsordermodel::with('customer')->with('address')
                                         ->whereBetween('created_at',[$bt,$et])
                                         ->take(PAGINATE)->skip($offset)
                                         ->orderBy('id','desc')
                                         ->get($filed)->toArray();
-            $this->api_res(0,['list'=>$goods,'count'=>$count,'cdn_path'=>config_item('cdn_path')]);
         }
+        $this->api_res(0,['list'=>$goods,'count'=>$count,'cdn_path'=>config_item('cdn_path')]);
     }
 
     /**
@@ -52,17 +49,18 @@ class Goodsorder extends MY_Controller
      */
     public function detail()
     {
+        $this->load->model('shopgoodsordermodel');
+        $this->load->model('goodsmodel');
         $post   = $this->input->post(NULL,true);
         $id     = $post['id'];
         $filed  = ['id','number','customer_id','address_id','goods_quantity','status','goods_money','pay_money'];
-        $order  = Goodsordermodel::with('customer')->with('address')->where('id',$id)
+        $order  = Goodsordermodel::with('customer')->with('address')
+                                    ->where('id',$id)
                                     ->get($filed)->toArray();
-
-        $goods_id = Shopgoodsordermodel::where('order_id',$id)->get(['goods_id'])->toArray();
-        $goods_id = $goods_id[0]['goods_id'];
+        $goods_id   = Shopgoodsordermodel::where('order_id',$id)->get(['goods_id'])->toArray();
+        $goods_id   = $goods_id[0]['goods_id'];
         $goods_name = Goodsmodel::where('id',$goods_id)->get(['name']);
         $order[$id-1]['goods_name'] = $goods_name[0]['name'];
         $this->api_res(0,$order);
     }
-
 }

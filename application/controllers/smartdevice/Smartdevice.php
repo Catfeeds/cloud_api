@@ -29,9 +29,5 @@ class Smartdevice extends MY_Controller
 
         $device = Smartdevicemodel::all();
         $this->api_res(0,$device);
-
     }
-
-
-
 }

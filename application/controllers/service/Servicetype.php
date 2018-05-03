@@ -22,8 +22,8 @@ class Servicetype extends MY_Controller
         $offset = PAGINATE*($page-1);
         $filed  = ['id','name','feature','description','image_url'];
         $count  = ceil(Servicetypemodel::count()/PAGINATE);
-        $type   = Servicetypemodel::take(PAGINATE)->skip($offset)->orderBy('id','desc')->get($filed)->toArray();
-
+        $type   = Servicetypemodel::take(PAGINATE)->skip($offset)
+                                    ->orderBy('id','desc')->get($filed)->toArray();
         $this->api_res(0,['count'=>$count,'list'=>$type,'cdn_path'=>config_item('cdn_path')]);
     }
 
@@ -50,29 +50,8 @@ class Servicetype extends MY_Controller
             $this->api_res(0);
         }else{
             $this->api_res(10102);
-            return false;
         }
     }
-
-    /**
-     * 上传图片
-     */
-    /*public function imageUpload()
-    {
-        $config     = [
-            'allowed_types' => 'gif|jpg|png',
-            'max_size'      => '5000',
-        ];
-        $this->load->library('alioss', $config);
-        if(!$this->alioss->do_upload('image')){
-            $this->api_res(10106);
-            return false;
-        }
-
-        $data = $this->alioss->data();
-        $image_path = $data['oss_path'];
-        $this->api_res(0,['image_url'=>config_item('cdn_path').$image_path]);
-    }*/
 
     /**
      * 编辑服务类型
@@ -100,7 +79,6 @@ class Servicetype extends MY_Controller
                 $this->api_res(0);
             }else{
                 $this->api_res(10102);
-                return false;
             }
     }
 

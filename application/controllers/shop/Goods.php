@@ -30,11 +30,14 @@ class Goods extends MY_Controller
         if(!empty($post['on_sale'])){$where['on_sale']=$post['on_sale'];}
 
         if(empty($where)) {
-            $goods  = Goodsmodel::where('name','like','%'."$name".'%')->take(PAGINATE)->skip($offset)->orderBy('id','desc')->get($filed)->toArray();
-            $this->api_res(0,['list'=>$goods,'count'=>$count,'cdn_path'=>config_item('cdn_path')]);
-            return;
+            $goods  = Goodsmodel::where('name','like','%'."$name".'%')
+                                ->take(PAGINATE)->skip($offset)->orderBy('id','desc')
+                                ->get($filed)->toArray();
+        }else{
+            $goods  = Goodsmodel::where('name','like','%'."$name".'%')->where($where)
+                                    ->take(PAGINATE)->skip($offset)->orderBy('id','desc')
+                                    ->get($filed)->toArray();
         }
-        $goods  = Goodsmodel::where('name','like','%'."$name".'%')->where($where)->take(PAGINATE)->skip($offset)->orderBy('id','desc')->get($filed)->toArray();
         $this->api_res(0,['list'=>$goods,'count'=>$count,'cdn_path'=>config_item('cdn_path')]);
     }
 
@@ -45,7 +48,6 @@ class Goods extends MY_Controller
     {
         $this->load->model('goodscategorymodel');
         $filed = ['id','name'];
-
         $category = Goodscategorymodel::get($filed);
         $this->api_res(0,$category);
     }
@@ -75,8 +77,7 @@ class Goods extends MY_Controller
         $goods->original_link   = trim($post['original_link']);//商品原始链接
         $goods->on_sale         = trim($post['on_sale']);     //是否上架
         $goods->goods_thumb     = $this->splitAliossUrl(trim($post['goods_thumb'])); //商品缩略图
-        $goods->goods_carousel  = trim($post['goods_carousel']);//商品轮播图
-
+        $goods->goods_carousel  = $this->splitAliossUrl(trim($post['goods_carousel']));//商品轮播图
         if ($goods->save())
         {
             $this->api_res(0);
@@ -99,7 +100,7 @@ class Goods extends MY_Controller
             return false;
         }
         $id                     = trim($post['id']);
-        $goods                  = Goodsmodel::where('id',$id)->first();
+        $goods                   = Goodsmodel::where('id',$id)->first();
         $goods->name            = trim($post['name']);      //商品名称
         $goods->category_id     = trim($post['category_id']);//商品分类ID
         $goods->market_price    = trim($post['market_price']);//市场价格

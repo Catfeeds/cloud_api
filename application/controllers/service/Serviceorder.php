@@ -12,8 +12,6 @@ class Serviceorder extends MY_Controller
     {
         parent::__construct();
         $this->load->model('serviceordermodel');
-        $this->load->model('storemodel');
-        $this->load->model('servicetypemodel');
     }
 
     /**
@@ -21,7 +19,8 @@ class Serviceorder extends MY_Controller
      */
     public function index()
     {
-
+        $this->load->model('storemodel');
+        $this->load->model('servicetypemodel');
         $post       = $this->input->post(NULL,true);
         $where      = array();
         $filed      = ['id','sequence_number','store_id','room_id','estimate_money','pay_money','service_type_id','status','deal'];
@@ -36,13 +35,17 @@ class Serviceorder extends MY_Controller
         if(!empty($post['end_time'])){$et=$post['end_time'];}else{$et = date('Y-m-d H:i:s',time());};
 
         if(empty($where)){
-            $order = Serviceordermodel::with('store')->with('serviceType')->whereBetween('created_at',[$bt,$et])->take(PAGINATE)->skip($offset)
+            $order = Serviceordermodel::with('store')->with('serviceType')
+                                        ->whereBetween('created_at',[$bt,$et])
+                                        ->take(PAGINATE)->skip($offset)
                                         ->orderBy('id','desc')->get($filed);
-            $this->api_res(0,['list'=>$order,'count'=>$count]);
-            return;
+        }else{
+            $order = Serviceordermodel::with('serviceType')->with('store')
+                                        ->where($where)->whereBetween('created_at',[$bt,$et])
+                                        ->take(PAGINATE)->skip($offset)
+                                        ->orderBy('id','desc')
+                                        ->get($filed)->toArray();
         }
-        $order = Serviceordermodel::with('serviceType')->with('store')->where($where)->whereBetween('created_at',[$bt,$et])->take(PAGINATE)
-                                    ->skip($offset)->orderBy('id','desc')->get($filed)->toArray();
         $this->api_res(0,['list'=>$order,'count'=>$count]);
     }
 
@@ -63,7 +66,7 @@ class Serviceorder extends MY_Controller
     public function getStore()
     {
         $this->load->model('storemodel');
-        $filed      = ['id','name'];
+        $filed  = ['id','name'];
         $store  = Storemodel::get($filed);
         $this->api_res(0,$store);
     }
@@ -84,6 +87,7 @@ class Serviceorder extends MY_Controller
      */
     public function getDetail()
     {
+        $this->load->model('storemodel');
         $post   = $this->input->post(NULL,true);
         $id     = $post['id'];
         $filed  = ['number','sequence_number','store_id','room_id','name','estimate_money','pay_money','status','deal'];

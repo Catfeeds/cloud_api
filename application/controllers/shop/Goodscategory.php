@@ -51,7 +51,6 @@ class Goodscategory extends MY_Controller
             $this->api_res(0);
         }else{
             $this->api_res(666);
-            return false;
         }
     }
 
@@ -68,7 +67,6 @@ class Goodscategory extends MY_Controller
             $this->api_res(0);
         }else{
             $this->api_res(666);
-            return false;
         }
     }
 
@@ -93,7 +91,6 @@ class Goodscategory extends MY_Controller
             $this->api_res(0);
         }else{
             $this->api_res(666);
-            return false;
         }
     }
 

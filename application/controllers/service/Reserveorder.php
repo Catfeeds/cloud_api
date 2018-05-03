@@ -12,7 +12,6 @@ class Reserveorder extends MY_Controller
     {
         parent::__construct();
         $this->load->model('reserveordermodel');
-        $this->load->model('employeemodel');
     }
 
     /**
@@ -20,8 +19,8 @@ class Reserveorder extends MY_Controller
      */
     public function index()
     {
+        $this->load->model('employeemodel');
         $post   = $this->input->post(NULL,true);
-
         $page   = isset($post['page'])?$post['page']:1;
         $offset = PAGINATE*($page-1);
         $count  = ceil(Reserveordermodel::count()/PAGINATE);
@@ -32,13 +31,14 @@ class Reserveorder extends MY_Controller
         if(!empty($post['visit_type'])){$where['visit_by']=$post['visit_type'];}
 
         if(empty($where)){
-            $reserve = Reserveordermodel::with('employee')->take(PAGINATE)->skip($offset)
+            $reserve = Reserveordermodel::with('employee')
+                                            ->take(PAGINATE)->skip($offset)
                                             ->orderBy('id','desc')->get($filed)->toArray();
-            $this->api_res(0,['list'=>$reserve,'count'=>$count]);
-            return;
+        }else{
+            $reserve = Reserveordermodel::with('employee')->where($where)
+                                            ->take(PAGINATE)->skip($offset)
+                                            ->orderBy('id','desc')->get($filed)->toArray();
         }
-        $reserve = Reserveordermodel::with('employee')->where($where)->take(PAGINATE)->skip($offset)
-                                        ->orderBy('id','desc')->get($filed)->toArray();
         $this->api_res(0,['list'=>$reserve,'count'=>$count]);
     }
 
