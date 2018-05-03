@@ -30,7 +30,7 @@ class Goods extends MY_Controller
         if(!empty($post['on_sale'])){$where['on_sale']=$post['on_sale'];}
 
         if(empty($where)) {
-<<<<<<< HEAD
+
             $goods  = Goodsmodel::where('name','like','%'."$name".'%')
                                 ->take(PAGINATE)->skip($offset)->orderBy('id','desc')
                                 ->get($filed)->toArray();
@@ -39,12 +39,6 @@ class Goods extends MY_Controller
                                     ->take(PAGINATE)->skip($offset)->orderBy('id','desc')
                                     ->get($filed)->toArray();
         }
-=======
-            $goods  = Goodsmodel::where('name','like','%'."$name".'%')->take(PAGINATE)->skip($offset)->orderBy('id','desc')->get($filed)->toArray();
-         }else{
-            $goods  = Goodsmodel::where('name','like','%'."$name".'%')->where($where)->take(PAGINATE)->skip($offset)->orderBy('id','desc')->get($filed)->toArray();
-         }
->>>>>>> 3d9bbcd9686c654f4f161ed29ff8e4d0669908ec
         $this->api_res(0,['list'=>$goods,'count'=>$count,'cdn_path'=>config_item('cdn_path')]);
     }
 
