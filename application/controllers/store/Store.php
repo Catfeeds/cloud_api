@@ -75,7 +75,7 @@ class Store extends MY_Controller
     }
 
     /**
-     * 获取门店
+     * 获取门店名
      */
     public function showStore(){
         $city   = $this->input->post('city',true);
@@ -91,6 +91,56 @@ class Store extends MY_Controller
         $city   = Storemodel::groupBy('city')->get(['city']);
         $this->api_res(0,['cities'=>$city]);
     }
+
+    /**
+     * 查看门店信息
+     */
+    public function getStore(){
+        $store_id   = $this->input->post('store_id',true);
+        if(!$store_id){
+            $this->api_res(1005);
+            return;
+        }
+        $store  = Storemodel::find($store_id);
+
+        $this->api_res(0,['store'=>$store]);
+    }
+
+
+    /**
+     * 编辑门店
+     */
+    public function updateStore(){
+        $store_id   = $this->input->post('store_id',true);
+        if(!$store_id){
+            $this->api_res(1005);
+            return;
+        }
+        $field  = [
+            'rent_type','status','name','theme','province','city','district','address', 'contact_user',
+            'counsel_phone','counsel_time','images','describe'
+        ];
+        if(!$this->validationText($this->validationAddConfig()))
+        {
+            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+            return;
+        }
+        $update  = Storemodel::find($store_id);
+        $post    = $this->input->post(null,true);
+        $update->fill($post);
+        if(!isset($post['images']))
+        {
+            $this->api_res(1002,['error'=>'必须上传图片']);
+            return;
+        }
+        $images  = $this->splitAliossUrl($post['images'],true);
+        $images = json_encode($images);
+        $update->images=$images;
+        if($update->save()){
+            $this->api_res(0,['store_id'=>$update->id]);
+        }
+    }
+
 
     /**
      * 添加分布式门店
@@ -151,6 +201,7 @@ class Store extends MY_Controller
             $this->api_res(0,['store_id'=>$insert->id]);
         }
     }
+
 
 
     /**

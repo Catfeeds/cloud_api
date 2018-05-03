@@ -116,7 +116,7 @@ class Login extends MY_Controller
                 }
             }
             $token  = $this->m_jwt->generateJwtToken($bxid);
-            $privilege  = json_decode($this->m_redis->getCompanyInfo($company_id))['privilege'];
+            $privilege  = json_decode($this->m_redis->getCompanyInfo($company_id))->privilege;
             $this->api_res(0,['bxid'=>$bxid,'token'=>$token,'privilege'=>$privilege]);
         }
         else
@@ -190,7 +190,7 @@ class Login extends MY_Controller
                 }
             }
             $token  = $this->m_jwt->generateJwtToken($bxid);
-            $privilege  = json_decode($this->m_redis->getCompanyInfo($company_id))['privilege'];
+            $privilege  = json_decode($this->m_redis->getCompanyInfo($company_id))->privilege;
             $this->api_res(0,['bxid'=>$bxid,'token'=>$token,'privilege'=>$privilege]);
         }
         else

@@ -41,7 +41,7 @@ class Roomtype extends MY_Controller
         $post   = $this->input->post(null,true);
         $field  = [
             'store_id','name','feature','area','room_number','hall_number','toilet_number','toward','description',
-            'facility','images',
+            'provide','images',
         ];
         if(!$this->validationText($this->validationAddConfig()))
         {
@@ -119,7 +119,7 @@ class Roomtype extends MY_Controller
                 'rules' => 'required|trim',
             ),
             array(
-                'field' => 'facility',
+                'field' => 'provide',
                 'label' => '房型设施',
                 'rules' => 'required|trim',
             ),
