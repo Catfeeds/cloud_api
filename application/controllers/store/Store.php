@@ -35,10 +35,9 @@ class Store extends MY_Controller
         $stores = Storemodel::offset($offset)->where($where)->limit(PAGINATE)->orderBy('id','desc')->get($field);
         $count  = ceil($stores->count()/PAGINATE);
         $cities = Storemodel::groupBy('city')->get(['city']);
-        $types  = Storemodel::groupBy('rent_type')->get(['rent_type']);
-        $status = Storemodel::groupBy('status')->get(['status']);
+        $types  = isset($post['city'])?Storemodel::where('city',$post['city'])->groupBy('rent_type')->get(['rent_type']):Storemodel::groupBy('rent_type')->get(['rent_type']);
+        $status = Storemodel::where($where)->groupBy('status')->get(['status']);
         $this->api_res(0,['count'=>$count,'city'=>$cities,'type'=>$types,'status'=>$status,'list'=>$stores]);
-
     }
 
     /**
@@ -53,7 +52,7 @@ class Store extends MY_Controller
         $page   = $this->input->post('page',true)?$this->input->post('page',true):1;
         $offset = PAGINATE*($page-1);
         $field  = ['id','name','city','rent_type','address','contact_user','contact_phone','status'];
-        $stores  = Storemodel::where('name','like',"%$name%")->offset($offset)->limit(PAGINATE)->orderBy('id','desc')->get($field);
+        $stores = Storemodel::where('name','like',"%$name%")->offset($offset)->limit(PAGINATE)->orderBy('id','desc')->get($field);
         $count  = ceil($stores->count()/PAGINATE);
         if(!$count){
             $this->api_res(1007);
@@ -100,17 +99,17 @@ class Store extends MY_Controller
         $post    = $this->input->post(null,true);
         $insert  = new Storemodel();
         $insert->fill($post);
-        /*$images =str_replace(config_item('cdn_path'),'',$post['images']);
-        $insert->images=$images;*/
-        $images_post = json_decode($post['images']);
-        $images =[];
-        foreach ($images_post as $image){
-            $images[]=$this->splitAliossUrl($image);
+        if(!isset($post['images']))
+        {
+            $this->api_res(1002,['error'=>'必须上传图片']);
+            return;
         }
-        $images= json_encode($images);
+        $images  = $this->splitAliossUrl($post['images'],true);
+        $images = json_encode($images);
         $insert->images=$images;
-        $insert->save();
-        $this->api_res(0,['store_id'=>$insert->id]);
+        if($insert->save()){
+            $this->api_res(0,['store_id'=>$insert->id]);
+        }
     }
 
     /**
@@ -130,8 +129,17 @@ class Store extends MY_Controller
         $post   = $this->input->post(null,true);
         $insert  = new Storemodel();
         $insert->fill($post);
-        $insert->save();
-        $this->api_res(0);
+        if(!isset($post['images']))
+        {
+            $this->api_res(1002,['error'=>'必须上传图片']);
+            return;
+        }
+        $images  = $this->splitAliossUrl($post['images'],true);
+        $images = json_encode($images);
+        $insert->images=$images;
+        if($insert->save()){
+            $this->api_res(0,['store_id'=>$insert->id]);
+        }
     }
 
 
@@ -200,11 +208,11 @@ class Store extends MY_Controller
                 'label' => '咨询时间',
                 'rules' => 'required|trim',
             ),
-            array(
+            /*array(
                 'field' => 'images',
                 'label' => '门店图片',
                 'rules' => 'required|trim',
-            ),
+            ),*/
             array(
                 'field' => 'describe',
                 'label' => '门店描述',

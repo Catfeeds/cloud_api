@@ -102,19 +102,22 @@ class Login extends MY_Controller
                 //把个人信息存入redis
                 $this->m_redis->storeUserInfo($bxid,$user->toJson());
                 //把公司信息存入redis
-                $this->m_redis->storeCompanyInfo($user->id,$user->toJson());
+                $company_id = $user->id;
+                $this->m_redis->storeCompanyInfo($company_id,$user->toJson());
             }else{
                 //把个人信息存入redis
                 $this->m_redis->storeUserInfo($bxid,$user->toJson());
+                $company_id = $user->company_id;
                 //从redis获取公司信息并刷新，如果没有 则查数据库并存储到redis
-                if(!$this->m_redis->getCompanyInfo($user->company_id,true))
+                if(!$this->m_redis->getCompanyInfo($company_id,true))
                 {
-                    $company_info    = Companymodel::find($user->company_id);
-                    $this->m_redis->storeCompanyInfo($user->company_id,$company_info->toJson());
+                    $company_info    = Companymodel::find($company_id);
+                    $this->m_redis->storeCompanyInfo($company_id,$company_info->toJson());
                 }
             }
             $token  = $this->m_jwt->generateJwtToken($bxid);
-            $this->api_res(0,['bxid'=>$bxid,'token'=>$token]);
+            $privilege  = json_decode($this->m_redis->getCompanyInfo($company_id))['privilege'];
+            $this->api_res(0,['bxid'=>$bxid,'token'=>$token,'privilege'=>$privilege]);
         }
         else
         {
@@ -173,19 +176,22 @@ class Login extends MY_Controller
                 //把个人信息存入redis
                 $this->m_redis->storeUserInfo($bxid,$user->toJson());
                 //把公司信息存入redis
-                $this->m_redis->storeCompanyInfo($user->id,$user->toJson());
+                $company_id = $user->id;
+                $this->m_redis->storeCompanyInfo($company_id,$user->toJson());
             }else{
                 //把个人信息存入redis
                 $this->m_redis->storeUserInfo($bxid,$user->toJson());
                 //从redis获取公司信息并刷新，如果没有 则查数据库并存储到redis
-                if(!$this->m_redis->getCompanyInfo($user->company_id,true))
+                $company_id = $user->company_id;
+                if(!$this->m_redis->getCompanyInfo($company_id,true))
                 {
-                    $company_info    = Companymodel::find($user->company_id);
-                    $this->m_redis->storeCompanyInfo($user->company_id,$company_info->toJson());
+                    $company_info    = Companymodel::find($company_id);
+                    $this->m_redis->storeCompanyInfo($company_id,$company_info->toJson());
                 }
             }
             $token  = $this->m_jwt->generateJwtToken($bxid);
-            $this->api_res(0,['bxid'=>$bxid,'token'=>$token]);
+            $privilege  = json_decode($this->m_redis->getCompanyInfo($company_id))['privilege'];
+            $this->api_res(0,['bxid'=>$bxid,'token'=>$token,'privilege'=>$privilege]);
         }
         else
         {

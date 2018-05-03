@@ -14,7 +14,8 @@ class MY_Controller extends CI_Controller {
     public function __construct()
     {
         parent::__construct();
-
+        $this->output->set_content_type('application/json');
+        
         if(defined('CURRENT_ID'))
         {
             $pre    = substr(CURRENT_ID,0,2);
@@ -131,15 +132,19 @@ class MY_Controller extends CI_Controller {
 
     /**
      * 对上传的文件url拆解成alioss路径
+     * true传入数组 对数组进行遍历拆解
      */
-    public function splitAliossUrl($full_path){
-
-        $alioss_path    = substr($full_path,strlen(config_item('cdn_path')));;
+    public function splitAliossUrl($full_path,$bool=false){
+        if($bool==true){
+            $alioss_path = [];
+            foreach ($full_path as $path){
+                $alioss_path[]=substr($path,strlen(config_item('cdn_path')));
+            }
+        }else{
+            $alioss_path    = substr($full_path,strlen(config_item('cdn_path')));
+        }
         return $alioss_path;
     }
 
-    /**
-     * 判断文件类型
-     */
 
 }
