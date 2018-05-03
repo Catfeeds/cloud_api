@@ -80,7 +80,7 @@ class AuthHook {
         $directory  = $this->CI->router->fetch_directory();
         $class      = $this->CI->router->fetch_class();
         $method     = $this->CI->router->fetch_method();
-        $full_path  = $directory.$class.'/'.$method;
+        $full_path  = strtolower($directory.$class.'/'.$method);
         // var_dump( $full_path );
         if(!in_array($full_path,$authArr)) {
 

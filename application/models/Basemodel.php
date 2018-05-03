@@ -12,4 +12,6 @@ class Basemodel extends Model{
 
     use SoftDeletes;
     protected $dates = ['deleted_at'];
+
+    public static $where = ['cid'=>CURRENT_ID];
 }

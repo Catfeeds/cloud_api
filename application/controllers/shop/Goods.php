@@ -31,10 +31,9 @@ class Goods extends MY_Controller
 
         if(empty($where)) {
             $goods  = Goodsmodel::where('name','like','%'."$name".'%')->take(PAGINATE)->skip($offset)->orderBy('id','desc')->get($filed)->toArray();
-            $this->api_res(0,['list'=>$goods,'count'=>$count,'cdn_path'=>config_item('cdn_path')]);
-            return;
-        }
-        $goods  = Goodsmodel::where('name','like','%'."$name".'%')->where($where)->take(PAGINATE)->skip($offset)->orderBy('id','desc')->get($filed)->toArray();
+         }else{
+            $goods  = Goodsmodel::where('name','like','%'."$name".'%')->where($where)->take(PAGINATE)->skip($offset)->orderBy('id','desc')->get($filed)->toArray();
+         }
         $this->api_res(0,['list'=>$goods,'count'=>$count,'cdn_path'=>config_item('cdn_path')]);
     }
 
