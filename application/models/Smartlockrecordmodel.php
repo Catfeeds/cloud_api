@@ -10,5 +10,5 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class Smartlockrecordmodel extends Basemodel
 {
     protected $table = 'boss_smart_lock_record';
-    protected $hidden = ['created_at','updated_at','deleted_at'];
+    protected $hidden = ['created_at','deleted_at'];
 }

@@ -31,6 +31,7 @@ class Goodsorder extends MY_Controller
             $number = $post['number'];
             $goods  = Goodsordermodel::with('customer')->with('address')
                                         ->where('number',$number)
+                                        ->whereBetween('created_at',[$bt,$et])
                                         ->take(PAGINATE)->skip($offset)
                                         ->orderBy('id','desc')
                                         ->get($filed)->toArray();

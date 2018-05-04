@@ -78,6 +78,7 @@ class AuthHook {
             'shop/goodsorder/detail',
 
             'smartdevice/smartdevice/index',
+            'smartdevice/smartdevice/record',
         );
 
         $directory  = $this->CI->router->fetch_directory();
