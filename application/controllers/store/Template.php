@@ -68,7 +68,7 @@ class Template extends MY_Controller
         }
         $field  = ['id','name'];
         $stores  = Contracttemplatemodel::where('name','like',"%$name%")->limit(PAGINATE)->orderBy('id','desc')->get($field);
-        $count  = ceil($stores->count()/PAGINATE);
+        $count  = ceil(Contracttemplatemodel::where('name','like',"%$name%")->count()/PAGINATE);
         if(!$count){
             $this->api_res(1007);
             return;

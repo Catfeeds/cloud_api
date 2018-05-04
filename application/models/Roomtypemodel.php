@@ -31,7 +31,6 @@ class Roomtypemodel extends Basemodel{
 
     //房型的房间
     public function room(){
-
         return $this->hasMany(Roommodel::class,'room_type_id');
     }
 

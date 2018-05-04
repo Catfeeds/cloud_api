@@ -50,6 +50,13 @@ class AuthHook {
             'store/template/addtemplate',
             'store/template/searchtemplate',
 
+            'store/community/addcommunity',
+            'store/community/listcommunity',
+            'store/community/searchcommunity',
+            'store/community/updatecommunity',
+            'store/community/getcommunity',
+            'store/community/deletecommunity',
+
             'service/servicetype/index',
             'service/servicetype/addservicetype',
             'service/servicetype/imageupload',

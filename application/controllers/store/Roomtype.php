@@ -27,7 +27,7 @@ class Roomtype extends MY_Controller
         $this->load->model('storemodel');
         $where  = isset($post['store_id'])?['store_id'=>$post['store_id']]:[];
         $roomtypes = Roomtypemodel::with('store')->where($where)->offset($offset)->limit(PAGINATE)->orderBy('id','desc')->get($field);
-        $count  = ceil(($roomtypes->count())/PAGINATE);
+        $count  = ceil((Roomtypemodel::with('store')->where($where)->count())/PAGINATE);
         $this->api_res(0,['count'=>$count,'list'=>$roomtypes]);
     }
 
@@ -81,7 +81,7 @@ class Roomtype extends MY_Controller
         $offset = PAGINATE*($page-1);
         $this->load->model('storemodel');
         $roomtypes = Roomtypemodel::with('store')->where('name','like',"%$name%")->offset($offset)->limit(PAGINATE)->orderBy('id','desc')->get($field);
-        $count  = ceil(($roomtypes->count())/PAGINATE);
+        $count  = ceil((Roomtypemodel::with('store')->where('name','like',"%$name%")->count())/PAGINATE);
         $this->api_res(0,['count'=>$count,'list'=>$roomtypes]);
     }
 
@@ -183,11 +183,11 @@ class Roomtype extends MY_Controller
                 'label' => '房型设施',
                 'rules' => 'required|trim',
             ),
-            array(
+            /*array(
                 'field' => 'images',
                 'label' => '房型图片',
                 'rules' => 'required|trim',
-            ),
+            ),*/
         ];
         return $config;
     }

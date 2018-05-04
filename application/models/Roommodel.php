@@ -14,7 +14,7 @@ class Roommodel extends Basemodel{
 
     protected $table    = 'boss_room';
 
-    protected $hidden   = [];
+    protected $hidden   = ['created_at','updated_at','deleted_at'];
 
     //房间所属门店信息
     public function store(){
