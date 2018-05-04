@@ -246,7 +246,6 @@ class Goods extends MY_Controller
         );
 
         $this->form_validation->set_rules($config)->set_error_delimiters('','');
-
         return $this->form_validation->run();
     }
 }
