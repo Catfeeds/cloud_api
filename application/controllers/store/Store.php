@@ -137,9 +137,9 @@ class Store extends MY_Controller
             $this->api_res(1002,['error'=>'必须上传图片']);
             return;
         }
-        $images  = $this->splitAliossUrl($post['images'],true);
+        $images = $this->splitAliossUrl($post['images'],true);
         $images = json_encode($images);
-        $update->images=$images;
+        $update->images = $images;
         if($update->save()){
             $this->api_res(0,['store_id'=>$update->id]);
         }
