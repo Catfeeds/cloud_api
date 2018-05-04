@@ -76,7 +76,7 @@ class Goods extends MY_Controller
 
         if(!empty($post['goods_carousel']))
         {
-            $goods_carousel = json_decode($this->splitAliossUrl($post['goods_carousel'],true));
+            $goods_carousel = json_encode($this->splitAliossUrl($post['goods_carousel'],true));
         }else{
             $this->api_res(1002);
             return false;
