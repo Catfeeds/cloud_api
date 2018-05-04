@@ -33,7 +33,7 @@ class Store extends MY_Controller
         $offset = PAGINATE*($page-1);
         $field  = ['id','name','city','rent_type','address','contact_user','contact_phone','status'];
         $stores = Storemodel::offset($offset)->where($where)->limit(PAGINATE)->orderBy('id','desc')->get($field);
-        $count  = ceil($stores->count()/PAGINATE);
+        $count  = ceil(Storemodel::where($where)->count()/PAGINATE);
         $cities = Storemodel::groupBy('city')->get(['city']);
         $types  = isset($post['city'])?Storemodel::where('city',$post['city'])->groupBy('rent_type')->get(['rent_type']):Storemodel::groupBy('rent_type')->get(['rent_type']);
         $status = Storemodel::where($where)->groupBy('status')->get(['status']);
@@ -53,7 +53,7 @@ class Store extends MY_Controller
         $offset = PAGINATE*($page-1);
         $field  = ['id','name','city','rent_type','address','contact_user','contact_phone','status'];
         $stores = Storemodel::where('name','like',"%$name%")->offset($offset)->limit(PAGINATE)->orderBy('id','desc')->get($field);
-        $count  = ceil($stores->count()/PAGINATE);
+        $count  = ceil(Storemodel::where('name','like',"%$name%")->count()/PAGINATE);
         if(!$count){
             $this->api_res(1007);
             return;
@@ -80,7 +80,7 @@ class Store extends MY_Controller
     public function showStore(){
         $city   = $this->input->post('city',true);
         $where  = $city?$city:[];
-        $store  = Storemodel::where($where)->get(['id','name']);
+        $store  = Storemodel::where($where)->get(['id','name','city']);
         $this->api_res(0,['stores'=>$store]);
     }
 
