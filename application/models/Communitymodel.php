@@ -21,5 +21,17 @@ class Communitymodel extends Basemodel
 
     protected $hidden   = ['created_at','updated_at','deleted_at'];
 
+    //小区的房间
+    public function room()
+    {
+        return $this->hasMany(Roommodel::class,'community_id')->select(['community_id']);
+    }
+
+    //小区所属门店
+    public function store(){
+        return $this->belongsTo(Storemodel::class,'store_id')->select('id','name','city');
+    }
+
+
 
 }
