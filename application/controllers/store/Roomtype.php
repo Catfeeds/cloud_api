@@ -41,7 +41,7 @@ class Roomtype extends MY_Controller
         $post   = $this->input->post(null,true);
         $field  = [
             'store_id','name','feature','area','room_number','hall_number','toilet_number','toward','description',
-            'provide','images',
+            'provides','images',
         ];
         if(!$this->validationText($this->validationAddConfig()))
         {
@@ -50,6 +50,9 @@ class Roomtype extends MY_Controller
         }
         $roomtype   = new Roomtypemodel();
         $roomtype->fill($post);
+        $images  = $this->splitAliossUrl($post['images'],true);
+        $images  = json_encode($images);
+        $roomtype->images=$images;
         if($roomtype->save())
         {
             $this->api_res(0);
@@ -66,6 +69,63 @@ class Roomtype extends MY_Controller
             $this->api_res(0);
         }
     }
+
+    /**
+     * 按名称模糊查找
+     */
+    public function searchRoomType(){
+        $field  = ['id','store_id','name','feature'];
+        $post   = $this->input->post(null,true);
+        $name   = isset($post['name'])?$post['name']:null;
+        $page   = isset($post['page'])?$post['page']:1;
+        $offset = PAGINATE*($page-1);
+        $this->load->model('storemodel');
+        $roomtypes = Roomtypemodel::with('store')->where('name','like',"%$name%")->offset($offset)->limit(PAGINATE)->orderBy('id','desc')->get($field);
+        $count  = ceil(($roomtypes->count())/PAGINATE);
+        $this->api_res(0,['count'=>$count,'list'=>$roomtypes]);
+    }
+
+    /**
+     * 查看房型信息
+     */
+    public function getRoomType(){
+        $post   = $this->input->post(null,true);
+        $field  = [
+            'store_id','name','feature','area','room_number','hall_number','toilet_number','toward','description',
+            'provides','images',
+        ];
+        $room_type_id   = isset($post['room_type_id'])?$post['room_type_id']:null;
+        $room_type  = Roomtypemodel::select($field)->findOrFail($room_type_id);
+        $room_type->images  = $this->fullAliossUrl(json_decode($room_type->images,true),true);
+        $this->api_res(0,['room_type'=>$room_type]);
+    }
+
+    /**
+     * 编辑房型信息
+     */
+    public function updateRoomType(){
+        $post   = $this->input->post(null,true);
+        $room_type_id   = isset($post['room_type_id'])?$post['room_type_id']:null;
+        $field  = [
+            'store_id','name','feature','area','room_number','hall_number','toilet_number','toward','description',
+            'provides','images',
+        ];
+        if(!$this->validationText($this->validationAddConfig()))
+        {
+            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+            return;
+        }
+        $roomtype  = Roomtypemodel::findOrFail($room_type_id);
+        $roomtype->fill($post);
+        $images  = $this->splitAliossUrl($post['images'],true);
+        $images = json_encode($images);
+        $roomtype->images=$images;
+        if($roomtype->save())
+        {
+            $this->api_res(0);
+        }
+    }
+
 
 
     /**
@@ -119,7 +179,7 @@ class Roomtype extends MY_Controller
                 'rules' => 'required|trim',
             ),
             array(
-                'field' => 'provide',
+                'field' => 'provides',
                 'label' => '房型设施',
                 'rules' => 'required|trim',
             ),
@@ -131,8 +191,5 @@ class Roomtype extends MY_Controller
         ];
         return $config;
     }
-
-
-
 
 }

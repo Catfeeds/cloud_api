@@ -32,6 +32,7 @@ class Template extends MY_Controller
      */
     public function addTemplate(){
         $post   = $this->input->post(NULL,true);
+        //找到员工所在的门店id
         $name   = isset($post['name'])?$post['name']:null;
         $file_url   = isset($post['file_url'])?$post['file_url']:null;
         if(empty($name) || empty($file_url)){
