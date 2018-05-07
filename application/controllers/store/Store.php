@@ -84,7 +84,9 @@ class Store extends MY_Controller
      * 获取城市
      */
     public function showCity(){
-        $city   = Storemodel::groupBy('city')->get(['city']);
+        $city   = Storemodel::groupBy('city')->get(['city'])->map(function($city){
+            return $city['city'];
+        });
         $this->api_res(0,['cities'=>$city]);
     }
 

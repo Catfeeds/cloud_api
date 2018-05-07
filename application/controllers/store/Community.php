@@ -94,6 +94,10 @@ class Community extends MY_Controller
     }
 
     /**
+     * 筛选
+     */
+
+    /**
      * 查看小区信息
      */
     public function getCommunity()

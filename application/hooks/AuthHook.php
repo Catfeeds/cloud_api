@@ -57,6 +57,8 @@ class AuthHook {
             'store/community/getcommunity',
             'store/community/deletecommunity',
 
+            'store/room/adddot',
+
             'service/servicetype/index',
             'service/servicetype/addservicetype',
             'service/servicetype/imageupload',

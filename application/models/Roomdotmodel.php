@@ -2,17 +2,15 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 /**
  * Author:      zjh<401967974@qq.com>
- * Date:        2018/4/20 0020
- * Time:        16:17
- * Describe:    BOSS
- * 房间信息表
+ * Date:        2018/5/7 0007
+ * Time:        11:56
+ * Describe:    房间信息（分布式）
  */
-class Roommodel extends Basemodel{
-
+class Roomdotmodel extends Basemodel {
     const HALF = 'HALF';    //合租
     const FULL = 'FULL';    //整租
 
-    protected $table    = 'boss_room';
+    protected $table    = 'boss_room_dot';
 
     protected $hidden   = ['created_at','updated_at','deleted_at'];
 
@@ -57,6 +55,4 @@ class Roommodel extends Basemodel{
 
         return $this->hasMany(Unionresidentmodel::class,'room_id');
     }
-
-
 }
