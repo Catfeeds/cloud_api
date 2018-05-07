@@ -124,7 +124,7 @@ class MY_Controller extends CI_Controller {
     /**
      * 将alioss路径 拼接成完整的URL
      */
-    public function fullAliossUrl($oss_path,$bool=true){
+    public function fullAliossUrl($oss_path,$bool=false){
         if($bool==true){
             foreach ($oss_path as $path){
                 $full_url[]   = config_item('cdn_path').$path;
