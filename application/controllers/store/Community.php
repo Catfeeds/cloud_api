@@ -93,6 +93,13 @@ class Community extends MY_Controller
         $this->api_res(0,['count'=>$count,'community'=>$communitys]);
     }
 
+    /**
+     * 筛选
+     */
+
+    /**
+     * 查看小区信息
+     */
     public function getCommunity()
     {
         $community_id   = $this->input->post('community_id',true);
@@ -104,6 +111,9 @@ class Community extends MY_Controller
         }
     }
 
+    /**
+     * 编辑小区信息
+     */
     public function updateCommunity()
     {
         $field  = [
@@ -130,6 +140,9 @@ class Community extends MY_Controller
         }
     }
 
+    /**
+     * 删除小区
+     */
     public function deleteCommunity()
     {
         $community_id   = $this->input->post('company_id',true);
@@ -139,6 +152,10 @@ class Community extends MY_Controller
         }
     }
 
+    /**
+     * @return array
+     * 小区字段的验证规则
+     */
     private function validateConfig()
     {
         $config = [

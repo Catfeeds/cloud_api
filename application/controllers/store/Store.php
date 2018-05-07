@@ -45,10 +45,6 @@ class Store extends MY_Controller
      */
     public function searchStore(){
         $name   = $this->input->post('name',true);
-        if(!$name){
-            $this->api_res(1005);
-            return;
-        }
         $page   = $this->input->post('page',true)?$this->input->post('page',true):1;
         $offset = PAGINATE*($page-1);
         $field  = ['id','name','city','rent_type','address','contact_user','contact_phone','status'];
@@ -88,7 +84,9 @@ class Store extends MY_Controller
      * 获取城市
      */
     public function showCity(){
-        $city   = Storemodel::groupBy('city')->get(['city']);
+        $city   = Storemodel::groupBy('city')->get(['city'])->map(function($city){
+            return $city['city'];
+        });
         $this->api_res(0,['cities'=>$city]);
     }
 
