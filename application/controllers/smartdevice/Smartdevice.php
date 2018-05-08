@@ -39,6 +39,7 @@ class Smartdevice extends MY_Controller
                 $condition['room_id']      = $room_id;
             }else{
                 $this->api_res(0,['list'=>[],'count'=>$count]);
+                return ;
             }
         }
         if ($where){
