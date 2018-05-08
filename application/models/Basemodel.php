@@ -52,7 +52,7 @@ class Basemodel extends Model{
     protected static function boot()
     {
         parent::boot();
-        static::addGlobalScope(new CompanyScope);
-        static::observe(UserObserver::class);
+        // static::addGlobalScope(new CompanyScope);
+        // static::observe(UserObserver::class);
     }
 }
