@@ -32,7 +32,7 @@ class Smartdevice extends MY_Controller
         if(!empty($post['city'])){$where['city']    =$post['city'];}
         if(!empty($post['store_id'])){$where['id']  =$post['store_id'];}
         if ($where){$condition['store_id']          = Storemodel::where($where)->get(['id']);}
-        if($room_number){$condition['room_id']      = Roommodel::where('number',$room_number)->get(['id']);}
+        if($room_number){$condition['room_id']      = Roomdotmodel::where('number',$room_number)->get(['id']);}
         if (!empty($post['device_type'])){$condition['type'] = $post['device_type'];}
         $filed = ['id','room_id','type','supplier'];
         if($condition){

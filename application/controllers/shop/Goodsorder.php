@@ -42,7 +42,7 @@ class Goodsorder extends MY_Controller
                                         ->orderBy('id','desc')
                                         ->get($filed)->toArray();
         }
-        $this->api_res(0,['list'=>$goods,'count'=>$count,'cdn_path'=>config_item('cdn_path')]);
+        $this->api_res(0,['list'=>$goods,'count'=>$count]);
     }
 
     /**
