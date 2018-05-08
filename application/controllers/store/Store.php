@@ -67,6 +67,8 @@ class Store extends MY_Controller
         $store_id   = $this->input->post('store_id',true);
         if(Storemodel::find($store_id)->delete()){
             $this->api_res(0);
+        }else{
+            //by weijinlong
         }
     }
 
@@ -140,6 +142,8 @@ class Store extends MY_Controller
         $update->images = $images;
         if($update->save()){
             $this->api_res(0,['store_id'=>$update->id]);
+        }else{
+            //by weijinlong
         }
     }
 
@@ -171,6 +175,8 @@ class Store extends MY_Controller
         $insert->images=$images;
         if($insert->save()){
             $this->api_res(0,['store_id'=>$insert->id]);
+        }else{
+            //by weijinlong
         }
     }
 
@@ -201,6 +207,8 @@ class Store extends MY_Controller
         $insert->images=$images;
         if($insert->save()){
             $this->api_res(0,['store_id'=>$insert->id]);
+        }else{
+            //by weijinlong
         }
     }
 

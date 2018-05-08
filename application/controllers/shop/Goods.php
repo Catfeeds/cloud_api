@@ -173,14 +173,23 @@ class Goods extends MY_Controller
             return false;
         }
         else{
-            foreach ($id as $ids){
-                $goods  = Goodsmodel::findOrFail($ids);
-                $goods->on_sale = $status;
-                if($goods->save()){
-                    $this->api_res(0);
-                }else{
-                    $this->api_res(666);
-                }
+            // foreach ($id as $ids){
+            //     //循环操作数据库 by weijinlong
+            //     $goods  = Goodsmodel::findOrFail($ids);
+            //     $goods->on_sale = $status;
+            //     if($goods->save()){
+            //         $this->api_res(0);
+            //     }else{
+            //         $this->api_res(666);
+            //     }
+            // }
+
+
+            // update table set a=1 where id in (1,2,3)
+            if (Goodsmodel::where('id','in',$id)->update(['on_sale'=>$status])){
+                $this->api_res(0);
+            }else{
+                $this->api_res(666);
             }
         }
     }

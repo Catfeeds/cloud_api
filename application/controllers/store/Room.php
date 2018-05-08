@@ -1,5 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+
+use Illuminate\Database\Capsule\Manager as DB;
 /**
  * Author:      zjh<401967974@qq.com>
  * Date:        2018/5/7 0007
@@ -37,14 +39,34 @@ class Room extends MY_Controller
         $house  = new Housemodel();
         $house->store_id    = $post['store_id'];
         $house->community_id    = $post['community_id'];
-        //...
-        if($house->save()){
-            $room   = new Roomdotmodel();
+        $room   = new Roomdotmodel();
+
+
+        //by weijinlong
+        try{
+            DB::beginTransaction();
+
+            $b1=$house->save();
+
+            
             $room->fill($post);
-            if($room->save()){
+            $b2=$room->save();
+            
+            if($b1 && $b2){
+                DB::commit();
                 $this->api_res(0,['room_id'=>$room->id]);
+            }else{
+                DB::rollBack();
+                //错误
+                //api_res
             }
+        }catch(Exception $e){
+            DB::rollBack();
+            throw $e;
         }
+        
+        
+        
     }
 
     /**
