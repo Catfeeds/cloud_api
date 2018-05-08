@@ -25,18 +25,22 @@ class Store extends MY_Controller
     public function listStore()
     {
         $post   = $this->input->post(null,true);
-        $page   = isset($post['page'])?$post['page']:1;
+        $page   = intval(isset($post['page'])?$post['page']:1);
         $where  = [];
         isset($post['city'])?$where['city']=$post['city']:null;
         isset($post['type'])?$where['rent_type']=$post['type']:null;
         isset($post['status'])?$where['status']=$post['status']:null;
         $offset = PAGINATE*($page-1);
         $field  = ['id','name','city','rent_type','address','contact_user','contact_phone','status'];
-        $stores = Storemodel::offset($offset)->where($where)->limit(PAGINATE)->orderBy('id','desc')->get($field);
         $count  = ceil(Storemodel::where($where)->count()/PAGINATE);
         $cities = Storemodel::groupBy('city')->get(['city']);
         $types  = isset($post['city'])?Storemodel::where('city',$post['city'])->groupBy('rent_type')->get(['rent_type']):Storemodel::groupBy('rent_type')->get(['rent_type']);
         $status = Storemodel::where($where)->groupBy('status')->get(['status']);
+        if($page>$count){
+            $this->api_res(0,['count'=>$count,'city'=>$cities,'type'=>$types,'status'=>$status,'list'=>[]]);
+            return;
+        }
+        $stores = Storemodel::offset($offset)->where($where)->limit(PAGINATE)->orderBy('id','desc')->get($field);
         $this->api_res(0,['count'=>$count,'city'=>$cities,'type'=>$types,'status'=>$status,'list'=>$stores]);
     }
 
@@ -45,18 +49,18 @@ class Store extends MY_Controller
      */
     public function searchStore(){
         $name   = $this->input->post('name',true);
-        $page   = $this->input->post('page',true)?$this->input->post('page',true):1;
+        $page   = intval($this->input->post('page',true)?$this->input->post('page',true):1);
         $offset = PAGINATE*($page-1);
         $field  = ['id','name','city','rent_type','address','contact_user','contact_phone','status'];
-        $stores = Storemodel::where('name','like',"%$name%")->offset($offset)->limit(PAGINATE)->orderBy('id','desc')->get($field);
         $count  = ceil(Storemodel::where('name','like',"%$name%")->count()/PAGINATE);
-        if(!$count){
-            $this->api_res(1007);
-            return;
-        }
         $cities = Storemodel::groupBy('city')->get(['city']);
         $types  = Storemodel::groupBy('rent_type')->get(['rent_type']);
         $status = Storemodel::groupBy('status')->get(['status']);
+        if($page>$count){
+            $this->api_res(0,['count'=>$count,'city'=>$cities,'type'=>$types,'status'=>$status,'list'=>[]]);
+            return;
+        }
+        $stores = Storemodel::where('name','like',"%$name%")->offset($offset)->limit(PAGINATE)->orderBy('id','desc')->get($field);
         $this->api_res(0,['count'=>$count,'city'=>$cities,'type'=>$types,'status'=>$status,'list'=>$stores]);
     }
 
@@ -67,6 +71,8 @@ class Store extends MY_Controller
         $store_id   = $this->input->post('store_id',true);
         if(Storemodel::find($store_id)->delete()){
             $this->api_res(0);
+        }else{
+            $this->api_res(1009);
         }
     }
 
@@ -140,6 +146,8 @@ class Store extends MY_Controller
         $update->images = $images;
         if($update->save()){
             $this->api_res(0,['store_id'=>$update->id]);
+        }else{
+            $this->api_res(1009);
         }
     }
 
@@ -171,6 +179,8 @@ class Store extends MY_Controller
         $insert->images=$images;
         if($insert->save()){
             $this->api_res(0,['store_id'=>$insert->id]);
+        }else{
+            $this->api_res(1009);
         }
     }
 
@@ -201,6 +211,8 @@ class Store extends MY_Controller
         $insert->images=$images;
         if($insert->save()){
             $this->api_res(0,['store_id'=>$insert->id]);
+        }else{
+            $this->api_res(1009);
         }
     }
 

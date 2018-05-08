@@ -39,6 +39,8 @@ class Community extends MY_Controller
         if($community->save())
         {
             $this->api_res(0,['community_id'=>$community->id]);
+        }else{
+            $this->api_res(1009);
         }
     }
 
@@ -51,10 +53,14 @@ class Community extends MY_Controller
             'id','store_id','name','province','city','district','address','describe','history','shop','relax','bus'
         ];
         $post   = $this->input->post(null,true);
-        $page   = isset($post['page'])?$post['page']:1;
+        $page   = intval(isset($post['page'])?$post['page']:1);
         $offset = $offset = PAGINATE*($page-1);
         isset($post['store_id'])?$where['store_id']=$post['store_id']:$where=[];
         $count  = ceil(Communitymodel::where($where)->count()/PAGINATE);
+        if($page>$count){
+            $this->api_res(0,['count'=>$count,'community'=>[]]);
+            return;
+        }
         $this->load->model('roommodel');
         $this->load->model('storemodel');
         $communitys  = Communitymodel::with('room')->with('store')->where($where)->offset($offset)->limit(PAGINATE)
@@ -76,11 +82,15 @@ class Community extends MY_Controller
             'id','store_id','name','province','city','district','address'
         ];
         $post   = $this->input->post(null,true);
-        $page   = isset($post['page'])?$post['page']:1;
+        $page   = intval(isset($post['page'])?$post['page']:1);
         $offset = $offset = PAGINATE*($page-1);
         isset($post['store_id'])?$where['store_id']=$post['store_id']:$where=[];
         $name   = isset($post['name'])?$post['name']:'';
         $count  = ceil(Communitymodel::where($where)->where('name','like',"%$name%")->count()/PAGINATE);
+        if($page>$count){
+            $this->api_res(0,['count'=>$count,'community'=>[]]);
+            return;
+        }
         $this->load->model('roommodel');
         $this->load->model('storemodel');
         $communitys  = Communitymodel::with('room')->with('store')->where($where)->where('name','like',"%$name%")->offset($offset)->limit(PAGINATE)
@@ -92,10 +102,6 @@ class Community extends MY_Controller
             });
         $this->api_res(0,['count'=>$count,'community'=>$communitys]);
     }
-
-    /**
-     * 筛选
-     */
 
     /**
      * 查看小区信息
@@ -137,6 +143,8 @@ class Community extends MY_Controller
         if($community->save())
         {
             $this->api_res(0,['community_id'=>$community->id]);
+        }else{
+            $this->api_res(1009);
         }
     }
 
@@ -149,6 +157,8 @@ class Community extends MY_Controller
         if(Communitymodel::find($community_id)->delete())
         {
             $this->api_res(0);
+        }else{
+            $this->api_res(1009);
         }
     }
 

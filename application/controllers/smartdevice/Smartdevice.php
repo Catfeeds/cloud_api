@@ -21,7 +21,7 @@ class Smartdevice extends MY_Controller
     public function index()
     {
         $this->load->model('storemodel');
-        $this->load->model('roommodel');
+        $this->load->model('roomdotmodel');
         $post           = $this->input->post(NULL,true);
         $page           = empty($post['page'])?1:trim($post['page']);
         $offset         = PAGINATE*($page-1);

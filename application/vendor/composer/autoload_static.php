@@ -42,6 +42,7 @@ class ComposerStaticInit35d20ea43ac1650b34295b1bf3c15615
             'Psr\\Log\\' => 8,
             'Psr\\Http\\Message\\' => 17,
             'Psr\\Container\\' => 14,
+            'PhpOffice\\PhpSpreadsheet\\' => 25,
         ),
         'O' => 
         array (
@@ -131,6 +132,10 @@ class ComposerStaticInit35d20ea43ac1650b34295b1bf3c15615
         'Psr\\Container\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/container/src',
+        ),
+        'PhpOffice\\PhpSpreadsheet\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/phpoffice/phpspreadsheet/src/PhpSpreadsheet',
         ),
         'Overtrue\\Socialite\\' => 
         array (

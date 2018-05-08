@@ -19,10 +19,14 @@ class Template extends MY_Controller
      */
     public function listTemplate(){
         $post   = $this->input->post(null,true);
-        $page   = isset($post['page'])?$post['page']:1;
+        $page   = intval(isset($post['page'])?$post['page']:1);
         $offset = PAGINATE*($page-1);
         $field  = ['id','name'];
         $count  = ceil(Contracttemplatemodel::count()/PAGINATE);
+        if($page>$count){
+            $this->api_res(0,['count'=>$count,'list'=>[]]);
+            return;
+        }
         $stores = Contracttemplatemodel::offset($offset)->limit(PAGINATE)->orderBy('id','desc')->get($field)->toArray();
         $this->api_res(0,['count'=>$count,'list'=>$stores]);
     }
@@ -44,6 +48,8 @@ class Template extends MY_Controller
         $template->url  = $this->splitAliossUrl($file_url);
         if($template->save()){
             $this->api_res(0);
+        }else{
+            $this->api_res(1009);
         }
     }
 
@@ -54,6 +60,8 @@ class Template extends MY_Controller
         $post   = $this->input->post('template_id',true);
         if(Contracttemplatemodel::find($post)->delete()){
             $this->api_res(0);
+        }else{
+            $this->api_res(1009);
         }
     }
 
@@ -62,17 +70,14 @@ class Template extends MY_Controller
      */
     public function searchTemplate(){
         $name   = $this->input->post('name',true);
-        if(!$name){
-            $this->api_res(1005);
-            return;
-        }
+        $page   = intval($this->input->post('page',true)?$this->input->post('page',true):1);
         $field  = ['id','name'];
-        $stores  = Contracttemplatemodel::where('name','like',"%$name%")->limit(PAGINATE)->orderBy('id','desc')->get($field);
         $count  = ceil(Contracttemplatemodel::where('name','like',"%$name%")->count()/PAGINATE);
-        if(!$count){
-            $this->api_res(1007);
+        if($page>$count){
+            $this->api_res(0,['count'=>$count,'list'=>[]]);
             return;
         }
+        $stores  = Contracttemplatemodel::where('name','like',"%$name%")->limit(PAGINATE)->orderBy('id','desc')->get($field);
         $this->api_res(0,['count'=>$count,'list'=>$stores]);
     }
 }
