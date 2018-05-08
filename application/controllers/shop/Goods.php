@@ -40,12 +40,13 @@ class Goods extends MY_Controller
                                     ->take(PAGINATE)->skip($offset)->orderBy('id','desc')
                                     ->get($filed)->toArray();
         }
+
         for($i = 0;$i<$sum;$i++)
         {
             $goods[$i]['goods_thumb']=$this->fullAliossUrl($goods[$i]['goods_thumb']);
             $goods[$i]['goods_carousel'] = $this->fullAliossUrl(json_decode($goods[$i]['goods_carousel']),true);
         }
-        $this->api_res(0,['list'=>$goods,'count'=>$count,'cdn_path'=>config_item('cdn_path')]);
+        $this->api_res(0,['list'=>$goods,'count'=>$count]);
     }
 
     /**

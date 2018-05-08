@@ -26,13 +26,24 @@ class Smartdevice extends MY_Controller
         $page           = empty($post['page'])?1:trim($post['page']);
         $offset         = PAGINATE*($page-1);
         $count          = ceil(Smartdevicemodel::count()/PAGINATE);
-        $room_number    = empty($post['room_number'])?NULL:trim($post['room_number']);
+
         $where          = [];
         $condition      = [];
-        if(!empty($post['city'])){$where['city']    =$post['city'];}
-        if(!empty($post['store_id'])){$where['id']  =$post['store_id'];}
-        if ($where){$condition['store_id']          = Storemodel::where($where)->get(['id']);}
-        if($room_number){$condition['room_id']      = Roommodel::where('number',$room_number)->get(['id']);}
+        if(!empty($post['city'])){$where['city']    = $post['city'];}
+        if(!empty($post['store_id'])){$where['id']  = $post['store_id'];}
+
+        if(!empty($post['room_number'])) {
+            $room_number = trim($post['room_number']);
+            $room_id = Roomdotmodel::where('number',$room_number)->get(['id'])->toArray();
+            if($room_id){
+                $condition['room_id']      = $room_id;
+            }
+        }
+        if ($where){
+            $store_id = Storemodel::where($where)->get(['id'])->toArray();
+            $condition['store_id'] = $store_id;
+        }
+
         if (!empty($post['device_type'])){$condition['type'] = $post['device_type'];}
         $filed = ['id','room_id','type','supplier'];
         if($condition){
