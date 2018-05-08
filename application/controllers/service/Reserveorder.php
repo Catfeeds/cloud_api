@@ -21,12 +21,13 @@ class Reserveorder extends MY_Controller
     {
         $this->load->model('employeemodel');
         $post   = $this->input->post(NULL,true);
-        $page   = isset($post['page'])?$post['page']:1;
+        $page   = isset($post['page'])?intval($post['page']):1;
+
         $offset = PAGINATE*($page-1);
         $count  = ceil(Reserveordermodel::count()/PAGINATE);
         $where  = array();
         $filed  = ['id','time','name','phone','visit_by','work_address','require','info_source','employee_id','status','remark'];
-
+        if ($page){}
         if(!empty($post['store_id'])){$where['store_id']=$post['store_id'];}
         if(!empty($post['visit_type'])){$where['visit_by']=$post['visit_type'];}
 
