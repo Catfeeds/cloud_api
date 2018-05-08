@@ -49,10 +49,10 @@ class Basemodel extends Model{
     protected $dates = ['deleted_at'];
 
     //public static $where = ['cid'=>CURRENT_ID];
-    protected static function boot()
-    {
-        parent::boot();
-        static::addGlobalScope(new CompanyScope);
-        static::observe(UserObserver::class);
-    }
+//    protected static function boot()
+//    {
+//        parent::boot();
+//        static::addGlobalScope(new CompanyScope);
+//        static::observe(UserObserver::class);
+//    }
 }
