@@ -58,6 +58,7 @@ class AuthHook {
             'store/community/deletecommunity',
 
             'store/room/adddot',
+            'store/room/addunion',
 
             'service/servicetype/index',
             'service/servicetype/addservicetype',
