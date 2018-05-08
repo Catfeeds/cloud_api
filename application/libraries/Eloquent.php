@@ -25,5 +25,10 @@ class Eloquent
         $this->capsule->setEventDispatcher(new Dispatcher(new Container));
         $this->capsule->setAsGlobal();
         $this->capsule->bootEloquent();
+
+        Capsule::listen(function($sql){
+            // var_dump($sql->sql);exit;
+            log_message('debug',$sql->sql);
+        });
     }
 }
