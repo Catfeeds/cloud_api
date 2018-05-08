@@ -37,6 +37,8 @@ class Smartdevice extends MY_Controller
             $room_id = Roomdotmodel::where('number',$room_number)->get(['id'])->toArray();
             if($room_id){
                 $condition['room_id']      = $room_id;
+            }else{
+                $this->api_res(0,['list'=>[],'count'=>$count]);
             }
         }
         if ($where){
