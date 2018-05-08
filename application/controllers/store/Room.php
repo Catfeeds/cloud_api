@@ -40,7 +40,9 @@ class Room extends MY_Controller
         //...
         if($house->save()){
             $room   = new Roomdotmodel();
-            $room->fill($post);
+            //insert?
+            $room->fill($post['home']);
+            $room->house_id = $house->id;
             if($room->save()){
                 $this->api_res(0,['room_id'=>$room->id]);
             }
@@ -51,7 +53,10 @@ class Room extends MY_Controller
      * 创建集中式房间
      */
     public function addUnion(){
-
+        $this->load->model('housemodel');
+        $house  = new Housemodel();
+        $a=$house->insert([['store_id'=>3],['store_id'=>4]]);
+        var_dump($a);
     }
 
     /**
