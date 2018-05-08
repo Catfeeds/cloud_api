@@ -628,6 +628,53 @@
         ]
     },
     {
+        "name": "illuminate/events",
+        "version": "v5.5.40",
+        "version_normalized": "5.5.40.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/illuminate/events.git",
+            "reference": "1b558bfa1013f25b35e593c83fce7990d20c4d97"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://files.phpcomposer.com/files/illuminate/events/1b558bfa1013f25b35e593c83fce7990d20c4d97.zip",
+            "reference": "1b558bfa1013f25b35e593c83fce7990d20c4d97",
+            "shasum": ""
+        },
+        "require": {
+            "illuminate/container": "5.5.*",
+            "illuminate/contracts": "5.5.*",
+            "illuminate/support": "5.5.*",
+            "php": ">=7.0"
+        },
+        "time": "2017-12-14T13:29:55+00:00",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "5.5-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Illuminate\\Events\\": ""
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Taylor Otwell",
+                "email": "taylor@laravel.com"
+            }
+        ],
+        "description": "The Illuminate Events package.",
+        "homepage": "https://laravel.com"
+    },
+    {
         "name": "illuminate/support",
         "version": "v5.5.40",
         "version_normalized": "5.5.40.0",

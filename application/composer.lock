@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "8d6911af922caa90177641ac463bc9c0",
+    "content-hash": "d361563ad9c3b31c1fbd7c06885b7a3b",
     "packages": [
         {
             "name": "aliyuncs/oss-sdk-php",
@@ -557,6 +557,51 @@
                 "sql"
             ],
             "time": "2018-03-15T12:39:57+00:00"
+        },
+        {
+            "name": "illuminate/events",
+            "version": "v5.5.40",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/illuminate/events.git",
+                "reference": "1b558bfa1013f25b35e593c83fce7990d20c4d97"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://files.phpcomposer.com/files/illuminate/events/1b558bfa1013f25b35e593c83fce7990d20c4d97.zip",
+                "reference": "1b558bfa1013f25b35e593c83fce7990d20c4d97",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/container": "5.5.*",
+                "illuminate/contracts": "5.5.*",
+                "illuminate/support": "5.5.*",
+                "php": ">=7.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "5.5-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Illuminate\\Events\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Taylor Otwell",
+                    "email": "taylor@laravel.com"
+                }
+            ],
+            "description": "The Illuminate Events package.",
+            "homepage": "https://laravel.com",
+            "time": "2017-12-14T13:29:55+00:00"
         },
         {
             "name": "illuminate/support",
