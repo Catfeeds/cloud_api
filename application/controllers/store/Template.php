@@ -44,6 +44,8 @@ class Template extends MY_Controller
         $template->url  = $this->splitAliossUrl($file_url);
         if($template->save()){
             $this->api_res(0);
+        }else{
+            //by weijinlong
         }
     }
 

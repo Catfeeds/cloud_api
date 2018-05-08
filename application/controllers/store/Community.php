@@ -137,6 +137,8 @@ class Community extends MY_Controller
         if($community->save())
         {
             $this->api_res(0,['community_id'=>$community->id]);
+        }else{
+            //by weijinlong
         }
     }
 

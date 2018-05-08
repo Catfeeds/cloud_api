@@ -56,6 +56,8 @@ class Roomtype extends MY_Controller
         if($roomtype->save())
         {
             $this->api_res(0);
+        }else{
+            //by weijinlong
         }
     }
 
@@ -67,6 +69,8 @@ class Roomtype extends MY_Controller
         $room_type_id   = $this->input->post('room_type_id',true);
         if(Roomtypemodel::find($room_type_id)->delete()){
             $this->api_res(0);
+        }else{
+            //by weijinlong
         }
     }
 
@@ -123,6 +127,8 @@ class Roomtype extends MY_Controller
         if($roomtype->save())
         {
             $this->api_res(0);
+        }else{
+            //by weijinlong
         }
     }
 
