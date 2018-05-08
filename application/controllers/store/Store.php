@@ -81,7 +81,7 @@ class Store extends MY_Controller
      */
     public function showStore(){
         $city   = $this->input->post('city',true);
-        $where  = $city?$city:[];
+        $city?$where['city']=$city:$where=[];
         $store  = Storemodel::where($where)->get(['id','name','city']);
         $this->api_res(0,['stores'=>$store]);
     }

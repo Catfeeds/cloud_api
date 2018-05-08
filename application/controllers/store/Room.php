@@ -1,6 +1,5 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
-
 use Illuminate\Database\Capsule\Manager as DB;
 /**
  * Author:      zjh<401967974@qq.com>
@@ -82,26 +81,18 @@ class Room extends MY_Controller
      * 创建集中式房间
      */
     public function addUnion(){
-
-       /* $this->load->model('housemodel');
-        $this->load->model('roomdotmodel');
+        $this->load->model('storemodel');
+        $room   = new Storemodel();
         DB::beginTransaction();
-
-        $b1=$house->save();
-
-
-        $room->fill($post);
-        $b2=$room->save();
-
-        if($b1 && $b2){
+        $room->name='12221';
+        if($room->save()){
             DB::commit();
-
-            $this->api_res(0,['room_id'=>$room->id]);
+            echo 1;
         }else{
-            DB::rollBack();*/
-            //错误
-       /*     //api_res
-        }*/
+            DB::rollBack();
+            echo 2;
+        }
+
     }
 
     /**
