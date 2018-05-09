@@ -91,12 +91,12 @@ class Room extends MY_Controller
     public function validateDotConfig(){
         $config = [
             array(
-                'filed' => '',
+                'filed' => 'store_id',
                 'label' => '',
                 'rules' => 'trim|required'
             ),
             array(
-                'filed' => '',
+                'filed' => 'community_id',
                 'label' => '',
                 'rules' => 'trim|required'
             ),

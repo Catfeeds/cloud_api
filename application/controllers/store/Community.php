@@ -163,6 +163,20 @@ class Community extends MY_Controller
     }
 
     /**
+     * 获取门店下的小区
+     */
+    public function showCommunity(){
+        $store_id   = $this->input->post('store_id');
+        if(!$store_id){
+            $this->api_res(1005);
+            return;
+        }
+        $where['store_id']  = $store_id;
+        $community  = Communitymodel::where($where)->get(['id','name']);
+        $this->api_res(0,['community'=>$community]);
+    }
+
+    /**
      * @return array
      * 小区字段的验证规则
      */
