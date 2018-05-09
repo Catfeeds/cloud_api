@@ -12,8 +12,8 @@ class Roomtypemodel extends Basemodel{
     protected $table    = 'boss_room_type';
 
     protected $fillable = [
-        'store_id','name','feature','area','room_number','hall_number','toilet_number',
-        'toward','description','facility','images',
+        'store_id','name','feature','area','room_number','hall_number','toilet_number','provides',
+        'toward','description','images',
         ];
 
     protected $hidden   = ['store_id'];

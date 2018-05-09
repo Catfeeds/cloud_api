@@ -36,45 +36,28 @@ class Room extends MY_Controller
             return;
         }
         $house  = new Housemodel();
-        $house->store_id    = $post['store_id'];
-        $house->community_id    = $post['community_id'];
-
-        /*//...
-        if($house->save()){
-            $room   = new Roomdotmodel();
-            //insert?
-            $room->fill($post['home']);
-            $room->house_id = $house->id;
-            if($room->save()){*/
-
         $room   = new Roomdotmodel();
-
-
-        //by weijinlong
-        try{
+        try
+        {
             DB::beginTransaction();
-
-            $b1=$house->save();
-
-            
+            $house->store_id    = $post['store_id'];
+            $house->community_id    = $post['community_id'];
+            $a  = $house->save();
+            $room->house_id = $house->id;
             $room->fill($post);
-            $b2=$room->save();
-            
-            if($b1 && $b2){
+            $b  = $room->save();
+            if($a && $b){
                 DB::commit();
-
-                $this->api_res(0,['room_id'=>$room->id]);
+                $this->api_res(0);
             }else{
                 DB::rollBack();
-                //错误
-                //api_res
+                $this->api_res(1009);
             }
-        }catch(Exception $e){
-            DB::rollBack();
+        }catch (Exception $e)
+        {
+            DB::rollback();
             throw $e;
         }
-        
-
     }
 
     /**
