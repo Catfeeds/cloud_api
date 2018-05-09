@@ -173,7 +173,7 @@ class Roomtype extends MY_Controller
             array(
                 'field' => 'feature',
                 'label' => '房型特色',
-                'rules' => 'required|trim|numeric',
+                'rules' => 'required|trim',
             ),
             array(
                 'field' => 'area',

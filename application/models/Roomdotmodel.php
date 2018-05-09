@@ -12,6 +12,8 @@ class Roomdotmodel extends Basemodel {
 
     protected $table    = 'boss_room_dot';
 
+    protected $fillable = ['store_id','community_id','house_id'];
+
     protected $hidden   = ['created_at','updated_at','deleted_at'];
 
     //房间所属门店信息
