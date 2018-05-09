@@ -48,13 +48,14 @@ class Smartdevice extends MY_Controller
         }
 
         if (!empty($post['device_type'])){$condition['type'] = $post['device_type'];}
-        $filed = ['id','room_id','type','supplier'];
+        $filed = ['id','room_id','store_id','type','supplier'];
         if($condition){
-            $device = Smartdevicemodel::where($condition)
+            $device = Smartdevicemodel::where($condition)->with('room')->with('store')
                                         ->take(PAGINATE)->skip($offset)
                                         ->orderBy('id','desc')->get($filed)->toArray();
         }else{
-            $device = Smartdevicemodel::take(PAGINATE)->skip($offset)
+            $device = Smartdevicemodel::with('room')->with('store')
+                                        ->take(PAGINATE)->skip($offset)
                                         ->orderBy('id','desc')->get($filed)->toArray();
         }
         $this->api_res(0,['list'=>$device,'count'=>$count]);
