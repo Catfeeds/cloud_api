@@ -14,4 +14,11 @@ class Smartdevicemodel extends Basemodel{
     protected $table    = 'boss_smart_device';
     protected $hidden   = ['created_at','updated_at','deleted_at'];
 
+    public function room(){
+        return $this->belongsTo(Roomdotmodel::class,'room_id')->select('id','number');
+    }
+
+    public function store(){
+        return $this->belongsTo(Storemodel::class,'store_id')->select('id');
+    }
 }
