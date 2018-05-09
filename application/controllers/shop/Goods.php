@@ -23,7 +23,6 @@ class Goods extends MY_Controller
         $page   = isset($post['page'])?$post['page']:1;
         $name   = isset($post['name'])?$post['name']:NULL;
         $offset = PAGINATE*($page-1);
-        $sum    = Goodsmodel::count();
         $count  = ceil(Goodsmodel::count()/PAGINATE);
         $filed  = ['id','name','category_id','market_price','shop_price','quantity','sale_num',
             'description','detail','original_link','goods_thumb','goods_carousel'];
@@ -41,11 +40,11 @@ class Goods extends MY_Controller
                                     ->get($filed)->toArray();
         }
 
-        for($i = 0;$i<$sum;$i++)
-        {
-            $goods[$i]['goods_thumb']=$this->fullAliossUrl($goods[$i]['goods_thumb']);
-            $goods[$i]['goods_carousel'] = $this->fullAliossUrl(json_decode($goods[$i]['goods_carousel']),true);
+        foreach ($goods as $key=>$good){
+            $goods[$key]['goods_thumb']=$this->fullAliossUrl($good['goods_thumb']);
+            $goods[$key]['goods_carousel'] = $this->fullAliossUrl(json_decode($good['goods_carousel'],true),true);
         }
+
         $this->api_res(0,['list'=>$goods,'count'=>$count]);
     }
 
