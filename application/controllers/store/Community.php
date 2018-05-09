@@ -61,7 +61,7 @@ class Community extends MY_Controller
             $this->api_res(0,['count'=>$count,'community'=>[]]);
             return;
         }
-        $this->load->model('roommodel');
+        $this->load->model('roomdotmodel');
         $this->load->model('storemodel');
         $communitys  = Communitymodel::with('room')->with('store')->where($where)->offset($offset)->limit(PAGINATE)
             ->get($field)
@@ -91,7 +91,7 @@ class Community extends MY_Controller
             $this->api_res(0,['count'=>$count,'community'=>[]]);
             return;
         }
-        $this->load->model('roommodel');
+        $this->load->model('roomdotmodel');
         $this->load->model('storemodel');
         $communitys  = Communitymodel::with('room')->with('store')->where($where)->where('name','like',"%$name%")->offset($offset)->limit(PAGINATE)
             ->get($field)

@@ -27,8 +27,8 @@ class Template extends MY_Controller
             $this->api_res(0,['count'=>$count,'list'=>[]]);
             return;
         }
-        $stores = Contracttemplatemodel::offset($offset)->limit(PAGINATE)->orderBy('id','desc')->get($field)->toArray();
-        $this->api_res(0,['count'=>$count,'list'=>$stores]);
+        $templates = Contracttemplatemodel::offset($offset)->limit(PAGINATE)->orderBy('id','desc')->get($field)->toArray();
+        $this->api_res(0,['count'=>$count,'list'=>$templates]);
     }
 
     /**
