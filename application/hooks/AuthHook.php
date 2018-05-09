@@ -45,6 +45,7 @@ class AuthHook {
             'store/roomtype/searchroomtype',
             'store/roomtype/getroomtype',
             'store/roomtype/updateroomtype',
+            'store/roomtype/destroyroomtype',
             'store/template/listtemplate',
             'store/template/deletetemplate',
             'store/template/addtemplate',

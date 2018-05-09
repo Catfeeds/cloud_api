@@ -92,54 +92,69 @@ class Room extends MY_Controller
         $config = [
             array(
                 'filed' => 'store_id',
-                'label' => '',
-                'rules' => 'trim|required'
+                'label' => '门店id',
+                'rules' => 'trim|required|integer'
             ),
             array(
                 'filed' => 'community_id',
-                'label' => '',
-                'rules' => 'trim|required'
+                'label' => '小区id',
+                'rules' => 'trim|required|integer'
             ),
             array(
-                'filed' => '',
-                'label' => '',
-                'rules' => 'trim|required'
+                'filed' => 'building',
+                'label' => '楼栋号',
+                'rules' => 'trim|required|integer'
             ),
             array(
-                'filed' => '',
-                'label' => '',
-                'rules' => 'trim|required'
+                'filed' => 'unit',
+                'label' => '单元号',
+                'rules' => 'trim|required|integer'
             ),
             array(
-                'filed' => '',
-                'label' => '',
-                'rules' => 'trim|required'
+                'filed' => 'room_number',
+                'label' => '房间数量',
+                'rules' => 'trim|required|integer'
             ),
             array(
-                'filed' => '',
-                'label' => '',
-                'rules' => 'trim|required'
+                'filed' => 'hall_number',
+                'label' => '客厅数量',
+                'rules' => 'trim|required|integer'
             ),
             array(
-                'filed' => '',
-                'label' => '',
-                'rules' => 'trim|required'
+                'filed' => 'toilet_number',
+                'label' => '卫生间数量',
+                'rules' => 'trim|required|integer'
             ),
             array(
-                'filed' => '',
-                'label' => '',
-                'rules' => 'trim|required'
+                'filed' => 'contract_template_id',
+                'label' => '选择合同模板',
+                'rules' => 'trim|required|integer'
             ),
             array(
-                'filed' => '',
-                'label' => '',
-                'rules' => 'trim|required'
+                'filed' => 'contract_min_time',
+                'label' => '合同最少签约期限（以月份计）',
+                'rules' => 'trim|required|integer'
             ),
             array(
-                'filed' => '',
-                'label' => '',
+                'filed' => 'contract_max_time',
+                'label' => '合同最多签约期限（以月份计）',
+                'rules' => 'trim|required|integer'
+            ),
+            array(
+                'filed' => 'deposit_type',
+                'label' => '押金信息',
+                'rules' => 'trim|required|in_list[FREE]'
+            ),
+            array(
+                'filed' => 'pay_frequency_allow',
+                'label' => '允许的支付周期',
                 'rules' => 'trim|required'
             ),
+           /* array(
+                'filed' => '',
+                'label' => '',
+                'rules' => 'trim|required|'
+            ),*/
         ];
         return $config;
     }
