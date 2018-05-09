@@ -66,6 +66,22 @@ class Template extends MY_Controller
     }
 
     /**
+     * 批量删除模板
+     */
+    public function destroyTemplate(){
+        $id = $this->input->post('template_id',true);
+        if(!is_array($id)){
+            $this->api_res(1005);
+            return;
+        }
+        if(Contracttemplatemodel::destroy($id)){
+            $this->api_res(0);
+        }else{
+            $this->api_res(1009);
+        }
+    }
+
+    /**
      * 查找模板（按名称 模糊查询）
      */
     public function searchTemplate(){
@@ -79,5 +95,55 @@ class Template extends MY_Controller
         }
         $stores  = Contracttemplatemodel::where('name','like',"%$name%")->limit(PAGINATE)->orderBy('id','desc')->get($field);
         $this->api_res(0,['count'=>$count,'list'=>$stores]);
+    }
+
+    /**
+     * 查看模板信息
+     */
+    public function getTemplate(){
+        $template_id    = $this->input->post('template_id',true);
+        if(!$template_id){
+            $this->api_res(1005);
+            return;
+        }
+        $template   = Contracttemplatemodel::select(['name','url'])->find($template_id);
+        $template['url']    = $this->fullAliossUrl($template['url']);
+        if(!$template){
+            $this->api_res(1007);
+            return;
+        }else{
+            $this->api_res(0,['template'=>$template]);
+        }
+
+    }
+
+    /**
+     * 编辑模板信息
+     */
+    public function updateTemplate(){
+        $template_id    = $this->input->post('template_id',true);
+        if(!$template_id){
+            $this->api_res(1002);
+            return;
+        }
+        $post   = $this->input->post(NULL,true);
+        //找到员工所在的门店id
+        $name   = isset($post['name'])?$post['name']:null;
+        $file_url   = isset($post['file_url'])?$post['file_url']:null;
+        if(empty($name) || empty($file_url)){
+            $this->api_res(1002);
+            return;
+        }
+        $template   = Contracttemplatemodel::find($template_id);
+        if(!$template){
+            $this->api_res(1007);
+        }
+        $template->name = $name;
+        $template->url  = $this->splitAliossUrl($file_url);
+        if($template->save()){
+            $this->api_res(0);
+        }else{
+            $this->api_res(1009);
+        }
     }
 }

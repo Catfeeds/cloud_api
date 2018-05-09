@@ -95,9 +95,9 @@ class Roomtype extends MY_Controller
      * 批量删除
      */
     public function destroyRoomType(){
-        $id = $this->input->post('id',true);
+        $id = $this->input->post('room_type_id',true);
         if(!is_array($id)){
-            $this->api_res(1009);
+            $this->api_res(1005);
             return;
         }
         if(Roomtypemodel::destroy($id)){

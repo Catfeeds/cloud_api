@@ -50,6 +50,9 @@ class AuthHook {
             'store/template/deletetemplate',
             'store/template/addtemplate',
             'store/template/searchtemplate',
+            'store/template/destroytemplate',
+            'store/template/gettemplate',
+            'store/template/updatetemplate',
 
             'store/community/addcommunity',
             'store/community/listcommunity',
