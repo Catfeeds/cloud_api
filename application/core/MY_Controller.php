@@ -90,8 +90,19 @@ class MY_Controller extends CI_Controller {
      * config数组中包含 field 和config 两个类型
      * example $config=['filed'=>['a','b','c'],'config'=>[['field'=>'a'....],['field'=>'b'....]]]
      */
-    public function validationText($config)
+    public function validationText($config,$data=[])
     {
+        /*if(!empty($data)&&is_array($data))
+        {
+            $this->load->library('form_validation');
+            $this->form_validation->set_data($data)->set_rules($config);
+            if(!$this->form_validation->run())
+            {
+                return false;
+            }else{
+                return true;
+            }
+        }*/
         $this->load->library('form_validation');
         $this->form_validation->set_rules($config);
         if(!$this->form_validation->run())
