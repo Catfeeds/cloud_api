@@ -92,6 +92,8 @@ class AuthHook {
 
             'smartdevice/smartdevice/index',
             'smartdevice/smartdevice/record',
+
+            'smartdevice/yeeuu/getstatus',
         );
 
         $directory  = $this->CI->router->fetch_directory();

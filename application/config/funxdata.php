@@ -37,3 +37,15 @@ $config['jwt_exp'] = (time()+7200); //过期时间
 
 //上传附件的cdn地址
 $config['cdn_path'] = 'http://tfunx.oss-cn-shenzhen.aliyuncs.com';
+
+//智能设备相关配置信息
+$config['joyMeterClientId'] = 'joy000001';
+$config['joyMeterApiUrl']   = 'http://122.225.71.66:8787/amr/joy/';
+$config['joyPublicKeyPath'] = 'private/keys/rsa_public_key.pem';
+$config['joyPrivateKeyPath']= 'private/keys/rsa_private_key.pem';
+$config['joyLockPartnerId'] = '59cf50b69e23627437000028';
+$config['joyLockSecret']    = 'fahwkc5M';
+
+$config['danbayUserName']   = 'jindihuohua';
+$config['danbayPassword']   = 'a123456';
+$config['danbayTokenKey']   = 'dan_bay_mtoken_cache_key';
