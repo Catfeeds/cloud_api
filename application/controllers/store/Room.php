@@ -18,23 +18,28 @@ class Room extends MY_Controller
      * 添加分布式房间
      */
     public function addDot(){
+        $field  = ['store_id'];
+        if(!$this->validationText($this->validateDotConfig())){
+            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+            return;
+        }
         //加载房屋和房间模型
         $this->load->model('housemodel');
         $this->load->model('roomdotmodel');
-        //表单验证的字段
-        $field  = [];
-        if($this->validationText($this->validateDotConfig())){
-            $this->api_res(1002,$this->form_first_error($field));
-            return;
-        }
+        //获取到post数据
         $post   = $this->input->post(null,true);
+        //判断该小区是否存在该房间
         $where['store_id']      = $post['store_id'];
         $where['community_id']  = $post['community_id'];
-        //判断该小区是否存在该房间
+        $where['building']      = $post['building'];
+        $where['unit']          = $post['unit'];
+        $where['layer']         = $post['layer'];
+        $where['number']        = $post['number'];
         if(Housemodel::where($where)->first()){
             $this->api_res(1008);
             return;
         }
+
         $house  = new Housemodel();
         $room   = new Roomdotmodel();
         try
@@ -111,6 +116,21 @@ class Room extends MY_Controller
                 'rules' => 'trim|required|integer'
             ),
             array(
+                'filed' => 'number',
+                'label' => '房屋号',
+                'rules' => 'trim|required|integer'
+            ),
+            array(
+                'filed' => 'layer',
+                'label' => '所在楼层',
+                'rules' => 'trim|required|integer'
+            ),
+            array(
+                'filed' => 'layer_total',
+                'label' => '总楼层',
+                'rules' => 'trim|required|integer'
+            ),
+            array(
                 'filed' => 'room_number',
                 'label' => '房间数量',
                 'rules' => 'trim|required|integer'
@@ -124,6 +144,11 @@ class Room extends MY_Controller
                 'filed' => 'toilet_number',
                 'label' => '卫生间数量',
                 'rules' => 'trim|required|integer'
+            ),
+            array(
+                'filed' => 'area',
+                'label' => '房屋面积',
+                'rules' => 'trim|required|numeric'
             ),
             array(
                 'filed' => 'contract_template_id',

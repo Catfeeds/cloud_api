@@ -146,4 +146,15 @@ class Template extends MY_Controller
             $this->api_res(1009);
         }
     }
+
+    /**
+     * 获取门店下的合同模板
+     */
+    public function showTemplate(){
+        $template_id    = $this->input->post('store_id',true);
+        if(!$template_id){
+            $this->api_res(1005);
+            return;
+        }
+    }
 }

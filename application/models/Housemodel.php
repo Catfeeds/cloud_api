@@ -12,7 +12,7 @@ class Housemodel extends Basemodel{
 
     protected $table    = 'boss_house';
 
-    protected $fillable = ['store_id','community_id','rent_type',];
+    protected $fillable = ['store_id','community_id',];
 
     //房屋的房间信息
     public function room(){

@@ -62,6 +62,7 @@ class AuthHook {
             'store/community/updatecommunity',
             'store/community/getcommunity',
             'store/community/deletecommunity',
+            'store/community/destroycommunity',
             'store/community/showcommunity',
 
             'store/room/adddot',
