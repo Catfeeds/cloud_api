@@ -53,6 +53,7 @@ class AuthHook {
             'store/template/destroytemplate',
             'store/template/gettemplate',
             'store/template/updatetemplate',
+            'store/template/showtemplate',
 
             'store/room/adddot',
 

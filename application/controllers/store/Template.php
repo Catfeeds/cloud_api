@@ -151,10 +151,12 @@ class Template extends MY_Controller
      * 获取门店下的合同模板
      */
     public function showTemplate(){
-        $template_id    = $this->input->post('store_id',true);
-        if(!$template_id){
+        $store_id    = $this->input->post('store_id',true);
+        if(!$store_id){
             $this->api_res(1005);
             return;
         }
+        $template   = Contracttemplatemodel::where('store_id',$store_id)->get(['id','name']);
+        $this->api_res(0,['template'=>$template]);
     }
 }
