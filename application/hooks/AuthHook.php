@@ -33,6 +33,7 @@ class AuthHook {
             'store/store/addstoredot',
             'store/store/addstoreunion',
             'store/store/deletestore',
+            'store/store/destroystore',
             'store/store/showstore',
             'store/store/showcity',
             'store/store/getstore',
@@ -57,6 +58,8 @@ class AuthHook {
 
             'store/room/adddot',
             'store/room/addunion',
+            'store/room/listunion',
+            'store/room/listdot',
 
             'store/community/addcommunity',
             'store/community/listcommunity',

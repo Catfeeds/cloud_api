@@ -239,6 +239,13 @@ class Room extends MY_Controller
      * 分布式房间列表
      */
     public function listDot(){
+        $field  = ['id','room_type_id','number'];
+        $post   = $this->input->post(null,true);
+        isset($post['store_id'])?$where['store_id']=$post['store_id']:null;
+        isset($post['building_name'])?$where['building_name']=$post['building_name']:null;
+        $this->load->model('roomdotmodel');
+        $rooms  = Roomdotmodel::get($field);
+
 
     }
 

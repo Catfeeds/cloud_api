@@ -77,6 +77,22 @@ class Store extends MY_Controller
     }
 
     /**
+     * 批量删除门店
+     */
+    public function destroyStore(){
+        $id = $this->input->post('store_id',true);
+        if(!is_array($id)){
+            $this->api_res(1005);
+            return;
+        }
+        if(Storemodel::destroy($id)){
+            $this->api_res(0);
+        }else{
+            $this->api_res(1009);
+        }
+    }
+
+    /**
      * 获取门店名
      */
     public function showStore(){
