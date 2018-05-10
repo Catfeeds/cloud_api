@@ -19,9 +19,9 @@ class Goodsorder extends MY_Controller
         $this->load->model('customermodel');
         $this->load->model('shopaddressmodel');
         $post   = $this->input->post(NULL,true);
-        $page   = isset($post['page'])?$post['page']:1;
+        $page   = isset($post['page'])?intval($post['page']):1;
         $offset = PAGINATE*($page-1);
-        $count  = ceil(Goodsordermodel::count()/PAGINATE);
+
         $filed  = ['id','number','customer_id','address_id','status','goods_money','pay_money'];
 
         if(!empty($post['begin_time'])){$bt=$post['begin_time'];}else{$bt = date('Y-m-d H:i:s',0);};
@@ -29,18 +29,31 @@ class Goodsorder extends MY_Controller
 
         if(!empty($post['number'])){
             $number = $post['number'];
-            $goods  = Goodsordermodel::with('customer')->with('address')
-                                        ->where('number',$number)
-                                        ->whereBetween('created_at',[$bt,$et])
+            $count  = ceil(Goodsordermodel::where('number',$number) ->whereBetween('created_at',[$bt,$et])
+                                                ->count()/PAGINATE);
+            if($page>$count||$page<1){
+                $this->api_res(0,['list'=>[]]);
+                return;
+            }else {
+                $goods = Goodsordermodel::with('customer')->with('address')
+                                        ->where('number', $number)
+                                        ->whereBetween('created_at', [$bt, $et])
                                         ->take(PAGINATE)->skip($offset)
-                                        ->orderBy('id','desc')
+                                        ->orderBy('id', 'desc')
                                         ->get($filed)->toArray();
+            }
         }else{
-            $goods  = Goodsordermodel::with('customer')->with('address')
-                                        ->whereBetween('created_at',[$bt,$et])
+            $count  = ceil(Goodsordermodel::whereBetween('created_at',[$bt,$et])->count()/PAGINATE);
+            if($page>$count||$page<1){
+                $this->api_res(0,['list'=>[]]);
+                return;
+            }else {
+                $goods = Goodsordermodel::with('customer')->with('address')
+                                        ->whereBetween('created_at', [$bt, $et])
                                         ->take(PAGINATE)->skip($offset)
-                                        ->orderBy('id','desc')
+                                        ->orderBy('id', 'desc')
                                         ->get($filed)->toArray();
+            }
         }
         $this->api_res(0,['list'=>$goods,'count'=>$count]);
     }

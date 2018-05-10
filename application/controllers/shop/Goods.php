@@ -20,31 +20,41 @@ class Goods extends MY_Controller
     public function index()
     {
         $post   = $this->input->post(NULL,TRUE);
-        $page   = isset($post['page'])?$post['page']:1;
+        $page   = isset($post['page'])?intval($post['page']):1;
         $name   = isset($post['name'])?$post['name']:NULL;
         $offset = PAGINATE*($page-1);
-        $count  = ceil(Goodsmodel::count()/PAGINATE);
-        $filed  = ['id','name','category_id','market_price','shop_price','quantity','sale_num',
-            'description','detail','original_link','goods_thumb','goods_carousel'];
+
+        $filed  = ['id','name','category_id','market_price','shop_price','quantity','sale_num','on_sale',
+                    'description','detail','original_link','goods_thumb','goods_carousel'];
         $where  = array();
         if(!empty($post['category_id'])){$where['category_id']=$post['category_id'];}
         if(!empty($post['on_sale'])){$where['on_sale']=$post['on_sale'];}
-
+        isset($post['id'])?$where['id'] = intval($post['id']):NULL;
         if(empty($where)) {
-            $goods  = Goodsmodel::where('name','like','%'."$name".'%')
-                                ->take(PAGINATE)->skip($offset)->orderBy('id','desc')
-                                ->get($filed)->toArray();
+            $count  = ceil(Goodsmodel::where('name','like','%'."$name".'%')->count()/PAGINATE);
+            if($page>$count||$page<1){
+                $this->api_res(0,['list'=>[]]);
+                return;
+            }else{
+                $goods  = Goodsmodel::where('name','like','%'."$name".'%')
+                    ->take(PAGINATE)->skip($offset)->orderBy('id','desc')
+                    ->get($filed)->toArray();
+            }
         }else{
-            $goods  = Goodsmodel::where('name','like','%'."$name".'%')->where($where)
-                                    ->take(PAGINATE)->skip($offset)->orderBy('id','desc')
-                                    ->get($filed)->toArray();
+            $count  = ceil(Goodsmodel::where('name','like','%'."$name".'%')->where($where)->count()/PAGINATE);
+            if($page>$count||$page<1){
+                $this->api_res(0,['list'=>[]]);
+                return;
+            }else {
+                $goods = Goodsmodel::where('name', 'like', '%' . "$name" . '%')->where($where)
+                    ->take(PAGINATE)->skip($offset)->orderBy('id', 'desc')
+                    ->get($filed)->toArray();
+            }
         }
-
         foreach ($goods as $key=>$good){
             $goods[$key]['goods_thumb']=$this->fullAliossUrl($good['goods_thumb']);
             $goods[$key]['goods_carousel'] = $this->fullAliossUrl(json_decode($good['goods_carousel'],true),true);
         }
-
         $this->api_res(0,['list'=>$goods,'count'=>$count]);
     }
 
