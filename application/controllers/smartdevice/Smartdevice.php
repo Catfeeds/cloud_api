@@ -18,7 +18,7 @@ class Smartdevice extends MY_Controller
     /**
      * 获取设备列表
      */
-    public function index()
+    public function listsmartdevice()
     {
         $this->load->model('storemodel');
         $this->load->model('roomdotmodel');

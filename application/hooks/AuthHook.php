@@ -77,39 +77,35 @@ class AuthHook {
             'store/room/adddot',
             'store/room/addunion',
 
-            'service/servicetype/index',
+            'service/servicetype/listservicetype',
             'service/servicetype/addservicetype',
             'service/servicetype/imageupload',
             'service/servicetype/updateservicetype',
 
-            'service/serviceorder/index',
-            'service/serviceorder/getcity',
-            'service/serviceorder/getstore',
+            'service/serviceorder/listserviceorder',
             'service/serviceorder/getservicetype',
             'service/serviceorder/getdetail',
-            'service/serviceorder/test',
 
-            'service/reserveorder/index',
+            'service/reserveorder/listreserveorder',
 
             'shop/goodscategory/goodscategory',
             'shop/goodscategory/addcategory',
             'shop/goodscategory/updatecategory',
             'shop/goodscategory/deletecategory',
 
-            'shop/goods/index',
+            'shop/goods/listgoods',
             'shop/goods/getcategory',
             'shop/goods/addgoods',
             'shop/goods/updategoods',
             'shop/goods/updateonsale',
             'shop/goods/deletegoods',
 
-            'shop/goodsorder/index',
+            'shop/goodsorder/listgoodsorder',
             'shop/goodsorder/detail',
 
-            'smartdevice/smartdevice/index',
+            'smartdevice/smartdevice/listsmartdevice',
             'smartdevice/smartdevice/record',
 
-            'smartdevice/yeeuu/getstatus',
         );
 
         $directory  = $this->CI->router->fetch_directory();

@@ -14,7 +14,7 @@ class Goodsorder extends MY_Controller
         $this->load->model('goodsordermodel');
     }
 
-    public function index()
+    public function listgoodsorder()
     {
         $this->load->model('customermodel');
         $this->load->model('shopaddressmodel');
