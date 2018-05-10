@@ -17,7 +17,7 @@ class Reserveorder extends MY_Controller
     /**
      * 返回预约订单列表
      */
-    public function index()
+    public function listReserveorder()
     {
         $this->load->model('employeemodel');
         $post   = $this->input->post(NULL,true);

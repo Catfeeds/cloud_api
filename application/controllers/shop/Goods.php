@@ -17,7 +17,7 @@ class Goods extends MY_Controller
     /**
      * 返回商品列表
      */
-    public function index()
+    public function listgoods()
     {
         $post   = $this->input->post(NULL,TRUE);
         $page   = isset($post['page'])?intval($post['page']):1;

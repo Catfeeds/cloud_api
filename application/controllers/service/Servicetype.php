@@ -18,7 +18,7 @@ class Servicetype extends MY_Controller
     /**
      * 返回服务类型列表
      */
-    public function index()
+    public function listServicetype()
     {
         $post   = $this->input->post(NULL,TRUE);
         $page   = isset($post['page'])?intval($post['page']):1;

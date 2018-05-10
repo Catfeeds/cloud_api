@@ -17,7 +17,7 @@ class Serviceorder extends MY_Controller
     /**
      * 返回服务订单列表
      */
-    public function index()
+    public function listServiceorder()
     {
         $this->load->model('storemodel');
         $this->load->model('servicetypemodel');
