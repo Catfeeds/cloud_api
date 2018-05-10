@@ -236,6 +236,47 @@ class Room extends MY_Controller
     }
 
     /**
+     * 批量编辑分布式房间
+     */
+    public function batchUpdateDot(){
+        $field  = ['store_id','community_id','contract_template_id','contract_min_time',
+            'contract_max_time','deposit_type','pay_frequency_allow'];
+        $post   = $this->input->post(null,true);
+        //验证基本信息
+        if(!$this->validationText($this->validateBatchDotConfig())){
+            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+            return;
+        }
+        //验证付款周期
+        $pay_frequency_allows = isset($post['pay_frequency_allow'])?$post['pay_frequency_allow']:null;
+        if(!$pay_frequency_allows || !is_array($pay_frequency_allows)){
+            $this->api_res(1002,['error'=>'允许的支付周期错误']);
+            return;
+        }
+        foreach ($pay_frequency_allows as $pay_frequency_allow ){
+            $a['pay_frequency_allow']   = $pay_frequency_allow;
+            if(!$this->validationText($this->validatePayConfig(),$a)){
+                $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+                return;
+            }
+        }
+        $this->load->model('roomdotmodel');
+        $rooms  = Roomdotmodel::where(['store_id'=>$post['store_id'],'community_id'=>$post['community_id']]);
+        $updates    = [
+            'contract_template_id'  => $post['contract_template_id'],
+            'contract_min_time'     => $post['contract_min_time'],
+            'contract_max_time'     => $post['contract_max_time'],
+            'deposit_type'          => $post['deposit_type'],
+            'pay_frequency_allow'   => json_encode($post['pay_frequency_allow']),
+        ];
+        if($rooms->update($updates)){
+            $this->api_res(0);
+        }else{
+            $this->api_res(1009);
+        }
+    }
+
+    /**
      * 批量更新集中式房间
      */
     public function batchUpdateUnion(){
@@ -243,7 +284,7 @@ class Room extends MY_Controller
             'contract_max_time','deposit_type','pay_frequency_allow'];
         $post   = $this->input->post(null,true);
         //验证基本信息
-        if(!$this->validationText($this->validateUnionConfig())){
+        if(!$this->validationText($this->validateBatchUnionConfig())){
             $this->api_res(1002,['error'=>$this->form_first_error($field)]);
             return;
         }
@@ -443,9 +484,43 @@ class Room extends MY_Controller
                 'rules' => 'trim|required|integer'
             ),
             array(
+                'field' => 'contract_template_id',
+                'label' => '选择合同模板',
+                'rules' => 'trim|required|integer'
+            ),
+            array(
+                'field' => 'contract_min_time',
+                'label' => '合同最少签约期限（以月份计）',
+                'rules' => 'trim|required|integer'
+            ),
+            array(
+                'field' => 'contract_max_time',
+                'label' => '合同最多签约期限（以月份计）',
+                'rules' => 'trim|required|integer'
+            ),
+            array(
+                'field' => 'deposit_type',
+                'label' => '押金信息',
+                'rules' => 'trim|required|in_list[FREE]'
+            ),
+        ];
+        return $config;
+    }
+
+    /**
+     * 批量编辑集中式验证规则
+     */
+    public function validateBatchUnionConfig(){
+        $config = [
+            array(
+                'field' => 'store_id',
+                'label' => '门店id',
+                'rules' => 'trim|required|integer'
+            ),
+            array(
                 'field' => 'building_id',
                 'label' => '楼栋id',
-                'rules' => 'trim|integer'
+                'rules' => 'trim|integer|required'
             ),
             array(
                 'field' => 'contract_template_id',
@@ -471,6 +546,44 @@ class Room extends MY_Controller
         return $config;
     }
 
+    /**
+     * 批量编辑分布式验证规则
+     */
+    public function validateBatchDotConfig(){
+        $config = [
+            array(
+                'field' => 'store_id',
+                'label' => '门店id',
+                'rules' => 'trim|required|integer'
+            ),
+            array(
+                'field' => 'community_id',
+                'label' => '楼栋id',
+                'rules' => 'trim|integer|required'
+            ),
+            array(
+                'field' => 'contract_template_id',
+                'label' => '选择合同模板',
+                'rules' => 'trim|required|integer'
+            ),
+            array(
+                'field' => 'contract_min_time',
+                'label' => '合同最少签约期限（以月份计）',
+                'rules' => 'trim|required|integer'
+            ),
+            array(
+                'field' => 'contract_max_time',
+                'label' => '合同最多签约期限（以月份计）',
+                'rules' => 'trim|required|integer'
+            ),
+            array(
+                'field' => 'deposit_type',
+                'label' => '押金信息',
+                'rules' => 'trim|required|in_list[FREE]'
+            ),
+        ];
+        return $config;
+    }
     /**
      * 验证楼栋
      */
