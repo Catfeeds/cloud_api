@@ -56,6 +56,7 @@ class AuthHook {
             'store/template/showtemplate',
 
             'store/room/adddot',
+            'store/room/addunion',
 
             'store/community/addcommunity',
             'store/community/listcommunity',

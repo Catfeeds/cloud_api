@@ -12,7 +12,8 @@ class Roomdotmodel extends Basemodel {
 
     protected $table    = 'boss_room_dot';
 
-    protected $fillable = ['store_id','community_id','house_id','number','area','toward','feature','provides'];
+    protected $fillable = ['store_id','community_id','house_id','number','area','toward','feature','provides',
+        'contract_template_id','contract_min_time','contract_max_time','deposit_type','pay_frequency_allow',];
 
     protected $hidden   = ['created_at','updated_at','deleted_at'];
 
