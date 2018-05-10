@@ -18,7 +18,7 @@ class Room extends MY_Controller
      * 添加分布式房间
      */
     public function addDot(){
-        $field  = ['store_id','community_id','building','unit','number','layer','layer_total','room_number',
+        $field  = ['store_id','community_id','building_name','unit','number','layer','layer_total','room_number',
             'hall_number','toilet_number','area','contract_template_id','contract_min_time','contract_max_time',
             'deposit_type','pay_frequency_allow','the_room_number','room_area','room_toward','room_feature','room_provides',
         ];
@@ -33,32 +33,47 @@ class Room extends MY_Controller
             $this->api_res(1002,['error'=>'房屋图片不能为空']);
             return;
         }
+        $pay_frequency_allows = isset($post['pay_frequency_allow'])?$post['pay_frequency_allow']:null;
+        if(!$pay_frequency_allows || !is_array($pay_frequency_allows)){
+            $this->api_res(1002,['error'=>'允许的支付周期错误']);
+            return;
+        }
+        //遍历验证支付周期
+        foreach ($pay_frequency_allows as $pay_frequency_allow ){
+            $a['pay_frequency_allow']   = $pay_frequency_allow;
+            if(!$this->validationText($this->validatePayConfig(),$a)){
+                $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+                return;
+            }
+        }
         //遍历验证房间
         $rooms   = isset($post['rooms'])?$post['rooms']:null;
-        if(!$rooms || is_array($rooms)){
+        if(!$rooms || !is_array($rooms)){
             $this->api_res(1002,['error'=>'房间信息不能为空或字符串']);
             return;
         }
         if($post['room_number']!=count($rooms)){
             $this->api_res(1002,['error'=>'房间数目不匹配']);
+            return;
         }
         for($i=0;$i<count($rooms);$i++){
-            if(!$rooms[$i] || is_array($rooms[$i])){
+            if(!$rooms[$i] || !is_array($rooms[$i])){
                 $this->api_res(1002,['error'=>'房间信息不能为空或字符串']);
                 return;
             }
-            if($this->validationText($this->validateDotConfig(),$rooms[$i])){
+            if(!$this->validationText($this->validateDotConfig(),$rooms[$i])){
                 $this->api_res(1002,['error'=>$this->form_first_error($field)]);
                 return;
             }
         }
+        //return;
         //加载房屋和房间模型
         $this->load->model('housemodel');
         $this->load->model('roomdotmodel');
         //判断该小区是否存在该房间
         $where['store_id']      = $post['store_id'];
         $where['community_id']  = $post['community_id'];
-        $where['building']      = $post['building'];
+        $where['building_name'] = $post['building_name'];
         $where['unit']          = $post['unit'];
         $where['layer']         = $post['layer'];
         $where['number']        = $post['number'];
@@ -75,22 +90,25 @@ class Room extends MY_Controller
             //存入房屋信息
             $house->fill($post);
             $house->images  = json_encode($this->splitAliossUrl($images,true));
+            $house->pay_frequency_allow = json_encode($post['pay_frequency_allow']);
             $a  = $house->save();
             //存入房间信息
             $store_id       = $post['store_id'];
             $community_id   = $post['community_id'];
             $house_id       = $house->id;
             $room_insert    = [];
-            foreach ($rooms as $room) {
+            foreach ($rooms as $room_item) {
                 $room_insert[]      = [
                     'store_id'      => $store_id,
                     'community_id'  => $community_id,
                     'house_id'      => $house_id,
-                    'number'        => $room['the_room_number'],
-                    'area'          => $room['area'],
-                    'toward'        => $room['toward'],
-                    'feature'       => $room['feature'],
-                    'provides'      => $room['provides'],
+                    'number'        => $room_item['the_room_number'],
+                    'area'          => $room_item['room_area'],
+                    'toward'        => $room_item['room_toward'],
+                    'feature'       => $room_item['room_feature'],
+                    'provides'      => $room_item['room_provides'],
+                    'created_at'    => date('Y-m-d H:i:s',time()),
+                    'updated_at'    => date('Y-m-d H:i:s',time()),
                 ];
             }
             $b  = $room->insert($room_insert);
@@ -149,9 +167,9 @@ class Room extends MY_Controller
                 'rules' => 'trim|required|integer'
             ),
             array(
-                'field' => 'building',
-                'label' => '楼栋号',
-                'rules' => 'trim|required|integer'
+                'field' => 'building_name',
+                'label' => '楼栋名称',
+                'rules' => 'trim|required'
             ),
             array(
                 'field' => 'unit',
@@ -171,7 +189,7 @@ class Room extends MY_Controller
             array(
                 'field' => 'number',
                 'label' => '房屋号',
-                'rules' => 'trim|required|integer'
+                'rules' => 'trim|required'
             ),
             array(
                 'field' => 'room_number',
@@ -213,11 +231,6 @@ class Room extends MY_Controller
                 'label' => '押金信息',
                 'rules' => 'trim|required|in_list[FREE]'
             ),
-            array(
-                'field' => 'pay_frequency_allow',
-                'label' => '允许的支付周期',
-                'rules' => 'trim|required'
-            ),
         ];
         return $config;
     }
@@ -249,8 +262,22 @@ class Room extends MY_Controller
             ),
             array(
                 'field' => 'room_provides',
-                'label' => '房间特色',
+                'label' => '房间配套',
                 'rules' => 'required|trim',
+            ),
+        ];
+        return $config;
+    }
+
+    /**
+     * 验证支付周期
+     */
+    public function validatePayConfig(){
+        $config = [
+            array(
+                'field' => 'pay_frequency_allow',
+                'label' => '允许的支付周期',
+                'rules' => 'trim|required|integer|in_list[1,2,3,6,12,24]'
             ),
         ];
         return $config;

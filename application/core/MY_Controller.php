@@ -92,7 +92,7 @@ class MY_Controller extends CI_Controller {
      */
     public function validationText($config,$data=[])
     {
-        /*if(!empty($data)&&is_array($data))
+        if(!empty($data)&&is_array($data))
         {
             $this->load->library('form_validation');
             $this->form_validation->set_data($data)->set_rules($config);
@@ -102,7 +102,7 @@ class MY_Controller extends CI_Controller {
             }else{
                 return true;
             }
-        }*/
+        }
         $this->load->library('form_validation');
         $this->form_validation->set_rules($config);
         if(!$this->form_validation->run())
