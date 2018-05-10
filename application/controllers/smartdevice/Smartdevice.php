@@ -23,9 +23,8 @@ class Smartdevice extends MY_Controller
         $this->load->model('storemodel');
         $this->load->model('roomdotmodel');
         $post           = $this->input->post(NULL,true);
-        $page           = empty($post['page'])?1:trim($post['page']);
+        $page           = empty($post['page'])?1:intval($post['page']);
         $offset         = PAGINATE*($page-1);
-        $count          = ceil(Smartdevicemodel::count()/PAGINATE);
 
         $where          = [];
         $condition      = [];
@@ -38,7 +37,7 @@ class Smartdevice extends MY_Controller
             if($room_id){
                 $condition['room_id']      = $room_id;
             }else{
-                $this->api_res(0,['list'=>[],'count'=>$count]);
+                $this->api_res(0,['list'=>[]]);
                 return ;
             }
         }
@@ -50,13 +49,26 @@ class Smartdevice extends MY_Controller
         if (!empty($post['device_type'])){$condition['type'] = $post['device_type'];}
         $filed = ['id','room_id','store_id','type','supplier'];
         if($condition){
-            $device = Smartdevicemodel::where($condition)->with('room')->with('store')
-                                        ->take(PAGINATE)->skip($offset)
-                                        ->orderBy('id','desc')->get($filed)->toArray();
+            $count          = ceil(Smartdevicemodel::where($condition)->count()/PAGINATE);
+            if ($page>$count||$page<1){
+                $this->api_res(0,['list'=>[]]);
+                return ;
+            }else{
+                $device = Smartdevicemodel::where($condition)->with('room')->with('store')
+                                            ->take(PAGINATE)->skip($offset)
+                                            ->orderBy('id','desc')->get($filed)->toArray();
+            }
+
         }else{
-            $device = Smartdevicemodel::with('room')->with('store')
-                                        ->take(PAGINATE)->skip($offset)
-                                        ->orderBy('id','desc')->get($filed)->toArray();
+            $count = ceil(Smartdevicemodel::count()/PAGINATE);
+            if ($page>$count||$page<1){
+                $this->api_res(0,['list'=>[]]);
+                return ;
+            }else {
+                $device = Smartdevicemodel::with('room')->with('store')
+                                            ->take(PAGINATE)->skip($offset)
+                                            ->orderBy('id', 'desc')->get($filed)->toArray();
+            }
         }
         $this->api_res(0,['list'=>$device,'count'=>$count]);
     }

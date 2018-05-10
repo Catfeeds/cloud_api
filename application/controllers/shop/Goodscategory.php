@@ -27,7 +27,6 @@ class Goodscategory extends MY_Controller
         $count      = ceil(Goodscategorymodel::count()/PAGINATE);
         $filed      = ['id','name','is_show','sort'];
 
-
         if($page>$count){
             $this->api_res(0,['list'=>[],'count'=>$count]);
         }else{

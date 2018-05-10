@@ -15,16 +15,31 @@ class Servicetype extends MY_Controller
         $this->load->model('servicetypemodel');
     }
 
+    /**
+     * 返回服务类型列表
+     */
     public function index()
     {
-        $input  = $this->input->post(NULL,TRUE);
-        $page   = isset($input['page'])?$input['page']:1;
+        $post   = $this->input->post(NULL,TRUE);
+        $page   = isset($post['page'])?intval($post['page']):1;
+        $where  = [];
+        isset($post['id'])?$where['id']=intval($post['id']):$where=[];
+
         $offset = PAGINATE*($page-1);
         $filed  = ['id','name','feature','description','image_url'];
         $count  = ceil(Servicetypemodel::count()/PAGINATE);
-        $type   = Servicetypemodel::take(PAGINATE)->skip($offset)
-                                    ->orderBy('id','desc')->get($filed)->toArray();
-        $this->api_res(0,['count'=>$count,'list'=>$type,'cdn_path'=>config_item('cdn_path')]);
+
+        if($page>$count||$page<1){
+            $this->api_res(0,['list'=>[]]);
+            return;
+        }else{
+            $type   = Servicetypemodel::where($where)->take(PAGINATE)->skip($offset)
+                                        ->orderBy('id','desc')->get($filed)->toArray();
+        }
+        foreach ($type as $key=>$value){
+            $type[$key]['image_url'] = $this->fullAliossUrl($value['image_url']);
+        }
+        $this->api_res(0,['count'=>$count,'list'=>$type]);
     }
 
     /**
@@ -58,8 +73,7 @@ class Servicetype extends MY_Controller
      */
     public function updateServicetype()
     {
-            $post = $this->input->post(NULL,true);
-
+            $post   = $this->input->post(NULL,true);
             if(!$this->validation())
             {
                 $fieldarr   = ['name','feature','description'];
@@ -67,7 +81,7 @@ class Servicetype extends MY_Controller
                 return false;
             }
 
-            $id                     = trim($post['id']);
+            $id                     = intval($post['id']);
             $service                = Servicetypemodel::where('id',$id)->first();
             $service->name          = $post['name'];
             $service->feature       = $post['feature'];
@@ -107,7 +121,6 @@ class Servicetype extends MY_Controller
         );
 
         $this->form_validation->set_rules($config)->set_error_delimiters('','');
-
         return $this->form_validation->run();
     }
 

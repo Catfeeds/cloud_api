@@ -24,43 +24,33 @@ class Reserveorder extends MY_Controller
         $page   = isset($post['page'])?intval($post['page']):1;
 
         $offset = PAGINATE*($page-1);
-        $count  = ceil(Reserveordermodel::count()/PAGINATE);
         $where  = array();
         $filed  = ['id','time','name','phone','visit_by','work_address','require','info_source','employee_id','status','remark'];
-        if ($page){}
-        if(!empty($post['store_id'])){$where['store_id']=$post['store_id'];}
-        if(!empty($post['visit_type'])){$where['visit_by']=$post['visit_type'];}
+
+        if(!empty($post['store_id'])){$where['store_id']=intval($post['store_id']);}
+        if(!empty($post['visit_type'])){$where['visit_by']=trim($post['visit_type']);}
 
         if(empty($where)){
-            $reserve = Reserveordermodel::with('employee')
+            $count   = ceil(Reserveordermodel::count()/PAGINATE);
+            if ($page>$count||$page<1){
+                $this->api_res(0,['list'=>[]]);
+                return;
+            }else{
+                $reserve = Reserveordermodel::with('employee')
                                             ->take(PAGINATE)->skip($offset)
                                             ->orderBy('id','desc')->get($filed)->toArray();
+            }
         }else{
-            $reserve = Reserveordermodel::with('employee')->where($where)
+            $count   = ceil(Reserveordermodel::where($where)->count()/PAGINATE);
+            if ($page>$count||$page<1){
+                $this->api_res(0,['list'=>[]]);
+                return;
+            }else{
+                $reserve = Reserveordermodel::with('employee')->where($where)
                                             ->take(PAGINATE)->skip($offset)
                                             ->orderBy('id','desc')->get($filed)->toArray();
+            }
         }
         $this->api_res(0,['list'=>$reserve,'count'=>$count]);
     }
-
-    /**
-     * 获取公寓列表
-     */
-/*    public function getStore()
-    {
-        $this->load->model('storemodel');
-        $filed =['id','name'];
-        $store = Storemodel::get($filed);
-        $this->api_res(0,$store);
-    }*/
-
-    /**
-     * 获取来访类型列表
-     */
-/*    public function getVisittype()
-    {
-        $filed = ['visit_by'];
-        $visit_type = Reserveordermodel::get($filed)->groupBy('visit_by')->toArray();
-        $this->api_res(0,$visit_type);
-    }*/
 }
