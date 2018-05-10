@@ -24,7 +24,7 @@ class Goods extends MY_Controller
         $name   = isset($post['name'])?$post['name']:NULL;
         $offset = PAGINATE*($page-1);
 
-        $filed  = ['id','name','category_id','market_price','shop_price','quantity','sale_num',
+        $filed  = ['id','name','category_id','market_price','shop_price','quantity','sale_num','on_sale',
                     'description','detail','original_link','goods_thumb','goods_carousel'];
         $where  = array();
         if(!empty($post['category_id'])){$where['category_id']=$post['category_id'];}
