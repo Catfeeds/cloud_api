@@ -60,6 +60,8 @@ class AuthHook {
             'store/room/addunion',
             'store/room/listunion',
             'store/room/listdot',
+            'store/room/getunion',
+            'store/room/getdot',
             'store/room/batchupdateunion',
             'store/room/batchupdatedot',
 

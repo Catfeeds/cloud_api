@@ -16,7 +16,7 @@ class Roomtypemodel extends Basemodel{
         'toward','description','images',
         ];
 
-    protected $hidden   = ['store_id'];
+    protected $hidden   = ['created_at','updated_at','deleted_at'];
 
     //房型的合同模板
     public function contracttemplate(){
