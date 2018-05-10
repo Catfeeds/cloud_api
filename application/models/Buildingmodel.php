@@ -11,6 +11,8 @@ class Buildingmodel extends Basemodel{
 
     protected $table    = 'boss_building';
 
+    protected $fillable = ['store_id','name','layer_total','layer_room_number'];
+
     protected $hidden   = [];
 
     //楼栋所属的门店信息
