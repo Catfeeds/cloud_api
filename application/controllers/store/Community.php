@@ -28,6 +28,10 @@ class Community extends MY_Controller
             return;
         }
         $post   = $this->input->post(null,true);
+        if(Communitymodel::where('name',$post['name'])->get()){
+            $this->api_res(1008);
+            return;
+        }
         $community  = new Communitymodel();
         $community->fill($post);
 //        if(!isset($post['images']))
@@ -55,13 +59,13 @@ class Community extends MY_Controller
         $post   = $this->input->post(null,true);
         $page   = intval(isset($post['page'])?$post['page']:1);
         $offset = $offset = PAGINATE*($page-1);
-        isset($post['store_id'])?$where['store_id']=$post['store_id']:$where=[];
+        (isset($post['store_id'])&&!empty($post['store_id']))?$where['store_id']=$post['store_id']:$where=[];
         $count  = ceil(Communitymodel::where($where)->count()/PAGINATE);
         if($page>$count){
             $this->api_res(0,['count'=>$count,'community'=>[]]);
             return;
         }
-        $this->load->model('roommodel');
+        $this->load->model('roomdotmodel');
         $this->load->model('storemodel');
         $communitys  = Communitymodel::with('room')->with('store')->where($where)->offset($offset)->limit(PAGINATE)
             ->get($field)
@@ -84,14 +88,14 @@ class Community extends MY_Controller
         $post   = $this->input->post(null,true);
         $page   = intval(isset($post['page'])?$post['page']:1);
         $offset = $offset = PAGINATE*($page-1);
-        isset($post['store_id'])?$where['store_id']=$post['store_id']:$where=[];
+        (isset($post['store_id'])&&!empty($post['store_id']))?$where['store_id']=$post['store_id']:$where=[];
         $name   = isset($post['name'])?$post['name']:'';
         $count  = ceil(Communitymodel::where($where)->where('name','like',"%$name%")->count()/PAGINATE);
         if($page>$count){
             $this->api_res(0,['count'=>$count,'community'=>[]]);
             return;
         }
-        $this->load->model('roommodel');
+        $this->load->model('roomdotmodel');
         $this->load->model('storemodel');
         $communitys  = Communitymodel::with('room')->with('store')->where($where)->where('name','like',"%$name%")->offset($offset)->limit(PAGINATE)
             ->get($field)
@@ -153,13 +157,50 @@ class Community extends MY_Controller
      */
     public function deleteCommunity()
     {
-        $community_id   = $this->input->post('company_id',true);
-        if(Communitymodel::find($community_id)->delete())
-        {
+        $community_id   = $this->input->post('community_id',true);
+        if(!$community_id){
+            $this->api_res(1005);
+            return;
+        }
+        if(!$community=Communitymodel::find($community_id)) {
+            $this->api_res(1007);
+            return;
+        }
+        if($community->delete()){
             $this->api_res(0);
         }else{
             $this->api_res(1009);
         }
+    }
+
+    /**
+     * 批量删除
+     */
+    public function destroyCommunity(){
+        $id = $this->input->post('community_id',true);
+        if(!is_array($id) || empty($id)){
+            $this->api_res(1005);
+            return;
+        }
+        if(Communitymodel::destroy($id)){
+            $this->api_res(0);
+        }else{
+            $this->api_res(1009);
+        }
+    }
+
+    /**
+     * 获取门店下的小区
+     */
+    public function showCommunity(){
+        $store_id   = $this->input->post('store_id');
+        if(!$store_id){
+            $this->api_res(1005);
+            return;
+        }
+        $where['store_id']  = $store_id;
+        $community  = Communitymodel::where($where)->get(['id','name']);
+        $this->api_res(0,['community'=>$community]);
     }
 
     /**

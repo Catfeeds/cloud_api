@@ -45,10 +45,17 @@ class AuthHook {
             'store/roomtype/searchroomtype',
             'store/roomtype/getroomtype',
             'store/roomtype/updateroomtype',
+            'store/roomtype/destroyroomtype',
             'store/template/listtemplate',
             'store/template/deletetemplate',
             'store/template/addtemplate',
             'store/template/searchtemplate',
+            'store/template/destroytemplate',
+            'store/template/gettemplate',
+            'store/template/updatetemplate',
+            'store/template/showtemplate',
+
+            'store/room/adddot',
 
             'store/community/addcommunity',
             'store/community/listcommunity',
@@ -56,6 +63,8 @@ class AuthHook {
             'store/community/updatecommunity',
             'store/community/getcommunity',
             'store/community/deletecommunity',
+            'store/community/destroycommunity',
+            'store/community/showcommunity',
 
             'store/room/adddot',
             'store/room/addunion',
