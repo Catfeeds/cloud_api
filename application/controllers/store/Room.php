@@ -373,7 +373,7 @@ class Room extends MY_Controller
      * 查看分布式房间信息
      */
     public function getDot(){
-        $field  = ['store_id','house_id','rent_price','property_price','sort','contract_template_id',
+        $field  = ['store_id','community_id','house_id','rent_price','property_price','sort','contract_template_id',
             'contract_min_time','contract_max_time','deposit_type','pay_frequency_allow'];
         $post   = $this->input->post(null,true);
         $room_id    = isset($post['room_id'])?intval(strip_tags(trim($post['room_id']))):null;
@@ -386,13 +386,12 @@ class Room extends MY_Controller
         $this->load->model('storemodel');
         $this->load->model('communitymodel');
         $this->load->model('housemodel');
-        //$this->load->model('contracttemplatemodel');
-        $room   = Roomdotmodel::with('store')->with('house')->with('community')->select(
-            ['store_id','house_id','community_id'])->find($room_id);
+        $this->load->model('contracttemplatemodel');
+        $room   = Roomdotmodel::with('store')->with('house')->with('community')->select($field)->find($room_id);
         if(!$room){
             $this->api_res(1007);
         }else{
-            $all_room   = Roomdotmodel::where('house_id',$room->house_id)->orderBy('sort')->get($field);
+            $all_room   = Roomdotmodel::where('house_id',$room->house_id)->with('template')->orderBy('sort')->get($field);
             $room['rooms']  = $all_room;
             $this->api_res(0,['room'=>$room]);
         }
