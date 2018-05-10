@@ -236,11 +236,54 @@ class Room extends MY_Controller
     }
 
     /**
+     * 批量更新集中式房间
+     */
+    public function batchUpdateUnion(){
+        $field  = ['store_id','building_id','contract_template_id','contract_min_time',
+            'contract_max_time','deposit_type','pay_frequency_allow'];
+        $post   = $this->input->post(null,true);
+        //验证基本信息
+        if(!$this->validationText($this->validateUnionConfig())){
+            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+            return;
+        }
+        //验证付款周期
+        $pay_frequency_allows = isset($post['pay_frequency_allow'])?$post['pay_frequency_allow']:null;
+        if(!$pay_frequency_allows || !is_array($pay_frequency_allows)){
+            $this->api_res(1002,['error'=>'允许的支付周期错误']);
+            return;
+        }
+        foreach ($pay_frequency_allows as $pay_frequency_allow ){
+            $a['pay_frequency_allow']   = $pay_frequency_allow;
+            if(!$this->validationText($this->validatePayConfig(),$a)){
+                $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+                return;
+            }
+        }
+        $this->load->model('roomunionmodel');
+        $rooms  = RoomUnionmodel::where(['store_id'=>$post['store_id'],'building_id'=>$post['building_id']]);
+        $updates    = [
+            'contract_template_id'  => $post['contract_template_id'],
+            'contract_min_time'     => $post['contract_min_time'],
+            'contract_max_time'     => $post['contract_max_time'],
+            'deposit_type'          => $post['deposit_type'],
+            'pay_frequency_allow'   => json_encode($post['pay_frequency_allow']),
+        ];
+        if($rooms->update($updates)){
+            $this->api_res(0);
+        }else{
+            $this->api_res(1009);
+        }
+    }
+
+    /**
      * 分布式房间列表
      */
     public function listDot(){
-        $field  = ['id','room_type_id','number'];
+        $field  = ['id','room_type_id','layer','number',];
         $post   = $this->input->post(null,true);
+        $page   = intval(isset($post['page'])?$post['page']:1);
+        $offset = PAGINATE*($page-1);
         isset($post['store_id'])?$where['store_id']=$post['store_id']:null;
         isset($post['building_name'])?$where['building_name']=$post['building_name']:null;
         $this->load->model('roomdotmodel');
@@ -398,6 +441,11 @@ class Room extends MY_Controller
                 'field' => 'store_id',
                 'label' => '门店id',
                 'rules' => 'trim|required|integer'
+            ),
+            array(
+                'field' => 'building_id',
+                'label' => '楼栋id',
+                'rules' => 'trim|integer'
             ),
             array(
                 'field' => 'contract_template_id',
