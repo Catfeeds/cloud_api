@@ -6,11 +6,11 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Time:        14:16
  * Describe:    蛋贝
  */
-class Danbay
+class Danbaylock
 {
     protected $deviceId;
     protected $token;
-    private $baseUrl    = 'http://www.danbay.cn/system/';
+    private   $baseUrl    = 'http://www.danbay.cn/system/';
 
     const PWD_TYPE_GUEST    = 3;
     const PWD_TYPE_BUTLER   = 2;
@@ -106,9 +106,10 @@ class Danbay
     private function sendRequet($uri, $options = [], $method = 'POST', $enctypeMultipart = false)
     {
         $res = $this->request(
-            $method,
             $this->baseUrl . $uri,
-            $this->buildRequestBody($options, $enctypeMultipart)
+            $method,
+            ''
+            //$this->buildRequestBody($options, $enctypeMultipart)
         );
 
         $res = json_decode($res, true);
@@ -123,7 +124,7 @@ class Danbay
     /**
      * 构建请求体
      */
-    private function buildRequestBody($options, $enctypeMultipart = false)
+   /* private function buildRequestBody($options, $enctypeMultipart = false)
     {
         $form = collect($options)
             ->put('deviceId', $this->deviceId)
@@ -140,7 +141,7 @@ class Danbay
         $formKey = $enctypeMultipart ? 'multipart' : 'form_params';
 
         return [$formKey => $form];
-    }
+    }*/
 
     /**
      * @param $url
