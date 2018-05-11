@@ -7,7 +7,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Describe:    BOSS
  * 房间信息表(集中式)
  */
-class RoomUnionmodel extends Basemodel{
+class Roomunionmodel extends Basemodel{
 
     const HALF = 'HALF';    //合租
     const FULL = 'FULL';    //整租

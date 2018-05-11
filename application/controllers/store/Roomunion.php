@@ -105,7 +105,7 @@ class Roomunion extends MY_Controller
                         ];
                     }
                 }
-                $b  = RoomUnionmodel::insert($insert_room);
+                $b  = Roomunionmodel::insert($insert_room);
                 if(!$a || !$b){
                     DB::rollBack();
                     $this->api_res(1009);
@@ -147,7 +147,7 @@ class Roomunion extends MY_Controller
             }
         }
         $this->load->model('roomunionmodel');
-        $rooms  = RoomUnionmodel::where(['store_id'=>$post['store_id'],'building_id'=>$post['building_id']]);
+        $rooms  = Roomunionmodel::where(['store_id'=>$post['store_id'],'building_id'=>$post['building_id']]);
         $updates    = [
             'contract_template_id'  => $post['contract_template_id'],
             'contract_min_time'     => $post['contract_min_time'],
@@ -162,28 +162,44 @@ class Roomunion extends MY_Controller
         }
     }
 
+    /**
+     * 获取门店下的楼栋信息
+     */
+    public function showBuilding(){
+        $post   = $this->input->post(null,true);
+        isset($post['store_id'])?$where['store_id']=intval(strip_tags(trim($post['store_id']))):$where=[];
+        if(!$where){
+            $this->api_res(0,['buildings'=>[]]);
+            return;
+        }
+        $this->load->model('roomunionmodel');
+        $buildings  = Roomunionmodel::select(['store_id','building_id','building_name'])->groupBy('building_id')->get();
+        $this->api_res(0,['buildings'=>$buildings]);
+    }
+
+
 
     /**
      * 集中式房间列表
      */
     public function listUnion(){
-        $field  = ['boss_room_union.id as room_id','boss_store.name as store_name','boss_store.province','boss_store.city',
+        $field  = ['boss_room_union.id as room_id','boss_room_union.store_id','boss_store.name as store_name','boss_room_union.building_name','boss_store.province','boss_store.city',
             'boss_store.district','boss_store.address','boss_room_union.rent_price','boss_room_union.property_price',
             'boss_room_union.keeper','boss_room_union.status','boss_room_type.name as room_type_name'
             ];
         $post   = $this->input->post(null,true);
-        $page   = intval(isset($post['page'])?$post['page']:1);
+        $page   = intval(isset($post['page'])?intval(strip_tags(trim($post['page']))):1);
         $offset = PAGINATE*($page-1);
         $where  = [];
         (isset($post['store_id'])&&!empty($post['store_id']))?$where['boss_room_union.store_id']=$post['store_id']:null;
-        (isset($post['building_id'])&&!empty($post['building_id']))?$where['boss_room_union.building_id']=$post['building_id']:null;
+        (isset($post['building_name'])&&!empty($post['building_name']))?$where['boss_room_union.building_name']=$post['building_name']:null;
         $this->load->model('roomunionmodel');
-        $count  = ceil(RoomUnionmodel::where($where)->count()/PAGINATE);
+        $count  = ceil(Roomunionmodel::where($where)->count()/PAGINATE);
         if($page>$count){
             $this->api_res(0,['count'=>$count,'rooms'=>[]]);
             return;
         }
-        $rooms  = RoomUnionmodel::leftJoin('boss_store','boss_store.id','=','boss_room_union.store_id')
+        $rooms  = Roomunionmodel::leftJoin('boss_store','boss_store.id','=','boss_room_union.store_id')
             ->leftJoin('boss_room_type','boss_room_type.id','boss_room_union.room_type_id')
             ->select($field)->offset($offset)->limit(PAGINATE)->orderBy('boss_room_union.id')->where($where)
             ->get();
@@ -207,7 +223,7 @@ class Roomunion extends MY_Controller
         $this->load->model('storemodel');
         $this->load->model('roomtypemodel');
         $this->load->model('contracttemplatemodel');
-        $room   = RoomUnionmodel::with('store')->with('roomtype')->with('template')->select($field)->find($room_id);
+        $room   = Roomunionmodel::with('store')->with('roomtype')->with('template')->select($field)->find($room_id);
         if(!$room){
             $this->api_res(1007);
         }else{
