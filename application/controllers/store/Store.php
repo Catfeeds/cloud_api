@@ -190,7 +190,7 @@ class Store extends MY_Controller
         }
         $images  = $this->splitAliossUrl($post['images'],true);
         $images = json_encode($images);
-        if(Storemodel::where(['rent_type'=>'DOT','name'=>$post['name']->first()])){
+        if(Storemodel::where(['rent_type'=>'DOT','name'=>$post['name']])->first()){
             $this->api_res(1008);
             return;
         }
@@ -226,7 +226,7 @@ class Store extends MY_Controller
         }
         $images  = $this->splitAliossUrl($post['images'],true);
         $images = json_encode($images);
-        if(Storemodel::where(['rent_type'=>'UNION','name'=>$post['name']->first()])){
+        if(Storemodel::where(['rent_type'=>'UNION','name'=>$post['name']])->first()){
             $this->api_res(1008);
             return;
         }
