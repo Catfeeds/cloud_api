@@ -167,14 +167,27 @@ class Roomunion extends MY_Controller
      * 集中式房间列表
      */
     public function listUnion(){
-        $field  = [];
+        $field  = ['boss_room_union.id as room_id','boss_store.name as store_name','boss_store.province','boss_store.city',
+            'boss_store.district','boss_store.address','boss_room_union.rent_price','boss_room_union.property_price',
+            'boss_room_union.keeper','boss_room_union.status','boss_room_type.name as room_type_name'
+            ];
         $post   = $this->input->post(null,true);
         $page   = intval(isset($post['page'])?$post['page']:1);
         $offset = PAGINATE*($page-1);
+        $where  = [];
+        (isset($post['store_id'])&&!empty($post['store_id']))?$where['boss_room_union.store_id']=$post['store_id']:null;
+        (isset($post['building_id'])&&!empty($post['building_id']))?$where['boss_room_union.building_id']=$post['building_id']:null;
         $this->load->model('roomunionmodel');
-        $this->load->model('roomtypemodel');
-        $rooms  = RoomUnionmodel::get(['id']);
-        $this->api_res(0,['rooms'=>$rooms]);
+        $count  = ceil(RoomUnionmodel::where($where)->count()/PAGINATE);
+        if($page>$count){
+            $this->api_res(0,['count'=>$count,'rooms'=>[]]);
+            return;
+        }
+        $rooms  = RoomUnionmodel::leftJoin('boss_store','boss_store.id','=','boss_room_union.store_id')
+            ->leftJoin('boss_room_type','boss_room_type.id','boss_room_union.room_type_id')
+            ->select($field)->offset($offset)->limit(PAGINATE)->orderBy('boss_room_union.id')->where($where)
+            ->get();
+        $this->api_res(0,['count'=>$count,'rooms'=>$rooms]);
     }
 
     /**
