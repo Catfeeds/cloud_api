@@ -20,19 +20,26 @@ class Roomdotmodel extends Basemodel {
     //房间所属门店信息
     public function store(){
 
-        return $this->belongsTo(Storemodel::class,'store_id');
+        return $this->belongsTo(Storemodel::class,'store_id')->select(
+            ['id','name','province','city','district','address','describe']);
     }
 
-    //房间所属楼栋信息
-    public function building(){
-
-        return $this->belongsTo(Buildingmodel::class,'building_id');
+    //房间所属小区信息
+    public function community(){
+        return $this->belongsTo(Communitymodel::class,'community_id')->select(['id','name']);
     }
 
-    //房间所属房型信息
-    public function roomtype(){
+    //房间所属房屋house信息
+    public function house(){
+        return $this->belongsTo(Housemodel::class,'house_id')->select(
+            ['id','building_name','unit','layer','layer_total','number','room_number','hall_number','toilet_number']
+        );
+    }
 
-        return $this->belongsTo(Roomtypemodel::class,'room_type_id');
+    //房间的合同模板
+    public function template(){
+        return $this->belongsTo(Contracttemplatemodel::class,'contract_template_id')->select(
+            ['id','name']);
     }
 
     //房屋公共智能设备

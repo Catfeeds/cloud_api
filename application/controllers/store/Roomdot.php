@@ -5,9 +5,9 @@ use Illuminate\Database\Capsule\Manager as DB;
  * Author:      zjh<401967974@qq.com>
  * Date:        2018/5/7 0007
  * Time:        14:14
- * Describe:    房间管理
+ * Describe:    分布式房间管理
  */
-class Room extends MY_Controller
+class Roomdot extends MY_Controller
 {
     public function __construct()
     {
@@ -15,7 +15,7 @@ class Room extends MY_Controller
     }
 
     /**
-     * 添加分布式房间
+     * 创建分布式房间
      */
     public function addDot(){
         $field  = ['store_id','community_id','building_name','unit','number','layer','layer_total','room_number',
@@ -96,7 +96,9 @@ class Room extends MY_Controller
             $community_id   = $post['community_id'];
             $house_id       = $house->id;
             $room_insert    = [];
+            $i              = 1;
             foreach ($rooms as $room_item) {
+                $k  = &$i;
                 $room_insert[]      = [
                     'store_id'      => $store_id,
                     'community_id'  => $community_id,
@@ -113,6 +115,7 @@ class Room extends MY_Controller
                     'pay_frequency_allow'   => json_encode($post['pay_frequency_allow']),
                     'created_at'            => date('Y-m-d H:i:s',time()),
                     'updated_at'            => date('Y-m-d H:i:s',time()),
+                    'sort'          => $k++,
                 ];
             }
             $b  = $room->insert($room_insert);
@@ -126,111 +129,6 @@ class Room extends MY_Controller
         }catch (Exception $e)
         {
             DB::rollback();
-            throw $e;
-        }
-    }
-
-    /**
-     * 创建集中式房间
-     */
-    public function addUnion(){
-        $field  = [
-            'store_id','building_name','layer_total','layer_room_number',
-            'contract_template_id','contract_min_time','contract_max_time',
-            'deposit_type','pay_frequency_allow',
-        ];
-
-        $post   = $this->input->post(null,true);
-        //验证基本信息
-        if(!$this->validationText($this->validateUnionConfig())){
-            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
-            return;
-        }
-        //验证付款周期
-        $pay_frequency_allows = isset($post['pay_frequency_allow'])?$post['pay_frequency_allow']:null;
-        if(!$pay_frequency_allows || !is_array($pay_frequency_allows)){
-            $this->api_res(1002,['error'=>'允许的支付周期错误']);
-            return;
-        }
-        foreach ($pay_frequency_allows as $pay_frequency_allow ){
-            $a['pay_frequency_allow']   = $pay_frequency_allow;
-            if(!$this->validationText($this->validatePayConfig(),$a)){
-                $this->api_res(1002,['error'=>$this->form_first_error($field)]);
-                return;
-            }
-        }
-        //验证楼栋buildings格式
-        $buildings = isset($post['buildings'])?$post['buildings']:null;
-        if(!$buildings || !is_array($buildings)){
-            $this->api_res(1002,['error'=>'请传入正确的楼栋格式']);
-            return;
-        }
-        //验证楼栋信息 验证唯一
-        $this->load->model('buildingmodel');
-        $unique_building    = [];
-        foreach ($buildings as $building){
-            if(in_array($building['building_name'],$unique_building)){
-                $this->api_res(1002,['error'=>'楼栋重复']);
-                return;
-            }
-            if(!$this->validationText($this->validateBuildingConfig(),$building)){
-                $this->api_res(1002,['error'=>$this->form_first_error($field)]);
-                return;
-            }
-            if(Buildingmodel::where('store_id',$post['store_id'])->where('name',$building['building_name'])->first()){
-                $this->api_res(1008);
-                return;
-            }
-            $unique_building[]    = $building['building_name'];
-        }
-
-        //存入数据库
-        $this->load->model('roomunionmodel');
-        try{
-            DB::beginTransaction();
-            $store_id   = $post['store_id'];
-            foreach ($buildings as $building){
-                $db_building                    = new Buildingmodel();
-                $db_building->store_id          = $store_id;
-                $db_building->name              = $building['building_name'];
-                $db_building->layer_total       = $building['layer_total'];
-                $db_building->layer_room_number = $building['layer_room_number'];
-                $a  = $db_building->save();
-                $building_id    = $db_building->id;
-                /*if(!$a){
-                    DB::rollBack();
-                    $this->api_res(1009);
-                }*/
-                $insert_room    = [];
-                for($i=1;$i<=$building['layer_total'];$i++){
-                    for($j=1;$j<=$building['layer_room_number'];$j++){
-                        $insert_room[]  = [
-                            'store_id'                 => $store_id,
-                            'building_id'              => $building_id,
-                            'building_name'            => $building['building_name'],
-                            'layer'                    => $i,
-                            'number'                   => sprintf('%02d%02d',$i,$j),
-                            'contract_template_id'     => $post['contract_template_id'],
-                            'contract_min_time'        => $post['contract_min_time'],
-                            'contract_max_time'        => $post['contract_max_time'],
-                            'deposit_type'             => $post['deposit_type'],
-                            'pay_frequency_allow'      => json_encode($post['pay_frequency_allow']),
-                            'created_at'               => date('Y-m-d H:i:s',time()),
-                            'updated_at'               => date('Y-m-d H:i:s',time()),
-                        ];
-                    }
-                }
-                $b  = RoomUnionmodel::insert($insert_room);
-                if(!$a || !$b){
-                    DB::rollBack();
-                    $this->api_res(1009);
-                    return;
-                }
-            }
-            DB::commit();
-            $this->api_res(0);
-        }catch (Exception $e){
-            DB::rollBack();
             throw $e;
         }
     }
@@ -277,47 +175,6 @@ class Room extends MY_Controller
     }
 
     /**
-     * 批量更新集中式房间
-     */
-    public function batchUpdateUnion(){
-        $field  = ['store_id','building_id','contract_template_id','contract_min_time',
-            'contract_max_time','deposit_type','pay_frequency_allow'];
-        $post   = $this->input->post(null,true);
-        //验证基本信息
-        if(!$this->validationText($this->validateBatchUnionConfig())){
-            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
-            return;
-        }
-        //验证付款周期
-        $pay_frequency_allows = isset($post['pay_frequency_allow'])?$post['pay_frequency_allow']:null;
-        if(!$pay_frequency_allows || !is_array($pay_frequency_allows)){
-            $this->api_res(1002,['error'=>'允许的支付周期错误']);
-            return;
-        }
-        foreach ($pay_frequency_allows as $pay_frequency_allow ){
-            $a['pay_frequency_allow']   = $pay_frequency_allow;
-            if(!$this->validationText($this->validatePayConfig(),$a)){
-                $this->api_res(1002,['error'=>$this->form_first_error($field)]);
-                return;
-            }
-        }
-        $this->load->model('roomunionmodel');
-        $rooms  = RoomUnionmodel::where(['store_id'=>$post['store_id'],'building_id'=>$post['building_id']]);
-        $updates    = [
-            'contract_template_id'  => $post['contract_template_id'],
-            'contract_min_time'     => $post['contract_min_time'],
-            'contract_max_time'     => $post['contract_max_time'],
-            'deposit_type'          => $post['deposit_type'],
-            'pay_frequency_allow'   => json_encode($post['pay_frequency_allow']),
-        ];
-        if($rooms->update($updates)){
-            $this->api_res(0);
-        }else{
-            $this->api_res(1009);
-        }
-    }
-
-    /**
      * 分布式房间列表
      */
     public function listDot(){
@@ -333,13 +190,35 @@ class Room extends MY_Controller
 
     }
 
+
+
     /**
-     * 集中式房间列表
+     * 查看分布式房间信息
      */
-    public function listUnion(){
-
+    public function getDot(){
+        $field  = ['store_id','community_id','house_id','rent_price','property_price','sort','contract_template_id',
+            'contract_min_time','contract_max_time','deposit_type','pay_frequency_allow'];
+        $post   = $this->input->post(null,true);
+        $room_id    = isset($post['room_id'])?intval(strip_tags(trim($post['room_id']))):null;
+        if(!$room_id){
+            $this->api_res(1005);
+            return;
+        }
+        //需要关联的 房屋 门店 合同模板
+        $this->load->model('roomdotmodel');
+        $this->load->model('storemodel');
+        $this->load->model('communitymodel');
+        $this->load->model('housemodel');
+        $this->load->model('contracttemplatemodel');
+        $room   = Roomdotmodel::with('store')->with('house')->with('community')->select($field)->find($room_id);
+        if(!$room){
+            $this->api_res(1007);
+        }else{
+            $all_room   = Roomdotmodel::where('house_id',$room->house_id)->with('template')->orderBy('sort')->get($field);
+            $room['rooms']  = $all_room;
+            $this->api_res(0,['room'=>$room]);
+        }
     }
-
 
     /**
      * 添加分布式房间的验证规则
@@ -474,79 +353,6 @@ class Room extends MY_Controller
     }
 
     /**
-     * 创建集中式房间验证规则
-     */
-    public function validateUnionConfig(){
-        $config = [
-            array(
-                'field' => 'store_id',
-                'label' => '门店id',
-                'rules' => 'trim|required|integer'
-            ),
-            array(
-                'field' => 'contract_template_id',
-                'label' => '选择合同模板',
-                'rules' => 'trim|required|integer'
-            ),
-            array(
-                'field' => 'contract_min_time',
-                'label' => '合同最少签约期限（以月份计）',
-                'rules' => 'trim|required|integer'
-            ),
-            array(
-                'field' => 'contract_max_time',
-                'label' => '合同最多签约期限（以月份计）',
-                'rules' => 'trim|required|integer'
-            ),
-            array(
-                'field' => 'deposit_type',
-                'label' => '押金信息',
-                'rules' => 'trim|required|in_list[FREE]'
-            ),
-        ];
-        return $config;
-    }
-
-    /**
-     * 批量编辑集中式验证规则
-     */
-    public function validateBatchUnionConfig(){
-        $config = [
-            array(
-                'field' => 'store_id',
-                'label' => '门店id',
-                'rules' => 'trim|required|integer'
-            ),
-            array(
-                'field' => 'building_id',
-                'label' => '楼栋id',
-                'rules' => 'trim|integer|required'
-            ),
-            array(
-                'field' => 'contract_template_id',
-                'label' => '选择合同模板',
-                'rules' => 'trim|required|integer'
-            ),
-            array(
-                'field' => 'contract_min_time',
-                'label' => '合同最少签约期限（以月份计）',
-                'rules' => 'trim|required|integer'
-            ),
-            array(
-                'field' => 'contract_max_time',
-                'label' => '合同最多签约期限（以月份计）',
-                'rules' => 'trim|required|integer'
-            ),
-            array(
-                'field' => 'deposit_type',
-                'label' => '押金信息',
-                'rules' => 'trim|required|in_list[FREE]'
-            ),
-        ];
-        return $config;
-    }
-
-    /**
      * 批量编辑分布式验证规则
      */
     public function validateBatchDotConfig(){
@@ -584,29 +390,5 @@ class Room extends MY_Controller
         ];
         return $config;
     }
-    /**
-     * 验证楼栋
-     */
-    public function validateBuildingConfig(){
-        $config = [
-            array(
-                'field' => 'building_name',
-                'label' => '楼栋名称',
-                'rules' => 'trim|required'
-            ),
-            array(
-                'field' => 'layer_total',
-                'label' => '总楼层',
-                'rules' => 'trim|required|integer'
-            ),
-            array(
-                'field' => 'layer_room_number',
-                'label' => '每层房间数',
-                'rules' => 'trim|required|integer'
-            ),
-        ];
-        return $config;
-    }
-
 
 }

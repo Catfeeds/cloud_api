@@ -7,7 +7,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Describe:    BOSS
  * 房间信息表(集中式)
  */
-class RoomUnionmodel extends Basemodel{
+class Roomunionmodel extends Basemodel{
 
     const HALF = 'HALF';    //合租
     const FULL = 'FULL';    //整租
@@ -19,7 +19,8 @@ class RoomUnionmodel extends Basemodel{
     //房间所属门店信息
     public function store(){
 
-        return $this->belongsTo(Storemodel::class,'store_id');
+        return $this->belongsTo(Storemodel::class,'store_id')->select(
+            ['id','name','province','city','district','address','describe']);
     }
 
     //房间所属楼栋信息
@@ -28,10 +29,17 @@ class RoomUnionmodel extends Basemodel{
         return $this->belongsTo(Buildingmodel::class,'building_id');
     }
 
+    //房间的合同模板
+    public function template(){
+        return $this->belongsTo(Contracttemplatemodel::class,'contract_template_id')->select(
+            ['id','name']);
+    }
+
     //房间所属房型信息
     public function roomtype(){
 
-        return $this->belongsTo(Roomtypemodel::class,'room_type_id');
+        return $this->belongsTo(Roomtypemodel::class,'room_type_id')->select(
+            ['id','name','room_number','hall_number','toilet_number','toward','provides','description']);
     }
 
     //房屋公共智能设备

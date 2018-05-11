@@ -31,7 +31,7 @@ class Store extends MY_Controller
         isset($post['type'])?$where['rent_type']=$post['type']:null;
         isset($post['status'])?$where['status']=$post['status']:null;
         $offset = PAGINATE*($page-1);
-        $field  = ['id','name','city','rent_type','address','contact_user','contact_phone','status'];
+        $field  = ['id','name','city','rent_type','address','contact_user','contact_phone','status','created_at'];
         $count  = ceil(Storemodel::where($where)->count()/PAGINATE);
         $cities = Storemodel::groupBy('city')->get(['city']);
         $types  = isset($post['city'])?Storemodel::where('city',$post['city'])->groupBy('rent_type')->get(['rent_type']):Storemodel::groupBy('rent_type')->get(['rent_type']);
@@ -51,7 +51,7 @@ class Store extends MY_Controller
         $name   = $this->input->post('name',true);
         $page   = intval($this->input->post('page',true)?$this->input->post('page',true):1);
         $offset = PAGINATE*($page-1);
-        $field  = ['id','name','city','rent_type','address','contact_user','contact_phone','status'];
+        $field  = ['id','name','city','rent_type','address','contact_user','contact_phone','status','created_at'];
         $count  = ceil(Storemodel::where('name','like',"%$name%")->count()/PAGINATE);
         $cities = Storemodel::groupBy('city')->get(['city']);
         $types  = Storemodel::groupBy('rent_type')->get(['rent_type']);
@@ -144,7 +144,7 @@ class Store extends MY_Controller
             'rent_type','status','name','theme','province','city','district','address', 'contact_user',
             'counsel_phone','counsel_time','images','describe'
         ];
-        if(!$this->validationText($this->validationAddConfig()))
+        if(!$this->validationText($this->validationUpdateConfig()))
         {
             $this->api_res(1002,['error'=>$this->form_first_error($field)]);
             return;
@@ -177,14 +177,12 @@ class Store extends MY_Controller
             'rent_type','status','name','theme','province','city','district','address', 'contact_user',
             'counsel_phone','counsel_time','images','describe'
         ];
-        if(!$this->validationText($this->validationAddConfig()))
+        if(!$this->validationText($this->validationAddDotConfig()))
         {
             $this->api_res(1002,['error'=>$this->form_first_error($field)]);
             return;
         }
         $post    = $this->input->post(null,true);
-        $insert  = new Storemodel();
-        $insert->fill($post);
         if(!isset($post['images']))
         {
             $this->api_res(1002,['error'=>'必须上传图片']);
@@ -192,6 +190,12 @@ class Store extends MY_Controller
         }
         $images  = $this->splitAliossUrl($post['images'],true);
         $images = json_encode($images);
+        if(Storemodel::where(['rent_type'=>'DOT','name'=>$post['name']])->first()){
+            $this->api_res(1008);
+            return;
+        }
+        $insert  = new Storemodel();
+        $insert->fill($post);
         $insert->images=$images;
         if($insert->save()){
             $this->api_res(0,['store_id'=>$insert->id]);
@@ -209,14 +213,12 @@ class Store extends MY_Controller
             'rent_type','status','name','theme','province','city','district','address', 'contact_user',
             'contact_phone','counsel_phone','counsel_time','images','describe','history','shop','relax','bus'
         ];
-        if(!$this->validationText($this->validationAddConfig()))
+        if(!$this->validationText($this->validationAddUnionConfig()))
         {
             $this->api_res(1002,['error'=>$this->form_first_error($field)]);
             return;
         }
         $post   = $this->input->post(null,true);
-        $insert  = new Storemodel();
-        $insert->fill($post);
         if(!isset($post['images']))
         {
             $this->api_res(1002,['error'=>'必须上传图片']);
@@ -224,6 +226,12 @@ class Store extends MY_Controller
         }
         $images  = $this->splitAliossUrl($post['images'],true);
         $images = json_encode($images);
+        if(Storemodel::where(['rent_type'=>'UNION','name'=>$post['name']])->first()){
+            $this->api_res(1008);
+            return;
+        }
+        $insert  = new Storemodel();
+        $insert->fill($post);
         $insert->images=$images;
         if($insert->save()){
             $this->api_res(0,['store_id'=>$insert->id]);
@@ -233,11 +241,10 @@ class Store extends MY_Controller
     }
 
 
-
     /**
-     * 添加门店的验证规则
+     * 编辑门店的验证规则
      */
-    public function validationAddConfig()
+    public function validationUpdateConfig()
     {
 
         $config = [
@@ -252,7 +259,7 @@ class Store extends MY_Controller
             array(
                 'field' => 'rent_type',
                 'label' => '门店类型',
-                'rules' => 'required|trim|in_list[DOT,UNION]',
+                'rules' => 'required|trim|in_list[UNION,DOT]',
             ),
             array(
                 'field' => 'status',
@@ -292,7 +299,7 @@ class Store extends MY_Controller
             array(
                 'field' => 'counsel_phone',
                 'label' => '咨询电话',
-                'rules' => 'required|trim|max_length[14]',
+                'rules' => 'required|trim|min_length[9]|max_length[14]',
             ),
             array(
                 'field' => 'counsel_time',
@@ -330,6 +337,185 @@ class Store extends MY_Controller
                 'rules' => 'trim',
             ),
 
+        ];
+        return $config;
+    }
+
+    /**
+     * 添加门店的验证规则
+     */
+    public function validationAddUnionConfig()
+    {
+
+        $config = [
+            array(
+                'field' => 'name',
+                'label' => '门店名',
+                'rules' => 'required|trim|max_length[20]',
+                'errors'=> array(
+                    'required' => '门店名不能为空.',
+                )
+            ),
+            array(
+                'field' => 'rent_type',
+                'label' => '门店类型',
+                'rules' => 'required|trim|in_list[UNION]',
+            ),
+            array(
+                'field' => 'status',
+                'label' => '门店状态',
+                'rules' => 'required|trim|in_list[NORMAL,CLOSE,WAIT]',
+            ),
+            array(
+                'field' => 'theme',
+                'label' => '门店主题',
+                'rules' => 'trim',
+            ),
+            array(
+                'field' => 'province',
+                'label' => '省份',
+                'rules' => 'required|trim',
+            ),
+            array(
+                'field' => 'city',
+                'label' => '城市',
+                'rules' => 'required|trim',
+            ),
+            array(
+                'field' => 'district',
+                'label' => '区',
+                'rules' => 'trim',
+            ),
+            array(
+                'field' => 'address',
+                'label' => '地址',
+                'rules' => 'required|trim',
+            ),
+            array(
+                'field' => 'contact_user',
+                'label' => '联系人',
+                'rules' => 'required|trim|min_length[2]|max_length[6]',
+            ),
+            array(
+                'field' => 'counsel_phone',
+                'label' => '咨询电话',
+                'rules' => 'required|trim|min_length[9]|max_length[14]',
+            ),
+            array(
+                'field' => 'counsel_time',
+                'label' => '咨询时间',
+                'rules' => 'required|trim',
+            ),
+            /*array(
+                'field' => 'images',
+                'label' => '门店图片',
+                'rules' => 'required|trim',
+            ),*/
+            array(
+                'field' => 'describe',
+                'label' => '门店描述',
+                'rules' => 'required|trim',
+            ),
+            array(
+                'field' => 'history',
+                'label' => '配套医院',
+                'rules' => 'trim',
+            ),
+            array(
+                'field' => 'shop',
+                'label' => '配套商场',
+                'rules' => 'trim',
+            ),
+            array(
+                'field' => 'relax',
+                'label' => '配套休闲',
+                'rules' => 'trim',
+            ),
+            array(
+                'field' => 'bus',
+                'label' => '配套交通',
+                'rules' => 'trim',
+            ),
+
+        ];
+        return $config;
+    }
+
+    /**
+     * 添加门店的验证规则
+     */
+    public function validationAddDotConfig()
+    {
+
+        $config = [
+            array(
+                'field' => 'name',
+                'label' => '门店名',
+                'rules' => 'required|trim|max_length[20]',
+                'errors'=> array(
+                    'required' => '门店名不能为空.',
+                )
+            ),
+            array(
+                'field' => 'rent_type',
+                'label' => '门店类型',
+                'rules' => 'required|trim|in_list[DOT]',
+            ),
+            array(
+                'field' => 'status',
+                'label' => '门店状态',
+                'rules' => 'required|trim|in_list[NORMAL,CLOSE,WAIT]',
+            ),
+            array(
+                'field' => 'theme',
+                'label' => '门店主题',
+                'rules' => 'trim',
+            ),
+            array(
+                'field' => 'province',
+                'label' => '省份',
+                'rules' => 'required|trim',
+            ),
+            array(
+                'field' => 'city',
+                'label' => '城市',
+                'rules' => 'required|trim',
+            ),
+            array(
+                'field' => 'district',
+                'label' => '区',
+                'rules' => 'trim',
+            ),
+            array(
+                'field' => 'address',
+                'label' => '地址',
+                'rules' => 'required|trim',
+            ),
+            array(
+                'field' => 'contact_user',
+                'label' => '联系人',
+                'rules' => 'required|trim|min_length[2]|max_length[6]',
+            ),
+            array(
+                'field' => 'counsel_phone',
+                'label' => '咨询电话',
+                'rules' => 'required|trim|min_length[9]|max_length[14]',
+            ),
+            array(
+                'field' => 'counsel_time',
+                'label' => '咨询时间',
+                'rules' => 'required|trim',
+            ),
+            /*array(
+                'field' => 'images',
+                'label' => '门店图片',
+                'rules' => 'required|trim',
+            ),*/
+            array(
+                'field' => 'describe',
+                'label' => '门店描述',
+                'rules' => 'required|trim',
+            ),
         ];
         return $config;
     }
