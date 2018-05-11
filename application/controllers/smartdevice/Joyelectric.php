@@ -26,7 +26,14 @@ class Joyelectric extends MY_Controller
      */
     public function getAccessToken()
     {
-        //??????????需要clientId和clientSecret
+        $publicKey = openssl_pkey_get_public(file_get_contents($this->publicKeyPath));
+
+        $data   = json_encode([
+            'client_id' => $this->clientId,
+            'datetime'  => date('YmdHis'),
+        ]);
+
+        return openssl_public_encrypt($data ,$encrypted, $publicKey) ? base64_encode($encrypted) : null;
     }
 
 

@@ -161,7 +161,6 @@ class Yeeuulock extends MY_Controller
 
     public function test()
     {
-        $a = openssl_pkey_get_public(config_item('joyPublicKeyPath'));
-        var_dump($a);
+
     }
 }
