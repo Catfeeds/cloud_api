@@ -174,7 +174,6 @@ class Roomdot extends MY_Controller
         }
     }
 
-
     /**
      * 分布式房间列表
      */

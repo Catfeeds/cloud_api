@@ -167,7 +167,14 @@ class Roomunion extends MY_Controller
      * 集中式房间列表
      */
     public function listUnion(){
-
+        $field  = [];
+        $post   = $this->input->post(null,true);
+        $page   = intval(isset($post['page'])?$post['page']:1);
+        $offset = PAGINATE*($page-1);
+        $this->load->model('roomunionmodel');
+        $this->load->model('roomtypemodel');
+        $rooms  = RoomUnionmodel::get(['id']);
+        $this->api_res(0,['rooms'=>$rooms]);
     }
 
     /**
