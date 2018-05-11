@@ -178,18 +178,31 @@ class Roomdot extends MY_Controller
      * 分布式房间列表
      */
     public function listDot(){
-        $field  = ['id','room_type_id','layer','number',];
+        $field  = ['boss_room_dot.id as room_id','boss_room_dot.store_id','boss_store.name as store_name',
+            'boss_community.name as community_name','boss_community.province','boss_community.city',
+            'boss_community.district','boss_community.address','boss_house.id as house_id','boss_house.building_name',
+            'boss_house.unit','boss_house.number as house_number','boss_room_dot.rent_price','boss_room_dot.property_price',
+            'boss_room_dot.keeper','boss_room_dot.status','boss_room_dot.number as room_number'
+        ];
         $post   = $this->input->post(null,true);
-        $page   = intval(isset($post['page'])?$post['page']:1);
+        $page   = isset($post['page'])?intval(strip_tags(trim($post['page']))):1;
         $offset = PAGINATE*($page-1);
-        isset($post['store_id'])?$where['store_id']=$post['store_id']:null;
-        isset($post['building_name'])?$where['building_name']=$post['building_name']:null;
+        $where  = [];
+        (isset($post['store_id'])&&!empty($post['store_id']))?$where['store_id']=intval(strip_tags(trim($post['store_id']))):null;
+        (isset($post['community_id'])&&!empty($post['community_id']))?$where['community_id']=intval(strip_tags(trim($post['community_id']))):null;
         $this->load->model('roomdotmodel');
-        $rooms  = Roomdotmodel::get($field);
-
-
+        $count  = ceil(Roomdotmodel::where($where)->count()/PAGINATE);
+        if($page>$count){
+            $this->api_res(0,['count'=>$count,'rooms'=>[]]);
+            return;
+        }
+        $rooms  = Roomdotmodel::leftJoin('boss_store','boss_store.id','=','boss_room_dot.store_id')
+            ->leftJoin('boss_community','boss_community.id','=','boss_room_dot.community_id')
+            ->leftJoin('boss_house','boss_house.id','=','boss_room_dot.house_id')
+            ->select($field)->offset($offset)->limit(PAGINATE)->orderBy('boss_room_dot.id')->where($where)
+            ->get();
+        $this->api_res(0,['count'=>$count,'rooms'=>$rooms]);
     }
-
 
 
     /**
