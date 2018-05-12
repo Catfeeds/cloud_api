@@ -75,12 +75,12 @@ $query_builder = TRUE;
 
 $db['default'] = array(
 	'dsn'	=> '',
-	'hostname' => 'localhost',
-	'username' => '',
-	'password' => '',
-	'database' => '',
+	'hostname' => config_item('eloquent')['host'],
+	'username' => config_item('eloquent')['username'],
+	'password' => config_item('eloquent')['password'],
+	'database' => config_item('eloquent')['database'],
 	'dbdriver' => 'mysqli',
-	'dbprefix' => '',
+	'dbprefix' => config_item('eloquent')['prefix'],
 	'pconnect' => FALSE,
 	'db_debug' => (ENVIRONMENT !== 'production'),
 	'cache_on' => FALSE,
