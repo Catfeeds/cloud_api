@@ -78,7 +78,7 @@ $config['migration_version'] = 0;
 |
 | Path to your migrations folder.
 | Typically, it will be within your application path.
-| Also, writing permission is required within the migrations path.
+| Also, writing employee is required within the migrations path.
 |
 */
 $config['migration_path'] = APPPATH.'migrations/';
