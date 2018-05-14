@@ -54,4 +54,48 @@ class Common extends MY_Controller
         }
     }
 
+
+    /**
+     * 获取全国的省
+     */
+    public function province()
+    {
+        $this->load->model('provincemodel');
+        // $province = Provincemodel::all();
+        $province = Provincemodel::get(['province_id','province']);
+        $this->api_res(0, ['province' => $province]);
+    }
+
+    /**
+     *获取省对应的市
+     */
+    public function city()
+    {
+        $this->load->model('citymodel');
+        $province_id   = $this->input->post('province_id',true);
+        if(isset($province_id))
+        {
+            $city = Citymodel::where('province_id',$province_id)->get(['city_id', 'city']);
+        }else{
+            //$city  = Citiesmodel::get(['cityid', 'city']);
+            $city   = [];
+        }
+        $this->api_res(0, ['city' => $city]);
+    }
+
+    /**
+     * 获取市对应的区县
+     */
+    public function district()
+    {
+        $this->load->model('districtmodel');
+        $city_id  = $this->input->post('city_id',true);
+        if(isset($city_id))
+        {
+            $district = Districtmodel::where('city_id',$city_id)->get(['district_id','district']);
+        }else{
+            $district = [];
+        }
+        $this->api_res(0, ['district' => $district]);
+    }
 }
