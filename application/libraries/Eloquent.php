@@ -27,9 +27,10 @@ class Eloquent
         $this->capsule->bootEloquent();
 
         //在debug模式下全局记录sql到日志，方便调试
-        Capsule::listen(function($sql){
-            // var_dump($sql->sql);exit;
-            log_message('debug',$sql->sql);
+        Capsule::listen(function($event){
+            $sql = str_replace("?", "'%s'", $event->sql);
+            $log = vsprintf($sql, $event->bindings);
+            log_message('debug',$log);
         });
     }
 }

@@ -108,6 +108,7 @@ class AuthHook {
 
             'smartdevice/smartdevice/listsmartdevice',
             'smartdevice/smartdevice/record',
+            'smartdevice/yeeuulock/test',
 
         );
 

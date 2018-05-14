@@ -39,6 +39,9 @@ $config['jwt_exp'] = (time()+7200); //过期时间
 $config['cdn_path'] = 'http://tfunx.oss-cn-shenzhen.aliyuncs.com';
 
 //智能设备相关配置信息
+$config['yeeuuapiBaseUrl']  = 'https://api.yeeuu.com/v1/locks';
+$config['yeeuualmsUrl']     = 'https://alms.yeeuu.com/apartments/synchronize_apartments';
+
 $config['joyMeterClientId'] = 'joy000001';
 $config['joyMeterApiUrl']   = 'http://122.225.71.66:8787/amr/joy/';
 $config['joyPublicKeyPath'] = 'private/keys/rsa_public_key.pem';
@@ -48,4 +51,5 @@ $config['joyLockSecret']    = 'fahwkc5M';
 
 $config['danbayUserName']   = 'jindihuohua';
 $config['danbayPassword']   = 'a123456';
-$config['danbayTokenKey']   = 'dan_bay_mtoken_cache_key';
+$config['danbaymToken']     = '6nQIQ3EOpkaNtRly1M2MDoDjX7jxGjntldYv1JbsQB7srroptaUc3z2QypzDbgzc';
+

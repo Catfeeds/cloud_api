@@ -7,17 +7,18 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Describe:    云柚智能设备
  */
 
-class Yeeuu
+class Yeeuulock extends MY_Controller
 {
     private $partnerId;
     private $secret;
     private $apiBaseUrl;
-    private $almsBaseUrl;
+    private $almsUrl;
 
     public function __construct()
     {
-        $this->apiBaseUrl   = 'https://api.yeeuu.com/v1/locks';
-        $this->almsUrl      = 'https://alms.yeeuu.com/apartments/synchronize_apartments';
+        parent::__construct();
+        $this->apiBaseUrl   = config_item('yeeuuapiBaseUrl');
+        $this->almsUrl      = config_item('yeeuualmsUrl');
         $this->partnerId    = config_item('joyLockPartnerId');
         $this->secret       = config_item('joyLockSecret');
     }
@@ -121,99 +122,18 @@ class Yeeuu
     /**
      * 发送 POST 请求
      */
-    private function httpPost($url, $options = [])
+    public function httpPost($url, $options = [])
     {
-        return $this->request($url, 'POST', $options);
+        return $this->httpCurl($url, 'POST', $options);
     }
 
 
     /**
      * 发送 GET 请求
      */
-    private function httpGet($url, $options = [])
+    public function httpGet($url, $options = [])
     {
-        return $this->request($url, 'GET', $options);
-    }
-
-
-    /**
-     * 发送请求
-     */
-    /*private function request($url, $method, $options)
-    {
-        if ('POST' == $method) {
-            $parameters     = ['form_params' => $options];
-        } elseif ('GET' == $method) {
-            $parameters     = ['query' => $options];
-        }
-
-        $res    = (new Client())->request($method, $url, $parameters)->getBody()->getContents();
-
-        return json_decode($res, true);
-    }*/
-    /**
-     * 发送HTTP请求
-     *
-     * @param string $url 请求地址
-     * @param string $method 请求方式 GET/POST
-     * @param string $refererUrl 请求来源地址
-     * @param array $data 发送数据
-     * @param string $contentType
-     * @param string $timeout
-     * @param string $proxy
-     * @return boolean
-     */
-    private function request($url, $method,$data,  $contentType = 'application/json', $timeout = 30, $proxy = false) {
-        $ch = null;
-        if('POST' === strtoupper($method)) {
-            $ch = curl_init($url);
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_HEADER,0 );
-            curl_setopt($ch, CURLOPT_FRESH_CONNECT, 1);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_FORBID_REUSE, 1);
-            curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
-            if($contentType) {
-                curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:'.$contentType));
-            }
-            if(is_string($data)){
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-            } else {
-                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
-            }
-        } else if('GET' === strtoupper($method)) {
-            if(is_string($data)) {
-                $real_url = $url. (strpos($url, '?') === false ? '?' : ''). $data;
-            } else {
-                $real_url = $url. (strpos($url, '?') === false ? '?' : ''). http_build_query($data);
-            }
-
-            $ch = curl_init($real_url);
-            curl_setopt($ch, CURLOPT_HEADER, 0);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:'.$contentType));
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
-        } else {
-            $args = func_get_args();
-            return false;
-        }
-
-        if($proxy) {
-            curl_setopt($ch, CURLOPT_PROXY, $proxy);
-        }
-        $ret = curl_exec($ch);
-        $info = curl_getinfo($ch);
-        $contents = array(
-            'httpInfo'  => array(
-                'send'  => $data,
-                'url'   => $url,
-                'ret'   => $ret,
-                'http'  => $info,
-            )
-        );
-
-        curl_close($ch);
-        return json_decode($ret, true);
+        return $this->httpCurl($url, 'GET', $options);
     }
 
     /**
@@ -224,9 +144,9 @@ class Yeeuu
         $time   = time();
         $nonstr = str_random(9);
         $token  = sha1($time . $this->secret . $nonstr);
-        $url    = 'https://alms.yeeuu.com/apartments/synchronize_apartments';
+        $url    = $this->almsUrl;
 
-        $res    = $this->request($url,'POST',  [
+        $res    = $this->httpCurl($url,'POST',  [
             'form_params'  => [
                 'partnerId'     => $this->partnerId,
                 'timestamp'     => $time,
@@ -237,5 +157,10 @@ class Yeeuu
         ]);
 
         return json_decode($res, true);
+    }
+
+    public function test()
+    {
+
     }
 }
