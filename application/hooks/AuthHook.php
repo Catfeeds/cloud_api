@@ -28,6 +28,8 @@ class AuthHook {
             'common/imageupload',
             'common/fileupload',
 
+            'demo/sheet/index',
+
             'login/login/login',
             'store/store/liststore',
             'store/store/addstoredot',
