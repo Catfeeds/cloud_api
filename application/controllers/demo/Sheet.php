@@ -29,6 +29,7 @@ class Sheet extends MY_Controller{
         header('Content-Disposition:attachment;filename="report.xls"');
         header("Content-Transfer-Encoding:binary");
         $writer->save('php://output');
+		echo 'test';
 
     }
 
