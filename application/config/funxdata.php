@@ -19,8 +19,8 @@ $config['time_zone']    = date_default_timezone_get();
 */
 
 //微信网页授权的信息
-$config['wx_web_appid']     = 'wxc6f533f3cde3e647';
-$config['wx_web_secret']    = '11c0ca3432e9d0d96f1dd94a9120d20b';
+$config['wx_web_appid']     = 'wx75fd74e2316b2355';
+$config['wx_web_secret']    = '70fa3a7fe658be97552788fc764f5434';
 
 //云片信息
 //https://sms.yunpian.com/v1/sms/send.json

@@ -84,7 +84,7 @@ class Login extends MY_Controller
         $user   = $this->httpCurl($url,'get','json');
         if(array_key_exists('errcode',$user))
         {
-            log_message('error',$user['errcode']);
+            log_message('error',$user['errmsg']);
             $this->api_res(1006);
             return false;
         }
