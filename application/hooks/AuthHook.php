@@ -30,7 +30,7 @@ class AuthHook {
 
             'demo/sheet/index',
 
-            'login/login/login',
+            'account/login/login',
             'store/store/liststore',
             'store/store/addstoredot',
             'store/store/addstoreunion',
