@@ -121,14 +121,13 @@ class AuthHook {
         $full_path  = strtolower($directory.$class.'/'.$method);
         // var_dump( $full_path );
         if(!in_array($full_path,$authArr)) {
-
             try {
-
-                $token = $this->CI->input->get_request_header('token');
+                $token   = $this->CI->input->get_request_header('token');
                 $decoded = $this->CI->m_jwt->decodeJwtToken($token);
                 $d_bxid   = $decoded->bxid;
+                $d_company_id   = $decoded->company_id;
                 define('CURRENT_ID',$d_bxid);
-
+                define('COMPANY_ID',$d_company_id);
             } catch (Exception $e) {
                 header("Content-Type:application/json;charset=UTF-8");
                 echo json_encode(array('rescode' => 1001, 'resmsg' => 'token无效', 'data' => []));

@@ -116,7 +116,7 @@ class Login extends MY_Controller
                     $this->m_redis->storeCompanyInfo($company_id,$company_info->toJson());
                 }
             }
-            $token  = $this->m_jwt->generateJwtToken($bxid);
+            $token  = $this->m_jwt->generateJwtToken($bxid,$company_id);
             $privilege  = json_decode($this->m_redis->getCompanyInfo($company_id))->privilege;
             $this->api_res(0,['bxid'=>$bxid,'token'=>$token,'privilege'=>$privilege]);
         }
@@ -190,7 +190,7 @@ class Login extends MY_Controller
                     $this->m_redis->storeCompanyInfo($company_id,$company_info->toJson());
                 }
             }
-            $token  = $this->m_jwt->generateJwtToken($bxid);
+            $token  = $this->m_jwt->generateJwtToken($bxid,$company_id);
             $privilege  = json_decode($this->m_redis->getCompanyInfo($company_id))->privilege;
             $this->api_res(0,['bxid'=>$bxid,'token'=>$token,'privilege'=>$privilege]);
         }
