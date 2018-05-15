@@ -40,7 +40,7 @@ class Common extends MY_Controller
      */
     public function fileUpload(){
         $config = [
-            'allowed_types' => 'pdf|doc',
+            'allowed_types' => 'pdf|xls|xlsx',
             'max_size'  => 4*1024,
         ];
         $this->load->library('alioss',$config);
