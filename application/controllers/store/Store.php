@@ -26,15 +26,15 @@ class Store extends MY_Controller
     {
         $post   = $this->input->post(null,true);
         $page   = intval(isset($post['page'])?$post['page']:1);
-        $where  = [];
+        $where  = ['company_id'=>COMPANY_ID];
         isset($post['city'])?$where['city']=$post['city']:null;
         isset($post['type'])?$where['rent_type']=$post['type']:null;
         isset($post['status'])?$where['status']=$post['status']:null;
         $offset = PAGINATE*($page-1);
         $field  = ['id','name','city','rent_type','address','contact_user','contact_phone','status','created_at'];
         $count  = ceil(Storemodel::where($where)->count()/PAGINATE);
-        $cities = Storemodel::groupBy('city')->get(['city']);
-        $types  = isset($post['city'])?Storemodel::where('city',$post['city'])->groupBy('rent_type')->get(['rent_type']):Storemodel::groupBy('rent_type')->get(['rent_type']);
+        $cities = Storemodel::where(['company_id'=>COMPANY_ID])->groupBy('city')->get(['city']);
+        $types  = isset($post['city'])?Storemodel::where(['company_id'=>COMPANY_ID])->where('city',$post['city'])->groupBy('rent_type')->get(['rent_type']):Storemodel::groupBy('rent_type')->get(['rent_type']);
         $status = Storemodel::where($where)->groupBy('status')->get(['status']);
         if($page>$count){
             $this->api_res(0,['count'=>$count,'city'=>$cities,'type'=>$types,'status'=>$status,'list'=>[]]);
@@ -49,18 +49,19 @@ class Store extends MY_Controller
      */
     public function searchStore(){
         $name   = $this->input->post('name',true);
+        $where  = ['company_id'=>COMPANY_ID];
         $page   = intval($this->input->post('page',true)?$this->input->post('page',true):1);
         $offset = PAGINATE*($page-1);
         $field  = ['id','name','city','rent_type','address','contact_user','contact_phone','status','created_at'];
         $count  = ceil(Storemodel::where('name','like',"%$name%")->count()/PAGINATE);
-        $cities = Storemodel::groupBy('city')->get(['city']);
-        $types  = Storemodel::groupBy('rent_type')->get(['rent_type']);
-        $status = Storemodel::groupBy('status')->get(['status']);
+        $cities = Storemodel::where($where)->groupBy('city')->get(['city']);
+        $types  = Storemodel::where($where)->groupBy('rent_type')->get(['rent_type']);
+        $status = Storemodel::where($where)->groupBy('status')->get(['status']);
         if($page>$count){
             $this->api_res(0,['count'=>$count,'city'=>$cities,'type'=>$types,'status'=>$status,'list'=>[]]);
             return;
         }
-        $stores = Storemodel::where('name','like',"%$name%")->offset($offset)->limit(PAGINATE)->orderBy('id','desc')->get($field);
+        $stores = Storemodel::where($where)->where('name','like',"%$name%")->offset($offset)->limit(PAGINATE)->orderBy('id','desc')->get($field);
         $this->api_res(0,['count'=>$count,'city'=>$cities,'type'=>$types,'status'=>$status,'list'=>$stores]);
     }
 
@@ -69,7 +70,8 @@ class Store extends MY_Controller
      */
     public function deleteStore(){
         $store_id   = $this->input->post('store_id',true);
-        if(Storemodel::find($store_id)->delete()){
+        $where  = ['company_id'=>COMPANY_ID];
+        if(Storemodel::where($where)->find($store_id)->delete()){
             $this->api_res(0);
         }else{
             $this->api_res(1009);
@@ -80,9 +82,18 @@ class Store extends MY_Controller
      * 批量删除门店
      */
     public function destroyStore(){
-        $id = $this->input->post('store_id',true);
+        $id     = $this->input->post('store_id',true);
         if(!is_array($id)){
             $this->api_res(1005);
+            return;
+        }
+        $where  = ['company_id'=>COMPANY_ID];
+        $ids    = Storemodel::where($where)->get(['id'])->map(function($id){
+            return $id->id;
+        })->toArray();
+        $diff     = array_diff($id,$ids);
+        if($diff){
+            $this->api_res(1009);
             return;
         }
         if(Storemodel::destroy($id)){
@@ -97,8 +108,9 @@ class Store extends MY_Controller
      */
     public function showStore(){
         $city   = $this->input->post('city',true);
-        $city?$where['city']=$city:$where=[];
-        $store  = Storemodel::where($where)->get(['id','name','city']);
+        $where  = ['company_id'=>COMPANY_ID];
+        $city?$where['city']=$city:null;
+        $store  = Storemodel::where($where)->get(['id','name','province','city','district']);
         $this->api_res(0,['stores'=>$store]);
     }
 
@@ -106,7 +118,8 @@ class Store extends MY_Controller
      * 获取城市
      */
     public function showCity(){
-        $city   = Storemodel::groupBy('city')->get(['city'])->map(function($city){
+        $where  = ['company_id'=>COMPANY_ID];
+        $city   = Storemodel::where($where)->groupBy('city')->get(['city'])->map(function($city){
             return $city['city'];
         });
         $this->api_res(0,['cities'=>$city]);
@@ -116,6 +129,7 @@ class Store extends MY_Controller
      * 查看门店信息
      */
     public function getStore(){
+        $where  = ['company_id'=>COMPANY_ID];
         $store_id   = $this->input->post('store_id',true);
         if(!$store_id){
             $this->api_res(1005);
@@ -125,7 +139,7 @@ class Store extends MY_Controller
             'rent_type','status','name','theme','province','city','district','address', 'contact_user',
             'counsel_phone','counsel_time','images','describe'
         ];
-        $store  = Storemodel::select($field)->find($store_id);
+        $store  = Storemodel::where($where)->select($field)->find($store_id);
         $store->images  = $this->fullAliossUrl(json_decode($store->images,true),true);
         $this->api_res(0,['store'=>$store]);
     }
@@ -136,6 +150,7 @@ class Store extends MY_Controller
      */
     public function updateStore(){
         $store_id   = $this->input->post('store_id',true);
+        $where  = ['company_id'=>COMPANY_ID];
         if(!$store_id){
             $this->api_res(1005);
             return;
@@ -149,16 +164,20 @@ class Store extends MY_Controller
             $this->api_res(1002,['error'=>$this->form_first_error($field)]);
             return;
         }
-        $update  = Storemodel::find($store_id);
-        $post    = $this->input->post(null,true);
-        $update->fill($post);
         if(!isset($post['images']))
         {
             $this->api_res(1002,['error'=>'必须上传图片']);
             return;
         }
-        $images = $this->splitAliossUrl($post['images'],true);
-        $images = json_encode($images);
+        $images  = $this->splitAliossUrl($post['images'],true);
+        $images  = json_encode($images);
+        $update  = Storemodel::where($where)->find($store_id);
+        if(!$update){
+            $this->api_res(1009);
+            return;
+        }
+        $post    = $this->input->post(null,true);
+        $update->fill($post);
         $update->images = $images;
         if($update->save()){
             $this->api_res(0,['store_id'=>$update->id]);
@@ -190,12 +209,13 @@ class Store extends MY_Controller
         }
         $images  = $this->splitAliossUrl($post['images'],true);
         $images = json_encode($images);
-        if(Storemodel::where(['rent_type'=>'DOT','name'=>$post['name']])->first()){
+        if(Storemodel::where(['company_id'=>COMPANY_ID,'rent_type'=>'DOT','name'=>$post['name']])->first()){
             $this->api_res(1008);
             return;
         }
         $insert  = new Storemodel();
         $insert->fill($post);
+        $insert->company_id = COMPANY_ID;
         $insert->images=$images;
         if($insert->save()){
             $this->api_res(0,['store_id'=>$insert->id]);
@@ -226,12 +246,13 @@ class Store extends MY_Controller
         }
         $images  = $this->splitAliossUrl($post['images'],true);
         $images = json_encode($images);
-        if(Storemodel::where(['rent_type'=>'UNION','name'=>$post['name']])->first()){
+        if(Storemodel::where(['company_id'=>COMPANY_ID,'rent_type'=>'UNION','name'=>$post['name']])->first()){
             $this->api_res(1008);
             return;
         }
         $insert  = new Storemodel();
         $insert->fill($post);
+        $insert->company_id = COMPANY_ID;
         $insert->images=$images;
         if($insert->save()){
             $this->api_res(0,['store_id'=>$insert->id]);
