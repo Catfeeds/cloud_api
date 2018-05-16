@@ -91,11 +91,11 @@ class Common extends MY_Controller
         $this->load->model('districtmodel');
 
         $post=$this->input->post(null,true);
-        if(!empty($post['city_name'])){
+        if(isset($post['city_name'])){
             $this->load->model('citymodel');
-            $city_id    = Citymodel::where('name',$post['city_name'])->first()->id;
+            $city_id    = Citymodel::where('name',strip_tags($post['city_name']))->first()->id;
         }else{
-            $city_id    = $post['city_id'];
+            $city_id    = isset($post['city_id'])?intval($post['city_id']):null;
         }
         if(isset($city_id))
         {
