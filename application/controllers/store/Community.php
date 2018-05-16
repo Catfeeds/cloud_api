@@ -27,8 +27,9 @@ class Community extends MY_Controller
             $this->api_res(1002,['error'=>$this->form_first_error($field)]);
             return;
         }
+
         $post   = $this->input->post(null,true);
-        if(Communitymodel::where('name',$post['name'])->get()){
+        if(Communitymodel::where('name',$post['name'])->first()){
             $this->api_res(1008);
             return;
         }
