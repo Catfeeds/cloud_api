@@ -89,13 +89,17 @@ class Common extends MY_Controller
     public function district()
     {
         $this->load->model('districtmodel');
-        $where  = [];
+
         $post=$this->input->post(null,true);
-        isset($post['city_id'])?$where['city_id']=intval($post['city_id']):null;
-        isset($post['city_name'])?$where['city_name']=strip_tags($post['city_name']):null;
-        if(isset($where))
+        if(!empty($post['city_name'])){
+            $this->load->model('citymodel');
+            $city_id    = Citymodel::where('name',$post['city_name'])->first()->id;
+        }else{
+            $city_id    = $post['city_id'];
+        }
+        if(isset($city_id))
         {
-            $district = Districtmodel::where($where)->get(['district_id','district']);
+            $district = Districtmodel::where('city_id',$city_id)->get(['district_id','district']);
         }else{
             $district = [];
         }
