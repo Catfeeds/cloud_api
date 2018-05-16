@@ -93,7 +93,7 @@ class Common extends MY_Controller
         $post=$this->input->post(null,true);
         if(isset($post['city_name'])){
             $this->load->model('citymodel');
-            $city_id    = Citymodel::where('name',strip_tags($post['city_name']))->first()->id;
+            $city_id    = Citymodel::where('city',strip_tags($post['city_name']))->first()->city_id;
         }else{
             $city_id    = isset($post['city_id'])?intval($post['city_id']):null;
         }
