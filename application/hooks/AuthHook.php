@@ -106,6 +106,8 @@ class AuthHook {
             'shop/goodsorder/listgoodsorder',
             'shop/goodsorder/detail',
 
+            'employee/position/editposition',
+
             'smartdevice/smartdevice/listsmartdevice',
             'smartdevice/smartdevice/record',
             'smartdevice/yeeuulock/test',

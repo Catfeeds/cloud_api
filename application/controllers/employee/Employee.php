@@ -6,3 +6,14 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Time:        14:46
  * Describe:    员工管理
  */
+class Employee extends MY_Controller
+{
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->load->model('employeemodel');
+    }
+
+
+}

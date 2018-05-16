@@ -6,3 +6,22 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Time:        14:46
  * Describe:    员工职位
  */
+class Position extends MY_Controller
+{
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->load->model('positionmodel');
+
+    }
+
+    public function editPosition()
+    {
+        $filed = ['name', 'pc_privilege', 'mini_privilege'];
+        $category = $this->positionmodel->get($filed)->toArray();
+        $this->api_res(0, $category);
+    }
+
+
+}
