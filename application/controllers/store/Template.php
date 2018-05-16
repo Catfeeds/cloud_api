@@ -21,7 +21,7 @@ class Template extends MY_Controller
         $post   = $this->input->post(null,true);
         $page   = intval(isset($post['page'])?$post['page']:1);
         $offset = PAGINATE*($page-1);
-        $field  = ['id','name'];
+        $field  = ['id','name','rent_type'];
         $count  = ceil(Contracttemplatemodel::count()/PAGINATE);
         if($page>$count){
             $this->api_res(0,['count'=>$count,'list'=>[]]);
@@ -35,16 +35,22 @@ class Template extends MY_Controller
      * 添加模板
      */
     public function addTemplate(){
+        if(!$this->validationText($this->validateAdd())){
+            $this->api_res(1002,['error'=>$this->form_first_error()]);
+            return;
+        }
         $post   = $this->input->post(NULL,true);
         //找到员工所在的门店id
         $name   = isset($post['name'])?$post['name']:null;
+        $rent_type   = isset($post['type'])?$post['type']:null;
         $file_url   = isset($post['file_url'])?$post['file_url']:null;
-        if(empty($name) || empty($file_url)){
+        if(empty($name) || empty($file_url) ||empty($type)){
             $this->api_res(1002);
             return;
         }
         $template   = new Contracttemplatemodel();
         $template->name = $name;
+        $template->rent_type = $rent_type;
         $template->url  = $this->splitAliossUrl($file_url);
         if($template->save()){
             $this->api_res(0);
@@ -106,7 +112,7 @@ class Template extends MY_Controller
             $this->api_res(1005);
             return;
         }
-        $template   = Contracttemplatemodel::select(['name','url'])->find($template_id);
+        $template   = Contracttemplatemodel::select(['name','url','rent_type'])->find($template_id);
         $template['url']    = $this->fullAliossUrl($template['url']);
         if(!$template){
             $this->api_res(1007);
@@ -126,11 +132,16 @@ class Template extends MY_Controller
             $this->api_res(1002);
             return;
         }
+        if(!$this->validationText($this->validateAdd())){
+            $this->api_res(1002,['error'=>$this->form_first_error()]);
+            return;
+        }
         $post   = $this->input->post(NULL,true);
         //找到员工所在的门店id
         $name   = isset($post['name'])?$post['name']:null;
+        $rent_type   = isset($post['type'])?$post['type']:null;
         $file_url   = isset($post['file_url'])?$post['file_url']:null;
-        if(empty($name) || empty($file_url)){
+        if(empty($name) || empty($file_url) || empty($rent_type)){
             $this->api_res(1002);
             return;
         }
@@ -139,6 +150,7 @@ class Template extends MY_Controller
             $this->api_res(1007);
         }
         $template->name = $name;
+        $template->rent_type = $rent_type;
         $template->url  = $this->splitAliossUrl($file_url);
         if($template->save()){
             $this->api_res(0);
@@ -158,5 +170,25 @@ class Template extends MY_Controller
         }
         $template   = Contracttemplatemodel::where('store_id',$store_id)->get(['id','name']);
         $this->api_res(0,['template'=>$template]);
+    }
+
+    public function validateAdd(){
+        return array(
+            array(
+                'field' => 'name',
+                'label' => '模板名称',
+                'rules' => 'required|trim'
+            ),
+            array(
+                'field' => 'type',
+                'label' => '模板类型',
+                'rules' => 'required|trim|in_list[LONG,SHORT,RESERVE]'
+            ),
+            array(
+                'field' => 'file_url',
+                'label' => '模板类型',
+                'rules' => 'required|trim'
+            ),
+        );
     }
 }
