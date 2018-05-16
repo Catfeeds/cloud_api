@@ -35,8 +35,9 @@ class Template extends MY_Controller
      * 添加模板
      */
     public function addTemplate(){
+        $field  = ['name','type','file_url'];
         if(!$this->validationText($this->validateAdd())){
-            $this->api_res(1002,['error'=>$this->form_first_error()]);
+            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
             return;
         }
         $post   = $this->input->post(NULL,true);
@@ -44,8 +45,12 @@ class Template extends MY_Controller
         $name   = isset($post['name'])?$post['name']:null;
         $rent_type   = isset($post['type'])?$post['type']:null;
         $file_url   = isset($post['file_url'])?$post['file_url']:null;
-        if(empty($name) || empty($file_url) ||empty($type)){
+        if(empty($name) || empty($file_url) ||empty($rent_type)){
             $this->api_res(1002);
+            return;
+        }
+        if(Contracttemplatemodel::where(['name'=>$name])->exists()){
+            $this->api_res(1008);
             return;
         }
         $template   = new Contracttemplatemodel();
@@ -128,12 +133,13 @@ class Template extends MY_Controller
      */
     public function updateTemplate(){
         $template_id    = $this->input->post('template_id',true);
+        $field  = ['name','type','file_url'];
         if(!$template_id){
             $this->api_res(1002);
             return;
         }
         if(!$this->validationText($this->validateAdd())){
-            $this->api_res(1002,['error'=>$this->form_first_error()]);
+            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
             return;
         }
         $post   = $this->input->post(NULL,true);
