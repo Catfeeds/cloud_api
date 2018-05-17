@@ -19,8 +19,10 @@ class Roomdot extends MY_Controller
      */
     public function addDot(){
         $field  = ['store_id','community_id','building_name','unit','number','layer','layer_total','room_number',
-            'hall_number','toilet_number','area','contract_template_id','contract_min_time','contract_max_time',
-            'deposit_type','pay_frequency_allow','the_room_number','room_area','room_toward','room_feature','room_provides',
+            'hall_number','toilet_number','area',
+            'contract_template_long_id','contract_template_short_id','contract_template_reserve_id',
+//            'contract_min_time','contract_max_time','deposit_type','pay_frequency_allow',
+            'the_room_number','room_area','room_toward','room_feature','room_provides',
         ];
         $post   = $this->input->post(null,true);
         //验证房屋
@@ -33,19 +35,19 @@ class Roomdot extends MY_Controller
             $this->api_res(1002,['error'=>'房屋图片不能为空']);
             return;
         }
-        $pay_frequency_allows = isset($post['pay_frequency_allow'])?$post['pay_frequency_allow']:null;
-        if(!$pay_frequency_allows || !is_array($pay_frequency_allows)){
-            $this->api_res(1002,['error'=>'允许的支付周期错误']);
-            return;
-        }
-        //遍历验证支付周期
-        foreach ($pay_frequency_allows as $pay_frequency_allow ){
-            $a['pay_frequency_allow']   = $pay_frequency_allow;
-            if(!$this->validationText($this->validatePayConfig(),$a)){
-                $this->api_res(1002,['error'=>$this->form_first_error($field)]);
-                return;
-            }
-        }
+//        $pay_frequency_allows = isset($post['pay_frequency_allow'])?$post['pay_frequency_allow']:null;
+//        if(!$pay_frequency_allows || !is_array($pay_frequency_allows)){
+//            $this->api_res(1002,['error'=>'允许的支付周期错误']);
+//            return;
+//        }
+//        //遍历验证支付周期
+//        foreach ($pay_frequency_allows as $pay_frequency_allow ){
+//            $a['pay_frequency_allow']   = $pay_frequency_allow;
+//            if(!$this->validationText($this->validatePayConfig(),$a)){
+//                $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+//                return;
+//            }
+//        }
         //遍历验证房间
         $rooms   = isset($post['rooms'])?$post['rooms']:null;
         if(!$rooms || !is_array($rooms)){
@@ -108,11 +110,13 @@ class Roomdot extends MY_Controller
                     'toward'        => $room_item['room_toward'],
                     'feature'       => $room_item['room_feature'],
                     'provides'      => $room_item['room_provides'],
-                    'contract_template_id'  => $post['contract_template_id'],
-                    'contract_min_time'     => $post['contract_min_time'],
-                    'contract_max_time'     => $post['contract_max_time'],
-                    'deposit_type'          => $post['deposit_type'],
-                    'pay_frequency_allow'   => json_encode($post['pay_frequency_allow']),
+                    'contract_template_long_id'     => $post['contract_template_long_id'],
+                    'contract_template_short_id'    => $post['contract_template_short_id'],
+                    'contract_template_reserve_id'  => $post['contract_template_reserve_id'],
+//                    'contract_min_time'     => $post['contract_min_time'],
+//                    'contract_max_time'     => $post['contract_max_time'],
+//                    'deposit_type'          => $post['deposit_type'],
+//                    'pay_frequency_allow'   => json_encode($post['pay_frequency_allow']),
                     'created_at'            => date('Y-m-d H:i:s',time()),
                     'updated_at'            => date('Y-m-d H:i:s',time()),
                     'sort'          => $k++,
@@ -137,8 +141,10 @@ class Roomdot extends MY_Controller
      * 批量编辑分布式房间
      */
     public function batchUpdateDot(){
-        $field  = ['store_id','community_id','contract_template_id','contract_min_time',
-            'contract_max_time','deposit_type','pay_frequency_allow'];
+        $field  = ['store_id','community_id',
+            'contract_template_long_id','contract_template_short_id','contract_template_reserve_id',
+//            'contract_min_time','contract_max_time','deposit_type','pay_frequency_allow'
+        ];
         $post   = $this->input->post(null,true);
         //验证基本信息
         if(!$this->validationText($this->validateBatchDotConfig())){
@@ -146,26 +152,28 @@ class Roomdot extends MY_Controller
             return;
         }
         //验证付款周期
-        $pay_frequency_allows = isset($post['pay_frequency_allow'])?$post['pay_frequency_allow']:null;
-        if(!$pay_frequency_allows || !is_array($pay_frequency_allows)){
-            $this->api_res(1002,['error'=>'允许的支付周期错误']);
-            return;
-        }
-        foreach ($pay_frequency_allows as $pay_frequency_allow ){
-            $a['pay_frequency_allow']   = $pay_frequency_allow;
-            if(!$this->validationText($this->validatePayConfig(),$a)){
-                $this->api_res(1002,['error'=>$this->form_first_error($field)]);
-                return;
-            }
-        }
+//        $pay_frequency_allows = isset($post['pay_frequency_allow'])?$post['pay_frequency_allow']:null;
+//        if(!$pay_frequency_allows || !is_array($pay_frequency_allows)){
+//            $this->api_res(1002,['error'=>'允许的支付周期错误']);
+//            return;
+//        }
+//        foreach ($pay_frequency_allows as $pay_frequency_allow ){
+//            $a['pay_frequency_allow']   = $pay_frequency_allow;
+//            if(!$this->validationText($this->validatePayConfig(),$a)){
+//                $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+//                return;
+//            }
+//        }
         $this->load->model('roomdotmodel');
         $rooms  = Roomdotmodel::where(['store_id'=>$post['store_id'],'community_id'=>$post['community_id']]);
         $updates    = [
-            'contract_template_id'  => $post['contract_template_id'],
-            'contract_min_time'     => $post['contract_min_time'],
-            'contract_max_time'     => $post['contract_max_time'],
-            'deposit_type'          => $post['deposit_type'],
-            'pay_frequency_allow'   => json_encode($post['pay_frequency_allow']),
+            'contract_template_long_id'     => $post['contract_template_long_id'],
+            'contract_template_short_id'    => $post['contract_template_short_id'],
+            'contract_template_reserve_id'  => $post['contract_template_reserve_id'],
+//            'contract_min_time'     => $post['contract_min_time'],
+//            'contract_max_time'     => $post['contract_max_time'],
+//            'deposit_type'          => $post['deposit_type'],
+//            'pay_frequency_allow'   => json_encode($post['pay_frequency_allow']),
         ];
         if($rooms->update($updates)){
             $this->api_res(0);
@@ -209,8 +217,10 @@ class Roomdot extends MY_Controller
      * 查看分布式房间信息
      */
     public function getDot(){
-        $field  = ['store_id','community_id','house_id','rent_price','property_price','sort','contract_template_id',
-            'contract_min_time','contract_max_time','deposit_type','pay_frequency_allow'];
+        $field  = ['store_id','community_id','house_id','rent_price','property_price','sort',
+            'contract_template_long_id','contract_template_short_id','contract_template_reserve_id',
+//            'contract_min_time','contract_max_time','deposit_type','pay_frequency_allow'
+        ];
         $post   = $this->input->post(null,true);
         $room_id    = isset($post['room_id'])?intval(strip_tags(trim($post['room_id']))):null;
         if(!$room_id){
@@ -223,11 +233,21 @@ class Roomdot extends MY_Controller
         $this->load->model('communitymodel');
         $this->load->model('housemodel');
         $this->load->model('contracttemplatemodel');
-        $room   = Roomdotmodel::with('store')->with('house')->with('community')->select($field)->find($room_id);
+        $room   = Roomdotmodel::with('store')
+            ->with('house')
+            ->with('community')
+            ->with('long_template')
+            ->with('short_template')
+            ->with('reserve_template')
+            ->select($field)->find($room_id);
         if(!$room){
             $this->api_res(1007);
         }else{
-            $all_room   = Roomdotmodel::where('house_id',$room->house_id)->with('template')->orderBy('sort')->get($field);
+            $all_room   = Roomdotmodel::where('house_id',$room->house_id)
+                ->with('long_template')
+                ->with('short_template')
+                ->with('reserve_template')
+                ->orderBy('sort')->get($field);
             $room['rooms']  = $all_room;
             $this->api_res(0,['room'=>$room]);
         }
@@ -294,25 +314,35 @@ class Roomdot extends MY_Controller
                 'rules' => 'trim|required|numeric'
             ),
             array(
-                'field' => 'contract_template_id',
-                'label' => '选择合同模板',
+                'field' => 'contract_template_long_id',
+                'label' => '选择长租合同模板',
                 'rules' => 'trim|required|integer'
             ),
             array(
-                'field' => 'contract_min_time',
-                'label' => '合同最少签约期限（以月份计）',
+                'field' => 'contract_template_short_id',
+                'label' => '选择短租合同模板',
                 'rules' => 'trim|required|integer'
             ),
             array(
-                'field' => 'contract_max_time',
-                'label' => '合同最多签约期限（以月份计）',
+                'field' => 'contract_template_reserve_id',
+                'label' => '选择预定合同模板',
                 'rules' => 'trim|required|integer'
             ),
-            array(
-                'field' => 'deposit_type',
-                'label' => '押金信息',
-                'rules' => 'trim|required|in_list[FREE]'
-            ),
+//            array(
+//                'field' => 'contract_min_time',
+//                'label' => '合同最少签约期限（以月份计）',
+//                'rules' => 'trim|required|integer'
+//            ),
+//            array(
+//                'field' => 'contract_max_time',
+//                'label' => '合同最多签约期限（以月份计）',
+//                'rules' => 'trim|required|integer'
+//            ),
+//            array(
+//                'field' => 'deposit_type',
+//                'label' => '押金信息',
+//                'rules' => 'trim|required|in_list[FREE]'
+//            ),
         ];
         return $config;
     }
@@ -381,25 +411,35 @@ class Roomdot extends MY_Controller
                 'rules' => 'trim|integer|required'
             ),
             array(
-                'field' => 'contract_template_id',
-                'label' => '选择合同模板',
+                'field' => 'contract_template_long_id',
+                'label' => '选择长租合同模板',
                 'rules' => 'trim|required|integer'
             ),
             array(
-                'field' => 'contract_min_time',
-                'label' => '合同最少签约期限（以月份计）',
+                'field' => 'contract_template_short_id',
+                'label' => '选择短租合同模板',
                 'rules' => 'trim|required|integer'
             ),
             array(
-                'field' => 'contract_max_time',
-                'label' => '合同最多签约期限（以月份计）',
+                'field' => 'contract_template_reserve_id',
+                'label' => '选择预定合同模板',
                 'rules' => 'trim|required|integer'
             ),
-            array(
-                'field' => 'deposit_type',
-                'label' => '押金信息',
-                'rules' => 'trim|required|in_list[FREE]'
-            ),
+//            array(
+//                'field' => 'contract_min_time',
+//                'label' => '合同最少签约期限（以月份计）',
+//                'rules' => 'trim|required|integer'
+//            ),
+//            array(
+//                'field' => 'contract_max_time',
+//                'label' => '合同最多签约期限（以月份计）',
+//                'rules' => 'trim|required|integer'
+//            ),
+//            array(
+//                'field' => 'deposit_type',
+//                'label' => '押金信息',
+//                'rules' => 'trim|required|in_list[FREE]'
+//            ),
         ];
         return $config;
     }

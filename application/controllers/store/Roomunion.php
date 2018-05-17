@@ -123,8 +123,8 @@ class Roomunion extends MY_Controller
      * 批量更新集中式房间
      */
     public function batchUpdateUnion(){
-        $field  = ['store_id','building_id','contract_template_long_id','contract_template_short_id',
-            'contract_template_reserve_id',
+        $field  = ['store_id','building_id',
+            'contract_template_long_id','contract_template_short_id','contract_template_reserve_id',
 //            'contract_min_time','contract_max_time','deposit_type','pay_frequency_allow'
         ];
         $post   = $this->input->post(null,true);
