@@ -170,11 +170,12 @@ class Template extends MY_Controller
      */
     public function showTemplate(){
         $store_id    = $this->input->post('store_id',true);
-        if(!$store_id){
+        $rent_type  = $this->input->post('rent_type',true);
+        if(!$store_id || $rent_type){
             $this->api_res(1005);
             return;
         }
-        $template   = Contracttemplatemodel::where('store_id',$store_id)->get(['id','name']);
+        $template   = Contracttemplatemodel::where(['store_id'=>$store_id,'rent_type'=>$rent_type])->get(['id','name']);
         $this->api_res(0,['template'=>$template]);
     }
 
