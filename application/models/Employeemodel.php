@@ -24,6 +24,12 @@ class Employeemodel extends Basemodel{
         return $this->belongsTo(Companymodel::class,'company_id');
     }
 
+    //员公的职位
+    public function position(){
+        //return $this->select('position_id')->get()->toArray();
+        return $this->belongsTo(Positionmodel::class,'position_id');
+    }
+
     //查询员工信息
     public function getInfo($type,$sign){
         switch ($type){

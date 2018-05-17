@@ -15,5 +15,27 @@ class Employee extends MY_Controller
         $this->load->model('employeemodel');
     }
 
+    public function showEmployee()
+    {
+        $this->load->model('positionmodel');
+        $this->load->model('storemodel');
 
+        $filed = ['name', 'phone', 'position_id', 'store_ids', 'hiredate', 'status'];
+        $category = $this->employeemodel->with(['position' => function ($query) {
+            $query->select('id','name');
+        }])->get($filed)->map(function($a){
+            $ids = json_decode($a->store_ids,true);
+            if(!$ids){
+                $store_names=[];
+            }else{
+                $store_names = $this->storemodel->find($ids)->map(function($b){
+                    return $b->name;
+                });
+            }
+            $a->store_names = $store_names;
+            return $a;
+        });
+
+        $this->api_res(0, $category);
+    }
 }

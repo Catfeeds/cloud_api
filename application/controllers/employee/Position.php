@@ -19,7 +19,7 @@ class Position extends MY_Controller
     public function editPosition()
     {
         $filed = ['name', 'pc_privilege', 'mini_privilege'];
-        $category = $this->positionmodel->get($filed)->toArray();
+        $category = $this->positionmodel->get($filed);
         $this->api_res(0, $category);
     }
 
