@@ -21,7 +21,7 @@ class Roomunion extends MY_Controller
         $field  = [
             'store_id','building_name','layer_total','layer_room_number',
             'contract_template_long_id','contract_template_short_id','contract_template_reserve_id',
-            'contract_min_time','contract_max_time','deposit_type','pay_frequency_allow',
+//            'contract_min_time','contract_max_time','deposit_type','pay_frequency_allow',
         ];
 
         $post   = $this->input->post(null,true);
@@ -31,18 +31,18 @@ class Roomunion extends MY_Controller
             return;
         }
         //验证付款周期
-        $pay_frequency_allows = isset($post['pay_frequency_allow'])?$post['pay_frequency_allow']:null;
-        if(!$pay_frequency_allows || !is_array($pay_frequency_allows)){
-            $this->api_res(1002,['error'=>'允许的支付周期错误']);
-            return;
-        }
-        foreach ($pay_frequency_allows as $pay_frequency_allow ){
-            $a['pay_frequency_allow']   = $pay_frequency_allow;
-            if(!$this->validationText($this->validatePayConfig(),$a)){
-                $this->api_res(1002,['error'=>$this->form_first_error($field)]);
-                return;
-            }
-        }
+//        $pay_frequency_allows = isset($post['pay_frequency_allow'])?$post['pay_frequency_allow']:null;
+//        if(!$pay_frequency_allows || !is_array($pay_frequency_allows)){
+//            $this->api_res(1002,['error'=>'允许的支付周期错误']);
+//            return;
+//        }
+//        foreach ($pay_frequency_allows as $pay_frequency_allow ){
+//            $a['pay_frequency_allow']   = $pay_frequency_allow;
+//            if(!$this->validationText($this->validatePayConfig(),$a)){
+//                $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+//                return;
+//            }
+//        }
         //验证楼栋buildings格式
         $buildings = isset($post['buildings'])?$post['buildings']:null;
         if(!$buildings || !is_array($buildings)){
@@ -81,10 +81,6 @@ class Roomunion extends MY_Controller
                 $db_building->layer_room_number = $building['layer_room_number'];
                 $a  = $db_building->save();
                 $building_id    = $db_building->id;
-                /*if(!$a){
-                    DB::rollBack();
-                    $this->api_res(1009);
-                }*/
                 $insert_room    = [];
                 for($i=1;$i<=$building['layer_total'];$i++){
                     for($j=1;$j<=$building['layer_room_number'];$j++){
@@ -98,10 +94,10 @@ class Roomunion extends MY_Controller
                             'contract_template_short_id'    => $post['contract_template_short_id'],
                             'contract_template_long_id'     => $post['contract_template_long_id'],
                             'contract_template_reserve_id'  => $post['contract_template_reserve_id'],
-                            'contract_min_time'        => $post['contract_min_time'],
-                            'contract_max_time'        => $post['contract_max_time'],
-                            'deposit_type'             => $post['deposit_type'],
-                            'pay_frequency_allow'      => json_encode($post['pay_frequency_allow']),
+//                            'contract_min_time'        => $post['contract_min_time'],
+//                            'contract_max_time'        => $post['contract_max_time'],
+//                            'deposit_type'             => $post['deposit_type'],
+//                            'pay_frequency_allow'      => json_encode($post['pay_frequency_allow']),
                             'created_at'               => date('Y-m-d H:i:s',time()),
                             'updated_at'               => date('Y-m-d H:i:s',time()),
                         ];
@@ -128,8 +124,9 @@ class Roomunion extends MY_Controller
      */
     public function batchUpdateUnion(){
         $field  = ['store_id','building_id','contract_template_long_id','contract_template_short_id',
-            'contract_template_reserve_id','contract_min_time','contract_max_time','deposit_type',
-            'pay_frequency_allow'];
+            'contract_template_reserve_id',
+//            'contract_min_time','contract_max_time','deposit_type','pay_frequency_allow'
+        ];
         $post   = $this->input->post(null,true);
         //验证基本信息
         if(!$this->validationText($this->validateBatchUnionConfig())){
@@ -137,28 +134,28 @@ class Roomunion extends MY_Controller
             return;
         }
         //验证付款周期
-        $pay_frequency_allows = isset($post['pay_frequency_allow'])?$post['pay_frequency_allow']:null;
-        if(!$pay_frequency_allows || !is_array($pay_frequency_allows)){
-            $this->api_res(1002,['error'=>'允许的支付周期错误']);
-            return;
-        }
-        foreach ($pay_frequency_allows as $pay_frequency_allow ){
-            $a['pay_frequency_allow']   = $pay_frequency_allow;
-            if(!$this->validationText($this->validatePayConfig(),$a)){
-                $this->api_res(1002,['error'=>$this->form_first_error($field)]);
-                return;
-            }
-        }
+//        $pay_frequency_allows = isset($post['pay_frequency_allow'])?$post['pay_frequency_allow']:null;
+//        if(!$pay_frequency_allows || !is_array($pay_frequency_allows)){
+//            $this->api_res(1002,['error'=>'允许的支付周期错误']);
+//            return;
+//        }
+//        foreach ($pay_frequency_allows as $pay_frequency_allow ){
+//            $a['pay_frequency_allow']   = $pay_frequency_allow;
+//            if(!$this->validationText($this->validatePayConfig(),$a)){
+//                $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+//                return;
+//            }
+//        }
         $this->load->model('roomunionmodel');
         $rooms  = Roomunionmodel::where(['store_id'=>$post['store_id'],'building_id'=>$post['building_id']]);
         $updates    = [
             'contract_template_short_id'     => $post['contract_template_short_id'],
             'contract_template_long_id'      => $post['contract_template_long_id'],
             'contract_template_reserve_id'   => $post['contract_template_reserve_id'],
-            'contract_min_time'     => $post['contract_min_time'],
-            'contract_max_time'     => $post['contract_max_time'],
-            'deposit_type'          => $post['deposit_type'],
-            'pay_frequency_allow'   => json_encode($post['pay_frequency_allow']),
+//            'contract_min_time'     => $post['contract_min_time'],
+//            'contract_max_time'     => $post['contract_max_time'],
+//            'deposit_type'          => $post['deposit_type'],
+//            'pay_frequency_allow'   => json_encode($post['pay_frequency_allow']),
         ];
         if($rooms->update($updates)){
             $this->api_res(0);
@@ -217,7 +214,8 @@ class Roomunion extends MY_Controller
     public function getUnion(){
         $field  = ['store_id','room_type_id','layer','layer_total','rent_price','property_price',
             'contract_template_long_id','contract_template_short_id','contract_template_reserve_id',
-            'contract_min_time','contract_max_time','deposit_type','pay_frequency_allow'];
+//            'contract_min_time','contract_max_time','deposit_type','pay_frequency_allow'
+        ];
         $post   = $this->input->post(null,true);
         $room_id    = isset($post['room_id'])?intval(strip_tags(trim($post['room_id']))):null;
         if(!$room_id){
@@ -281,7 +279,7 @@ class Roomunion extends MY_Controller
                 'label' => '选择预定合同模板',
                 'rules' => 'trim|required|integer'
             ),
-            array(
+            /*array(
                 'field' => 'contract_min_time',
                 'label' => '合同最少签约期限（以月份计）',
                 'rules' => 'trim|required|integer'
@@ -295,7 +293,7 @@ class Roomunion extends MY_Controller
                 'field' => 'deposit_type',
                 'label' => '押金信息',
                 'rules' => 'trim|required|in_list[FREE]'
-            ),
+            ),*/
         ];
         return $config;
     }
@@ -330,7 +328,7 @@ class Roomunion extends MY_Controller
                 'label' => '选择预定合同模板',
                 'rules' => 'trim|required|integer'
             ),
-            array(
+           /* array(
                 'field' => 'contract_min_time',
                 'label' => '合同最少签约期限（以月份计）',
                 'rules' => 'trim|required|integer'
@@ -344,7 +342,7 @@ class Roomunion extends MY_Controller
                 'field' => 'deposit_type',
                 'label' => '押金信息',
                 'rules' => 'trim|required|in_list[FREE]'
-            ),
+            ),*/
         ];
         return $config;
     }

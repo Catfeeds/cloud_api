@@ -31,17 +31,17 @@ class Roomunionmodel extends Basemodel{
 
     //房间的长租合同模板
     public function long_template(){
-        return $this->belongsTo(Contracttemplatemodel::class,'contract_template_id')
+        return $this->belongsTo(Contracttemplatemodel::class,'contract_template_long_id')
             ->where('rent_type','LONG')->select(['id','name']);
     }
     //房间的短租合同模板
     public function short_template(){
-        return $this->belongsTo(Contracttemplatemodel::class,'contract_template_id')
+        return $this->belongsTo(Contracttemplatemodel::class,'contract_template_short_id')
             ->where('rent_type','SHORT')->select(['id','name']);
     }
     //房间的预定合同模板
     public function reserve_template(){
-        return $this->belongsTo(Contracttemplatemodel::class,'contract_template_id')
+        return $this->belongsTo(Contracttemplatemodel::class,'contract_template_reserve_id')
             ->where('rent_type','RESERVE')->select(['id','name']);
     }
 
