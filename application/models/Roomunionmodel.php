@@ -29,10 +29,20 @@ class Roomunionmodel extends Basemodel{
         return $this->belongsTo(Buildingmodel::class,'building_id');
     }
 
-    //房间的合同模板
-    public function template(){
-        return $this->belongsTo(Contracttemplatemodel::class,'contract_template_id')->select(
-            ['id','name']);
+    //房间的长租合同模板
+    public function long_template(){
+        return $this->belongsTo(Contracttemplatemodel::class,'contract_template_id')
+            ->where('rent_type','LONG')->select(['id','name']);
+    }
+    //房间的短租合同模板
+    public function short_template(){
+        return $this->belongsTo(Contracttemplatemodel::class,'contract_template_id')
+            ->where('rent_type','SHORT')->select(['id','name']);
+    }
+    //房间的预定合同模板
+    public function reserve_template(){
+        return $this->belongsTo(Contracttemplatemodel::class,'contract_template_id')
+            ->where('rent_type','RESERVE')->select(['id','name']);
     }
 
     //房间所属房型信息
