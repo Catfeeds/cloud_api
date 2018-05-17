@@ -164,6 +164,7 @@ class Store extends MY_Controller
             $this->api_res(1002,['error'=>$this->form_first_error($field)]);
             return;
         }
+        $post    = $this->input->post(null,true);
         if(!isset($post['images']))
         {
             $this->api_res(1002,['error'=>'必须上传图片']);
