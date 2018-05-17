@@ -171,7 +171,7 @@ class Template extends MY_Controller
     public function showTemplate(){
         $store_id    = $this->input->post('store_id',true);
         $rent_type  = $this->input->post('rent_type',true);
-        if(!$store_id || $rent_type){
+        if(!$store_id || !$rent_type){
             $this->api_res(1005);
             return;
         }
