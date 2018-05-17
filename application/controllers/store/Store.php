@@ -31,7 +31,7 @@ class Store extends MY_Controller
         isset($post['type'])?$where['rent_type']=$post['type']:null;
         isset($post['status'])?$where['status']=$post['status']:null;
         $offset = PAGINATE*($page-1);
-        $field  = ['id','name','city','rent_type','address','contact_user','contact_phone','status','created_at'];
+        $field  = ['id','name','city','rent_type','address','contact_user','counsel_phone','status','created_at'];
         $count  = ceil(Storemodel::where($where)->count()/PAGINATE);
         $cities = Storemodel::where(['company_id'=>COMPANY_ID])->groupBy('city')->get(['city']);
         $types  = isset($post['city'])?Storemodel::where(['company_id'=>COMPANY_ID])->where('city',$post['city'])->groupBy('rent_type')->get(['rent_type']):Storemodel::groupBy('rent_type')->get(['rent_type']);
@@ -52,7 +52,7 @@ class Store extends MY_Controller
         $where  = ['company_id'=>COMPANY_ID];
         $page   = intval($this->input->post('page',true)?$this->input->post('page',true):1);
         $offset = PAGINATE*($page-1);
-        $field  = ['id','name','city','rent_type','address','contact_user','contact_phone','status','created_at'];
+        $field  = ['id','name','city','rent_type','address','contact_user','counsel_phone','status','created_at'];
         $count  = ceil(Storemodel::where('name','like',"%$name%")->count()/PAGINATE);
         $cities = Storemodel::where($where)->groupBy('city')->get(['city']);
         $types  = Storemodel::where($where)->groupBy('rent_type')->get(['rent_type']);
