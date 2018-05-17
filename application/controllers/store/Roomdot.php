@@ -189,7 +189,7 @@ class Roomdot extends MY_Controller
         $field  = ['boss_room_dot.id as room_id','boss_room_dot.store_id','boss_store.name as store_name',
             'boss_community.name as community_name','boss_community.province','boss_community.city',
             'boss_community.district','boss_community.address','boss_house.id as house_id','boss_house.building_name',
-            'boss_house.unit','boss_house.number as house_number','boss_room_dot.rent_price','boss_room_dot.property_price',
+            'boss_house.unit','boss_house.number as house_number','boss_room_dot.feature','boss_room_dot.rent_price','boss_room_dot.property_price',
             'boss_room_dot.keeper','boss_room_dot.status','boss_room_dot.number as room_number'
         ];
         $post   = $this->input->post(null,true);
