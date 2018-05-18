@@ -169,7 +169,7 @@ class Login extends MY_Controller
         if(true)
         {
             //判断用户的身份
-            $position   = $user->position;
+            $position   = $user->base_position;
             $bxid       = $user->bxid;
             if('SUPER'==$position){
                 //S_100001
