@@ -407,7 +407,7 @@ class Roomdot extends MY_Controller
             ),
             array(
                 'field' => 'community_id',
-                'label' => '楼栋id',
+                'label' => '小区id',
                 'rules' => 'trim|integer|required'
             ),
             array(
