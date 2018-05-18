@@ -169,13 +169,16 @@ class Template extends MY_Controller
      * 获取门店下的合同模板
      */
     public function showTemplate(){
-        $store_id    = $this->input->post('store_id',true);
+        $where  = [];
+        $store_id   = $this->input->post('store_id',true);
         $rent_type  = $this->input->post('rent_type',true);
-        if(!$store_id || !$rent_type){
+        if( !$rent_type){
             $this->api_res(1005);
             return;
         }
-        $template   = Contracttemplatemodel::where(['store_id'=>$store_id,'rent_type'=>$rent_type])->get(['id','name']);
+        isset($store_id)?$where['store_id']=$store_id:null;
+        $where['rent_type'] = $rent_type;
+        $template   = Contracttemplatemodel::where($where)->get(['id','name']);
         $this->api_res(0,['template'=>$template]);
     }
 
