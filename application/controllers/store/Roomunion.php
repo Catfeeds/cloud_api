@@ -147,7 +147,11 @@ class Roomunion extends MY_Controller
 //            }
 //        }
         $this->load->model('roomunionmodel');
-        $rooms  = Roomunionmodel::where(['store_id'=>$post['store_id'],'building_id'=>$post['building_id']]);
+        $rooms  = Roomunionmodel::where(['store_id'=>$post['store_id'],'building_id'=>$post['building_id']])->first();
+        if(!$rooms){
+            $this->api_res(1007);
+            return;
+        }
         $updates    = [
             'contract_template_short_id'     => $post['contract_template_short_id'],
             'contract_template_long_id'      => $post['contract_template_long_id'],
