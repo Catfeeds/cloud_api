@@ -20,22 +20,59 @@ class Employee extends MY_Controller
         $this->load->model('positionmodel');
         $this->load->model('storemodel');
 
-        $filed = ['name', 'phone', 'position_id', 'store_ids', 'hiredate', 'status'];
-        $category = $this->employeemodel->with(['position' => function ($query) {
-            $query->select('id','name');
-        }])->get($filed)->map(function($a){
-            $ids = json_decode($a->store_ids,true);
-            if(!$ids){
-                $store_names=[];
-            }else{
-                $store_names = $this->storemodel->find($ids)->map(function($b){
-                    return $b->name;
-                });
+        $post = $this->input->post(null, true);
+        $page = intval(isset($post['page']) ? $post['page'] : 1);
+        $offset = PAGINATE * ($page - 1);
+        $filed = ['name', 'phone', 'position_id', 'store_names', 'hiredate', 'status'];
+        $where = isset($post['store_id']) ? ['store_id' => $post['store_id']] : [];
+        if (isset($post['city']) && !empty($post['city'])) {
+            $store_ids = Storemodel::where('city', $post['city'])->get(['id'])->map(function ($s) {
+                return $s['id'];
+            });
+            $count = ceil((Employeemodel::whereIn('store_id', $store_ids)->where($where)->count()) / PAGINATE);
+            if ($page > $count) {
+                $this->api_res(0, ['count' => $count, 'list' => []]);
+                return;
             }
-            $a->store_names = $store_names;
-            return $a;
-        });
+            $category = Employeemodel::with(['position' => function ($query) {
+                $query->select('id', 'name');
+            }])->whereIn('store_id', $store_ids)->where($where)
+                ->offset($offset)->limit(PAGINATE)->orderBy('id', 'desc')->get($filed);
+            $this->api_res(0, ['count' => $count, 'list' => $category]);
+            return;
+        }
+        $count = ceil((Employeemodel::all()->count()) / PAGINATE);
+        if ($page > $count) {
+            $this->api_res(0, ['count' => $count, 'list' => []]);
+            return;
+        }
+        $category = Employeemodel::with(['position' => function ($query) {
+            $query->select('id', 'name');
+        }])->offset($offset)->limit(PAGINATE)->orderBy('id', 'desc')->get($filed);
 
-        $this->api_res(0, $category);
+        $this->api_res(0, ['count' => $count, 'list' => $category]);
+    }
+
+    /**
+     * 按名称模糊查找
+     */
+    public function searchEmpInfo()
+    {
+        $field = ['name', 'phone', 'position_id', 'store_names', 'hiredate', 'status'];
+        $this->load->model('positionmodel');
+        $post   = $this->input->post(null,true);
+        $name   = isset($post['name'])?$post['name']:null;
+        $page   = intval(isset($post['page'])?$post['page']:1);
+        $offset = PAGINATE * ($page-1);
+        $count  = ceil((Employeemodel::where('name','like',"%$name%")->count())/PAGINATE);
+        if($page > $count){
+            $this->api_res(0,['count'=>$count,'list'=>[]]);
+            return;
+        }
+        $roomtypes = Employeemodel::with(['position' => function ($query) {
+            $query->select('id', 'name');
+        }])->where('name','like',"%$name%")->offset($offset)
+            ->limit(PAGINATE)->orderBy('id','desc')->get($field);
+        $this->api_res(0,['count'=>$count,'list'=>$roomtypes]);
     }
 }
