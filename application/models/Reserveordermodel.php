@@ -11,8 +11,13 @@ class Reserveordermodel extends Basemodel
 {
     protected $table    = 'boss_reserve_order';
     protected $hidden   = ['created_at','updated_at','deleted_at'];
+    protected $fillable = ['work_address','info_source','people_count','check_in_time','guest_type','require','remark'];
 
     public function employee(){
         return $this->belongsTo(Employeemodel::class,'employee_id')->select('id','name');
+    }
+
+    public function roomType(){
+        return $this->belongsTo(Roomtypemodel::class,'room_type_id')->select('id','name');
     }
 }
