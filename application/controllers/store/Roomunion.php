@@ -123,7 +123,7 @@ class Roomunion extends MY_Controller
      * 批量更新集中式房间
      */
     public function batchUpdateUnion(){
-        $field  = ['store_id','building_id',
+        $field  = ['store_id','building_id','room_type_id',
             'contract_template_long_id','contract_template_short_id','contract_template_reserve_id',
 //            'contract_min_time','contract_max_time','deposit_type','pay_frequency_allow'
         ];
@@ -152,10 +152,16 @@ class Roomunion extends MY_Controller
             $this->api_res(1007);
             return;
         }
+        $room_type_id   = $post['room_type_id'];
+        $this->load->model('roomtypemodel');
+        $provides   = Roomtypemodel::find($room_type_id)->procides;
         $updates    = [
             'contract_template_short_id'     => $post['contract_template_short_id'],
             'contract_template_long_id'      => $post['contract_template_long_id'],
             'contract_template_reserve_id'   => $post['contract_template_reserve_id'],
+            'room_type_id'                   => $room_type_id,
+            'provides'                       => $provides,
+            'updated_at'                     => date('Y-m-d H:i:s',time())
 //            'contract_min_time'     => $post['contract_min_time'],
 //            'contract_max_time'     => $post['contract_max_time'],
 //            'deposit_type'          => $post['deposit_type'],
@@ -216,7 +222,7 @@ class Roomunion extends MY_Controller
      * 查看集中式房间信息
      */
     public function getUnion(){
-        $field  = ['store_id','room_type_id','layer','layer_total','rent_price','property_price',
+        $field  = ['store_id','room_type_id','layer','layer_total','rent_price','property_price','provides',
             'contract_template_long_id','contract_template_short_id','contract_template_reserve_id',
 //            'contract_min_time','contract_max_time','deposit_type','pay_frequency_allow'
         ];
@@ -310,6 +316,11 @@ class Roomunion extends MY_Controller
             array(
                 'field' => 'store_id',
                 'label' => '门店id',
+                'rules' => 'trim|required|integer'
+            ),
+            array(
+                'field' => 'room_type_id',
+                'label' => '房型ID',
                 'rules' => 'trim|required|integer'
             ),
             array(
