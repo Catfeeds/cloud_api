@@ -170,6 +170,7 @@ class Roomdot extends MY_Controller
             'contract_template_long_id'     => $post['contract_template_long_id'],
             'contract_template_short_id'    => $post['contract_template_short_id'],
             'contract_template_reserve_id'  => $post['contract_template_reserve_id'],
+            'updated_at'               => date('Y-m-d H:i:s',time()),
 //            'contract_min_time'     => $post['contract_min_time'],
 //            'contract_max_time'     => $post['contract_max_time'],
 //            'deposit_type'          => $post['deposit_type'],
