@@ -105,3 +105,6 @@ define('COMPANYPRIVILEGE','FUNXDATA:BOSS:COMPANY:PRIVILEGE:'); //公司权限
 
 //分页
 define('PAGINATE',10);          //分页页码
+
+//微信生成带参数的二维码 前缀
+define('QRCODERESIDENT',101);          //办理用户入住

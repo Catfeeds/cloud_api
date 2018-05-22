@@ -1,50 +1,33 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 /**
- * Author:      zjh<401967974@qq.com>
- * Date:        2018/5/18 0018
- * Time:        17:08
- * Describe:    预约看房
+ * Author:      hfq<1326432154@qq.com>
+ * Date:        2018/5/21
+ * Time:        17:44
+ * Describe:    来访登记
  */
-class Reserve extends MY_Controller
+class Visitrecord extends MY_Controller
 {
     public function __construct()
     {
         parent::__construct();
-        $this->load->model('reserveordermodel');
+        $this->load->model('Reserveordermodel');
     }
 
-    /**
-     * 预约订单列表
+    /*
+     * 来访登记信息
      */
-    public function listReserve()
+    public function visit()
     {
-        $this->load->model('roomtypemodel');
-        $post   = $this->input->post(NULL,true);
-        $page   = isset($post['page'])?intval($post['page']):1;
-        $offset = PAGINATE*($page-1);
-        $filed  = ['id','room_type_id','name','time'];
-        $count  = ceil(Reserveordermodel::count()/PAGINATE);
-        $reserve= Reserveordermodel::with('roomType')
-                                    ->take(PAGINATE)->skip($offset)
-                                    ->orderBy('id','desc')->get($filed)->toArray();
-        $this->api_res(0,['list'=>$reserve,'count'=>$count]);
-    }
-
-    /**
-     *确认订单
-     */
-    public function reserve()
-    {
-        $post   = $this->input->post(NULL,true);
-        $id     = isset($post['id'])?intval($post['id']):null;
+        $post = $this->input->post(null,true);
         if(!$this->validation())
         {
-            $fieldarr= ['work_address','info_source','people_count','check_in_time','guest_type','require','remark'];
+            $fieldarr= ['visit_by','name','phone','time','work_address','info_source','room_type_id',
+                        'people_count','check_in_out','guest_type','require','remark'];
             $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
             return;
         }
-        $reserve    = Reserveordermodel::findOrFail($id);
+        $reserve    = new Reserveordermodel();
         $reserve->fill($post);
         if($reserve->save())
         {
@@ -54,10 +37,33 @@ class Reserve extends MY_Controller
         }
     }
 
+    /**
+     * 表单验证
+     */
     public function validation()
     {
         $this->load->library('form_validation');
         $config = array(
+            array(
+                'field' => 'visit_by',
+                'label' => '来访类型',
+                'rules' => 'trim|required|in_list[WECHAT,VISIT,PHONE,WEB]',
+            ),
+            array(
+                'field' => 'name',
+                'label' => '姓名',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'phone',
+                'label' => '联系电话',
+                'rules' => 'trim|required|max_length[13]',
+            ),
+            array(
+                'field' => 'time',
+                'label' => '来访时间',
+                'rules' => 'trim|required',
+            ),
             array(
                 'field' => 'work_address',
                 'label' => '工作地点',
@@ -72,6 +78,11 @@ class Reserve extends MY_Controller
                 'field' => 'people_count',
                 'label' => '入住人数',
                 'rules' => 'trim|required|integer',
+            ),
+            array(
+                'field' => 'room_type_id',
+                'label' => '房型',
+                'rules' => 'trim|required',
             ),
             array(
                 'field' => 'check_in_time',

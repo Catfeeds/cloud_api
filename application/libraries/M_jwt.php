@@ -31,8 +31,6 @@ class M_jwt
             );
 
             return JWT::encode($token, $key);
-          
-       
     }
 
     /**
@@ -45,7 +43,5 @@ class M_jwt
             $alg    = config_item('jwt_alg');
 
             return $decoded= JWT::decode($token, $key, array($alg));
-         
-
     }
 }

@@ -118,6 +118,11 @@ class AuthHook {
             'smartdevice/smartdevice/listsmartdevice',
             'smartdevice/smartdevice/record',
             'smartdevice/yeeuulock/test',
+
+            'mini/reserve/listreserve',
+            'mini/reserve/reserve',
+            'mini/visitrecord/visit',
+
             'common/city',
             'common/province',
             'common/district',

@@ -18,9 +18,15 @@ $config['time_zone']    = date_default_timezone_get();
 //梵响数据系统相关文件的整理配置
 */
 
-//微信网页授权的信息
+//微信开放平台网页授权的信息
 $config['wx_web_appid']     = 'wx75fd74e2316b2355';
 $config['wx_web_secret']    = '70fa3a7fe658be97552788fc764f5434';
+
+//微信用户端公众号的信息
+$config['wx_map_appid']     = '';
+$config['wx_map_secret']    = '';
+$config['wx_map_token']     = '';
+$config['wx_map_aes_key']   = '';
 
 //云片信息
 //https://sms.yunpian.com/v1/sms/send.json
@@ -53,3 +59,8 @@ $config['danbayUserName']   = 'jindihuohua';
 $config['danbayPassword']   = 'a123456';
 $config['danbaymToken']     = '6nQIQ3EOpkaNtRly1M2MDoDjX7jxGjntldYv1JbsQB7srroptaUc3z2QypzDbgzc';
 
+//员工端相关配置信息
+$config['miniAppid']        = '';
+$config['miniSecret']       = '';
+$config['miniToken']        = '';
+$config['miniAes_key']      = '';
