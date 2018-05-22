@@ -53,3 +53,8 @@ $config['danbayUserName']   = 'jindihuohua';
 $config['danbayPassword']   = 'a123456';
 $config['danbaymToken']     = '6nQIQ3EOpkaNtRly1M2MDoDjX7jxGjntldYv1JbsQB7srroptaUc3z2QypzDbgzc';
 
+//员工端相关配置信息
+$config['miniAppid']        = '';
+$config['miniSecret']       = '';
+$config['miniToken']        = '';
+$config['miniAes_key']      = '';
