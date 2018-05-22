@@ -296,10 +296,10 @@ class Employee extends MY_Controller
         $user   = $this->httpCurl($url,'get','json');
         if(array_key_exists('errcode',$user))
         {
-            $this->api_res(10006);
+            $this->api_res(1003);
             return false;
         }
-        $company             = Companymodel::where('id',$id)->first();
+        $company             = Employeemodel::where('id',$id)->first();
         $company->openid     = $user['openid'];
         $company->unionid    = $user['unionid'];
         if($company->save()){
@@ -307,7 +307,7 @@ class Employee extends MY_Controller
             $company->save();
             $this->api_res(0);
         }else{
-            $this->api_res(10105);
+            $this->api_res(1009);
             return false;
         }
     }
