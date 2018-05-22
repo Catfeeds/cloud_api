@@ -169,6 +169,8 @@ class Roomtype extends MY_Controller
         }
     }
 
+
+
     /**
      * 添加房型的表单验证规则
      */

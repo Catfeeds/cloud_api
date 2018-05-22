@@ -25,7 +25,6 @@ class MY_Controller extends CI_Controller {
             }else{
                 $this->position = 'EMPLOYEE';
             }
-
         }
     }
 

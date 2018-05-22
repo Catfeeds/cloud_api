@@ -53,3 +53,16 @@ $config['danbayUserName']   = 'jindihuohua';
 $config['danbayPassword']   = 'a123456';
 $config['danbaymToken']     = '6nQIQ3EOpkaNtRly1M2MDoDjX7jxGjntldYv1JbsQB7srroptaUc3z2QypzDbgzc';
 
+//法大大电子合同接口
+$config['fadada_api_app_secret'] ='PMKQo0b3RCb911OaqmsGAFnw';
+$config['fadada_api_app_id'] ='400388';
+$config['fadada_customer_sign_key_word'] ='RESIDENT_SIGNATURE';
+$config['fadada_api_base_url'] ='https://testapi.fadada.com:8443/api/';
+
+$config['syncPerson_auto.api']  ='syncPerson_auto.api';
+$config['contractFiling.api'] ='contractFiling.api';
+$config['uploadtemplate.api'] ='uploadtemplate.api';
+$config['generate_contract.api'] ='generate_contract.api';
+$config['extsign.api'] ='extsign.api';
+$config['extsign_auto.api'] ='extsign_auto.api';
+
