@@ -115,6 +115,7 @@ class AuthHook {
 
             'mini/reserve/listreserve',
             'mini/reserve/reserve',
+            'mini/visitrecord/visit',
 
             'common/city',
             'common/province',

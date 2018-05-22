@@ -173,5 +173,4 @@ class MY_Controller extends CI_Controller {
         }
         return $alioss_path;
     }
-
 }

@@ -33,7 +33,6 @@ class Goodscategory extends MY_Controller
             $goodscate  = Goodscategorymodel::take(PAGINATE)->skip($offset)->orderBy('sort','desc')->get($filed);
             $this->api_res(0,['list'=>$goodscate,'count'=>$count]);
         }
-
     }
 
     /**

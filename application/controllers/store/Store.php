@@ -268,7 +268,6 @@ class Store extends MY_Controller
      */
     public function validationUpdateConfig()
     {
-
         $config = [
             array(
                 'field' => 'name',
