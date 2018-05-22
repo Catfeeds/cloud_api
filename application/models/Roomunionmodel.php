@@ -11,6 +11,8 @@ class Roomunionmodel extends Basemodel{
 
     const HALF = 'HALF';    //合租
     const FULL = 'FULL';    //整租
+    const BLANK = 'BLANK';  //空闲
+    const OCCUPIED = 'OCCUPIED';  //空闲
 
     protected $table    = 'boss_room_union';
 
@@ -74,6 +76,32 @@ class Roomunionmodel extends Basemodel{
     public function unionresident(){
 
         return $this->hasMany(Unionresidentmodel::class,'room_id');
+    }
+
+    /**
+     * 是否空闲
+     */
+    public function isBlank(){
+        if($this->status==self::BLANK){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    /**
+     * 把房间状态更新为占用
+     */
+    public function Occupie(){
+        $this->status   = self::OCCUPIED;
+        $this->save();
+    }
+    /**
+     * 把房间状态更新为空闲
+     */
+    public function Blank(){
+        $this->status   = self::BLANK;
+        $this->save();
     }
 
 
