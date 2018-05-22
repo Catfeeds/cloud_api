@@ -11,6 +11,8 @@ class MY_Controller extends CI_Controller {
 
     protected $position;
 
+    protected $employee;
+
     public function __construct()
     {
         parent::__construct();
@@ -24,6 +26,9 @@ class MY_Controller extends CI_Controller {
                 $this->position = 'SUPER';
             }else{
                 $this->position = 'EMPLOYEE';
+                $this->load->model('employeemodel');
+                //define('STORE_ID',Employeemodel::where('bxid',CURRENT_ID)->first())
+                $this->employee = Employeemodel::where('bxid',CURRENT_ID)->first();
             }
 
         }
