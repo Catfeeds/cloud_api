@@ -107,7 +107,13 @@ class AuthHook {
             'shop/goodsorder/detail',
 
             'employee/position/editposition',
-            'employee/employee/showemployee',
+            'employee/employee/addemp',
+            'employee/employee/showemp',
+            'employee/employee/getempinfo',
+            'employee/employee/addemp',
+            'employee/employee/submitemp',
+            'employee/employee/updataemp',
+            'employee/employee/showstore',
 
             'smartdevice/smartdevice/listsmartdevice',
             'smartdevice/smartdevice/record',

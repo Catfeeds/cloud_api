@@ -26,7 +26,6 @@ class Employeemodel extends Basemodel{
 
     //员公的职位
     public function position(){
-        //return $this->select('position_id')->get()->toArray();
         return $this->belongsTo(Positionmodel::class,'position_id');
     }
 
