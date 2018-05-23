@@ -26,9 +26,9 @@ class MY_Controller extends CI_Controller {
                 $this->position = 'SUPER';
             }else{
                 $this->position = 'EMPLOYEE';
-                //$this->load->model('employeemodel');
+                $this->load->model('employeemodel');
 
-                //$this->employee = Employeemodel::where('bxid',CURRENT_ID)->first();
+                $this->employee = Employeemodel::where('bxid',CURRENT_ID)->first();
             }
         }
     }
