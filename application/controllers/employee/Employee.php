@@ -18,7 +18,7 @@ class Employee extends MY_Controller
     /**
      * 显示员工权限信息
      */
-    public function showEmp()
+    public function listEmp()
     {
         $this->load->model('positionmodel');
         $this->load->model('storemodel');
@@ -87,6 +87,10 @@ class Employee extends MY_Controller
         $filed = ['id', 'name','city'];
         $this->load->model('storemodel');
         $category = Storemodel::get($filed)->groupBy('city');
+        if(!$category){
+            $this->api_res(1009);
+            return;
+        }
         return $category;
     }
 
@@ -200,7 +204,7 @@ class Employee extends MY_Controller
     /**
      * 编辑员工信息
      */
-    public function updataEmp()
+    public function updateEmp()
     {
         $post = $this->input->post(null, true);
         if(!$this->validation())
