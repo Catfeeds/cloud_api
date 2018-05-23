@@ -87,6 +87,7 @@ class Resident extends MY_Controller
                 DB::rollBack();
                 $this->api_res(1009);
             }
+
         }catch (Exception $e){
             DB::rollBack();
             throw $e;
@@ -168,7 +169,7 @@ class Resident extends MY_Controller
     }
 
     /**
-     * 办理入住2 住户信息
+     * 办理入住2 添加住户信息
      */
     public function checkInData(){
         $field=[
@@ -205,18 +206,40 @@ class Resident extends MY_Controller
         }
         $this->load->model('residentmodel');
         $resident   = Residentmodel::find($post['resident_id']);
-        $resident->fill($post);
-        $resident->employee_id  = $this->employee->id;
-        $resident->status  = Residentmodel::STATE_NOTPAY;
-        $resident->card_one = $this->splitAliossUrl($post['card_one']);
-        $resident->card_two = $this->splitAliossUrl($post['card_two']);
-        $resident->card_three = $this->splitAliossUrl($post['card_three']);
-        if($resident->save()){
-            $this->api_res(0,['resident_id'=>$resident->id]);
-        }else{
-            $this->api_res(1009);
+
+        try{
+            DB::beginTransaction();
+            $resident->fill($post);
+            $resident->employee_id  = $this->employee->id;
+            $resident->status  = Residentmodel::STATE_NOTPAY;
+            $resident->card_one = $this->splitAliossUrl($post['card_one']);
+            $resident->card_two = $this->splitAliossUrl($post['card_two']);
+            $resident->card_three = $this->splitAliossUrl($post['card_three']);
+            $a  = $resident->save();
+
+            //生成订单
+            $b  = $this->generateOrder();
+
+
+            if($a && $b){
+                DB::commit();
+            }else{
+                DB::rollBack();
+            }
+
+        }catch (Exception $e){
+            DB::rollBack();
+            throw $e;
         }
     }
+
+    /**
+     * 生成首次支付订单
+     */
+    public function generateOrder(){
+        $this->load->model('ordermodel');
+    }
+
 
     /**
      * 办理入住2 住户1信息验证
@@ -362,12 +385,17 @@ class Resident extends MY_Controller
             $this->api_res(10011);
             return;
         }
-        $app        = new Application(getWechatCustomerConfig());
-        $qrcode     = $app->qrcode;
-        $result     = $qrcode->temporary(QRCODERESIDENT.$resident_id, 6 * 24 * 3600);
-        $ticket     = $result->ticket;
-        $url        = $qrcode->url($ticket);
-        $this->api_res(0,['url'=>$url]);
+        try{
+            $app        = new Application(getWechatCustomerConfig());
+            $qrcode     = $app->qrcode;
+            $result     = $qrcode->temporary(QRCODERESIDENT.$resident_id, 6 * 24 * 3600);
+            $ticket     = $result->ticket;
+            $url        = $qrcode->url($ticket);
+            $this->api_res(0,['url'=>$url]);
+        }catch (Exception $e){
+            log_message('error',$e->getMessage());
+            throw $e;
+        }
     }
 
 
