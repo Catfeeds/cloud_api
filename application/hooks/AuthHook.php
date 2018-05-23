@@ -119,14 +119,17 @@ class AuthHook {
             'smartdevice/smartdevice/record',
             'smartdevice/yeeuulock/test',
 
-            'mini/reserve/listreserve',
-            'mini/reserve/reserve',
-            'mini/visitrecord/visit',
-
             'common/city',
             'common/province',
             'common/district',
 
+            'mini/reserve/listreserve',
+            'mini/reserve/reserve',
+            'mini/visitrecord/visit',
+            'mini/login/gettoken',
+            'mini/personalcenter/center',
+            'mini/room/listroom',
+            'mini/room/detailsroom',
         );
 
         $directory  = $this->CI->router->fetch_directory();

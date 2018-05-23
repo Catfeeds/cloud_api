@@ -19,7 +19,10 @@ class Personalcenter extends MY_Controller
      */
     public function center()
     {
-
+        $filed = ['name','base_position','store_id'];
+        $employee = Employeemodel::where('id',CURRENT_ID)->get($filed);
+        $this->api_res(0,$employee);
     }
+
 
 }

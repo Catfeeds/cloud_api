@@ -20,3 +20,18 @@ function getWechatCustomerConfig(){
             ]
     ];
 }
+
+/**
+ * 小程序配置信息
+ */
+function getMiniWechatConfig()
+{
+    return[
+        'mini_program'  =>  [
+            'app_id'        => config_item('miniAppid'),
+            'secret'        => config_item('miniSecret'),
+            'token'         => config_item('miniToken'),
+            'aes_key'       => config_item('miniAes_key'),
+        ],
+    ];
+}
