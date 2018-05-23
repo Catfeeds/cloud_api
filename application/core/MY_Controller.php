@@ -30,7 +30,6 @@ class MY_Controller extends CI_Controller {
 
                 //$this->employee = Employeemodel::where('bxid',CURRENT_ID)->first();
             }
-
         }
     }
 
