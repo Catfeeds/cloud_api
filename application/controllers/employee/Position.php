@@ -18,9 +18,9 @@ class Position extends MY_Controller
     }
 
     /**
-     * 编辑职位
+     * 显示编辑职位的信息
      */
-    public function editPosition()
+    public function getPosition()
     {
         $post = $this->input->post(null,true);
         if(!$this->validation())
@@ -36,32 +36,53 @@ class Position extends MY_Controller
                 $this->api_res(1009);
                 return;
             }
-            if (isset($post['name']) && !empty($post['name'])) {
-                $name = isset($post['name']) ? $post['name'] : null;
-                $pc_privilege = isset($post['pc_privilege']) ? $post['pc_privilege'] : null;
-                $mini_privilege = isset($post['mini_privilege']) ? $post['mini_privilege'] : null;
-                $position->name = $name;
-                $position->pc_privilege = $pc_privilege;
-                $position->mini_privilege = $mini_privilege;
-                $result = $position->save();
-                if (!$result) {
-                    $this->api_res(1009);
-                    return;
-                }
-                $this->api_res(0);
-                return;
-            }
-
             $category = ['name' => $position->name,
                         'pc_privilege' => $position->pc_privilege,
                         'mini_privilege' => $position->mini_privilege
                         ];
             $this->api_res(0, $category);
         } else {
-            $this->api_res(10101);
+            $this->api_res(1002);
             return;
         }
 
+    }
+
+    /**
+     * 提交已编辑的职位信息
+     */
+    public function submitPosition()
+    {
+        $post = $this->input->post(null,true);
+        if (isset($post['id']) && !empty($post['id'])) {
+            $position = Positionmodel::find($post['id']);
+            if (!$position) {
+                $this->api_res(1009);
+                return;
+            }
+        } else {
+            $this->api_res(1002);
+            return;
+        }
+
+        if(!$this->validation())
+        {
+            $fieldarr = ['name', 'pc_privilege', 'mini_privilege'];
+            $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
+            return;
+        }
+        $name = isset($post['name']) ? $post['name'] : null;
+        $pc_privilege = isset($post['pc_privilege']) ? $post['pc_privilege'] : null;
+        $mini_privilege = isset($post['mini_privilege']) ? $post['mini_privilege'] : null;
+        $position->name = $name;
+        $position->pc_privilege = $pc_privilege;
+        $position->mini_privilege = $mini_privilege;
+        $result = $position->save();
+        if (!$result) {
+            $this->api_res(1009);
+            return;
+        }
+        $this->api_res(0);
     }
 
     /**
@@ -99,6 +120,7 @@ class Position extends MY_Controller
             $this->api_res(0);
         } catch (Exception $e) {
             DB::rollBack();
+            $this->api_res(1009);
             throw $e;
         }
     }
@@ -106,7 +128,7 @@ class Position extends MY_Controller
     /**
      * 职位管理
      */
-    public function mngPosition()
+    public function listPosition()
     {
         $post = $this->input->post(null, true);
         $page = intval(isset($post['page']) ? $post['page'] : 1);
