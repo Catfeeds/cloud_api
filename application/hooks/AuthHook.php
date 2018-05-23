@@ -121,6 +121,9 @@ class AuthHook {
             'employee/employee/updateemp',
             'employee/employee/showstore',
             'employee/employee/searchemp',
+            'employee/personalcenter/center',
+            'employee/personalcenter/listemp',
+            'employee/personalcenter/addemp',
 
             'smartdevice/smartdevice/listsmartdevice',
             'smartdevice/smartdevice/record',

@@ -209,8 +209,7 @@ class Employee extends MY_Controller
         $post = $this->input->post(null, true);
         if(!$this->validation())
         {
-            $fieldarr   = ['name', 'phone', 'status', 'position', 'store_ids', 'store_names', 'hiredate'];
-            $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
+            $fieldarr   = ['id', 'name', 'phone', 'status', 'position', 'store_ids', 'store_names', 'hiredate'];            $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
             return;
         }
         $this->load->model('positionmodel');
@@ -325,6 +324,11 @@ class Employee extends MY_Controller
         $this->load->library('form_validation');
         $config = array(
             array(
+                'field' => 'id',
+                'label' => '职位名称',
+                'rules' => 'trim|required|integer',
+            ),
+            array(
                 'field' => 'name',
                 'label' => '职位名称',
                 'rules' => 'trim|required',
@@ -347,7 +351,7 @@ class Employee extends MY_Controller
             array(
                 'field' => 'position_id',
                 'label' => '职位id',
-                'rules' => 'trim|required',
+                'rules' => 'trim|required|integer',
             ),
             array(
                 'field' => 'store_ids',
