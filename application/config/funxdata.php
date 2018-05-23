@@ -61,10 +61,7 @@ $config['danbayUserName']   = 'jindihuohua';
 $config['danbayPassword']   = 'a123456';
 $config['danbaymToken']     = '6nQIQ3EOpkaNtRly1M2MDoDjX7jxGjntldYv1JbsQB7srroptaUc3z2QypzDbgzc';
 
-<<<<<<< HEAD
-=======
 
->>>>>>> 556c269d619000cb51dd66687ca9c5191ef509c8
 //法大大电子合同接口
 $config['fadada_api_app_secret'] ='PMKQo0b3RCb911OaqmsGAFnw';
 $config['fadada_api_app_id'] ='400388';
@@ -78,11 +75,10 @@ $config['generate_contract.api'] ='generate_contract.api';
 $config['extsign.api'] ='extsign.api';
 $config['extsign_auto.api'] ='extsign_auto.api';
 
-<<<<<<< HEAD
+
 //员工端相关配置信息
 $config['miniAppid']        = '';
 $config['miniSecret']       = '';
 $config['miniToken']        = '';
 $config['miniAes_key']      = '';
-=======
->>>>>>> 556c269d619000cb51dd66687ca9c5191ef509c8
+

@@ -45,7 +45,6 @@ class Room extends MY_Controller
                     }
                     return $room;
                 })->toArray();
-
         $this->api_res(0,['list'=>$room]);
     }
 
