@@ -99,51 +99,11 @@ class Employee extends MY_Controller
      */
     public function showStore()
     {
-       /* $post = $this->input->post(null, true);
-        $name = isset($post['name']) ? $post['name'] : null;
-        $phone = isset($post['phone']) ? $post['phone'] : null;
-        $hiredate = isset($post['hiredate']) ? $post['hiredate'] : null;
-        $position = isset($post['position']) ? $post['position'] : null;
-        $this->load->model('positionmodel');
-        DB::beginTransaction();
-        $result = Positionmodel::insert(
-            [   'name' => $position,
-                'created_at' => date('Y-m-d H:i:s', time()),
-                'updated_at' => date('Y-m-d H:i:s', time())
-            ]);
-        if (!$result) {
-            DB::rollBack();
-            $this->api_res(1009);
-            return;
-        }
-        DB::commit();
-        $position_id = Positionmodel::insertGetId(
-            [ 'name' => $position,
-              'created_at' => date('Y-m-d H:i:s', time()),
-              'updated_at' => date('Y-m-d H:i:s', time())
-            ]);
-        try {
-            $result = Employeemodel::insert(
-                [   'name' => $name,
-                    'phone' => $phone,
-                    'hiredate' => $hiredate,
-                    'position_id' => $position_id,
-                    'created_at' => date('Y-m-d H:i:s', time()),
-                    'updated_at' => date('Y-m-d H:i:s', time())
-                ]);
-            if (!$result) {
-                DB::rollBack();
-                $this->api_res(1009);
-                return;
-            }
-            DB::commit();
-        } catch (Exception $e) {
-            DB::rollBack();
-            throw $e;
-        }
-        */
-
-        $category = $this->getStore();
+        $post = $this->input->post(null, true);
+        $id = isset($post['id']) ? $post['id'] : null;
+        $emloyee = Employeemodel::find($id);
+        $category = $this->getStore()->toArray();
+        $category['status'] = $emloyee->status;
         $this->api_res(0, $category);
     }
 
@@ -155,24 +115,17 @@ class Employee extends MY_Controller
         $post = $this->input->post(null, true);
         if(!$this->validation())
         {
-            $fieldarr   = ['name', 'phone', 'position', 'store_ids','store_names', 'hiredate'];
+            $fieldarr   = ['name', 'phone', 'position_id', 'store_ids','store_names', 'hiredate'];
             $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
             return false;
         }
-        $position = isset($post['position']) ? $post['position'] : null;
-        $this->load->model('positionmodel');
-        $position_id = Positionmodel::insertGetId(
-            [   'name' => $position,
-                'created_at' => date('Y-m-d H:i:s', time()),
-                'updated_at' => date('Y-m-d H:i:s', time())
-            ]);
-
+        $name = isset($post['name']) ? $post['name'] : null;
+        $position_id = isset($post['position_id']) ? $post['position_id'] : null;
         $store_ids = isset($post['store_ids']) ? $post['store_ids'] : null;
         $store_names = isset($post['store_names']) ? $post['store_names'] : null;
-        $name = isset($post['name']) ? $post['name'] : null;
         $phone = isset($post['phone']) ? $post['phone'] : null;
         $hiredate = isset($post['hiredate']) ? $post['hiredate'] : null;
-
+        define('COMPANY_ID', 1);
         $this->load->model('storemodel');
         $ids= Storemodel::where('company_id',COMPANY_ID)->get(['id'])->map(function($a){
             return $a->id;
@@ -210,33 +163,20 @@ class Employee extends MY_Controller
         $post = $this->input->post(null, true);
         if(!$this->validation())
         {
-            $fieldarr   = ['name', 'phone', 'position', 'store_ids', 'store_names', 'hiredate'];
+            $fieldarr   = ['name', 'phone', 'position_id', 'store_ids', 'store_names', 'status', 'hiredate'];
             $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
             return false;
         }
-        $this->load->model('positionmodel');
-        $id = isset($post['id']) ? $post['id'] : null;
-        $position = isset($post['position']) ? $post['position'] : null;
-        $employee = Employeemodel::find($id);
-        $position_id = $employee->position_id;
-        $update = Positionmodel::find($position_id);
-        $update->name = $position;
-        if(!$update){
-            $this->api_res(1009);
-            return;
-        }
-        if($update->save()){
-            $this->api_res(0);
-        } else{
-            $this->api_res(1009);
-        }
 
+        $id = isset($post['id']) ? $post['id'] : null;
+        $position_id = isset($post['position_id']) ? $post['position_id'] : null;
         $store_ids  = $this->input->post('store_ids',true);
         $store_names  = $this->input->post('store_names',true);
         $name = isset($post['name']) ? $post['name'] : null;
         $phone = isset($post['phone']) ? $post['phone'] : null;
+        $status = isset($post['status']) ? $post['status'] : null;
         $hiredate = isset($post['hiredate']) ? $post['hiredate'] : null;
-
+        define('COMPANY_ID', 1);
         $this->load->model('storemodel');
         $ids= Storemodel::where('company_id',COMPANY_ID)->get(['id'])->map(function($a){
             return $a->id;
@@ -249,11 +189,14 @@ class Employee extends MY_Controller
         }
         $store_id = $store_ids_arr[0];
 
+        $employee = Employeemodel::find($id);
+        $employee->position_id  = $position_id;
         $employee->store_ids    = $store_ids;
         $employee->store_names  = $store_names;
         $employee->store_id     = $store_id;
         $employee->name         = $name;
         $employee->phone        = $phone;
+        $employee->status       = $status;
         $employee->hiredate     = $hiredate;
 
         if ($employee->save())
@@ -317,9 +260,9 @@ class Employee extends MY_Controller
                 'rules' => 'trim|required|max_length[13]|numeric',
             ),
             array(
-                'field' => 'position',
-                'label' => '职位名称',
-                'rules' => 'trim|required|max_length[255]',
+                'field' => 'position_id',
+                'label' => '职位id',
+                'rules' => 'trim|required',
             ),
             array(
                 'field' => 'store_ids',
@@ -330,6 +273,11 @@ class Employee extends MY_Controller
                 'field' => 'store_names',
                 'label' => '门店名称',
                 'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'status',
+                'label' => '员工状态',
+                'rules' => 'trim',
             ),
             array(
                 'field' => 'hiredate',
