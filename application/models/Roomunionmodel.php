@@ -11,10 +11,34 @@ class Roomunionmodel extends Basemodel{
 
     const HALF = 'HALF';    //合租
     const FULL = 'FULL';    //整租
-    const BLANK = 'BLANK';  //空闲
-    const OCCUPIED = 'OCCUPIED';  //空闲
+    /**
+     * 房间的状态
+     */
+    const STATE_BLANK       = 'BLANK';      // 空
+    const STATE_RESERVE     = 'RESERVE';    // 预订
+    const STATE_RENT        = 'RENT';       // 出租
+    const STATE_ARREARS     = 'ARREARS';    // 欠费
+    const STATE_REFUND      = 'REFUND';     // 退房
+    const STATE_OTHER       = 'OTHER';      // 其他 保留
+    const STATE_OCCUPIED    = 'OCCUPIED';   // 房间被占用的状态, 可能是预约, 或者是办理入住后订单未确认之间的状态
 
     protected $table    = 'boss_room_union';
+
+    protected $fillable = [
+        'area',
+        'layer',
+        'number',
+        'status',
+        'end_time',
+        'device_id',
+        'begin_time',
+        'rent_money',
+        'resident_id',
+        'people_count',
+        'apartment_id',
+        'room_type_id',
+        'property_costs',
+    ];
 
     protected $hidden   = ['created_at','updated_at','deleted_at'];
 
@@ -93,15 +117,15 @@ class Roomunionmodel extends Basemodel{
      * 把房间状态更新为占用
      */
     public function Occupie(){
-        $this->status   = self::OCCUPIED;
-        $this->save();
+        //$this->status   = self::OCCUPIED;
+        return $this->update(['status'=>self::STATE_OCCUPIED]);
     }
     /**
      * 把房间状态更新为空闲
      */
     public function Blank(){
-        $this->status   = self::BLANK;
-        $this->save();
+        //$this->status   = self::BLANK;
+        return $this->update(['status'=>self::STATE_BLANK]);
     }
 
 

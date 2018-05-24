@@ -31,6 +31,10 @@ class AuthHook {
             'demo/sheet/index',
 
             'account/login/login',
+            'mini/resident/checkroomunion',
+            'mini/resident/checkin',
+            'mini/resident/destory',
+            'mini/resident/showqrcode',
             //'store/store/liststore',
             //'store/store/addstoredot',
             //'store/store/addstoreunion',

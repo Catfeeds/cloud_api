@@ -17,7 +17,8 @@ class MY_Controller extends CI_Controller {
     {
         parent::__construct();
         $this->output->set_content_type('application/json');
-        
+
+        //测试使用
         if(defined('CURRENT_ID'))
         {
             $pre    = substr(CURRENT_ID,0,2);
@@ -30,6 +31,11 @@ class MY_Controller extends CI_Controller {
 
                 $this->employee = Employeemodel::where('bxid',CURRENT_ID)->first();
             }
+        }else{
+            $this->load->model('employeemodel');
+            $this->employee = Employeemodel::find(1);
+            define('CURRENT_ID',1001);
+            define('COMPANY_ID',3);
         }
     }
 
