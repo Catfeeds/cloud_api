@@ -127,6 +127,10 @@ class AuthHook {
             'common/province',
             'common/district',
 
+            'contract/operation/operationlist',
+            'contract/operation/operationfind'
+
+
         );
 
         $directory  = $this->CI->router->fetch_directory();

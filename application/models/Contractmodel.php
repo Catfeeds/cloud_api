@@ -11,7 +11,30 @@ class Contractmodel extends Basemodel {
 
     protected $table    = 'boss_contract';
 
-    protected $hidden   = [];
+    protected $hidden   = ['deleted_at'];
+
+    //签署人
+    public function resident()
+    {
+        return $this->belongsTo(Residentmodel::class,'resident_id')->select('id','name');
+    }
+//经办人
+    public function employee()
+    {
+        return $this->belongsTo(Employeemodel::class,'employee_id')->select('id','name');
+    }
+    //门店城市 店名
+    public function store()
+    {
+        return $this->belongsTo(Storemodel::class,'store_id')->select('id','city','name');
+    }
+//建筑名 房号
+    public function roomunion()
+    {
+        return $this->belongsTo(Roomunionmodel::class,'room_id')->select('id','building_name','number');
+    }
+
+
 
     //房间信息
     public function room(){
@@ -19,11 +42,6 @@ class Contractmodel extends Basemodel {
         return $this->belongsTo(Roommodel::class,'room_id');
     }
 
-    //住户户信息
-    public function resident(){
-
-        return $this->belongsTo(Residentmodel::class,'resident_id');
-    }
 
 
 }
