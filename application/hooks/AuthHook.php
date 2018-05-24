@@ -134,12 +134,9 @@ class AuthHook {
             'common/province',
             'common/district',
 
-<<<<<<< HEAD
             'contract/operation/operationlist',
-            'contract/operation/operationfind'
+            'contract/operation/operationfind',
 
-
-=======
             'mini/reserve/listreserve',
             'mini/reserve/reserve',
             'mini/visitrecord/visit',
@@ -151,7 +148,6 @@ class AuthHook {
             'mini/employee/listemp',
             'mini/employee/addemp',
             'mini/residentct/showcenter',
->>>>>>> 4acb52980d3b032c4dbf623647d120b2e1b13ec4
         );
 
         $directory  = $this->CI->router->fetch_directory();
