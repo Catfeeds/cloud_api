@@ -174,7 +174,7 @@ class Position extends MY_Controller
         $post   = $this->input->post(null,true);
         if(!$this->validation())
         {
-            $fieldarr   = ['name','pc_privilege','mini_privilege'];
+            $fieldarr   = ['name'];
             $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
             return false;
         }
