@@ -155,9 +155,9 @@ class Employee extends MY_Controller
         $post = $this->input->post(null, true);
         if(!$this->validation())
         {
-            $fieldarr   = ['name', 'phone', 'position', 'store_ids', 'store_names', 'hiredate'];
+            $fieldarr   = ['name', 'phone', 'position', 'store_ids','store_names', 'hiredate'];
             $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
-            return;
+            return false;
         }
         $position = isset($post['position']) ? $post['position'] : null;
         $this->load->model('positionmodel');
@@ -180,6 +180,7 @@ class Employee extends MY_Controller
 
         $store_ids_arr = json_decode($store_ids,true);
         if(!empty(array_diff($store_ids_arr, $ids))){
+            $this->api_res(1002);
             return;
         }
         $store_id = $store_ids_arr[0];
@@ -209,8 +210,9 @@ class Employee extends MY_Controller
         $post = $this->input->post(null, true);
         if(!$this->validation())
         {
-            $fieldarr   = ['id', 'name', 'phone', 'status', 'position', 'store_ids', 'store_names', 'hiredate'];            $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
-            return;
+            $fieldarr   = ['name', 'phone', 'position', 'store_ids', 'store_names', 'hiredate'];
+            $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
+            return false;
         }
         $this->load->model('positionmodel');
         $id = isset($post['id']) ? $post['id'] : null;
@@ -264,25 +266,6 @@ class Employee extends MY_Controller
     }
 
     /**
-     * 获取员工信息 -- 编辑
-     */
-    public function getEmpinfo()
-    {
-        $post = $this->input->post(null, true);
-        $id = isset($post['id']) ? $post['id'] : null;
-
-        $field = ['name', 'phone','status', 'position_id', 'store_names'];
-        $this->load->model('positionmodel');
-        $category = Employeemodel::with(['position' => function($query) {
-            $query->select('id', 'name');
-        }])->where('id', $id)->get($field)->map(function ($a){
-            $a->city = $this->getStore()->toArray();
-            return $a;
-        });
-        $this->api_res(0, $category);
-    }
-
-    /**
      * 添加员工 二维码
      */
     public function qrcodeAddCompany(){
@@ -324,34 +307,19 @@ class Employee extends MY_Controller
         $this->load->library('form_validation');
         $config = array(
             array(
-                'field' => 'id',
-                'label' => '职位名称',
-                'rules' => 'trim|required|integer',
-            ),
-            array(
                 'field' => 'name',
-                'label' => '职位名称',
-                'rules' => 'trim|required',
+                'label' => '员工姓名',
+                'rules' => 'trim|required|max_length[255]',
             ),
             array(
                 'field' => 'phone',
                 'label' => '手机号',
-                'rules' => 'trim|required',
-            ),
-            array(
-                'field' => 'status',
-                'label' => '员工的状态',
-                'rules' => 'trim|required',
+                'rules' => 'trim|required|max_length[13]|numeric',
             ),
             array(
                 'field' => 'position',
                 'label' => '职位名称',
-                'rules' => 'trim|required',
-            ),
-            array(
-                'field' => 'position_id',
-                'label' => '职位id',
-                'rules' => 'trim|required|integer',
+                'rules' => 'trim|required|max_length[255]',
             ),
             array(
                 'field' => 'store_ids',
@@ -370,7 +338,8 @@ class Employee extends MY_Controller
             ),
         );
 
-        return $config;
+        $this->form_validation->set_rules($config)->set_error_delimiters('','');
+        return $this->form_validation->run();
     }
 
 }

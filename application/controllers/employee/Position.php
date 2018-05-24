@@ -27,7 +27,7 @@ class Position extends MY_Controller
         {
             $fieldarr = ['name','pc_privilege','mini_privilege'];
             $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
-            return;
+            return false;
         }
 
         if (isset($post['id']) && !empty($post['id'])) {
@@ -54,6 +54,13 @@ class Position extends MY_Controller
     public function submitPosition()
     {
         $post = $this->input->post(null,true);
+        if(!$this->validation())
+        {
+            $fieldarr = ['name', 'pc_privilege', 'mini_privilege'];
+            $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
+            return false;
+        }
+
         if (isset($post['id']) && !empty($post['id'])) {
             $position = Positionmodel::find($post['id']);
             if (!$position) {
@@ -65,12 +72,6 @@ class Position extends MY_Controller
             return;
         }
 
-        if(!$this->validation())
-        {
-            $fieldarr = ['name', 'pc_privilege', 'mini_privilege'];
-            $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
-            return;
-        }
         $name = isset($post['name']) ? $post['name'] : null;
         $pc_privilege = isset($post['pc_privilege']) ? $post['pc_privilege'] : null;
         $mini_privilege = isset($post['mini_privilege']) ? $post['mini_privilege'] : null;
@@ -95,7 +96,7 @@ class Position extends MY_Controller
         {
             $fieldarr   = ['name','pc_privilege','mini_privilege'];
             $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
-            return;
+            return false;
         }
 
         $name = isset($post['name']) ? $post['name'] : null;
@@ -182,9 +183,9 @@ class Position extends MY_Controller
         $post   = $this->input->post(null,true);
         if(!$this->validation())
         {
-            $fieldarr   = ['name'];
+            $fieldarr   = ['name','pc_privilege','mini_privilege'];
             $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
-            return;
+            return false;
         }
         $name   = isset($post['name'])?$post['name']:null;
         $page   = intval(isset($post['page'])?$post['page']:1);
@@ -214,7 +215,7 @@ class Position extends MY_Controller
             array(
                 'field' => 'name',
                 'label' => '职位名称',
-                'rules' => 'trim|required',
+                'rules' => 'trim|required|max_length[255]',
             ),
             array(
                 'field' => 'pc_privilege',
@@ -228,7 +229,8 @@ class Position extends MY_Controller
             ),
         );
 
-        return $config;
+        $this->form_validation->set_rules($config)->set_error_delimiters('','');
+        return $this->form_validation->run();
     }
 
 }
