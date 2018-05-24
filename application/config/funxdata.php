@@ -75,3 +75,10 @@ $config['generate_contract.api'] ='generate_contract.api';
 $config['extsign.api'] ='extsign.api';
 $config['extsign_auto.api'] ='extsign_auto.api';
 
+
+//员工端相关配置信息
+$config['miniAppid']        = '';
+$config['miniSecret']       = '';
+$config['miniToken']        = '';
+$config['miniAes_key']      = '';
+

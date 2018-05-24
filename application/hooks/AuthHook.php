@@ -110,27 +110,41 @@ class AuthHook {
             'shop/goodsorder/listgoodsorder',
             'shop/goodsorder/detail',
 
+            'employee/position/addposition',
+            'employee/position/getposition',
             'employee/position/editposition',
+            'employee/position/listposition',
+            'employee/position/searchposition',
+            'employee/position/submitposition',
             'employee/employee/addemp',
-            'employee/employee/showemp',
+            'employee/employee/listemp',
+            'employee/employee/getstore',
             'employee/employee/getempinfo',
             'employee/employee/addemp',
             'employee/employee/submitemp',
-            'employee/employee/updataemp',
+            'employee/employee/updateemp',
             'employee/employee/showstore',
+            'employee/employee/searchemp',
 
             'smartdevice/smartdevice/listsmartdevice',
             'smartdevice/smartdevice/record',
             'smartdevice/yeeuulock/test',
 
-            'mini/reserve/listreserve',
-            'mini/reserve/reserve',
-            'mini/visitrecord/visit',
-
             'common/city',
             'common/province',
             'common/district',
 
+            'mini/reserve/listreserve',
+            'mini/reserve/reserve',
+            'mini/visitrecord/visit',
+            'mini/login/gettoken',
+            'mini/personalcenter/center',
+            'mini/room/listroom',
+            'mini/room/detailsroom',
+            'mini/employee/showcenter',
+            'mini/employee/listemp',
+            'mini/employee/addemp',
+            'mini/residentct/showcenter',
         );
 
         $directory  = $this->CI->router->fetch_directory();

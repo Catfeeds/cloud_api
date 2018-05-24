@@ -15,8 +15,7 @@ class Positionmodel extends Basemodel{
 
     protected $table    = 'boss_position';
 
-<<<<<<< HEAD
-    protected $hidden   = ['created_at','updated_at','deleted_at'];
+    protected $hidden   = ['updated_at','deleted_at'];
 
 
     public function employee(){
@@ -24,12 +23,4 @@ class Positionmodel extends Basemodel{
         return $this->hasMany(Employeemodel::class,'position_id')->select('id','position_id');
     }
 
-=======
-    protected $hidden   = ['updated_at','deleted_at'];
-
-    public function employee()
-    {
-        return $this->hasMany(Employeemodel::class,'position_id')->select(['id','position_id']);
-    }
->>>>>>> a97dc516047a37d972262321686a838a0e191cd1
 }
