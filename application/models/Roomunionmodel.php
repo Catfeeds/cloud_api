@@ -106,7 +106,7 @@ class Roomunionmodel extends Basemodel{
      * 是否空闲
      */
     public function isBlank(){
-        if($this->status==self::BLANK){
+        if($this->status==self::STATE_BLANK){
             return true;
         }else{
             return false;
