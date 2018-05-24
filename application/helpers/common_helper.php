@@ -16,8 +16,11 @@ function getWechatCustomerConfig(){
         'aes_key'   => config_item('wx_map_aes_key'),
         'log' => [
             'level' => 'debug',
-            'file'  => APPPATH.'cache/wechat.log',
-            ]
+            'file'  => APPPATH.'cache/wechatCustomer.log',
+        ],
+        'guzzle' => [
+            'timeout' => 3.0,
+        ]
     ];
 }
 

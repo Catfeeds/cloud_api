@@ -31,6 +31,10 @@ class AuthHook {
             'demo/sheet/index',
 
             'account/login/login',
+            'mini/resident/checkroomunion',
+            'mini/resident/checkin',
+            'mini/resident/destory',
+            'mini/resident/showqrcode',
             //'store/store/liststore',
             //'store/store/addstoredot',
             //'store/store/addstoreunion',
@@ -137,6 +141,13 @@ class AuthHook {
             'mini/personalcenter/center',
             'mini/room/listroom',
             'mini/room/detailsroom',
+            'mini/employee/showcenter',
+            'mini/employee/listemp',
+            'mini/employee/addemp',
+            'mini/residentct/showcenter',
+
+            'contract/operation/operatlist',
+            'contract/operation/operationfind',
         );
 
         $directory  = $this->CI->router->fetch_directory();
