@@ -47,6 +47,7 @@ class Ordermodel extends Basemodel{
     const PAYTYPE_ELECTRICITY   = 'ELECTRICITY';    // 电费
     const PAYTYPE_COMPENSATION  = 'COMPENSATION';   // 物品赔偿费
     const PAYTYPE_REPAIR        = 'REPAIR';         // 维修服务费
+    //const PAYTYPE_FIRST         = 'FIRST';         // 首月支付
 
     /**
      * 首次 续费
@@ -60,7 +61,7 @@ class Ordermodel extends Basemodel{
     const DEAL_DONE         = 'DONE';       // 处理
     const DEAL_UNDONE       = 'UNDONE';     // 未处理
 
-    protected $table        = 'orders';
+    protected $table        = 'web_order';
 
     protected $fillable     = [
         'deal',
@@ -83,4 +84,24 @@ class Ordermodel extends Basemodel{
         'paid',
         'pay_status',
     ];
+
+    /**
+     * 生成随机数作为订单编号
+     */
+    public function getOrderNumber()
+    {
+        return date('YmdHis').mt_rand(1000000000, intval(9999999999));
+    }
+
+    /**
+     * 检索当日确定的账单的数量
+     */
+    public function ordersConfirmedToday()
+    {
+        return $this->where('deal', self::DEAL_DONE)
+            ->where('status', self::STATE_COMPLETED)
+            ->whereDate('updated_at', '=', date('Y-m-d'))
+            ->count();
+    }
+    //$sequence_number   = sprintf("%s%06d", date('Ymd'), $this->ordermodel->ordersConfirmedToday()+1);
 }

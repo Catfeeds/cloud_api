@@ -15,7 +15,7 @@ class Login extends MY_Controller
     {
         parent::__construct();
         $this->load->model('employeemodel');
-        $this->app = (new Application($this->getWechatConfig()))->mini_program;
+        $this->app = (new Application(getMiniWechatConfig()))->mini_program;
     }
 
     public function getToken()
@@ -52,20 +52,5 @@ class Login extends MY_Controller
         $wechat->session_key    = $sessionKeyData->session_key;
         $wechat->save();
         return $this->m_jwt->generateJwtToken($wechat['bxid'],$wechat['$company_id']);
-    }
-
-    /**
-     * 小程序配置信息
-     */
-    public function getWechatConfig()
-    {
-        return[
-            'mini_program'  =>  [
-                'app_id'        => config_item('miniAppid'),
-                'secret'        => config_item('miniSecret'),
-                'token'         => config_item('miniToken'),
-                'aes_key'       => config_item('miniAes_key'),
-            ],
-        ];
     }
 }

@@ -1,6 +1,6 @@
-
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+use Carbon\Carbon;
 /**
  * Author:      zjh<401967974@qq.com>
  * Date:        2018/4/20 0020
@@ -40,10 +40,43 @@ defined('BASEPATH') OR exit('No direct script access allowed');
      protected $table   = 'web_resident';
 
      protected $fillable    = [
-         'room_id','begin_time','people_count','contract_time','discount_id','first_pay_money',
-         'deposit_money','deposit_month','tmp_deposit',
-         'name','phone','card_type','card_number','card_one','card_two','card_three',
-         'name_two','phone_two','card_type_two','card_number_two','address','alternative','alter_phone'
+         'store_id',
+         'book_money',
+         'book_time',
+         'room_id',
+        'employee_id',
+        'name',
+        'phone',
+        'card_type',
+        'card_number',
+        'address',
+        'name_two',
+        'phone_two',
+        'card_type_two',
+        'card_number_two',
+        'begin_time',
+        'end_time',
+        'people_count',
+        'alternative',
+        'alter_phone',
+        'special_term',
+        'card_one',
+        'card_two',
+        'card_three',
+        'pay_frequency',
+        'real_rent_money',
+        'real_property_costs',
+        'discount_id',
+        'first_pay_money',
+        'contract_time',
+        'rent_type',
+        'discount_money',
+        'remark',
+        'deposit_month',
+        'deposit_money',
+        'tmp_deposit',
+        'status',
+        'data',
      ];
 
      protected $hidden  = [];
@@ -52,6 +85,12 @@ defined('BASEPATH') OR exit('No direct script access allowed');
      public function roomunion(){
 
          return $this->belongsTo(Roomunionmodel::class,'room_id');
+     }
+
+     //住户的订单
+     public function orders(){
+
+         return $this->hasMany(Ordermodel::class,'resident_id');
      }
 
      //住户的合同信息
@@ -71,6 +110,45 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
          return $this->hasMany(Commonresidentmodel::class,'resident_id');
      }
+
+     //住户的优惠券
+     public function  coupons(){
+
+         return $this->hasMany(Couponmodel::class,'resident_id');
+     }
+
+     /**
+      * 计算用户的合同结束时间
+      * 主要是考虑到, 租房合同开始日期是某个月的月底而结束月份是2月份的情况
+      */
+     public function contractEndDate($checkInDateStr, $contractTime)
+     {
+         $checkInDate    = Carbon::parse($checkInDateStr);
+
+         return $this->addMonths($checkInDate, $contractTime);
+     }
+
+     /**
+      * 计算指定个月后的今天的日期
+      * 比如, 1月31日的一个月后可能是2月28号也可能是2月29号
+      */
+     public function addMonths(Carbon $date, $months = 1)
+     {
+         $endMonth       = $date
+             ->copy()
+             ->startOfMonth()
+             ->addMonths($months)
+             ->endOfMonth();
+
+         if ($endMonth->day >= $date->day - 1) {
+             $endTime = $endMonth->startOfMonth()->addDays($date->day - 2);
+         }
+
+         return isset($endTime) ? $endTime : $endMonth;
+     }
+
+
+
 
 
 

@@ -23,10 +23,10 @@ $config['wx_web_appid']     = 'wx75fd74e2316b2355';
 $config['wx_web_secret']    = '70fa3a7fe658be97552788fc764f5434';
 
 //微信用户端公众号的信息
-$config['wx_map_appid']     = '';
-$config['wx_map_secret']    = '';
-$config['wx_map_token']     = '';
-$config['wx_map_aes_key']   = '';
+$config['wx_map_appid']     = 'wxd8da84ed2a26aa06';
+$config['wx_map_secret']    = '00e6fd3ce1151e3d2bd0e01c98c925d3';
+$config['wx_map_token']     = 'aJ1B3XhY7qRvTG3DrbxNhCLo90kpsds4';
+$config['wx_map_aes_key']   = 'IwTUFptFaJ1B3XhY7qRvTG3DrbxNhCLo90kpsqP0cNL';
 
 
 
@@ -74,4 +74,11 @@ $config['uploadtemplate.api'] ='uploadtemplate.api';
 $config['generate_contract.api'] ='generate_contract.api';
 $config['extsign.api'] ='extsign.api';
 $config['extsign_auto.api'] ='extsign_auto.api';
+
+
+//员工端相关配置信息
+$config['miniAppid']        = '';
+$config['miniSecret']       = '';
+$config['miniToken']        = '';
+$config['miniAes_key']      = '';
 

@@ -16,7 +16,25 @@ function getWechatCustomerConfig(){
         'aes_key'   => config_item('wx_map_aes_key'),
         'log' => [
             'level' => 'debug',
-            'file'  => APPPATH.'cache/wechat.log',
-            ]
+            'file'  => APPPATH.'cache/wechatCustomer.log',
+        ],
+        'guzzle' => [
+            'timeout' => 3.0,
+        ]
+    ];
+}
+
+/**
+ * 小程序配置信息
+ */
+function getMiniWechatConfig()
+{
+    return[
+        'mini_program'  =>  [
+            'app_id'        => config_item('miniAppid'),
+            'secret'        => config_item('miniSecret'),
+            'token'         => config_item('miniToken'),
+            'aes_key'       => config_item('miniAes_key'),
+        ],
     ];
 }
