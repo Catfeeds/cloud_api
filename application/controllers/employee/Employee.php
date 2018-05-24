@@ -99,11 +99,14 @@ class Employee extends MY_Controller
      */
     public function showStore()
     {
+        $category = $this->getStore();
         $post = $this->input->post(null, true);
-        $id = isset($post['id']) ? $post['id'] : null;
-        $emloyee = Employeemodel::find($id);
-        $category = $this->getStore()->toArray();
-        $category['status'] = $emloyee->status;
+        if (!empty($post['id'])) {
+            $id = $post['id'];
+            $emloyee = Employeemodel::find($id);
+            $category = $this->getStore()->toArray();
+            $category['status'] = $emloyee->status;
+        }
         $this->api_res(0, $category);
     }
 
