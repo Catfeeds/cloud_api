@@ -17,7 +17,7 @@ class Operation extends MY_Controller
     /**
      *  入住合同管理
      */
-    public function operationList()
+    public function operatList()
     {
         $this->load->model('storemodel');
         $this->load->model('roomunionmodel');
