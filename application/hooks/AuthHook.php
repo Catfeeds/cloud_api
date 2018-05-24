@@ -121,9 +121,6 @@ class AuthHook {
             'employee/employee/updateemp',
             'employee/employee/showstore',
             'employee/employee/searchemp',
-            'employee/personalcenter/center',
-            'employee/personalcenter/listemp',
-            'employee/personalcenter/addemp',
 
             'smartdevice/smartdevice/listsmartdevice',
             'smartdevice/smartdevice/record',
@@ -140,6 +137,9 @@ class AuthHook {
             'mini/personalcenter/center',
             'mini/room/listroom',
             'mini/room/detailsroom',
+            'mini/employee/showcenter',
+            'mini/employee/listemp',
+            'mini/employee/addemp',
         );
 
         $directory  = $this->CI->router->fetch_directory();
