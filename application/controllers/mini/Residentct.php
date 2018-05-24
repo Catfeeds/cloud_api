@@ -34,10 +34,25 @@ class Residentct extends MY_Controller
 
     /**
      * 显示住户详情
-     */
+    */
     public function showDetail()
     {
+        $post = $this->input->post(null, true);
+        $id   = isset($post['id'])?$post['id']:null;
+        $filed = ['name', 'phone', 'room_id', 'card_type', 'card_number', 'card_one', 'card_two', 'card_three',
+                  'alternative', 'alter_phone', 'people_count', 'address', 'real_rent_money',
+                  'real_property_costs', 'deposit_money', 'status', 'contract_time'];
 
+        $resident = Residentmodel::where('id', $id)->get($filed)->toArray();
+        $this->load->model('roomunionmodel');
+        $room_id = $resident[0]['room_id'];
+        $room = Roomunionmodel::where('id', $room_id)->get(['number'])->toArray();
+        $resident[0]['number'] = $room[0]['number'];
+        $this->load->model('smartdevicemodel');
+        $devicetype = Smartdevicemodel::where('room_id', $room_id)->get(['type'])->toArray();
+        $resident[0]['type'] = $devicetype[0]['type'];
+
+        $this->api_res(0, $resident);
     }
 
 }

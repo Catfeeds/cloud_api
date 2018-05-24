@@ -244,6 +244,28 @@ class Employee extends MY_Controller
         }
     }
 
+    /**
+     * 删除员工信息（将员工状态设置为离职）
+     */
+    public function delEmp()
+    {
+        $post = $this->input->post(null, true);
+        if (isset($post['id']) && !empty($post['id'])) {
+            $id = $post['id'];
+            $position = Employeemodel::find($id);
+            $position->status = 'DISABLE';
+            if($position->save()){
+                $this->api_res(0);
+            }else{
+                $this->api_res(1009);
+                return false;
+            }
+        } else {
+            $this->api_res(1002);
+            return false;
+        }
+    }
+
 
     /**
      * 验证
