@@ -23,13 +23,6 @@ class Position extends MY_Controller
     public function getPosition()
     {
         $post = $this->input->post(null,true);
-        if(!$this->validation())
-        {
-            $fieldarr = ['name','pc_privilege','mini_privilege'];
-            $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
-            return false;
-        }
-
         if (isset($post['id']) && !empty($post['id'])) {
             $position = Positionmodel::find($post['id']);
             if (!$position) {
@@ -54,13 +47,6 @@ class Position extends MY_Controller
     public function submitPosition()
     {
         $post = $this->input->post(null,true);
-        if(!$this->validation())
-        {
-            $fieldarr = ['name', 'pc_privilege', 'mini_privilege'];
-            $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
-            return false;
-        }
-
         if (isset($post['id']) && !empty($post['id'])) {
             $position = Positionmodel::find($post['id']);
             if (!$position) {
@@ -71,7 +57,12 @@ class Position extends MY_Controller
             $this->api_res(1002);
             return;
         }
-
+        if(!$this->validation())
+        {
+            $fieldarr = ['name', 'pc_privilege', 'mini_privilege'];
+            $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
+            return false;
+        }
         $name = isset($post['name']) ? $post['name'] : null;
         $pc_privilege = isset($post['pc_privilege']) ? $post['pc_privilege'] : null;
         $mini_privilege = isset($post['mini_privilege']) ? $post['mini_privilege'] : null;
