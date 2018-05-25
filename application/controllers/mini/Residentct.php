@@ -4,7 +4,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Author:      chenkk<cooook@163.com>
  * Date:        2018/5/24
  * Time:        11:39
- * Describe:    住户
+ * Describe:    住户 resident center
  */
 
 class Residentct extends MY_Controller
