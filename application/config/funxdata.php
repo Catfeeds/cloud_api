@@ -79,6 +79,6 @@ $config['extsign_auto.api'] ='extsign_auto.api';
 //员工端相关配置信息
 $config['miniAppid']        = 'wx5721f56e75cc901e';
 $config['miniSecret']       = 'c2681fbb7a0cb09b3817bc7706a57163';
-$config['miniToken']        = '';
-$config['miniAes_key']      = '';
+/*$config['miniToken']        = '';
+$config['miniAes_key']      = '';*/
 
