@@ -104,6 +104,10 @@ class Employee extends MY_Controller
         if (isset($post['id']) && !empty($post['id'])) {
             $id = trim($post['id']);
             $emloyee = Employeemodel::find($id);
+            if (!$emloyee) {
+                $this->api_res(1009);
+                return false;
+            }
             $category = $this->getStore()->toArray();
             $category['name'] = $emloyee->name;
             $category['phone'] = $emloyee->phone;
@@ -112,6 +116,7 @@ class Employee extends MY_Controller
             $position = Positionmodel::find($emloyee->position_id);
             if (!$position) {
                 $this->api_res(1009);
+                return false;
             }
 
             $category['position'] = $position->name;
@@ -137,7 +142,8 @@ class Employee extends MY_Controller
         $this->load->model('positionmodel');
         $position_arr = Positionmodel::where('name', $position)->get(['id'])->toArray();
         if (!$position_arr) {
-            $this->api_res(0, 1009);
+            $this->api_res(1009);
+            return false;
         }
         $position_id = $position_arr[0]['id'];
         $store_ids = isset($post['store_ids']) ? $post['store_ids'] : null;
