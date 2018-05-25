@@ -94,6 +94,10 @@ class Resident extends MY_Controller
         //获取房间信息
         $this->load->model('roomunionmodel');
         $room   = Roomunionmodel::find($post['room_id']);
+        if(!$room){
+            $this->api_res(1007);
+            return;
+        }
         if(!$room->isBlank()){
             $this->api_res(10010);
             return;
@@ -112,11 +116,18 @@ class Resident extends MY_Controller
             //ok
             $b=$this->handleCheckInCommonEvent($resident, $room);
             if($a && $b){
-                $this->api_res(0);
                 DB::commit();
             }else{
                 DB::rollBack();
+                $this->api_res(1009);
+                return;
             }
+            $this->load->model('activitymodel');
+            $this->load->model('coupontypemodel');
+            $this->load->model('contractmodel');
+            $data=$resident->transform($resident);
+            //var_dump($data);
+            $this->api_res(0,['data'=>$data]);
         }catch (Exception $e) {
             DB::rollBack();
             throw $e;
