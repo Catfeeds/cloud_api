@@ -15,18 +15,18 @@ class Login extends MY_Controller
     {
         parent::__construct();
         $this->load->model('employeemodel');
+        $this->load->helper('common');
         $this->app = (new Application(getMiniWechatConfig()))->mini_program;
+
     }
 
     public function getToken()
     {
-
-        $post = $this->input->post(null,true);
+        $post = $this->input->post(NULL,true);
         if($post['code']){
-            $code           = trim($post['code']);
-            $sessionKeyData = $this->app->sns->getSessionKey($code);
+            $sessionKeyData = $this->app->sns->getSessionKey($post['code']);
             $token          = $this->handleLoginStatus($sessionKeyData);
-            $this->api_res(0,$token);
+            $this->api_res(0,['token'=>$token,'$sessionKeyData'=>$sessionKeyData]);
         }else{
             $this->api_res(10002);
             return;
@@ -46,9 +46,7 @@ class Login extends MY_Controller
             $this->api_res(10002);
             return;
         }
-
         $wechat->mini_openid    = $sessionKeyData->openid;
-        $wechat->unionid        = isset($sessionKeyData->unionid) ? $sessionKeyData->unionid : '';
         $wechat->session_key    = $sessionKeyData->session_key;
         $wechat->save();
         return $this->m_jwt->generateJwtToken($wechat['bxid'],$wechat['$company_id']);

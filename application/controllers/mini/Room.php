@@ -23,7 +23,7 @@ class Room extends MY_Controller
         $where      = [];
         if(isset($post['building_id'])){$where['building_id'] = intval($post['building_id']);};
         if(isset($post['status'])){$where['status'] = $post['status'];};
-        if($post['store_id']){
+        if(isset($post['store_id'])){
             $where['store_id'] = intval($post['store_id']);
         }else{
             $this->api_res(0,[]);
@@ -55,5 +55,6 @@ class Room extends MY_Controller
         $details = Roomunionmodel::where('id',$id)->get(['people_count','resident_id','arrears']);
         $this->api_res(0,$details);
     }
+
 
 }

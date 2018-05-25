@@ -35,6 +35,7 @@ class AuthHook {
             'mini/resident/checkin',
             'mini/resident/destory',
             'mini/resident/showqrcode',
+            'mini/resident/reservation',
             //'store/store/liststore',
             //'store/store/addstoredot',
             //'store/store/addstoreunion',
@@ -125,6 +126,7 @@ class AuthHook {
             'employee/employee/updateemp',
             'employee/employee/showstore',
             'employee/employee/searchemp',
+            'employee/employee/delemp',
 
             'smartdevice/smartdevice/listsmartdevice',
             'smartdevice/smartdevice/record',
@@ -138,6 +140,7 @@ class AuthHook {
             'mini/reserve/reserve',
             'mini/visitrecord/visit',
             'mini/login/gettoken',
+            'mini/login/handleloginstatus',
             'mini/personalcenter/center',
             'mini/room/listroom',
             'mini/room/detailsroom',
@@ -145,12 +148,14 @@ class AuthHook {
             'mini/employee/listemp',
             'mini/employee/addemp',
             'mini/residentct/showcenter',
+            'mini/residentct/showdetail',
 
             'contract/operation/operatlist',
             'contract/operation/operationfind',
             'contract/operation/booking',
             'contract/operation/book'
         );
+
 
         $directory  = $this->CI->router->fetch_directory();
         $class      = $this->CI->router->fetch_class();
