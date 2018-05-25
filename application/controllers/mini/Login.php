@@ -26,7 +26,7 @@ class Login extends MY_Controller
         if($post['code']){
             $sessionKeyData = $this->app->sns->getSessionKey($post['code']);
             $token          = $this->handleLoginStatus($sessionKeyData);
-            $this->api_res(0,['token'=>$token]);
+            $this->api_res(0,['token'=>$token,'$sessionKeyData'=>$sessionKeyData]);
         }else{
             $this->api_res(10002);
             return;
@@ -46,12 +46,9 @@ class Login extends MY_Controller
             $this->api_res(10002);
             return;
         }
-
         $wechat->mini_openid    = $sessionKeyData->openid;
-        $wechat->unionid        = isset($sessionKeyData->unionid) ? $sessionKeyData->unionid : '';
         $wechat->session_key    = $sessionKeyData->session_key;
         $wechat->save();
         return $this->m_jwt->generateJwtToken($wechat['bxid'],$wechat['$company_id']);
     }
-
 }
