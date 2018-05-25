@@ -121,6 +121,8 @@ class Employee extends MY_Controller
 
             $category['position'] = $position->name;
             $category['status'] = $emloyee->status;
+            $category['store_ids'] = $position->store_ids;
+            $category['store_names'] = $emloyee->store_names;
         }
         $this->api_res(0, $category);
     }
