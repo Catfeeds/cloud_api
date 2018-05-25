@@ -24,10 +24,10 @@ class Login extends MY_Controller
     {
         $post = $this->input->post(NULL,true);
         if($post['code']){
-            $this->api_res($post['code']);
-            $sessionKeyData = $this->app->sns->getSessionKey($post['code']);
+            $this->api_res(0,$post['code']);
+            /*$sessionKeyData = $this->app->sns->getSessionKey($post['code']);
             $token          = $this->handleLoginStatus($sessionKeyData);
-            $this->api_res(0,$token);
+            $this->api_res(0,$token);*/
         }else{
             $this->api_res(10002);
             return;
