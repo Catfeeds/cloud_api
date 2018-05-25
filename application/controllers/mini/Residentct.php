@@ -33,6 +33,18 @@ class Residentct extends MY_Controller
     }
 
     /**
+     * 按名称模糊查找
+     */
+    public function searchRd()
+    {
+        $field = ['name','status'];
+        $post   = $this->input->post(null,true);
+        $name   = isset($post['name'])?$post['name']:null;
+        $category = Residentmodel::where('name','like',"%$name%")->orderBy('id','desc')->get($field);
+        $this->api_res(0,['list'=>$category]);
+    }
+
+    /**
      * 显示住户详情
     */
     public function showDetail()
