@@ -125,6 +125,7 @@ class AuthHook {
             'employee/employee/updateemp',
             'employee/employee/showstore',
             'employee/employee/searchemp',
+            'employee/employee/delemp',
 
             'smartdevice/smartdevice/listsmartdevice',
             'smartdevice/smartdevice/record',
@@ -145,7 +146,8 @@ class AuthHook {
             'mini/employee/listemp',
             'mini/employee/addemp',
             'mini/residentct/showcenter',
-        );
+            'mini/residentct/showdetail',            'contract/operation/operatlist',
+            'contract/operation/operationfind',        );
 
         $directory  = $this->CI->router->fetch_directory();
         $class      = $this->CI->router->fetch_class();
