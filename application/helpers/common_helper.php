@@ -29,12 +29,21 @@ function getWechatCustomerConfig(){
  */
 function getMiniWechatConfig()
 {
+    $debug  = (ENVIRONMENT!=='development'?false:true);
     return[
         'mini_program'  =>  [
+            'debug'     => $debug,
             'app_id'        => config_item('miniAppid'),
             'secret'        => config_item('miniSecret'),
             'token'         => config_item('miniToken'),
             'aes_key'       => config_item('miniAes_key'),
+            'log' => [
+                'level' => 'debug',
+                'file'  => APPPATH.'cache/wechatCustomer.log',
+            ],
+            'guzzle' => [
+                'timeout' => 3.0,
+            ]
         ],
     ];
 }

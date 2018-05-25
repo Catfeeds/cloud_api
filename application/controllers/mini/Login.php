@@ -15,13 +15,15 @@ class Login extends MY_Controller
     {
         parent::__construct();
         $this->load->model('employeemodel');
+        $this->load->helper('common');
         $this->app = (new Application(getMiniWechatConfig()))->mini_program;
+
     }
 
     public function getToken()
     {
-
-        $post = $this->input->post(null,true);
+        $this->app = (new Application(getMiniWechatConfig()))->mini_program;
+        $post = $this->input->post(NULL,true);
         if($post['code']){
             $code           = trim($post['code']);
             $sessionKeyData = $this->app->sns->getSessionKey($code);
@@ -31,6 +33,27 @@ class Login extends MY_Controller
             $this->api_res(10002);
             return;
         }
+    }
+
+    public function getMiniWechatConfig()
+    {
+        $debug  = (ENVIRONMENT!=='development'?false:true);
+        return[
+            'mini_program'  =>  [
+                'debug'     => $debug,
+                'app_id'        => config_item('miniAppid'),
+                'secret'        => config_item('miniSecret'),
+                'token'         => config_item('miniToken'),
+                'aes_key'       => config_item('miniAes_key'),
+                'log' => [
+                    'level' => 'debug',
+                    'file'  => APPPATH.'cache/wechatCustomer.log',
+                ],
+                'guzzle' => [
+                    'timeout' => 3.0,
+                ]
+            ],
+        ];
     }
 
     public function handleLoginStatus($sessionKeyData)
