@@ -26,11 +26,11 @@ class Employee extends MY_Controller
         $post = $this->input->post(null, true);
         $page = intval(isset($post['page']) ? $post['page'] : 1);
         $offset = PAGINATE * ($page - 1);
-        $filed = ['name', 'phone', 'position_id', 'store_names', 'hiredate', 'status'];
+        $filed = ['id', 'name', 'phone', 'position_id', 'store_names', 'hiredate', 'status'];
         $where = isset($post['store_id']) ? ['store_id' => $post['store_id']] : [];
         if (isset($post['city']) && !empty($post['city'])) {
             $store_ids = Storemodel::where('city', $post['city'])->get(['id'])->map(function ($s) {
-                return $s['id'];
+                return $s->id;
             });
             $count = ceil((Employeemodel::whereIn('store_id', $store_ids)->where($where)->count()) / PAGINATE);
             if ($page > $count) {
