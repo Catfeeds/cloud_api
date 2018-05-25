@@ -255,7 +255,7 @@ class Employee extends MY_Controller
             $position = Employeemodel::find($id);
             $position->status = 'DISABLE';
             if($position->save()){
-                $this->api_res(0);
+                $this->api_res(10020);
             }else{
                 $this->api_res(1009);
                 return false;
