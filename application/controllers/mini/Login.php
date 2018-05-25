@@ -26,11 +26,12 @@ class Login extends MY_Controller
         if($post['code']){
             $code           = trim($post['code']);
             $sessionKeyData = $this->app->sns->getSessionKey($code);
-            $token          = $this->handleLoginStatus($sessionKeyData);
+            $this->api_res(0,$sessionKeyData);
+            /*$token          = $this->handleLoginStatus($sessionKeyData);
             $this->api_res(0,$token);
         }else{
             $this->api_res(10002);
-            return;
+            return;*/
         }
     }
 
@@ -55,3 +56,6 @@ class Login extends MY_Controller
         return $this->m_jwt->generateJwtToken($wechat['bxid'],$wechat['$company_id']);
     }
 }
+
+
+
