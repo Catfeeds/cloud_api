@@ -148,6 +148,8 @@ class AuthHook {
 
             'contract/operation/operatlist',
             'contract/operation/operationfind',
+            'contract/operation/booking',
+            'contract/operation/book'
         );
 
         $directory  = $this->CI->router->fetch_directory();

@@ -112,8 +112,8 @@ use Carbon\Carbon;
      }
 
      //住户的优惠券
-     public function  coupons(){
-
+     public function  coupons()
+     {
          return $this->hasMany(Couponmodel::class,'resident_id');
      }
 
