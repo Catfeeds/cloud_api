@@ -146,7 +146,8 @@ class AuthHook {
             'mini/employee/listemp',
             'mini/employee/addemp',
             'mini/residentct/showcenter',
-            'mini/residentct/showdetail',            'contract/operation/operatlist',
+            'mini/residentct/showdetail',
+            'contract/operation/operatlist',
             'contract/operation/operationfind',        );
 
         $directory  = $this->CI->router->fetch_directory();
