@@ -198,7 +198,8 @@ class Employee extends MY_Controller
         $this->load->model('positionmodel');
         $position_arr = Positionmodel::where('name', $position)->get(['id'])->toArray();
         if (!$position_arr) {
-            $this->api_res(0, 1009);
+            $this->api_res(1009);
+            return;
         }
         $position_id = $position_arr[0]['id'];
         $store_ids  = $this->input->post('store_ids',true);
