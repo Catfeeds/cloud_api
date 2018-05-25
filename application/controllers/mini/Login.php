@@ -16,7 +16,7 @@ class Login extends MY_Controller
         parent::__construct();
         $this->load->model('employeemodel');
         $this->load->helper('common');
-        //$this->app = (new Application(getMiniWechatConfig()))->mini_program;
+        $this->app = (new Application(getMiniWechatConfig()))->mini_program;
 
     }
 
@@ -34,6 +34,19 @@ class Login extends MY_Controller
         }
     }
 
+    public function getToken1()
+    {
+        $post = $this->input->post(NULL,true);
+        if($post['code']){
+            $sessionKeyData = $this->app->sns->getSessionKey($post['code']);
+            //$this->api_res(0,['token'=>$sessionKeyData]);
+            $token          = $this->handleLoginStatus($sessionKeyData);
+            $this->api_res(0,['token'=>$token]);
+        }else{
+            $this->api_res(10002);
+            return;
+        }
+    }
     public function handleLoginStatus($sessionKeyData)
     {
         $this->load->library('M_jwt');
