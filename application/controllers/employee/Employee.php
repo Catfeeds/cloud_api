@@ -152,7 +152,7 @@ class Employee extends MY_Controller
 
         $store_ids_arr = json_decode($store_ids,true);
         if(!empty(array_diff($store_ids_arr, $ids))){
-            $this->api_res(1002);
+            $this->api_res(1002,['error'=>'门店不符']);
             return;
         }
         $store_id = $store_ids_arr[0];
