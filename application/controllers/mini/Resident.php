@@ -769,6 +769,133 @@ class Resident extends MY_Controller
         return false;
     }
 
+    /**
+     * 办理预订
+     */
+    public function reservation()
+    {
+        $field  = ['room_id','name','phone','book_money','book_time','remark'];
+        //表单验证
+        if(!$this->validationText($this->validateReservation())){
+
+            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+            return;
+        }
+        $input  = $this->input->post(null,true);
+        $room_id    = $input['room_id'];
+        $name       = $input['name'];
+        $phone      = $input['phone'];
+        $book_money = $input['book_money'];
+        $book_time  = $input['book_time'];
+        $remark     = isset($input['remark'])?$input['remark']:'';
+        if(!$this->checkPhoneNumber($phone)){
+
+            $this->api_res(1002,['error'=>'请检查手机号']);
+            return;
+        }
+        $this->load->model('roomunionmodel');
+        $room   = Roomunionmodel::find($room_id);
+        if(!$room){
+            $this->api_res(1007);
+            return;
+        }
+        if(!$room->isBlank()){
+            $this->api_res(10010);
+            return;
+        }
+        $this->load->model('residentmodel');
+        $resident   = new Residentmodel();
+        $this->load->model('ordermodel');
+        $order   = new Ordermodel();
+        try{
+            //开启事务
+            DB::beginTransaction();
+            //生成住户
+            $resident->room_id  = $room_id;
+            $resident->name     = $name;
+            $resident->phone        = $phone;
+            $resident->book_money   = $book_money;
+            $resident->book_time    =  Carbon::parse($book_time);
+            $resident->begin_time   = Carbon::now();
+            $resident->end_time     = Carbon::now();
+            $resident->employee_id  = $this->employee->id;
+            $resident->status       = Residentmodel::STATE_NOTPAY;
+            $resident->remark       = $remark;
+            $a  = $resident->save();
+            //更新房间状态
+            $room->Occupie();
+            //生成订单
+            $order->number      = $order->getOrderNumber();
+            $order->resident_id = $resident->id;
+            $order->employee_id = $resident->employee_id;
+            $order->money       = $resident->book_money;
+            $order->paid        = $resident->book_money;
+            $order->year        = $resident->book_time->year;
+            $order->month       = $resident->book_time->month;
+            $order->remark      = $resident->remark;
+            $order->room_id     = $room_id;
+            $order->store_id    = $room->store_id;
+            $order->room_type_id= $room->room_type_id;
+            $order->status      = Ordermodel::STATE_PENDING;
+            $order->deal        = Ordermodel::DEAL_UNDONE;
+            $order->type        = Ordermodel::PAYTYPE_RESERVE;
+            $b  = $order->save();
+            if($a&&$b){
+                DB::commit();
+                $this->load->model('activitymodel');
+                $this->load->model('coupontypemodel');
+                $this->load->model('contractmodel');
+                $this->api_res(0,['data'=>$resident->transform($resident)]);
+            }else{
+                DB::rollBack();
+                $this->api_res(1009);
+                return;
+            }
+        }catch (Exception $e){
+            DB::rollBack();
+            throw  $e;
+        }
+
+    }
+
+    /**
+     * 办理预订表单验证
+     */
+    public function validateReservation(){
+        return array(
+            array(
+                'field' => 'room_id',
+                'label' => '房间id',
+                'rules' => 'required|trim|integer'
+            ),
+            array(
+                'field' => 'name',
+                'label' => '用户姓名',
+                'rules' => 'required|trim|max_length[32]'
+            ),
+            array(
+                'field' => 'phone',
+                'label' => '用户手机号码',
+                'rules' => 'required|trim|max_length[11]'
+            ),
+            array(
+                'field' => 'book_money',
+                'label' => '定金',
+                'rules' => 'required|trim|numeric'
+            ),
+            array(
+                'field' => 'book_time',
+                'label' => '订房日期',
+                'rules' => 'required|trim'
+            ),
+            array(
+                'field' => 'remark',
+                'label' => '备注',
+                'rules' => 'trim'
+            ),
+        );
+    }
+
 
 }
 
