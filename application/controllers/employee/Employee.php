@@ -111,7 +111,7 @@ class Employee extends MY_Controller
             $this->load->model('positionmodel');
             $position = Positionmodel::find($emloyee->position_id);
             if (!$position) {
-                $this->api_res(0, 1009);
+                $this->api_res(1009);
             }
 
             $category['position'] = $position->name;
