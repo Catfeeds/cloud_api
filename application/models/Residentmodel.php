@@ -204,6 +204,12 @@ use Carbon\Carbon;
                  ],
              ]);
          }
+        //订单详情
+//         if($resident->orders){
+//             $data   = array_merge($data, [
+//                 'orders'  => $resident->orders,
+//             ]);
+//         }
 
          if (0 < $resident->discount_id) {
              $activity   = $resident->discount;
