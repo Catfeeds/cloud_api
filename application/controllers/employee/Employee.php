@@ -26,11 +26,11 @@ class Employee extends MY_Controller
         $post = $this->input->post(null, true);
         $page = intval(isset($post['page']) ? $post['page'] : 1);
         $offset = PAGINATE * ($page - 1);
-        $filed = ['name', 'phone', 'position_id', 'store_names', 'hiredate', 'status'];
+        $filed = ['id', 'name', 'phone', 'position_id', 'store_names', 'hiredate', 'status'];
         $where = isset($post['store_id']) ? ['store_id' => $post['store_id']] : [];
         if (isset($post['city']) && !empty($post['city'])) {
             $store_ids = Storemodel::where('city', $post['city'])->get(['id'])->map(function ($s) {
-                return $s['id'];
+                return $s->id;
             });
             $count = ceil((Employeemodel::whereIn('store_id', $store_ids)->where($where)->count()) / PAGINATE);
             if ($page > $count) {
@@ -240,6 +240,28 @@ class Employee extends MY_Controller
             $this->api_res(0);
         }else{
             $this->api_res(1009);
+            return false;
+        }
+    }
+
+    /**
+     * 删除员工信息（将员工状态设置为离职）
+     */
+    public function delEmp()
+    {
+        $post = $this->input->post(null, true);
+        if (isset($post['id']) && !empty($post['id'])) {
+            $id = $post['id'];
+            $position = Employeemodel::find($id);
+            $position->status = 'DISABLE';
+            if($position->save()){
+                $this->api_res(10020);
+            }else{
+                $this->api_res(1009);
+                return false;
+            }
+        } else {
+            $this->api_res(1002);
             return false;
         }
     }
