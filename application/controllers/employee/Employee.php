@@ -108,21 +108,20 @@ class Employee extends MY_Controller
                 $this->api_res(1009);
                 return false;
             }
-            $category = $this->getStore()->toArray();
-            $category['name'] = $emloyee->name;
-            $category['phone'] = $emloyee->phone;
 
             $this->load->model('positionmodel');
             $position = Positionmodel::find($emloyee->position_id);
             if (!$position) {
-                $this->api_res(1009);
+                $this->api_res(1009, ['error' => '没有找到职位信息']);
                 return false;
             }
 
-            $category['position'] = $position->name;
-            $category['status'] = $emloyee->status;
-            $category['store_ids'] = $emloyee->store_ids;
-            $category['store_names'] = $emloyee->store_names;
+            $category = [
+                'name' => $emloyee->name,
+                'phone' => $emloyee->phone,
+                'position' => $position->name,
+                'status' => $emloyee->status
+            ];
         }
         $this->api_res(0, $category);
     }

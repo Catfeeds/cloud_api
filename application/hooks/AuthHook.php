@@ -149,6 +149,9 @@ class AuthHook {
             'mini/employee/showcenter',
             'mini/employee/listemp',
             'mini/employee/addemp',
+            'mini/messagesnd/templatefields',
+            'mini/messagesnd/sendmsgtype',
+            'mini/messagesnd/sendnotice',
             'mini/residentct/showcenter',
             'mini/residentct/showdetail',
 
