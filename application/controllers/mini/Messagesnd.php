@@ -1,6 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 use EasyWeChat\template_message;
+use EasyWeChat\Foundation\Application;
 /**
  * Author:      chenkk<cooook@163.com>
  * Date:        2018/5/25
@@ -10,9 +11,13 @@ use EasyWeChat\template_message;
 
 class Messagesnd extends MY_Controller
 {
+    protected $template_message;
+
     public function __construct()
     {
         parent::__construct();
+        //$this->template_message = new template_message();
+        //$this->template_message = $template_message;
     }
 
     public function sendMsgType()
@@ -53,23 +58,49 @@ class Messagesnd extends MY_Controller
             $customers = Residentmodel::with(['customer' => function ($query) {
                 $query->select('id','openid');
             }])->where('store_id', $store_id)->get(['customer_id']);
-            //$this->api_res(0,$customer);
+            //$this->api_res(0,$customers);
+            $type = isset($post['type']) ? $post['type'] : null;
+            $title = $this->getNoticeType($type);
+            //$template_id = $this->getTemplateIds($type);
 
-            foreach ($customers as $customer) {
-                $this->template_message->send([
+            $this->load->helper('common');
+            $app = new Application(getWechatCustomerConfig());
+            /*foreach ($customers as $customer) {
+                $app->template_message->send([
                     'touser' => $customer->openid,
-                    'template_id' => 'template-id',
+                    'template_id' => $template_id,
                     'url' => 'https://easywechat.org',
                     'data' => [
-                        'key1' => 'VALUE',
-                        'key2' => 'VALUE2',
+                        $title['title'] => $post['title'],
+                        $title['hremind'] => $post['hremind'],
+                        $title['time'] => $post['time'],
+                        $title['area'] => $post['area'],
+                        $title['reason'] => $post['reason'],
+                        $title['fremind'] => $post['fremind'],
+                        $title['preview'] => $post['preview'],
                     ],
                 ]);
-            }
+            }*/
         } else {
-            $this->api_res(1002,['error'=>'门店id不符']);
+            $this->api_res(1002,['error'=>'门店不符']);
         }
 
+    }
+
+    public function getTemplateIds($type)
+    {
+        switch ($type) {
+            case '0':
+                return OhCKlytLt8bUCiP9xhNFNtq1NmV_KbLBBuyS7EJGnSk;
+            case '1':
+                return OhCKlytLt8bUCiP9xhNFNtq1NmV_KbLBBuyS7EJGnSa;
+            case '2':
+                break;
+            case '3':
+                break;
+            default:
+                break;
+        }
     }
 
     public function getNoticeType($type)
@@ -84,7 +115,7 @@ class Messagesnd extends MY_Controller
                     'reason'  => '停水原因',
                     'fremind' => '末尾提醒',
                     'preview' => '预览'
-                    ];
+                ];
             case '1':
                 return [
                     'title'   => '停电通知',
@@ -96,7 +127,15 @@ class Messagesnd extends MY_Controller
                     'preview' => '预览'
                 ];
             case '2':
-                break;
+                return [
+                    'title'   => '停电通知',
+                    'hremind' => '首段提醒',
+                    'time'    => '累计天数',
+                    'area'    => '累计金额',
+                    'reason'  => '停电原因',
+                    'fremind' => '末尾提醒',
+                    'preview' => '预览'
+                ];
             case '3':
                 break;
             default:
