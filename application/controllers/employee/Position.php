@@ -60,7 +60,7 @@ class Position extends MY_Controller
         if(!$this->validation())
         {
             $fieldarr = ['name'];
-            $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
+            $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
             return false;
         }
         $name = isset($post['name']) ? $post['name'] : null;
@@ -86,7 +86,7 @@ class Position extends MY_Controller
         if(!$this->validation())
         {
             $fieldarr   = ['name'];
-            $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
+            $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
             return false;
         }
 
@@ -175,7 +175,7 @@ class Position extends MY_Controller
         if(!$this->validation())
         {
             $fieldarr   = ['name'];
-            $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
+            $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
             return false;
         }
         $name   = isset($post['name'])?$post['name']:null;

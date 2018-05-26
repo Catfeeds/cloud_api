@@ -154,6 +154,10 @@ class Employee extends MY_Controller
         $hiredate = isset($post['hiredate']) ? $post['hiredate'] : null;
 
         $this->load->model('storemodel');
+        if (!defined('COMPANY_ID')) {
+            $this->api_res(1002,['error'=>'公司信息不符']);
+            return;
+        }
         $ids= Storemodel::where('company_id',COMPANY_ID)->get(['id'])->map(function($a){
             return $a->id;
         })->toArray();
@@ -212,6 +216,10 @@ class Employee extends MY_Controller
         $hiredate = isset($post['hiredate']) ? $post['hiredate'] : null;
 
         $this->load->model('storemodel');
+        if (!defined('COMPANY_ID')) {
+            $this->api_res(1002,['error'=>'公司信息不符']);
+            return;
+        }
         $ids= Storemodel::where('company_id',COMPANY_ID)->get(['id'])->map(function($a){
             return $a->id;
         })->toArray();
@@ -286,7 +294,8 @@ class Employee extends MY_Controller
             $position = Employeemodel::find($id);
             $position->status = 'DISABLE';
             if($position->save()){
-                $this->api_res(10020);
+                $this->api_res(0,['error'=>'员工已删除，请及时转移相关业务']);
+                return false;
             }else{
                 $this->api_res(1009);
                 return false;
