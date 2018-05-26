@@ -218,7 +218,7 @@ class Roomunion extends MY_Controller
         $rooms  = Roomunionmodel::leftJoin('boss_store','boss_store.id','=','boss_room_union.store_id')
             ->leftJoin('boss_room_type','boss_room_type.id','=','boss_room_union.room_type_id')
             ->select($field)->offset($offset)->limit(PAGINATE)->orderBy('boss_room_union.id')->where($where)
-            ->whereIn('store_id',$store_ids)->orWhere('number','like',"%$search%")
+            ->whereIn('boss_room_union.store_id',$store_ids)->orWhere('number','like',"%$search%")
             ->get();
         $this->api_res(0,['count'=>$count,'rooms'=>$rooms]);
     }
