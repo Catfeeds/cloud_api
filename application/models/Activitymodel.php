@@ -1,20 +1,4 @@
 <?php
-<<<<<<< HEAD
-/**
- * User: wws
- * Date: 2018-05-25
- * Time: 16:47
- *  活动信息
- */
-
-class Activitymodel extends Basemodel
-{
-
-    protected $table = 'boss_activity';
-    protected $hidden = ['created_at', 'updated_at', 'deleted_at'];
-
-
-=======
 defined('BASEPATH') OR exit('No direct script access allowed');
 /**
  * Author:      zjh<401967974@qq.com>
@@ -71,6 +55,5 @@ class Activitymodel extends Basemodel
 //    {
 //        return $this->hasMany(Helprecord::class, 'activity_id');
 //    }
->>>>>>> 931dbdcbafdf721eefa22c8fb096fcffd5b2d147
 
 }
