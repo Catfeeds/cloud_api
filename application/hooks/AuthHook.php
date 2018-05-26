@@ -125,8 +125,6 @@ class AuthHook {
             'employee/employee/getstore',
             'employee/employee/getempinfo',
             'employee/employee/addemp',
-            'employee/employee/submitemp',
-            'employee/employee/updateemp',
             'employee/employee/showstore',
             'employee/employee/searchemp',
             'employee/employee/delemp',

@@ -162,7 +162,7 @@ class Employee extends MY_Controller
             return $a->id;
         })->toArray();
 
-        $store_ids_arr = json_decode($store_ids,true);
+        $store_ids_arr = explode(',' ,$store_ids);
         if(!empty(array_diff($store_ids_arr, $ids))){
             $this->api_res(1002,['error'=>'门店不符']);
             return;
