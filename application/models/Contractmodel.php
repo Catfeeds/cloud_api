@@ -18,7 +18,7 @@ class Contractmodel extends Basemodel {
     {
         return $this->belongsTo(Residentmodel::class,'resident_id')->select('id','name');
     }
-//经办人
+    //经办人
     public function employee()
     {
         return $this->belongsTo(Employeemodel::class,'employee_id')->select('id','name');
@@ -28,20 +28,38 @@ class Contractmodel extends Basemodel {
     {
         return $this->belongsTo(Storemodel::class,'store_id')->select('id','city','name');
     }
-//建筑名 房号
+    //建筑名 房号
     public function roomunion()
     {
         return $this->belongsTo(Roomunionmodel::class,'room_id')->select('id','building_name','number');
     }
 
+    //房间id号
+    public function room()
+    {
+        return $this->belongsTo(Roomunionmodel::class,'room_id')->select('id','number');
+    }
 
-
-    //房间信息
-    public function room(){
-
-        return $this->belongsTo(Roommodel::class,'room_id');
+    // 合约信息
+    public function residents()
+    {
+        return $this->belongsTo(Residentmodel::class,'resident_id')->select('id',
+            'begin_time','end_time','refund_time','real_rent_money','pay_frequency','deposit_month','name_two','deposit_money');
     }
 
 
+
+
+    //预定人信息
+    public function bookresident()
+    {
+        return $this->belongsTo(Residentmodel::class,'resident_id')->select('id','name','begin_time','book_money');
+    }
+
+   //预定人信息 入住时间 定金
+    public function booking()
+    {
+        return $this->belongsTo(Residentmodel::class,'resident_id')->select('id','begin_time','book_money');
+    }
 
 }
