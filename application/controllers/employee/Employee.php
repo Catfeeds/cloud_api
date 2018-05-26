@@ -294,7 +294,7 @@ class Employee extends MY_Controller
             $position = Employeemodel::find($id);
             $position->status = 'DISABLE';
             if($position->save()){
-                $this->api_res(0,['error'=>'员工已删除，请及时转移相关业务']);
+                $this->api_res(0,['message' => '员工已删除，请及时转移相关业务']);
                 return false;
             }else{
                 $this->api_res(1009);
