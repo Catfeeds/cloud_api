@@ -207,10 +207,27 @@ class Roomunion extends MY_Controller
         $search   = isset($post['search'])?$post['search']:'';
         $this->load->model('roomunionmodel');
         $this->load->model('storemodel');
-        $store_ids = Storemodel::where('district','like',"%$search%")->orWhere('address','like',"%$search%")->get(['id'])->map(function($a){
-            return $a->id;
-        });
-        $count  = ceil(Roomunionmodel::whereIn('store_id',$store_ids)->orWhere('number','like',"%$search%")->where($where)->count()/PAGINATE);
+        if($search){
+            $store_ids = Storemodel::where('district','like',"%$search%")->orWhere('address','like',"%$search%")->get(['id'])->map(function($a){
+                return $a->id;
+            });
+            $count  = ceil(Roomunionmodel::whereIn('store_id',$store_ids)->orWhere('number','like',"%$search%")->where($where)->count()/PAGINATE);
+            if($page>$count){
+                $this->api_res(0,['count'=>$count,'rooms'=>[]]);
+                return;
+            }
+            $rooms  = Roomunionmodel::leftJoin('boss_store','boss_store.id','=','boss_room_union.store_id')
+                ->leftJoin('boss_room_type','boss_room_type.id','=','boss_room_union.room_type_id')
+                ->select($field)->offset($offset)->limit(PAGINATE)->orderBy('boss_room_union.id')
+                ->whereIn('boss_room_union.store_id',$store_ids)->where($where)->where(function($query) use ($search){
+                    $query->where('boss_room_union.number','like',"%$search%");
+                })
+                ->get();
+            $this->api_res(0,['count'=>$count,'rooms'=>$rooms]);
+            return;
+        }
+
+        $count  = ceil(Roomunionmodel::where($where)->count()/PAGINATE);
         if($page>$count){
             $this->api_res(0,['count'=>$count,'rooms'=>[]]);
             return;
@@ -218,7 +235,7 @@ class Roomunion extends MY_Controller
         $rooms  = Roomunionmodel::leftJoin('boss_store','boss_store.id','=','boss_room_union.store_id')
             ->leftJoin('boss_room_type','boss_room_type.id','=','boss_room_union.room_type_id')
             ->select($field)->offset($offset)->limit(PAGINATE)->orderBy('boss_room_union.id')
-            ->whereIn('boss_room_union.store_id',$store_ids)->orWhere('number','like',"%$search%")->where($where)
+            ->where($where)
             ->get();
         $this->api_res(0,['count'=>$count,'rooms'=>$rooms]);
     }
