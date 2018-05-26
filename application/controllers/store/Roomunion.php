@@ -210,7 +210,7 @@ class Roomunion extends MY_Controller
         $store_ids = Storemodel::where('district','like',"%$search%")->orWhere('address','like',"%$search%")->get(['id'])->map(function($a){
             return $a->id;
         });
-        $count  = ceil(Roomunionmodel::whereIn('store_id',$store_ids)->where($where)->orWhere('number','like',"%$search%")->count()/PAGINATE);
+        $count  = ceil(Roomunionmodel::whereIn('store_id',$store_ids)->orWhere('number','like',"%$search%")->where($where)->count()/PAGINATE);
         if($page>$count){
             $this->api_res(0,['count'=>$count,'rooms'=>[]]);
             return;
