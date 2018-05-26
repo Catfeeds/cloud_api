@@ -218,7 +218,7 @@ class Roomdot extends MY_Controller
      * 查看分布式房间信息
      */
     public function getDot(){
-        $field  = ['id','store_id','community_id','house_id','rent_price','property_price','sort',
+        $field  = ['id','store_id','community_id','house_id','rent_price','property_price','sort','area',
             'contract_template_long_id','contract_template_short_id','contract_template_reserve_id',
             'provides',
 //            'contract_min_time','contract_max_time','deposit_type','pay_frequency_allow'
