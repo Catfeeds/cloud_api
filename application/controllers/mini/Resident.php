@@ -19,13 +19,14 @@ class Resident extends MY_Controller
     }
 
     /**
-     * 检查集中式房间号是否存在
+     * 检查集中式房间号 跟状态
      * 返回room_id
      */
     public function checkRoomUnion()
     {
         $store_id   = $this->employee->store_id;
         $room_number    = $this->input->post('room_number',true);
+        $status    = $this->input->post('status',true);
         $where      = ['store_id'=>$store_id,'number'=>$room_number];
         $this->load->model('roomunionmodel');
         if(!$room=Roomunionmodel::where($where)->first()){
@@ -33,7 +34,7 @@ class Resident extends MY_Controller
             return;
         }
         $room_id    = $room->id;
-        if(!$room->isBlank()){
+        if(!$room->status!=$status){
             $this->api_res(10010);
             return;
         }
@@ -113,8 +114,9 @@ class Resident extends MY_Controller
             $resident->card_two = $this->splitAliossUrl($data['card_two']);
             $resident->card_three = $this->splitAliossUrl($data['card_three']);
             $a=$resident->save();
-            //ok
-            $b=$this->handleCheckInCommonEvent($resident, $room);
+            //把房间状态改成占用
+            $b=$this->occupiedByResident($room, $resident);
+            //$b=$this->handleCheckInCommonEvent($resident, $room);
             if($a && $b){
                 DB::commit();
             }else{
@@ -122,12 +124,12 @@ class Resident extends MY_Controller
                 $this->api_res(1009);
                 return;
             }
-            $this->load->model('activitymodel');
-            $this->load->model('coupontypemodel');
-            $this->load->model('contractmodel');
-            $data=$resident->transform($resident);
+//            $this->load->model('activitymodel');
+//            $this->load->model('coupontypemodel');
+//            $this->load->model('contractmodel');
+//            $data=$resident->transform($resident);
             //var_dump($data);
-            $this->api_res(0,['data'=>$data]);
+            $this->api_res(0,['resident_id'=>$resident->id]);
         }catch (Exception $e) {
             DB::rollBack();
             throw $e;
@@ -557,7 +559,7 @@ class Resident extends MY_Controller
     /**
      * 取消办理入住
      */
-    public function destory(){
+    public function destroy(){
         $resident_id    = $this->input->post('resident_id',true);
         if(empty($resident_id)){
             $this->api_res(1005);
@@ -945,6 +947,38 @@ class Resident extends MY_Controller
 //
 //        return $this->respSuccess($resident, new ResidentTransformer(), '办理入住成功!');
 //    }
+
+    /**
+     * 获取住户信息
+     */
+    public function getResident(){
+//        $field  = [
+//            'begin_time','real_rent_money','real_property_costs','first_pay_money','room_id',
+//            'contract_time','discount_id','name','phone','deposit_money','deposit_month','tmp_deposit'
+//            ,'pay_frequency',
+//        ];
+        $resident_id   = $this->input->post('resident_id',true);
+        $this->load->model('residentmodel');
+        $resident   = Residentmodel::find($resident_id);
+        if(!$resident){
+            $this->api_res(1007);
+            return;
+        }
+        $this->load->model('roomunionmodel');
+        $this->load->model('activitymodel');
+        $this->load->model('coupontypemodel');
+        $this->load->model('contractmodel');
+        $this->load->model('ordermodel');
+        $this->load->model('customermodel');
+        $data=$resident->transform($resident);
+        $data['card_one_url']   = $this->fullAliossUrl($data['card_one_url'] );
+        $data['card_two_url']   = $this->fullAliossUrl($data['card_two_url'] );
+        $data['card_three_url']   = $this->fullAliossUrl($data['card_three_url'] );
+        $this->api_res(0,['data'=>$data]);
+    }
+
+
+
 
     public function listResident()
     {
