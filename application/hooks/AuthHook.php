@@ -67,6 +67,8 @@ class AuthHook {
             'store/roomunion/addunion',
             'store/roomunion/listunion',
             'store/roomunion/showbuilding',
+            'store/roomunion/submitunion',
+            'store/roomunion/destory',
             'store/roomdot/listdot',
             'store/roomunion/getunion',
             'store/roomdot/getdot',

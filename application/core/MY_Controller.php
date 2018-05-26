@@ -34,7 +34,7 @@ class MY_Controller extends CI_Controller {
             $this->load->model('employeemodel');
             $this->employee = Employeemodel::find(1);
             //define('CURRENT_ID',1001);
-            //define('COMPANY_ID',3);
+            //define('COMPANY_ID',4);
         }
     }
 

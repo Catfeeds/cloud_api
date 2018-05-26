@@ -896,6 +896,69 @@ class Resident extends MY_Controller
         );
     }
 
+//    /**
+//     * 预订的房间转办理入住
+//     */
+//    public function bookingToCheckIn()
+//    {
+//        $field  = [
+//            'room_id','begin_time','people_count','contract_time','discount_id','first_pay_money',
+//            'deposit_money','deposit_month','tmp_deposit','rent_type','pay_frequency',
+//            'name','phone','card_type','card_number','card_one','card_two','card_three',
+//            'name_two','phone_two','card_type_two','card_number_two','alter_phone','alternative','address'
+//        ];
+//        if(!$this->validationText($this->validateCheckIn())){
+//            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+//            return;
+//        }
+//        $input  = $this->input->post(null,true);
+//
+//        try {
+//            $data       = $this->handleCheckInData($request);
+//            $resident   = $this->resident->find($residentId);
+//
+//            if ($this->resident->state_reserve != $resident->status) {
+//                throw new \Exception('不允许的操作, 请检查该住户的状态!');
+//            }
+//
+//            //如果入住的房间和预订的房间不一样, 要将原房间置空
+//            if ($data['room_id'] == $resident->room_id) {
+//                $room   = $resident->room;
+//            } else {
+//                $room   = $this->getCheckInRoom($data['room_id'], $roomRepo);
+//                $roomRepo->isBlank($room);
+//                $roomRepo->update([
+//                    'status'        => $roomRepo->state_blank,
+//                    'people_count'  => 0,
+//                    'resident_id'   => 0,
+//                ], $resident->room_id);
+//            }
+//
+//            //更新住户信息
+//            $resident   = $this->resident->update($data, $residentId);
+//
+//            $this->handleCheckInCommonEvent($resident, $room, $request, $roomRepo, $orderRepo, $actRepo);
+//        } catch (\Exception $e) {
+//            \Log::error($e->getMessage());
+//            return $this->respError($e->getMessage());
+//        }
+//
+//        return $this->respSuccess($resident, new ResidentTransformer(), '办理入住成功!');
+//    }
+
+    public function listResident()
+    {
+
+
+    }
+
+    /**
+     * 展示预订列表
+     */
+    public function listReserve(){
+
+
+    }
 
 }
 
