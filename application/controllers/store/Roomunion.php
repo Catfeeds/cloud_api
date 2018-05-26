@@ -194,7 +194,7 @@ class Roomunion extends MY_Controller
      */
     public function listUnion(){
         $field  = [
-            'boss_room_union.id as room_id','boss_room_union.store_id','boss_store.name as store_name','boss_room_union.building_name','boss_store.province','boss_store.city',
+            'boss_room_union.id as room_id','boss_room_union.number as room_number','boss_room_union.store_id','boss_store.name as store_name','boss_room_union.building_name','boss_store.province','boss_store.city',
             'boss_store.district','boss_store.address','boss_room_union.rent_price','boss_room_union.property_price',
             'boss_room_union.keeper','boss_room_union.status','boss_room_type.name as room_type_name'
             ];
