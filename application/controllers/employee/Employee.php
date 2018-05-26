@@ -120,7 +120,9 @@ class Employee extends MY_Controller
                 'name' => $emloyee->name,
                 'phone' => $emloyee->phone,
                 'position' => $position->name,
-                'status' => $emloyee->status
+                'status' => $emloyee->status,
+                'store_ids' => $emloyee->store_ids,
+                'store_names' => $emloyee->store_names,
             ];
         }
         $this->api_res(0, $category);
