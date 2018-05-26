@@ -258,8 +258,8 @@ class Roomdot extends MY_Controller
     /**
      * 批量删除分布式房间
      */
-    public function destory(){
-        $id = $this->input->post('roon_id',true);
+    public function destroy(){
+        $id = $this->input->post('room_id',true);
         if(!is_array($id)){
             $this->api_res(1005);
             return;
