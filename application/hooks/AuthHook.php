@@ -139,6 +139,8 @@ class AuthHook {
             'common/province',
             'common/district',
 
+            'sellcontrol/sellcontrol/details',
+
             'mini/reserve/listreserve',
             'mini/reserve/addreserve',
             'mini/reserve/reserveinfo',
