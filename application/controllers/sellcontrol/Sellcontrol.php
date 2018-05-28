@@ -18,7 +18,12 @@ class Sellcontrol extends MY_Controller
     public function details()
     {
         $post = $this->input->post(null,true);
+        $store_id       = intval($post['store_id']);
+        $building_id    = intval($post['building_id']);
+        $room_number    = trim($post['room_number']);
+        $status         = trim($post['status']);
+        $blank_days     = trim($post['blank_days']);
+        $page           = isset($post['page'])?intval($post['page']):1;
 
-        $store_id = $post;
     }
 }

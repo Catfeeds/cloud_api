@@ -142,6 +142,9 @@ class AuthHook {
             'mini/reserve/listreserve',
             'mini/reserve/addreserve',
             'mini/reserve/reserveinfo',
+            'mini/reserve/room_type',
+            'mini/reserve/reservestatus',
+
             'mini/visitrecord/visit',
             'mini/login/gettoken',
             'mini/login/handleloginstatus',
