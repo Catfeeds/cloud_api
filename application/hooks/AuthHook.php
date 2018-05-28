@@ -156,6 +156,7 @@ class AuthHook {
             'mini/messagesnd/sendnotice',
             'mini/residentct/showcenter',
             'mini/residentct/showdetail',
+            'mini/residentct/searchresident',
 
             'contract/operation/operatlist',
             'contract/operation/operationfind',
