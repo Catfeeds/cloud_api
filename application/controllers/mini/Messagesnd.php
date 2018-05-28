@@ -61,12 +61,12 @@ class Messagesnd extends MY_Controller
             //$this->api_res(0,$customers);
             $type = isset($post['type']) ? $post['type'] : null;
             $title = $this->getNoticeType($type);
-            //$template_id = $this->getTemplateIds($type);
+            $template_id = $this->getTemplateIds($type);
 
             $this->load->helper('common');
             $app = new Application(getWechatCustomerConfig());
-            /*foreach ($customers as $customer) {
-                $app->template_message->send([
+            foreach ($customers as $customer) {
+                $app->notice->send([
                     'touser' => $customer->openid,
                     'template_id' => $template_id,
                     'url' => 'https://easywechat.org',
@@ -80,7 +80,7 @@ class Messagesnd extends MY_Controller
                         $title['preview'] => $post['preview'],
                     ],
                 ]);
-            }*/
+            }
         } else {
             $this->api_res(1002,['error'=>'门店不符']);
         }
