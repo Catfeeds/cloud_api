@@ -66,7 +66,8 @@ class Reserve extends MY_Controller
         $id = isset($post['id'])?intval($post['id']):null;
         if(!$this->validation())
         {
-            $fieldarr= ['room_type_id','work_address','info_source','people_count','check_in_time','guest_type','require','remark'];
+            $fieldarr= ['room_type_id','work_address','info_source','people_count','check_in_time',
+                        'guest_type','require','remark'];
             $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
             return;
         }

@@ -137,5 +137,24 @@ class Roomunionmodel extends Basemodel{
         return $this->update(['status'=>self::STATE_BLANK]);
     }
 
-
+    /*
+     * 查询
+     */
+    public function room_details($where,$filed,$time){
+        var_dump($where);
+        $details        = Roomunionmodel::with('room_type')->where($where)
+                                        ->whereBetween('updated_at',$time)
+                                        ->get($filed)->groupBy('layer')->toArray();
+        $total_count    = Roomunionmodel::get($filed)->count();
+        $blank_count    = Roomunionmodel::where('status','BLANK')->get($filed)->count();
+        $reserve_count  = Roomunionmodel::where('status','RESERVE')->get($filed)->count();
+        $rent_count     = Roomunionmodel::where('status','RENT')->get($filed)->count();
+        $arrears_count  = Roomunionmodel::where('status','ARREARS')->get($filed)->count();
+        return ['list'  =>$details,
+                'total_count'=>$total_count,
+                'blank_count'=>$blank_count,
+                'reserve_count'=>$reserve_count,
+                'rent_count'=>$rent_count,
+                'arrears_count'=>$arrears_count];
+    }
 }
