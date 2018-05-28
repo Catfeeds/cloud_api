@@ -43,46 +43,42 @@ class Messagesnd extends MY_Controller
     public function sendNotice()
     {
         $post = $this->input->post(null, true);
-        /*if(!$this->validation())
+        //$config = $this->validation();
+        /*if(!$this->validationText($config))
         {
-            $fieldarr   = ['title', 'hremind', 'time', 'area', 'reason', 'fremind', 'preview'];
+            $fieldarr   = ['store_id', 'type', 'title', 'hremind', 'time', 'area', 'reason', 'fremind', 'preview'];
             $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
             return false;
         }*/
 
-        if (isset($post['store_id']) && !empty($post['store_id'])) {
-            $store_id = trim($post['store_id']);
+        $store_id = $post['store_id'];
+        $this->load->model('residentmodel');
+        $this->load->model('customermodel');
+        $customers = Residentmodel::with(['customer' => function ($query) {
+            $query->select('id','openid');
+        }])->where('store_id', $store_id)->get(['customer_id']);
+        //$this->api_res(0,$customers);
+        $type = $post['type'];
+        $title = $this->getNoticeType($type);
+        $template_id = $this->getTemplateIds($type);
 
-            $this->load->model('residentmodel');
-            $this->load->model('customermodel');
-            $customers = Residentmodel::with(['customer' => function ($query) {
-                $query->select('id','openid');
-            }])->where('store_id', $store_id)->get(['customer_id']);
-            //$this->api_res(0,$customers);
-            $type = isset($post['type']) ? $post['type'] : null;
-            $title = $this->getNoticeType($type);
-            $template_id = $this->getTemplateIds($type);
-
-            $this->load->helper('common');
-            $app = new Application(getWechatCustomerConfig());
-            foreach ($customers as $customer) {
-                $app->notice->send([
-                    'touser' => $customer->openid,
-                    'template_id' => $template_id,
-                    'url' => 'https://easywechat.org',
-                    'data' => [
-                        $title['title'] => $post['title'],
-                        $title['hremind'] => $post['hremind'],
-                        $title['time'] => $post['time'],
-                        $title['area'] => $post['area'],
-                        $title['reason'] => $post['reason'],
-                        $title['fremind'] => $post['fremind'],
-                        $title['preview'] => $post['preview'],
-                    ],
-                ]);
-            }
-        } else {
-            $this->api_res(1002,['error'=>'门店不符']);
+        $this->load->helper('common');
+        $app = new Application(getWechatCustomerConfig());
+        foreach ($customers as $customer) {
+            $app->notice->send([
+                'touser' => $customer->openid,
+                'template_id' => $template_id,
+                'url' => 'https://easywechat.org',
+                'data' => [
+                    $title['title'] => $post['title'],
+                    $title['hremind'] => $post['hremind'],
+                    $title['time'] => $post['time'],
+                    $title['area'] => $post['area'],
+                    $title['reason'] => $post['reason'],
+                    $title['fremind'] => $post['fremind'],
+                    $title['preview'] => $post['preview'],
+                ],
+            ]);
         }
 
     }
@@ -148,8 +144,17 @@ class Messagesnd extends MY_Controller
      */
     public function validation()
     {
-        $this->load->library('form_validation');
         $config = array(
+            array(
+                'id' => 'store_id',
+                'label' => '门店id',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'type' => 'type',
+                'label' => '通知类型',
+                'rules' => 'trim|required|in_list[0,1,2]',
+            ),
             array(
                 'field' => 'title',
                 'label' => '通知标题',
@@ -186,9 +191,7 @@ class Messagesnd extends MY_Controller
                 'rules' => 'trim|required',
             ),
         );
-
-        $this->form_validation->set_rules($config)->set_error_delimiters('','');
-        return $this->form_validation->run();
+        return $config;
     }
 
 

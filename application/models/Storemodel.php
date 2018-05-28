@@ -43,4 +43,20 @@ class Storemodel extends Basemodel{
         return $this->hasMany(Roommodel::class,'store_id');
     }
 
+    /**
+     * 该公寓所拥有的活动
+     */
+    public function activities()
+    {
+        return $this->belongsToMany(Activitymodel::class, 'boss_store_activity', 'store_id', 'activity_id');
+    }
+
+//    public function coupontypes()
+//    {
+//        return $this->belongsToMany(Activitymodel::class, 'boss_activity_coupontype', 'activity_id', 'coupontype_id');
+//    }
+
+
+
+
 }

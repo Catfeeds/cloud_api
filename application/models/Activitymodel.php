@@ -56,4 +56,17 @@ class Activitymodel extends Basemodel
 //        return $this->hasMany(Helprecord::class, 'activity_id');
 //    }
 
+    /**
+     * 所有活动的类型
+     */
+    public function getAllTypes()
+    {
+        return [
+            Activitymodel::TYPE_ATTRACT,
+            Activitymodel::TYPE_NORMAL,
+            Activitymodel::TYPE_DISCOUNT,
+        ];
+    }
+
+
 }

@@ -28,22 +28,42 @@ class Residentct extends MY_Controller
             $this->api_res(0, ['count' => $count, 'list' => []]);
             return;
         }
-        $filed = ['name', 'status'];
-        $category = Residentmodel::offset($offset)->limit(PAGINATE)->orderBy('id', 'desc')->get($filed);
+        $field = ['id', 'name', 'room_id', 'customer_id','status'];
+        $this->load->model('roomunionmodel');
+        $this->load->model('customermodel');
+        $category = Residentmodel::with(['roomunion' => function ($query) {
+            $query->select('id', 'number');
+        }])->with(['customer' => function ($query) {
+            $query->select('id', 'avatar');
+        }])->offset($offset)->limit(PAGINATE)->orderBy('id', 'desc')->get($field);
 
         $this->api_res(0, ['count' => $count, 'list' => $category]);
     }
 
     /**
-     * 按名称模糊查找
+     * 按房号查找
      */
-    public function searchRd()
+    public function searchResident()
     {
-        $field = ['name','status'];
+        $field = ['id', 'name', 'room_id', 'customer_id','status'];
         $post   = $this->input->post(null,true);
-        $name   = isset($post['name'])?$post['name']:null;
-        $category = Residentmodel::where('name','like',"%$name%")->orderBy('id','desc')->get($field);
-        $this->api_res(0,['list'=>$category]);
+        $page = intval(isset($post['page']) ? $post['page'] : 1);
+        $offset = PAGINATE * ($page - 1);
+        $count = ceil((Residentmodel::all()->count()) / PAGINATE);
+        $number   = isset($post['number'])?$post['number']:null;
+        $this->load->model('roomunionmodel');
+        $room_union = Roomunionmodel::where('number', $number)->first();
+        if (!$room_union) {
+            $this->api_res(1009);
+        }
+        $this->load->model('customermodel');
+        $category = Residentmodel::with(['roomunion' => function ($query) {
+            $query->select('id', 'number');
+        }])->with(['customer' => function ($query) {
+            $query->select('id', 'avatar');
+        }])->where('room_id',$room_union->id)->orderBy('id','desc')->offset($offset)
+            ->limit(PAGINATE)->orderBy('id', 'desc')->get($field);
+        $this->api_res(0, ['count' => $count, 'list' => $category]);
     }
 
     /**
