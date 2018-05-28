@@ -218,8 +218,9 @@ class Roomdot extends MY_Controller
      * 查看分布式房间信息
      */
     public function getDot(){
-        $field  = ['store_id','community_id','house_id','rent_price','property_price','sort',
+        $field  = ['id','store_id','community_id','house_id','rent_price','property_price','sort','area',
             'contract_template_long_id','contract_template_short_id','contract_template_reserve_id',
+            'provides',
 //            'contract_min_time','contract_max_time','deposit_type','pay_frequency_allow'
         ];
         $post   = $this->input->post(null,true);
@@ -253,6 +254,58 @@ class Roomdot extends MY_Controller
             $this->api_res(0,['room'=>$room]);
         }
     }
+
+    /**
+     * 批量删除分布式房间
+     */
+    public function destroy(){
+        $id = $this->input->post('room_id',true);
+        if(!is_array($id)){
+            $this->api_res(1005);
+            return;
+        }
+        $this->load->model('roomunionmodel');
+        if(Roomunionmodel::destroy($id)){
+            $this->api_res(0);
+        }else{
+            $this->api_res(1009);
+        }
+    }
+
+    /**
+     * 提交分布式查看信息编辑
+     */
+    public function submitDot(){
+        $field  = [];
+        $post   = $this->input->post(null,true);
+
+    }
+
+    /**
+     * 提交编辑验证house信息
+     */
+     private function validateSubimitHouse(){
+
+        return array(
+            array(
+                'field' => 'house_id',
+                'label' => '房屋id',
+                'rules' => 'trim|required|integer'
+            ),
+        );
+     }
+
+    /**
+     *
+     */
+    private function validateSubimitDot(){
+
+        return array(
+
+        );
+    }
+
+
 
     /**
      * 添加分布式房间的验证规则

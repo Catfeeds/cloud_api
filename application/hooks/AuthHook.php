@@ -36,6 +36,7 @@ class AuthHook {
             'mini/resident/destory',
             'mini/resident/showqrcode',
             'mini/resident/reservation',
+            'mini/resident/getresident',
             //'store/store/liststore',
             //'store/store/addstoredot',
             //'store/store/addstoreunion',
@@ -67,9 +68,12 @@ class AuthHook {
             'store/roomunion/addunion',
             'store/roomunion/listunion',
             'store/roomunion/showbuilding',
+            'store/roomunion/submitunion',
+            'store/roomunion/destory',
             'store/roomdot/listdot',
             'store/roomunion/getunion',
             'store/roomdot/getdot',
+            'store/roomdot/destory',
             'store/roomunion/batchupdateunion',
             'store/roomdot/batchupdatedot',
 
@@ -122,8 +126,6 @@ class AuthHook {
             'employee/employee/getstore',
             'employee/employee/getempinfo',
             'employee/employee/addemp',
-            'employee/employee/submitemp',
-            'employee/employee/updateemp',
             'employee/employee/showstore',
             'employee/employee/searchemp',
             'employee/employee/delemp',
@@ -147,11 +149,16 @@ class AuthHook {
             'mini/employee/showcenter',
             'mini/employee/listemp',
             'mini/employee/addemp',
+            'mini/messagesnd/templatefields',
+            'mini/messagesnd/sendmsgtype',
+            'mini/messagesnd/sendnotice',
             'mini/residentct/showcenter',
             'mini/residentct/showdetail',
 
             'contract/operation/operatlist',
             'contract/operation/operationfind',
+            'contract/operation/booking',
+            'contract/operation/book'
         );
 
 

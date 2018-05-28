@@ -154,7 +154,7 @@ class Roomunion extends MY_Controller
         }
         $room_type_id   = $post['room_type_id'];
         $this->load->model('roomtypemodel');
-        $provides   = Roomtypemodel::find($room_type_id)->procides;
+        $provides   = Roomtypemodel::find($room_type_id)->provides;
         $updates    = [
             'contract_template_short_id'     => $post['contract_template_short_id'],
             'contract_template_long_id'      => $post['contract_template_long_id'],
@@ -189,13 +189,12 @@ class Roomunion extends MY_Controller
         $this->api_res(0,['buildings'=>$buildings]);
     }
 
-
-
     /**
      * 集中式房间列表
      */
     public function listUnion(){
-        $field  = ['boss_room_union.id as room_id','boss_room_union.store_id','boss_store.name as store_name','boss_room_union.building_name','boss_store.province','boss_store.city',
+        $field  = [
+            'boss_room_union.id as room_id','boss_room_union.number as room_number','boss_room_union.store_id','boss_store.name as store_name','boss_room_union.building_name','boss_store.province','boss_store.city',
             'boss_store.district','boss_store.address','boss_room_union.rent_price','boss_room_union.property_price',
             'boss_room_union.keeper','boss_room_union.status','boss_room_type.name as room_type_name'
             ];
@@ -205,7 +204,29 @@ class Roomunion extends MY_Controller
         $where  = [];
         (isset($post['store_id'])&&!empty($post['store_id']))?$where['boss_room_union.store_id']=intval(strip_tags(trim($post['store_id']))):null;
         (isset($post['building_id'])&&!empty($post['building_id']))?$where['boss_room_union.building_id']=intval(strip_tags(trim($post['building_id']))):null;
+        $search   = isset($post['search'])?$post['search']:'';
         $this->load->model('roomunionmodel');
+        $this->load->model('storemodel');
+        if($search){
+            $store_ids = Storemodel::where('district','like',"%$search%")->orWhere('address','like',"%$search%")->get(['id'])->map(function($a){
+                return $a->id;
+            });
+            $count  = ceil(Roomunionmodel::whereIn('store_id',$store_ids)->orWhere('number','like',"%$search%")->where($where)->count()/PAGINATE);
+            if($page>$count){
+                $this->api_res(0,['count'=>$count,'rooms'=>[]]);
+                return;
+            }
+            $rooms  = Roomunionmodel::leftJoin('boss_store','boss_store.id','=','boss_room_union.store_id')
+                ->leftJoin('boss_room_type','boss_room_type.id','=','boss_room_union.room_type_id')
+                ->select($field)->offset($offset)->limit(PAGINATE)->orderBy('boss_room_union.id')
+                ->whereIn('boss_room_union.store_id',$store_ids)->where($where)->where(function($query) use ($search){
+                    $query->where('boss_room_union.number','like',"%$search%");
+                })
+                ->get();
+            $this->api_res(0,['count'=>$count,'rooms'=>$rooms]);
+            return;
+        }
+
         $count  = ceil(Roomunionmodel::where($where)->count()/PAGINATE);
         if($page>$count){
             $this->api_res(0,['count'=>$count,'rooms'=>[]]);
@@ -213,7 +234,8 @@ class Roomunion extends MY_Controller
         }
         $rooms  = Roomunionmodel::leftJoin('boss_store','boss_store.id','=','boss_room_union.store_id')
             ->leftJoin('boss_room_type','boss_room_type.id','=','boss_room_union.room_type_id')
-            ->select($field)->offset($offset)->limit(PAGINATE)->orderBy('boss_room_union.id')->where($where)
+            ->select($field)->offset($offset)->limit(PAGINATE)->orderBy('boss_room_union.id')
+            ->where($where)
             ->get();
         $this->api_res(0,['count'=>$count,'rooms'=>$rooms]);
     }
@@ -222,7 +244,7 @@ class Roomunion extends MY_Controller
      * 查看集中式房间信息
      */
     public function getUnion(){
-        $field  = ['store_id','room_type_id','layer','layer_total','rent_price','property_price','provides',
+        $field  = ['id','store_id','room_type_id','layer','area','layer_total','rent_price','property_price','provides',
             'contract_template_long_id','contract_template_short_id','contract_template_reserve_id',
 //            'contract_min_time','contract_max_time','deposit_type','pay_frequency_allow'
         ];
@@ -248,6 +270,83 @@ class Roomunion extends MY_Controller
         }else{
             $this->api_res(0,['room'=>$room]);
         }
+    }
+
+    /**
+     * 提交查看房间信息时修改的内容
+     */
+    public function submitUnion(){
+        $field  = ['room_id','provides',
+            'contract_template_long_id','contract_template_short_id','contract_template_reserve_id',
+//            'contract_min_time','contract_max_time','deposit_type','pay_frequency_allow'
+        ];
+        if(!$this->validationText($this->validateSubmitUnion())){
+            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+            return;
+        }
+        $post   = $this->input->post(null,true);
+        $this->load->model('roomunionmodel');
+        $room   = Roomunionmodel::find($post['room_id']);
+        if(!$room){
+            $this->api_res(1007);
+            return;
+        }
+        $room->contract_template_long_id     = $post['contract_template_long_id'];
+        $room->contract_template_short_id    = $post['contract_template_short_id'];
+        $room->contract_template_reserve_id  = $post['contract_template_reserve_id'];
+        $room->provides    = $post['provides'];
+        if($room->save()){
+            $this->api_res(0);
+        }else{
+            $this->api_res(1009);
+        }
+    }
+
+    /**
+     * 批量删除集中式房间
+     */
+    public function destroy(){
+        $id = $this->input->post('room_id',true);
+        if(!is_array($id)){
+            $this->api_res(1005);
+            return;
+        }
+        $this->load->model('roomunionmodel');
+        if(Roomunionmodel::destroy($id)){
+            $this->api_res(0);
+        }else{
+            $this->api_res(1009);
+        }
+    }
+
+    private  function validateSubmitUnion(){
+        return array(
+            array(
+                'field' => 'contract_template_long_id',
+                'label' => '选择长租合同模板',
+                'rules' => 'trim|required|integer'
+            ),
+            array(
+                'field' => 'contract_template_short_id',
+                'label' => '选择短租合同模板',
+                'rules' => 'trim|required|integer'
+            ),
+            array(
+                'field' => 'contract_template_reserve_id',
+                'label' => '选择预定合同模板',
+                'rules' => 'trim|required|integer'
+            ),
+            array(
+                'field' => 'room_id',
+                'label' => '房间id',
+                'rules' => 'trim|required|integer'
+            ),
+            array(
+                'field' => 'provides',
+                'label' => '房型设施',
+                'rules' => 'trim',
+            ),
+        );
     }
 
     /**

@@ -21,15 +21,17 @@ class Residentct extends MY_Controller
     public function showCenter()
     {
         $post = $this->input->post(null, true);
-        if (isset($post['id']) && !empty($post['id'])) {
-            $id = $post['id'];
-            $resident = Residentmodel::find($id);
-            $category = [$resident->name, $resident->status];
-            $this->api_res(0, $category);
-        } else {
-            $this->api_res(1002);
+        $page = intval(isset($post['page']) ? $post['page'] : 1);
+        $offset = PAGINATE * ($page - 1);
+        $count = ceil((Residentmodel::all()->count()) / PAGINATE);
+        if ($page > $count) {
+            $this->api_res(0, ['count' => $count, 'list' => []]);
             return;
         }
+        $filed = ['name', 'status'];
+        $category = Residentmodel::offset($offset)->limit(PAGINATE)->orderBy('id', 'desc')->get($filed);
+
+        $this->api_res(0, ['count' => $count, 'list' => $category]);
     }
 
     /**

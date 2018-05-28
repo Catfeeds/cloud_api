@@ -32,12 +32,15 @@ class Roomunionmodel extends Basemodel{
         'end_time',
         'device_id',
         'begin_time',
-        'rent_money',
+        'rent_price',
         'resident_id',
         'people_count',
         'apartment_id',
         'room_type_id',
-        'property_costs',
+        'property_price',
+        'contract_template_short_id',
+        'contract_template_long_id',
+        'contract_template_reserve_id',
     ];
 
     protected $hidden   = ['created_at','updated_at','deleted_at'];

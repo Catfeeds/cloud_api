@@ -112,8 +112,8 @@ use Carbon\Carbon;
      }
 
      //住户的优惠券
-     public function  coupons(){
-
+     public function  coupons()
+     {
          return $this->hasMany(Couponmodel::class,'resident_id');
      }
 
@@ -181,13 +181,13 @@ use Carbon\Carbon;
              'first_pay'             => $resident->first_pay_money,
              'status'                => $resident->status,
              'remark'                => $resident->remark,
-             'created_at'            => $resident->created_at->toDateTimeString(),
-             'updated_at'            => $resident->updated_at->toDateTimeString(),
+             'created_at'            => Carbon::parse($resident->created_at)->toDateTimeString(),
+             'updated_at'            => Carbon::parse($resident->updated_at)->toDateTimeString(),
          ];
 
          if (0 < $resident->contract_time) {
-             $data['begin_time']     = $resident->begin_time->toDateString();
-             $data['end_time']       = $resident->end_time->toDateString();
+             $data['begin_time']     = Carbon::parse($resident->begin_time)->toDateString();
+             $data['end_time']       = Carbon::parse($resident->end_time)->toDateString();
          }
 
          if (self::STATE_NORMAL == $resident->status) {

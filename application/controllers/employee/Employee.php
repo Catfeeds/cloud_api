@@ -101,11 +101,29 @@ class Employee extends MY_Controller
     {
         $category = $this->getStore();
         $post = $this->input->post(null, true);
-        if (!empty($post['id'])) {
-            $id = $post['id'];
+        if (isset($post['id']) && !empty($post['id'])) {
+            $id = trim($post['id']);
             $emloyee = Employeemodel::find($id);
-            $category = $this->getStore()->toArray();
-            $category['status'] = $emloyee->status;
+            if (!$emloyee) {
+                $this->api_res(1009);
+                return false;
+            }
+
+            $this->load->model('positionmodel');
+            $position = Positionmodel::find($emloyee->position_id);
+            if (!$position) {
+                $this->api_res(1009, ['error' => '没有找到职位信息']);
+                return false;
+            }
+
+            $category = [
+                'name' => $emloyee->name,
+                'phone' => $emloyee->phone,
+                'position' => $position->name,
+                'status' => $emloyee->status,
+                'store_ids' => $emloyee->store_ids,
+                'store_names' => $emloyee->store_names,
+            ];
         }
         $this->api_res(0, $category);
     }
@@ -118,25 +136,36 @@ class Employee extends MY_Controller
         $post = $this->input->post(null, true);
         if(!$this->validation())
         {
-            $fieldarr   = ['name', 'phone', 'position_id', 'store_ids','store_names', 'hiredate'];
-            $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
+            $fieldarr   = ['name', 'phone', 'position', 'store_ids','store_names', 'hiredate'];
+            $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
             return false;
         }
         $name = isset($post['name']) ? $post['name'] : null;
-        $position_id = isset($post['position_id']) ? $post['position_id'] : null;
+        $position = isset($post['position']) ? $post['position'] : null;
+        $this->load->model('positionmodel');
+        $position_arr = Positionmodel::where('name', $position)->get(['id'])->toArray();
+        if (!$position_arr) {
+            $this->api_res(1009);
+            return false;
+        }
+        $position_id = $position_arr[0]['id'];
         $store_ids = isset($post['store_ids']) ? $post['store_ids'] : null;
         $store_names = isset($post['store_names']) ? $post['store_names'] : null;
         $phone = isset($post['phone']) ? $post['phone'] : null;
         $hiredate = isset($post['hiredate']) ? $post['hiredate'] : null;
-        define('COMPANY_ID', 1);
+
         $this->load->model('storemodel');
+        if (!defined('COMPANY_ID')) {
+            $this->api_res(1002,['error'=>'公司信息不符']);
+            return;
+        }
         $ids= Storemodel::where('company_id',COMPANY_ID)->get(['id'])->map(function($a){
             return $a->id;
         })->toArray();
 
-        $store_ids_arr = json_decode($store_ids,true);
+        $store_ids_arr = explode(',' ,$store_ids);
         if(!empty(array_diff($store_ids_arr, $ids))){
-            $this->api_res(1002);
+            $this->api_res(1002,['error'=>'门店不符']);
             return;
         }
         $store_id = $store_ids_arr[0];
@@ -166,28 +195,39 @@ class Employee extends MY_Controller
         $post = $this->input->post(null, true);
         if(!$this->validation())
         {
-            $fieldarr   = ['name', 'phone', 'position_id', 'store_ids', 'store_names', 'status', 'hiredate'];
-            $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
+            $fieldarr   = ['name', 'phone', 'position', 'store_ids', 'store_names', 'status', 'hiredate'];
+            $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
             return false;
         }
 
         $id = isset($post['id']) ? $post['id'] : null;
-        $position_id = isset($post['position_id']) ? $post['position_id'] : null;
+        $position = isset($post['position']) ? $post['position'] : null;
+        $this->load->model('positionmodel');
+        $position_arr = Positionmodel::where('name', $position)->get(['id'])->toArray();
+        if (!$position_arr) {
+            $this->api_res(1009);
+            return;
+        }
+        $position_id = $position_arr[0]['id'];
         $store_ids  = $this->input->post('store_ids',true);
         $store_names  = $this->input->post('store_names',true);
         $name = isset($post['name']) ? $post['name'] : null;
         $phone = isset($post['phone']) ? $post['phone'] : null;
         $status = isset($post['status']) ? $post['status'] : null;
         $hiredate = isset($post['hiredate']) ? $post['hiredate'] : null;
-        define('COMPANY_ID', 1);
+
         $this->load->model('storemodel');
+        if (!defined('COMPANY_ID')) {
+            $this->api_res(1002,['error'=>'公司信息不符']);
+            return;
+        }
         $ids= Storemodel::where('company_id',COMPANY_ID)->get(['id'])->map(function($a){
             return $a->id;
         })->toArray();
 
-        $store_ids_arr = json_decode($store_ids,true);
+        $store_ids_arr = explode(',' ,$store_ids);
         if(!empty(array_diff($store_ids_arr, $ids))){
-            $this->api_res(1002);
+            $this->api_res(1002,['error'=>'门店不符']);
             return;
         }
         $store_id = $store_ids_arr[0];
@@ -255,7 +295,8 @@ class Employee extends MY_Controller
             $position = Employeemodel::find($id);
             $position->status = 'DISABLE';
             if($position->save()){
-                $this->api_res(10020);
+                $this->api_res(0,['message' => '员工已删除，请及时转移相关业务']);
+                return false;
             }else{
                 $this->api_res(1009);
                 return false;
@@ -285,9 +326,9 @@ class Employee extends MY_Controller
                 'rules' => 'trim|required|max_length[13]|numeric',
             ),
             array(
-                'field' => 'position_id',
+                'field' => 'position',
                 'label' => '职位id',
-                'rules' => 'trim|required',
+                'rules' => 'trim|required|max_length[255]',
             ),
             array(
                 'field' => 'store_ids',
