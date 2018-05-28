@@ -28,14 +28,14 @@ class Residentct extends MY_Controller
             $this->api_res(0, ['count' => $count, 'list' => []]);
             return;
         }
-        $filed = ['name', 'status'];
+        $filed = ['id', 'name', 'status'];
         $category = Residentmodel::offset($offset)->limit(PAGINATE)->orderBy('id', 'desc')->get($filed);
 
         $this->api_res(0, ['count' => $count, 'list' => $category]);
     }
 
     /**
-     * 按名称模糊查找
+     * 按房号模糊查找
      */
     public function searchRd()
     {
