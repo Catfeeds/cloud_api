@@ -17,6 +17,8 @@ class Sellcontrol extends MY_Controller
 
     public function details()
     {
+        $post = $this->input->post(null,true);
 
+        $store_id = $post;
     }
 }

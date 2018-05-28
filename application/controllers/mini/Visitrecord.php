@@ -23,7 +23,7 @@ class Visitrecord extends MY_Controller
         if(!$this->validation())
         {
             $fieldarr= ['visit_by','name','phone','time','work_address','info_source','room_type_id',
-                        'people_count','check_in_out','guest_type','require','remark'];
+                        'people_count','check_in_time','guest_type','require','remark'];
             $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
             return;
         }
@@ -47,7 +47,7 @@ class Visitrecord extends MY_Controller
             array(
                 'field' => 'visit_by',
                 'label' => '来访类型',
-                'rules' => 'trim|required|in_list[WECHAT,VISIT,PHONE,WEB]',
+                'rules' => 'trim|required',
             ),
             array(
                 'field' => 'name',

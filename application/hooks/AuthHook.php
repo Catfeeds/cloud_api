@@ -139,7 +139,8 @@ class AuthHook {
             'common/district',
 
             'mini/reserve/listreserve',
-            'mini/reserve/reserve',
+            'mini/reserve/addreserve',
+            'mini/reserve/reserveinfo',
             'mini/visitrecord/visit',
             'mini/login/gettoken',
             'mini/login/handleloginstatus',
