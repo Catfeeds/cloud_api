@@ -21,15 +21,22 @@ class Reserve extends MY_Controller
     {
         $this->load->model('roomtypemodel');
         $post   = $this->input->post(NULL,true);
-        $page   = isset($post['page'])?intval($post['page']):1;
-        $page_count = isset($post['page_count'])?intval($post['page_count']):6;
+        $page   = isset($post['page'])?intval($post['page']):1;//当前页数
+        $page_count = isset($post['page_count'])?intval($post['page_count']):4;//当前页显示条数
         $offset = $page_count*($page-1);
-        $filed  = ['id','room_type_id','name','time'];
-        $count  = ceil(Reserveordermodel::count()/$page_count);
-        $reserve= Reserveordermodel::with('roomType')
+        $filed  = ['id','room_type_id','name','phone','time','remark'];
+
+        $count_total = ceil(Reserveordermodel::whereIn('status',['WAIT','BEGIN'])->count());//总条数
+        $count  = $count_total/$page_count;//总页数
+
+        if($page>$count){
+            $this->api_res(0,[]);
+            return;
+        }
+        $reserve= Reserveordermodel::whereIn('status',['WAIT','BEGIN'])->with('roomType')
                                     ->take($page_count)->skip($offset)
                                     ->orderBy('id','desc')->get($filed)->toArray();
-        $this->api_res(0,['list'=>$reserve,'count'=>$count]);
+        $this->api_res(0,['list'=>$reserve,'page'=>$page,'count_total'=>$count_total,'count'=>$count]);
     }
 
     /**
