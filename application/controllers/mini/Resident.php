@@ -108,6 +108,8 @@ class Resident extends MY_Controller
         try{
             DB::beginTransaction();
             $resident->fill($data);
+            $resident->rent_price   = $room->rent_price;
+            $resident->property_price   = $room->property_price;
 
            // $resident->employee_id  = $this->employee->id;
             $resident->card_one = $this->splitAliossUrl($data['card_one']);
