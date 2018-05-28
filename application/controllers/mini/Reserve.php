@@ -27,7 +27,7 @@ class Reserve extends MY_Controller
         $filed  = ['id','room_type_id','name','phone','time','remark'];
 
         $count_total = ceil(Reserveordermodel::whereIn('status',['WAIT','BEGIN'])->count());//总条数
-        $count  = $count_total/$page_count;//总页数
+        $count  = ceil($count_total/$page_count);//总页数
 
         if($page>$count){
             $this->api_res(0,[]);
