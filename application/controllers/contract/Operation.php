@@ -62,7 +62,6 @@ class Operation extends MY_Controller
         $serial = $post['id'];
         $filed  = ['id','contract_id','resident_id','room_id','status'];
         $operation = Contractmodel::where('id',$serial)->with('room')->with('residents')->get($filed);
-
         $aa = ['resident_id'];$bb = ['discount_id'];$cc = ['activity_id'];$dd = ['name'];
         $resident_id = Contractmodel::where('id',$serial)->get($aa)->toArray();
         $discount_id = Residentmodel::where('id',$resident_id)->get($bb)->toArray();
@@ -80,7 +79,6 @@ class Operation extends MY_Controller
         $this->load->model('roomunionmodel');
         $this->load->model('residentmodel');
         $this->load->model('residentmodel');
-
         $post           = $this->input->post(NULL,true);
         $page           = empty($post['page'])?1:intval($post['page']);
         $offset         = PAGINATE*($page-1);
