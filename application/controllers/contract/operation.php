@@ -36,11 +36,16 @@ class Operation extends MY_Controller
         if(!empty($post['end_time'])){$etime=$post['end_time'];}else{$etime = date('Y-m-d H:i:s',time());};
 
         $filed  = ['id','contract_id','resident_id','sign_type','store_id','room_id','created_at','status','employee_id'];
+
         if ($where) {
             $operation = Contractmodel::with('resident')->with('employee')->with('store')->with('roomunion')->
             where($where)->whereBetween('created_at', [$btime, $etime])->take(PAGINATE)->
             skip($offset)->orderBy('id', 'desc')->get($filed);
+        }else{
+            $operation = Contractmodel::with('resident')->with('employee')->with('store')->with('roomunion')
+                ->take(PAGINATE)->skip($offset)->orderBy('id', 'desc')->get($filed);
         }
+
         $this->api_res(0,['operationlist'=>$operation,'count'=>$count]);
     }
 
@@ -89,6 +94,9 @@ class Operation extends MY_Controller
             $operation = Contractmodel::with('bookresident')->with('employee')->with('store')->with('roomunion')->
             where($where)->whereBetween('created_at', [$btime, $etime])->take(PAGINATE)->skip($offset)->
             orderBy('id', 'desc')->get($filed);
+        } else{
+            $operation = Contractmodel::with('bookresident')->with('employee')->with('store')->with('roomunion')->
+           take(PAGINATE)->skip($offset)->orderBy('id', 'desc')->get($filed);
         }
         $this->api_res(0,['bookinglist'=>$operation,'count'=>$count]);
     }
