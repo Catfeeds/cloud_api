@@ -35,7 +35,7 @@ class Operation extends MY_Controller
         if(!empty($post['begin_time'])){$btime=$post['begin_time'];}else{$btime = date('Y-m-d H:i:s',0);};
         if(!empty($post['end_time'])){$etime=$post['end_time'];}else{$etime = date('Y-m-d H:i:s',time());};
 
-        $filed  = ['id','serial_number','resident_id','sign_type','store_id','room_id','created_at','status','employee_id'];
+        $filed  = ['id','contract_id','resident_id','sign_type','store_id','room_id','created_at','status','employee_id'];
         if ($where) {
             $operation = Contractmodel::with('resident')->with('employee')->with('store')->with('roomunion')->
             where($where)->whereBetween('created_at', [$btime, $etime])->take(PAGINATE)->
@@ -43,7 +43,6 @@ class Operation extends MY_Controller
         }
         $this->api_res(0,['operationlist'=>$operation,'count'=>$count]);
     }
-
 
     /**
      *查看入住合同
@@ -55,17 +54,15 @@ class Operation extends MY_Controller
         $this->load->model('couponmodel');
         $this->load->model('activitymodel');
         $post   = $this->input->post(NULL,true);
-        $serial = $post['serial_number'];
-        $filed  = ['id','serial_number','resident_id','room_id','status'];
-        $operation = Contractmodel::where('serial_number',$serial)->with('room')->with('residents')->get($filed);
+        $serial = $post['id'];
+        $filed  = ['id','contract_id','resident_id','room_id','status'];
+        $operation = Contractmodel::where('id',$serial)->with('room')->with('residents')->get($filed);
 
         $aa = ['resident_id'];$bb = ['discount_id'];$cc = ['activity_id'];$dd = ['name'];
-        $resident_id = Contractmodel::where('serial_number',$serial)->get($aa);
-        $discount_id = Residentmodel::where('id',$resident_id)->get($bb);
-        $activity_id = Couponmodel::  where('id',$discount_id)->get($cc);
+        $resident_id = Contractmodel::where('id',$serial)->get($aa)->toArray();
+        $discount_id = Residentmodel::where('id',$resident_id)->get($bb)->toArray();
+        $activity_id = Couponmodel::  where('id',$discount_id)->get($cc)->toArray();
         $name        = Activitymodel::where('id',$activity_id)->get($dd);
-
-        //var_dump($discount_id);
         $this->api_res(0,['info'=>$operation,'activity'=>$name]);
     }
 
@@ -87,7 +84,7 @@ class Operation extends MY_Controller
         if(!empty($post['store_id'])){$where['id']  = $post['store_id'];}
         if(!empty($post['begin_time'])){$btime=$post['begin_time'];}else{$btime = date('Y-m-d H:i:s',0);};
         if(!empty($post['end_time'])){$etime=$post['end_time'];}else{$etime = date('Y-m-d H:i:s',time());};
-        $filed  = ['id','serial_number','resident_id','store_id','room_id','employee_id','status'];
+        $filed  = ['id','contract_id','resident_id','store_id','room_id','employee_id','status'];
         if ($where){
             $operation = Contractmodel::with('bookresident')->with('employee')->with('store')->with('roomunion')->
             where($where)->whereBetween('created_at', [$btime, $etime])->take(PAGINATE)->skip($offset)->
@@ -106,10 +103,10 @@ class Operation extends MY_Controller
         $this->load->model('employeemodel');
         $this->load->model('residentmodel');
         $post   = $this->input->post(NULL,true);
-        $serial = $post['serial_number'];
-        $filed  = ['id','serial_number','resident_id','store_id','room_id'];
+        $serial = $post['id'];
+        $filed  = ['id','contract_id','resident_id','store_id','room_id'];
 
-        $operation = Contractmodel::where('serial_number',$serial)->with('roomunion')->with('store')->with('booking')->get($filed);
+        $operation = Contractmodel::where('id',$serial)->with('roomunion')->with('store')->with('booking')->get($filed);
         $this->api_res(0,['info'=>$operation]);
     }
 

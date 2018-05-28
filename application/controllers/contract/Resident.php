@@ -20,7 +20,15 @@ class Resident extends MY_Controller
      */
     public function resident()
     {
-
+        $this->load->model('roomunionmodel');
+        $this->load->model('residentmodel');
+        $this->load->model('couponmodel');
+        $this->load->model('activitymodel');
+        $post   = $this->input->post(NULL,true);
+        $serial = $post['id'];
+        $filed  = ['id','contract_id','resident_id','room_id','status','created_at'];
+        $resident = Contractmodel::where('id',$serial)->with('room')->with('residents')->get($filed);
+        $this->api_res(0,['resident'=>$resident]);
     }
 
 }

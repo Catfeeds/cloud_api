@@ -166,7 +166,8 @@ class AuthHook {
             'contract/operation/operatlist',
             'contract/operation/operationfind',
             'contract/operation/booking',
-            'contract/operation/book'
+            'contract/operation/book',
+            'contract/resident/resident',
         );
 
 
