@@ -22,10 +22,19 @@ class Activity extends MY_Controller
         $this->load->model('employeemodel');
         $this->load->model('storemodel');
         $this->load->model('activitymodel');
+        $this->load->model('coupontypemodel');
         $activities = $this->employee->store->activities;
+        //var_dump($activities->toArray());exit;
         if ($type AND in_array($type, $this->activitymodel->getAllTypes())) {
             $activities     = $activities->where('type', $type);
         }
-        $this->api_res(0,['list'=>$activities]);
+        $list   = $activities->map(function($activity){
+            if(Activitymodel::TYPE_DISCOUNT==$activity->type){
+                $activity->discount = $activity->coupontypes->first()->discount;
+            }
+            return $activity;
+        });
+
+        $this->api_res(0,['list'=>$list]);
     }
 }
