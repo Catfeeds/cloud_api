@@ -302,7 +302,7 @@ class Resident extends MY_Controller
             array(
                 'field' => 'card_number',
                 'label' => '证件号码',
-                'rules' => 'required|trim|integer',
+                'rules' => 'required|trim',
             ),
             array(
                 'field' => 'alternative',
@@ -312,7 +312,7 @@ class Resident extends MY_Controller
             array(
                 'field' => 'alter_phone',
                 'label' => '联系方式',
-                'rules' => 'required|trim|integer',
+                'rules' => 'required|trim|max_length[11]',
             ),
             array(
                 'field' => 'address',
@@ -352,7 +352,7 @@ class Resident extends MY_Controller
             array(
                 'field' => 'card_number_two',
                 'label' => '证件号码',
-                'rules' => 'trim|integer',
+                'rules' => 'trim',
             ),
 
         );
