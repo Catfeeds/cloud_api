@@ -22,19 +22,20 @@ class Reserve extends MY_Controller
         $this->load->model('roomtypemodel');
         $post   = $this->input->post(NULL,true);
         $page   = isset($post['page'])?intval($post['page']):1;
-        $offset = PAGINATE*($page-1);
+        $page_count = isset($post['page_count'])?intval($post['page_count']):6;
+        $offset = $page_count*($page-1);
         $filed  = ['id','room_type_id','name','time'];
-        $count  = ceil(Reserveordermodel::count()/PAGINATE);
+        $count  = ceil(Reserveordermodel::count()/$page_count);
         $reserve= Reserveordermodel::with('roomType')
-                                    ->take(PAGINATE)->skip($offset)
+                                    ->take($page_count)->skip($offset)
                                     ->orderBy('id','desc')->get($filed)->toArray();
         $this->api_res(0,['list'=>$reserve,'count'=>$count]);
     }
 
     /**
-     *确认订单
+     *添加预约
      */
-    public function reserve()
+    public function addReserve()
     {
         $post   = $this->input->post(NULL,true);
         $id     = isset($post['id'])?intval($post['id']):null;
@@ -46,12 +47,32 @@ class Reserve extends MY_Controller
         }
         $reserve    = Reserveordermodel::findOrFail($id);
         $reserve->fill($post);
+        $reserve->status = 'BEGIN';
         if($reserve->save())
         {
             $this->api_res(0);
         }else{
             $this->api_res(1009);
         }
+    }
+
+    /**
+     * 查看看房信息
+     */
+    public function reserveInfo()
+    {
+        $post = $this->input->post(null,true);
+        if ($post['id']){
+            $id = intval($post['id']);
+        }else{
+            $this->api_res(0,[]);
+            return;
+        };
+        $feild = ['id','room_type_id','time','name','phone','work_address','check_in_time',
+                    'people_count','require','guest_type','remark','info_source'];
+        $reserve = Reserveordermodel::where('id',$id)->get($feild);
+
+        $this->api_res(0,$reserve);
     }
 
     public function validation()
@@ -81,7 +102,7 @@ class Reserve extends MY_Controller
             array(
                 'field' => 'guest_type',
                 'label' => '顾客类型',
-                'rules' => 'trim|required|in_list[A,B,C,D]',
+                'rules' => 'trim|required',
             ),
             array(
                 'field' => 'require',

@@ -108,21 +108,22 @@ class Employee extends MY_Controller
                 $this->api_res(1009);
                 return false;
             }
-            $category = $this->getStore()->toArray();
-            $category['name'] = $emloyee->name;
-            $category['phone'] = $emloyee->phone;
 
             $this->load->model('positionmodel');
             $position = Positionmodel::find($emloyee->position_id);
             if (!$position) {
-                $this->api_res(1009);
+                $this->api_res(1009, ['error' => '没有找到职位信息']);
                 return false;
             }
 
-            $category['position'] = $position->name;
-            $category['status'] = $emloyee->status;
-            $category['store_ids'] = $emloyee->store_ids;
-            $category['store_names'] = $emloyee->store_names;
+            $category = [
+                'name' => $emloyee->name,
+                'phone' => $emloyee->phone,
+                'position' => $position->name,
+                'status' => $emloyee->status,
+                'store_ids' => $emloyee->store_ids,
+                'store_names' => $emloyee->store_names,
+            ];
         }
         $this->api_res(0, $category);
     }
@@ -133,14 +134,15 @@ class Employee extends MY_Controller
     public function submitEmp()
     {
         $post = $this->input->post(null, true);
-        if(!$this->validation())
+        $config = $this->validation();
+        if(!$this->validationText($config))
         {
-            $fieldarr   = ['name', 'phone', 'position', 'store_ids','store_names', 'hiredate'];
+            $fieldarr = ['name', 'phone', 'position', 'store_ids', 'store_names', 'hiredate'];
             $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
             return false;
         }
-        $name = isset($post['name']) ? $post['name'] : null;
-        $position = isset($post['position']) ? $post['position'] : null;
+        $name = $post['name'];
+        $position = $post['position'];
         $this->load->model('positionmodel');
         $position_arr = Positionmodel::where('name', $position)->get(['id'])->toArray();
         if (!$position_arr) {
@@ -148,10 +150,10 @@ class Employee extends MY_Controller
             return false;
         }
         $position_id = $position_arr[0]['id'];
-        $store_ids = isset($post['store_ids']) ? $post['store_ids'] : null;
-        $store_names = isset($post['store_names']) ? $post['store_names'] : null;
-        $phone = isset($post['phone']) ? $post['phone'] : null;
-        $hiredate = isset($post['hiredate']) ? $post['hiredate'] : null;
+        $store_ids = $post['store_ids'];
+        $store_names = $post['store_names'];
+        $phone = $post['phone'];
+        $hiredate = $post['hiredate'];
 
         $this->load->model('storemodel');
         if (!defined('COMPANY_ID')) {
@@ -192,15 +194,19 @@ class Employee extends MY_Controller
     public function updateEmp()
     {
         $post = $this->input->post(null, true);
-        if(!$this->validation())
+        $config = $this->validation();
+        array_pull($config, '5');
+        $status_val = ['field' => 'status', 'label' => '员工状态', 'rules' => 'trim|required|in_list[ENABLE,DISABLE]'];
+        $config = array_add($config, '5', $status_val);
+        if(!$this->validationText($config))
         {
-            $fieldarr   = ['name', 'phone', 'position', 'store_ids', 'store_names', 'status', 'hiredate'];
+            $fieldarr   = ['name', 'phone', 'position', 'store_ids', 'store_names', 'status'];
             $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
             return false;
         }
 
         $id = isset($post['id']) ? $post['id'] : null;
-        $position = isset($post['position']) ? $post['position'] : null;
+        $position = $post['position'];
         $this->load->model('positionmodel');
         $position_arr = Positionmodel::where('name', $position)->get(['id'])->toArray();
         if (!$position_arr) {
@@ -210,10 +216,9 @@ class Employee extends MY_Controller
         $position_id = $position_arr[0]['id'];
         $store_ids  = $this->input->post('store_ids',true);
         $store_names  = $this->input->post('store_names',true);
-        $name = isset($post['name']) ? $post['name'] : null;
-        $phone = isset($post['phone']) ? $post['phone'] : null;
-        $status = isset($post['status']) ? $post['status'] : null;
-        $hiredate = isset($post['hiredate']) ? $post['hiredate'] : null;
+        $name = $post['name'];
+        $phone = $post['phone'];
+        $status = $post['status'];
 
         $this->load->model('storemodel');
         if (!defined('COMPANY_ID')) {
@@ -239,7 +244,6 @@ class Employee extends MY_Controller
         $employee->name         = $name;
         $employee->phone        = $phone;
         $employee->status       = $status;
-        $employee->hiredate     = $hiredate;
 
         if ($employee->save())
         {
@@ -312,7 +316,6 @@ class Employee extends MY_Controller
      */
     public function validation()
     {
-        $this->load->library('form_validation');
         $config = array(
             array(
                 'field' => 'name',
@@ -340,19 +343,13 @@ class Employee extends MY_Controller
                 'rules' => 'trim|required',
             ),
             array(
-                'field' => 'status',
-                'label' => '员工状态',
-                'rules' => 'trim',
-            ),
-            array(
                 'field' => 'hiredate',
                 'label' => '入职时间',
                 'rules' => 'trim|required',
             ),
         );
 
-        $this->form_validation->set_rules($config)->set_error_delimiters('','');
-        return $this->form_validation->run();
+        return $config;
     }
 
 }

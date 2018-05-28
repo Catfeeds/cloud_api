@@ -140,7 +140,8 @@ class AuthHook {
             'common/district',
 
             'mini/reserve/listreserve',
-            'mini/reserve/reserve',
+            'mini/reserve/addreserve',
+            'mini/reserve/reserveinfo',
             'mini/visitrecord/visit',
             'mini/login/gettoken',
             'mini/login/handleloginstatus',
@@ -150,6 +151,9 @@ class AuthHook {
             'mini/employee/showcenter',
             'mini/employee/listemp',
             'mini/employee/addemp',
+            'mini/messagesnd/templatefields',
+            'mini/messagesnd/sendmsgtype',
+            'mini/messagesnd/sendnotice',
             'mini/residentct/showcenter',
             'mini/residentct/showdetail',
 
