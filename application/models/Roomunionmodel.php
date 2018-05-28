@@ -45,6 +45,12 @@ class Roomunionmodel extends Basemodel{
 
     protected $hidden   = ['created_at','updated_at','deleted_at'];
 
+    //房型展示
+    public function room_type(){
+        return $this->belongsTo(Roomtypemodel::class,'room_type_id')
+            ->select(['id','name','feature']);
+    }
+
     //房间所属门店信息
     public function store(){
 
