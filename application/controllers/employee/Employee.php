@@ -17,8 +17,7 @@ class Employee extends MY_Controller
 
     public function showMyStores()
     {
-        $this->load->model('storemodel');
-        $employee = $this->employeemodel->getMyStores();
+        $employee = Employeemodel::getMyStores();
         if (!$employee) {
             $this->api_res(1009);
         }
@@ -38,8 +37,10 @@ class Employee extends MY_Controller
         $offset = PAGINATE * ($page - 1);
         $field = ['id', 'name', 'phone', 'position_id', 'store_names', 'hiredate', 'status'];
         $where = isset($post['store_id']) ? ['store_id' => $post['store_id']] : [];
+        $mystore = Employeemodel::getMyStores()->toArray();
+        $mystores = explode(',', $mystore[0]['store_ids']);
         if (isset($post['city']) && !empty($post['city'])) {
-            $store_ids = Storemodel::where('city', $post['city'])->get(['id'])->map(function ($s) {
+            $store_ids = Storemodel::whereIn('id', $mystores)->where('city', $post['city'])->get(['id'])->map(function ($s) {
                 return $s->id;
             });
             $count = ceil((Employeemodel::whereIn('store_id', $store_ids)->where($where)
@@ -55,16 +56,15 @@ class Employee extends MY_Controller
             $this->api_res(0, ['count' => $count, 'list' => $category]);
             return;
         }
-        $count = ceil((Employeemodel::where('status', 'ENABLE')->count()) / PAGINATE);
+        $count = ceil((Employeemodel::whereIn('store_id', $mystores)->where('status', 'ENABLE')->count()) / PAGINATE);
         if ($page > $count) {
             $this->api_res(0, ['count' => $count, 'list' => []]);
             return;
         }
         $category = Employeemodel::with(['position' => function ($query) {
             $query->select('id', 'name');
-        }])->where('status', 'ENABLE')->offset($offset)
+        }])->whereIn('store_id', $mystores)->where('status', 'ENABLE')->offset($offset)
             ->limit(PAGINATE)->orderBy('id', 'desc')->get($field);
-
         $this->api_res(0, ['count' => $count, 'list' => $category]);
     }
 
