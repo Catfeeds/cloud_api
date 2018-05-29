@@ -107,17 +107,10 @@ class Store extends MY_Controller
      * 获取门店名
      */
     public function showStore(){
-        $post = $this->input->post(null, true);
-        $this->load->model('employeemodel');
-        $employee = Employeemodel::where(['bxid'=>CURRENT_ID])->first();
-        $ids = explode(',', $employee->store_ids);
-        if (isset($post['city']) && !empty($post['city'])) {
-            $city = $post['city'];
-            $store = Storemodel::whereIn('id', $ids)->where('city', $city)
-                    ->get(['id', 'name', 'province', 'city', 'district']);
-        } else {
-            $store = Storemodel::whereIn('id', $ids)->get(['id', 'name', 'province', 'city', 'district']);
-        }
+        $city   = $this->input->post('city',true);
+        $where  = ['company_id'=>COMPANY_ID];
+        $city?$where['city']=$city:null;
+        $store  = Storemodel::where($where)->get(['id','name','province','city','district']);
         $this->api_res(0,['stores'=>$store]);
     }
 
