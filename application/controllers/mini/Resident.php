@@ -979,22 +979,10 @@ class Resident extends MY_Controller
         $this->api_res(0,['data'=>$data]);
     }
 
-
-
-
-    public function listResident()
-    {
-
-
-    }
-
     /**
-     * 展示预订列表
+     * 住户续租
      */
-    public function listReserve(){
 
-
-    }
 
 }
 

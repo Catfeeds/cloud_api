@@ -21,23 +21,25 @@ class Residentct extends MY_Controller
     public function showCenter()
     {
         $post = $this->input->post(null, true);
-        $page = intval(isset($post['page']) ? $post['page'] : 1);
-        $offset = PAGINATE * ($page - 1);
-        $count = ceil((Residentmodel::all()->count()) / PAGINATE);
-        if ($page > $count) {
-            $this->api_res(0, ['count' => $count, 'list' => []]);
-            return;
-        }
+        $page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
+        $page_count = isset($post['page_count']) ? intval($post['page_count']) : 10;//当前页显示条数
+        $offset = $page_count * ($page - 1);
         $field = ['id', 'name', 'room_id', 'customer_id','status'];
         $this->load->model('roomunionmodel');
         $this->load->model('customermodel');
+
+        $count_total = Residentmodel::all()->count();
+        $count = ceil($count_total / $page_count);//总页数
+        if ($page > $count) {
+            return;
+        }
         $category = Residentmodel::with(['roomunion' => function ($query) {
             $query->select('id', 'number');
         }])->with(['customer' => function ($query) {
             $query->select('id', 'avatar');
-        }])->offset($offset)->limit(PAGINATE)->orderBy('id', 'desc')->get($field);
-
-        $this->api_res(0, ['count' => $count, 'list' => $category]);
+        }])->take($page_count)->skip($offset)
+            ->orderBy('id', 'desc')->get($field)->toArray();
+        $this->api_res(0, ['list' => $category, 'page' => $page, 'count_total' => $count_total, 'count' => $count]);
     }
 
     /**
@@ -47,10 +49,19 @@ class Residentct extends MY_Controller
     {
         $field = ['id', 'name', 'room_id', 'customer_id','status'];
         $post   = $this->input->post(null,true);
-        $page = intval(isset($post['page']) ? $post['page'] : 1);
-        $offset = PAGINATE * ($page - 1);
-        $count = ceil((Residentmodel::all()->count()) / PAGINATE);
-        $number   = isset($post['number'])?$post['number']:null;
+        $page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
+        $page_count = isset($post['page_count']) ? intval($post['page_count']) : 10;//当前页显示条数
+        $offset = $page_count * ($page - 1);
+        $count_total = Residentmodel::all()->count();
+        $count = ceil($count_total / $page_count);//总页数
+        if ($page > $count) {
+            return;
+        }
+        $number = isset($post['number'])?$post['number']:null;
+        if (!$number) {
+            $this->api_res(1009,['error'=>'未指定房间号']);
+            return;
+        }
         $this->load->model('roomunionmodel');
         $room_union = Roomunionmodel::where('number', $number)->first();
         if (!$room_union) {
@@ -61,9 +72,9 @@ class Residentct extends MY_Controller
             $query->select('id', 'number');
         }])->with(['customer' => function ($query) {
             $query->select('id', 'avatar');
-        }])->where('room_id',$room_union->id)->orderBy('id','desc')->offset($offset)
-            ->limit(PAGINATE)->orderBy('id', 'desc')->get($field);
-        $this->api_res(0, ['count' => $count, 'list' => $category]);
+        }])->where('room_id',$room_union->id)->take($page_count)->skip($offset)
+            ->orderBy('id', 'desc')->get($field)->toArray();
+        $this->api_res(0, ['list' => $category, 'page' => $page, 'count_total' => $count_total, 'count' => $count]);
     }
 
     /**
