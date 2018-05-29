@@ -148,4 +148,22 @@ class M_redis
         return $privilege;
     }
 
+    /**
+     * 存储danbytoken
+     */
+    public function storeDanbyToken($token){
+        $key    = DANBYTOKEN;
+        $this->redis->set($key,$token,30*60);
+        return;
+    }
+
+    /**
+     * 获取danby Token
+     */
+    public function getDanBYToken(){
+        $key    = DANBYTOKEN;
+        $token  = $this->redis->get($key);
+        return $token;
+    }
+
 }
