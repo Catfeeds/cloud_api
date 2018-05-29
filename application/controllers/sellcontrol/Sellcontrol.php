@@ -57,6 +57,6 @@ class Sellcontrol extends MY_Controller
             $time = [date('Y-m-d H:i:s',0),date('Y-m-d H:i:s',time())];
             $list = $roomunion->room_details($where,$filed,$time);
         }
-        $this->api_res(0,['list'=>$list]);
+        $this->api_res(0,[$list]);
     }
 }
