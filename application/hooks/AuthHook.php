@@ -74,7 +74,7 @@ class AuthHook {
             'store/roomdot/listdot',
             'store/roomunion/getunion',
             'store/roomdot/getdot',
-            'store/roomdot/destory',
+            'store/roomdot/destroy',
             'store/roomunion/batchupdateunion',
             'store/roomdot/batchupdatedot',
 
