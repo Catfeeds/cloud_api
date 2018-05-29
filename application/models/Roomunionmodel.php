@@ -51,6 +51,11 @@ class Roomunionmodel extends Basemodel{
             ->select(['id','name','feature']);
     }
 
+    //房间住户信息
+    public function resident(){
+        return $this->belongsTo(Residentmodel::class,'resident_id')->select(['id','name']);
+    }
+
     //房间所属门店信息
     public function store(){
 
@@ -80,13 +85,6 @@ class Roomunionmodel extends Basemodel{
             ->where('rent_type','RESERVE')->select(['id','name']);
     }
 
-    //房间所属房型信息
-    public function roomtype(){
-
-        return $this->belongsTo(Roomtypemodel::class,'room_type_id')->select(
-            ['id','name','room_number','hall_number','toilet_number','toward','provides','description']);
-    }
-
     //房屋公共智能设备
     public function housesmartdevice(){
 
@@ -97,12 +95,6 @@ class Roomunionmodel extends Basemodel{
     public function smartdevice(){
 
         return $this->belongsTo(SmartDevicemodel::class,'smart_device_id');
-    }
-
-    //房间现在的住户信息
-    public function resident(){
-
-        return $this->belongsTo(Residentmodel::class,'resident_id');
     }
 
     //合租人信息
@@ -142,7 +134,7 @@ class Roomunionmodel extends Basemodel{
      */
     public function room_details($where,$filed,$time){
         var_dump($where);
-        $details        = Roomunionmodel::with('room_type')->where($where)
+        $details        = Roomunionmodel::with('room_type')->with('resident')->where($where)
                                         ->whereBetween('updated_at',$time)
                                         ->get($filed)->groupBy('layer')->toArray();
         $total_count    = Roomunionmodel::get($filed)->count();

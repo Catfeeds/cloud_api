@@ -18,6 +18,7 @@ class Sellcontrol extends MY_Controller
     public function details()
     {
         $this->load->model('roomtypemodel');
+        $this->load->model('residentmodel');
         $post = $this->input->post(null,true);
         $where      = [];
         if(isset($post['building_id'])){$where['building_id'] = intval($post['building_id']);};
