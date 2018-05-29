@@ -18,6 +18,12 @@ class Contractmodel extends Basemodel {
     {
         return $this->belongsTo(Residentmodel::class,'resident_id')->select('id','name');
     }
+
+    public function emp()
+    {
+        return $this->hasManyThrough(Employeemodel::class,Residentmodel::class,'resident_id','employee_id')->select('id','name');
+    }
+
     //经办人
     public function employee()
     {

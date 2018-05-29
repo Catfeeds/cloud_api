@@ -224,7 +224,7 @@ use Carbon\Carbon;
 
          $data['avatar']     = null;
          if (0 < $resident->customer_id) {
-             $data['avatar'] = $resident->customer->avatar;
+          //   $data['avatar'] = $resident->customer->avatar;
          }
 
          if (0 < $resident->room_id) {

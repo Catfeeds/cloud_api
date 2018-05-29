@@ -34,9 +34,7 @@ class Operation extends MY_Controller
 
         if(!empty($post['begin_time'])){$btime=$post['begin_time'];}else{$btime = date('Y-m-d H:i:s',0);};
         if(!empty($post['end_time'])){$etime=$post['end_time'];}else{$etime = date('Y-m-d H:i:s',time());};
-
         $filed  = ['id','contract_id','resident_id','sign_type','store_id','room_id','created_at','status','employee_id'];
-
         if ($where) {
             $operation = Contractmodel::with('resident')->with('employee')->with('store')->with('roomunion')->
             where($where)->whereBetween('created_at', [$btime, $etime])->take(PAGINATE)->
@@ -45,7 +43,6 @@ class Operation extends MY_Controller
             $operation = Contractmodel::with('resident')->with('employee')->with('store')->with('roomunion')
                 ->take(PAGINATE)->skip($offset)->orderBy('id', 'desc')->get($filed);
         }
-
         $this->api_res(0,['operationlist'=>$operation,'count'=>$count]);
     }
 
@@ -66,7 +63,7 @@ class Operation extends MY_Controller
         $resident_id = Contractmodel::where('id',$serial)->get($aa)->toArray();
         $discount_id = Residentmodel::where('id',$resident_id)->get($bb)->toArray();
         $activity_id = Couponmodel::  where('id',$discount_id)->get($cc)->toArray();
-        $name        = Activitymodel::where('id',$activity_id)->get($dd);
+        $name        = Activitymodel::where('id',$activity_id)->get($dd)->toArray();
         $this->api_res(0,['info'=>$operation,'activity'=>$name]);
     }
 
