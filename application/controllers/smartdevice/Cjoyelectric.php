@@ -6,7 +6,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Time:        2:08
  * Describe:    智能设备-超仪电表
  */
-class Joyelectric extends MY_Controller
+class Cjoyelectric extends MY_Controller
 {
     private $clientId;
     private $publicKeyPath;

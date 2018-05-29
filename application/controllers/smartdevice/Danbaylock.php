@@ -6,7 +6,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Time:        14:16
  * Describe:    蛋贝
  */
-class Danbaylock
+class Danbaylock extends MY_Controller
 {
     protected $deviceId;
     protected $token;
@@ -18,6 +18,7 @@ class Danbaylock
 
     public function __construct($deviceId)
     {
+        parent::__construct();
         $this->deviceId = $deviceId;
     }
 
@@ -121,36 +122,9 @@ class Danbaylock
         return $res['result'];
     }
 
-    /**
-     * 构建请求体
-     */
-   /* private function buildRequestBody($options, $enctypeMultipart = false)
-    {
-        $form = collect($options)
-            ->put('deviceId', $this->deviceId)
-            ->put('mtoken', $this->getToken())
-            ->when($enctypeMultipart, function ($items) {
-                return $items->transform(function ($item, $key) {
-                    return [
-                        'name'  => $key,
-                        'contents' => $item,
-                    ];
-                })->values();
-            })->toArray();
-
-        $formKey = $enctypeMultipart ? 'multipart' : 'form_params';
-
-        return [$formKey => $form];
-    }*/
 
     /**
-     * @param $url
-     * @param $method
-     * @param $data
-     * @param string $contentType
-     * @param int $timeout
-     * @param bool $proxy
-     * @return bool|mixed
+     * 发送请求
      */
     private function request($url, $method,$data,  $contentType = 'application/json', $timeout = 30, $proxy = false) {
         $ch = null;
@@ -200,7 +174,6 @@ class Danbaylock
                 'http'  => $info,
             )
         );
-
         curl_close($ch);
         return json_decode($ret, true);
     }

@@ -29,7 +29,6 @@ class Sellcontrol extends MY_Controller
         $roomunion  = new Roomunionmodel();
         if (!empty($post['BLANK_days'])){
             $days = $post['BLANK_days'];
-            var_dump($days);
             $where['status'] = "BLANK";
             switch ($days){
                 case 1:
