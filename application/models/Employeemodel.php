@@ -49,4 +49,20 @@ class Employeemodel extends Basemodel{
         return $info;
     }
 
+    public static function getMyStores()
+    {
+        require_once 'Storemodel.php';
+        $field = ['id', 'store_ids', 'store_names'];
+        define('CURRENT_ID', 1);
+        $employee = static::where('bxid', CURRENT_ID)->get($field)->map(function ($a){
+            $store_ids = explode(',', $a->store_ids);
+            $storems = Storemodel::whereIn('id', $store_ids)->get(['city'])->map(function ($b){
+                return $b->city;
+            });
+            $a->city =  $storems;
+            return $a;
+        });
+        return $employee;
+    }
+
 }
