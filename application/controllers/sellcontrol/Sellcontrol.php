@@ -21,13 +21,13 @@ class Sellcontrol extends MY_Controller
         $this->load->model('residentmodel');
         $post = $this->input->post(null,true);
         $where      = [];
-        if(empty($post['building_id'])){$where['building_id'] = intval($post['building_id']);};
-        if(empty($post['status'])){$where['status'] = trim($post['status']);};
-        if(empty($post['store_id'])){$where['store_id'] = intval($post['store_id']);}
-        if(empty($post['number'])){$where['number'] = trim($post['number']);}
+        if(!empty($post['building_id'])){$where['building_id'] = intval($post['building_id']);};
+        if(!empty($post['status'])){$where['status'] = trim($post['status']);};
+        if(!empty($post['store_id'])){$where['store_id'] = intval($post['store_id']);}
+        if(!empty($post['number'])){$where['number'] = trim($post['number']);}
         $filed      = ['id','layer','status','room_type_id','number','rent_price','resident_id'];
         $roomunion  = new Roomunionmodel();
-        if (empty($post['BLANK_days'])){
+        if (!empty($post['BLANK_days'])){
             $days = $post['BLANK_days'];
             var_dump($days);
             $where['status'] = "BLANK";
