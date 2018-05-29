@@ -124,6 +124,7 @@ class AuthHook {
             'employee/position/listposition',
             'employee/position/searchposition',
             'employee/position/submitposition',
+            'employee/employee/showmystores',
             'employee/employee/listemp',
             'employee/employee/getstore',
             'employee/employee/getempinfo',

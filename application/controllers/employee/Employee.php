@@ -15,6 +15,16 @@ class Employee extends MY_Controller
         $this->load->model('employeemodel');
     }
 
+    public function showMyStores()
+    {
+        $this->load->model('storemodel');
+        $employee = $this->employeemodel->getMyStores();
+        if (!$employee) {
+            $this->api_res(1009);
+        }
+        $this->api_res(0, $employee);
+    }
+
     /**
      * 显示员工权限信息
      */
@@ -26,32 +36,34 @@ class Employee extends MY_Controller
         $post = $this->input->post(null, true);
         $page = intval(isset($post['page']) ? $post['page'] : 1);
         $offset = PAGINATE * ($page - 1);
-        $filed = ['id', 'name', 'phone', 'position_id', 'store_names', 'hiredate', 'status'];
+        $field = ['id', 'name', 'phone', 'position_id', 'store_names', 'hiredate', 'status'];
         $where = isset($post['store_id']) ? ['store_id' => $post['store_id']] : [];
         if (isset($post['city']) && !empty($post['city'])) {
             $store_ids = Storemodel::where('city', $post['city'])->get(['id'])->map(function ($s) {
                 return $s->id;
             });
-            $count = ceil((Employeemodel::whereIn('store_id', $store_ids)->where($where)->count()) / PAGINATE);
+            $count = ceil((Employeemodel::whereIn('store_id', $store_ids)->where($where)
+                    ->where('status', 'ENABLE')->count()) / PAGINATE);
             if ($page > $count) {
                 $this->api_res(0, ['count' => $count, 'list' => []]);
                 return;
             }
             $category = Employeemodel::with(['position' => function ($query) {
                 $query->select('id', 'name');
-            }])->whereIn('store_id', $store_ids)->where($where)
-                ->offset($offset)->limit(PAGINATE)->orderBy('id', 'desc')->get($filed);
+            }])->whereIn('store_id', $store_ids)->where($where)->where('status', 'ENABLE')
+                ->offset($offset)->limit(PAGINATE)->orderBy('id', 'desc')->get($field);
             $this->api_res(0, ['count' => $count, 'list' => $category]);
             return;
         }
-        $count = ceil((Employeemodel::all()->count()) / PAGINATE);
+        $count = ceil((Employeemodel::where('status', 'ENABLE')->count()) / PAGINATE);
         if ($page > $count) {
             $this->api_res(0, ['count' => $count, 'list' => []]);
             return;
         }
         $category = Employeemodel::with(['position' => function ($query) {
             $query->select('id', 'name');
-        }])->offset($offset)->limit(PAGINATE)->orderBy('id', 'desc')->get($filed);
+        }])->where('status', 'ENABLE')->offset($offset)
+            ->limit(PAGINATE)->orderBy('id', 'desc')->get($field);
 
         $this->api_res(0, ['count' => $count, 'list' => $category]);
     }
