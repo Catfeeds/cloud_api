@@ -6,9 +6,9 @@ use OSS\OssClient;
 use OSS\Core\OssException;
 /**
  * Author:      weijinlong
- * Date:        2018/4/17
+ * Date:        2018/5/21
  * Time:        16:28
- * Describe:    在CI中引入阿里云OSS存储，参照ci自带upload库修改而来
+ * Describe:    在CI中引入上传excel解析库，参照ci自带upload库修改而来
  */
 class Excel {
 

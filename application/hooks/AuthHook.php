@@ -235,7 +235,7 @@ class AuthHook {
         $employee = Employeemodel::where('bxid', CURRENT_ID)->first();
         if (!$employee) {
             header("Content-Type:application/json;charset=UTF-8");
-            echo json_encode(array('rescode' => 1001, 'warning' => '', 'data' => []));
+            echo json_encode(array('rescode' => 1001, 'resmsg' => '', 'data' => []));
             exit;
         }
         $operation->bxid = CURRENT_ID;
@@ -247,7 +247,7 @@ class AuthHook {
         $operation->updated_at = date('Y-m-d H:i:s', time());
         if (!$operation->save()) {
             header("Content-Type:application/json;charset=UTF-8");
-            echo json_encode(array('rescode' => 1001, 'warning' => '访问数据库出错', 'data' => []));
+            echo json_encode(array('rescode' => 1001, 'resmsg' => '访问数据库出错', 'data' => []));
             exit;
         }
     }
