@@ -51,6 +51,11 @@ class Roomunionmodel extends Basemodel{
             ->select(['id','name','feature']);
     }
 
+    //房间住户信息
+    public function resident(){
+        return $this->belongsTo(Residentmodel::class,'resident_id')->select(['id','name']);
+    }
+
     //房间所属门店信息
     public function store(){
 
@@ -80,13 +85,6 @@ class Roomunionmodel extends Basemodel{
             ->where('rent_type','RESERVE')->select(['id','name']);
     }
 
-    //房间所属房型信息
-    public function roomtype(){
-
-        return $this->belongsTo(Roomtypemodel::class,'room_type_id')->select(
-            ['id','name','room_number','hall_number','toilet_number','toward','provides','description']);
-    }
-
     //房屋公共智能设备
     public function housesmartdevice(){
 
@@ -97,12 +95,6 @@ class Roomunionmodel extends Basemodel{
     public function smartdevice(){
 
         return $this->belongsTo(SmartDevicemodel::class,'smart_device_id');
-    }
-
-    //房间现在的住户信息
-    public function resident(){
-
-        return $this->belongsTo(Residentmodel::class,'resident_id');
     }
 
     //合租人信息
@@ -137,5 +129,18 @@ class Roomunionmodel extends Basemodel{
         return $this->update(['status'=>self::STATE_BLANK]);
     }
 
-
+    /*
+     * 查询
+     */
+    public function room_details($where,$filed,$time){
+        $this->details        = Roomunionmodel::with('room_type')->with('resident')->where($where)
+                                        ->whereBetween('updated_at',$time)
+                                        ->get($filed)->groupBy('layer')->toArray();
+        $this->total_count    = Roomunionmodel::get($filed)->count();
+        $this->blank_count    = Roomunionmodel::where('status','BLANK')->get($filed)->count();
+        $this->reserve_count  = Roomunionmodel::where('status','RESERVE')->get($filed)->count();
+        $this->rent_count     = Roomunionmodel::where('status','RENT')->get($filed)->count();
+        $this->arrears_count  = Roomunionmodel::where('status','ARREARS')->get($filed)->count();
+        return $this;
+    }
 }

@@ -11,10 +11,12 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class PreHook {
   
      public function proc(){
+            //跨域访问
             header("Access-Control-Allow-Origin: * ");
             header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Token");
             header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
-                
+            
+            //允许所有的options请求
              if(IS_OPTIONS){
                 header('HTTP/1.1 200 OK');
                 exit;
@@ -28,13 +30,14 @@ class PreHook {
 
              // 对token参数进行校验
              //$token=$_SERVER['token'];
-
-             $token=isset($_SERVER['HTTP_TOKEN'])?$_SERVER['HTTP_TOKEN']:null;
-             if (empty($token)){
+            //  $token=isset($_SERVER['HTTP_TOKEN'])?$_SERVER['HTTP_TOKEN']:null;
+            //  if (empty($token)){
                  //  header("Content-Type:application/json;charset=UTF-8");
                  //  echo json_encode(array('rescode' => 1001, 'resmsg' => '无效token,请重新登录', 'data' => []));
                  //  exit;
-             }
+            //  }
+
+
              //添加应用防火墙waf，提升安全性
              $referer=empty($_SERVER['HTTP_REFERER']) ? array() : array($_SERVER['HTTP_REFERER']);
              $query_string=empty($_SERVER["QUERY_STRING"]) ? array() : array($_SERVER["QUERY_STRING"]);
@@ -83,8 +86,6 @@ class PreHook {
            {
            if (preg_match("/".$value."/is",$str)==1||preg_match("/".$value."/is",urlencode($str))==1)
                {
-                   //W_log("<br>IP: ".$_SERVER["REMOTE_ADDR"]."<br>时间: ".strftime("%Y-%m-%d %H:%M:%S")."<br>页面:".$_SERVER["PHP_SELF"]."<br>提交方式: ".$_SERVER["REQUEST_METHOD"]."<br>提交数据: ".$str);
-                //    print "Parameter is not valid. <br/>";
                     header('HTTP/1.1 403 Forbidden'); 
                     echo 'access denied';
                     exit();

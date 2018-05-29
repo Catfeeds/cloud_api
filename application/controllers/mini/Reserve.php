@@ -32,9 +32,9 @@ class Reserve extends MY_Controller
         if ($page > $count) {
             return;
         }
-        $reserve = Reserveordermodel::whereIn('status', ['WAIT', 'BEGIN'])->with('roomType')
-            ->take($page_count)->skip($offset)
-            ->orderBy('id', 'desc')->get($filed)->toArray();
+        $reserve = Reserveordermodel::with('roomtype')->whereIn('status', ['WAIT', 'BEGIN'])
+                                    ->take($page_count)->skip($offset)
+                                    ->orderBy('id', 'desc')->get($filed)->toArray();
         $this->api_res(0, ['list' => $reserve, 'page' => $page, 'count_total' => $count_total, 'count' => $count]);
     }
 
@@ -43,6 +43,7 @@ class Reserve extends MY_Controller
      */
     public function reserveInfo()
     {
+        $this->load->model("roomtypemodel");
         $post = $this->input->post(null,true);
         if ($post['id']){
             $id = intval($post['id']);
@@ -52,8 +53,7 @@ class Reserve extends MY_Controller
         };
         $feild = ['id','room_type_id','time','name','phone','work_address','check_in_time',
                     'people_count','require','guest_type','remark','info_source'];
-        $reserve = Reserveordermodel::where('id',$id)->get($feild);
-
+        $reserve = Reserveordermodel::with('roomType')->where('id',$id)->get($feild);
         $this->api_res(0,$reserve);
     }
 
@@ -66,7 +66,8 @@ class Reserve extends MY_Controller
         $id = isset($post['id'])?intval($post['id']):null;
         if(!$this->validation())
         {
-            $fieldarr= ['room_type_id','work_address','info_source','people_count','check_in_time','guest_type','require','remark'];
+            $fieldarr= ['room_type_id','work_address','info_source','people_count','check_in_time',
+                        'guest_type','require','remark'];
             $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
             return;
         }

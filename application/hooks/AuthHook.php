@@ -74,7 +74,7 @@ class AuthHook {
             'store/roomdot/listdot',
             'store/roomunion/getunion',
             'store/roomdot/getdot',
-            'store/roomdot/destory',
+            'store/roomdot/destroy',
             'store/roomunion/batchupdateunion',
             'store/roomdot/batchupdatedot',
 
@@ -122,11 +122,9 @@ class AuthHook {
             'employee/position/listposition',
             'employee/position/searchposition',
             'employee/position/submitposition',
-            'employee/employee/addemp',
             'employee/employee/listemp',
             'employee/employee/getstore',
             'employee/employee/getempinfo',
-            'employee/employee/addemp',
             'employee/employee/showstore',
             'employee/employee/searchemp',
             'employee/employee/delemp',
@@ -184,11 +182,73 @@ class AuthHook {
                 $d_company_id   = $decoded->company_id;
                 define('CURRENT_ID',$d_bxid);
                 define('COMPANY_ID',$d_company_id);
+                /*
+                //操作记录测试
+                $this->operationRecord($full_path);*/
+                /*
+                //权限测试
+                define('CURRENT_ID',1);
+                $positions = $this->getCurrentPrivilege($directory);
+                if (!$this->privilegeMatch($class, $positions)) {
+                    header("Content-Type:application/json;charset=UTF-8");
+                    echo json_encode(array('rescode' => 1001, 'resmsg' => '您没有访问权限', 'data' => []));
+                    exit;
+                }*/
             } catch (Exception $e) {
                 header("Content-Type:application/json;charset=UTF-8");
                 echo json_encode(array('rescode' => 1001, 'resmsg' => 'token无效', 'data' => []));
                 exit;
             }
+        }
+    }
+
+    public function getCurrentPrivilege($directory)
+    {
+        $this->CI->load->model('employeemodel');
+        $this->CI->load->model('positionmodel');
+        $employee = Employeemodel::with('position')->where('bxid', CURRENT_ID)->first();
+        $pc_privilege = $employee->position->pc_privilege;
+        $mini_privilege = $employee->position->mini_privilege;
+        return (substr($directory, 0, 4) == 'mini') ? $mini_privilege : $pc_privilege;
+    }
+
+    public function privilegeMatch($class, $positions)
+    {
+        $positionmap = [
+            '员工管理' => 'employee',
+            '职位管理' => 'position'
+        ];
+        $positions = explode(',', $positions);
+        foreach($positions as $position) {
+            $value = array_get($positionmap, $position);
+            $controllers[] = $value;
+        }
+        $controller_url = strtolower($class);
+        return in_array($controller_url, $controllers);
+    }
+
+    public function operationRecord($full_path)
+    {
+        $this->CI->load->model('employeemodel');
+        $this->CI->load->model('operationrecordmodel');
+        $operation = new Operationrecordmodel();
+        $employee = Employeemodel::where('bxid', CURRENT_ID)->first();
+        if (!$employee) {
+            header("Content-Type:application/json;charset=UTF-8");
+            echo json_encode(array('rescode' => 1001, 'resmsg' => '', 'data' => []));
+            exit;
+        }
+        $operation->bxid = CURRENT_ID;
+        $operation->company_id = COMPANY_ID;
+        $operation->employee_id = $employee->id;
+        $operation->name = $employee->name;
+        $operation->url = $full_path;
+        $operation->created_at = date('Y-m-d H:i:s', time());
+        $operation->updated_at = date('Y-m-d H:i:s', time());
+        if (!$operation->save()) {
+            header("Content-Type:application/json;charset=UTF-8");
+            echo json_encode(array('rescode' => 1001, 'resmsg' => '访问数据库出错', 'data' => []));
+            exit;
         }
     }
 }
