@@ -57,7 +57,11 @@ class Residentct extends MY_Controller
         if ($page > $count) {
             return;
         }
-        $number   = isset($post['number'])?$post['number']:null;
+        $number = isset($post['number'])?$post['number']:null;
+        if (!$number) {
+            $this->api_res(1009,['error'=>'未指定房间号']);
+            return;
+        }
         $this->load->model('roomunionmodel');
         $room_union = Roomunionmodel::where('number', $number)->first();
         if (!$room_union) {
