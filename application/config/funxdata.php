@@ -36,9 +36,9 @@ $config['yunpian_api_url']  = 'http://sms.yunpian.com/v2/sms/single_send.json';
 $config['yunpian_api_key']  = 'a91819aaea5b684dfb571442c279a9a3';
 
 //jwt相关
-$config['jwt_key'] = 'jfo2jf02jfoijf02klbm9&@Fklwfwef';
+$config['jwt_key'] = 'jfo2jf02jfoijf02klbm9&@Fklwfwefboss';
 $config['jwt_alg'] = 'HS256';
-$config['jwt_iss'] = 'http://example.org';
+$config['jwt_iss'] = 'http://funxdata.com';
 $config['jwt_exp'] = (time()+7200); //过期时间
 //$config['jwt_nbf'] = 1357000000;
 
