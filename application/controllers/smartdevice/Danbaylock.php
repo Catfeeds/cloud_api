@@ -130,7 +130,7 @@ class Danbaylock extends MY_Controller
      * 服务器端模拟登录蛋贝系统,获取mtoken
      * 获取思路: 成功蛋贝后, 蛋贝会将请求重定向到 ticket_consume_url, 并在 query 里面携带 mtoken, 获取响应头里面的 Location, 并从中解析出 mtoken
      */
-    private function getMtokenByLogin()
+    public function getMtokenByLogin()
     {
         $responseHeaders    = (new Client())->request('POST', $this->loginUrl, [
             'form_params'     => [
@@ -163,7 +163,6 @@ class Danbaylock extends MY_Controller
         if (strlen($mtoken) != 64) {
             throw new \Exception("登录出错, mtoken长度错误,可能是蛋贝系统又出问题了!", 500);
         }
-
         return $mtoken;
     }
 
