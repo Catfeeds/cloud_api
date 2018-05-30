@@ -59,8 +59,6 @@ $config['joyLockSecret']    = 'fahwkc5M';
 
 $config['danbayUserName']   = 'jindihuohua';
 $config['danbayPassword']   = 'a123456';
-$config['danbaymToken']     = '6nQIQ3EOpkaNtRly1M2MDoDjX7jxGjntldYv1JbsQB7srroptaUc3z2QypzDbgzc';
-
 
 //法大大电子合同接口
 $config['fadada_api_app_secret'] ='PMKQo0b3RCb911OaqmsGAFnw';

@@ -5,7 +5,7 @@ use GuzzleHttp\Client;
  * Author:      hfq<1326432154@qq.com>
  * Date:        2018/5/10
  * Time:        14:16
- * Describe:    蛋贝
+ * Describe:    蛋贝(对单个门锁进行操作)
  */
 class Danbaylock extends MY_Controller
 {
@@ -55,11 +55,9 @@ class Danbaylock extends MY_Controller
             'pwdType'   => self::PWD_TYPE_GUEST,
         ]);
 
-        return $res;
-        /*[
+        return [
             'pwd_id'   => $res['pwdID'],
-            'password' => $pwd,
-        ];*/
+            'password' => $pwd,];
     }
 
     /**
@@ -150,7 +148,6 @@ class Danbaylock extends MY_Controller
     public function handle()
     {
         $token = $this->getMtokenByLogin();
-
         if($this->m_redis->storeDanbyToken($token)){
             //$token = $this->m_redis->getDanBYToken();
             //var_dump($token);
@@ -201,7 +198,6 @@ class Danbaylock extends MY_Controller
         return $mtoken;
     }
 
-
     /**
      * 获取 token
      */
@@ -230,7 +226,7 @@ class Danbaylock extends MY_Controller
     public function test()
     {
         $data       = $this->getLockPwdList();
-        var_dump($data);
+        $this->api_res(0,$data);
     }
 
 }

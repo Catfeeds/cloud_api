@@ -1,24 +1,30 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+use GuzzleHttp\Client;
 /**
  * Author:      hfq<1326432154@qq.com>
  * Date:        2018/5/9
  * Time:        10:47
- * Describe:    云柚智能设备
+ * Describe:    云柚LOCK
  */
 
 class Yeeuulock extends MY_Controller
 {
+    protected $deviceId;
     private $partnerId;
+    private $timeStamp;
     private $secret;
     private $apiBaseUrl;
-    private $almsUrl;
+    private $almsBaseUrl;
 
-    public function __construct()
+    public function __construct($deviceId = null)
     {
         parent::__construct();
-        $this->apiBaseUrl   = config_item('yeeuuapiBaseUrl');
-        $this->almsUrl      = config_item('yeeuualmsUrl');
+        $this->deviceId     = $deviceId;
+        $this->nonstr       = str_random(16);
+        $this->timeStamp    = time();
+        $this->apiBaseUrl   = 'https://api.yeeuu.com/v1/locks/';
+        $this->almsUrl      = 'https://alms.yeeuu.com/apartments/synchronize_apartments';
         $this->partnerId    = config_item('joyLockPartnerId');
         $this->secret       = config_item('joyLockSecret');
     }
@@ -122,19 +128,37 @@ class Yeeuulock extends MY_Controller
     /**
      * 发送 POST 请求
      */
-    public function httpPost($url, $options = [])
+    private function httpPost($url, $options = [])
     {
-        return $this->httpCurl($url, 'POST', $options);
+        return $this->request($url, 'POST', $options);
     }
 
 
     /**
      * 发送 GET 请求
      */
-    public function httpGet($url, $options = [])
+    private function httpGet($url, $options = [])
     {
-        return $this->httpCurl($url, 'GET', $options);
+        return $this->request($url, 'GET', $options);
     }
+
+
+    /**
+     * 发送请求
+     */
+    private function request($url, $method, $options)
+    {
+        if ('POST' == $method) {
+            $parameters     = ['form_params' => $options];
+        } elseif ('GET' == $method) {
+            $parameters     = ['query' => $options];
+        }
+
+        $res    = (new Client())->request($method, $url, $parameters)->getBody()->getContents();
+
+        return json_decode($res, true);
+    }
+
 
     /**
      * 同步房源
@@ -144,9 +168,12 @@ class Yeeuulock extends MY_Controller
         $time   = time();
         $nonstr = str_random(9);
         $token  = sha1($time . $this->secret . $nonstr);
-        $url    = $this->almsUrl;
+        $url    = 'https://alms.yeeuu.com/apartments/synchronize_apartments';
 
-        $res    = $this->httpCurl($url,'POST',  [
+        $res    = (new Client())->request('POST', $url, [
+            'headers'      => [
+                'Content-Type'  => 'application/json',
+            ],
             'form_params'  => [
                 'partnerId'     => $this->partnerId,
                 'timestamp'     => $time,
@@ -154,13 +181,12 @@ class Yeeuulock extends MY_Controller
                 'token'         => $token,
                 'apartmentList' => $data,
             ],
-        ]);
+        ])->getBody()->getContents();
 
         return json_decode($res, true);
     }
-
     public function test()
     {
-
+        $this->openRecords('00124b000f0b9c9f', 20160102, 20180530);
     }
 }
