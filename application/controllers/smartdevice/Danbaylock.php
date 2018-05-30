@@ -10,7 +10,7 @@ class Danbaylock extends MY_Controller
 {
     protected $deviceId;
     protected $token;
-    private   $baseUrl    = 'http://www.danbay.cn/system/';
+    private   $baseUrl      = 'http://www.danbay.cn/system/';
     protected $signature    = 'danbay:update-token';
     protected $description  = 'update-token-for-danbay-api-request';
     protected $loginUrl     = 'http://www.danbay.cn/system/connect';
@@ -22,7 +22,7 @@ class Danbaylock extends MY_Controller
     public function __construct()
     {
         parent::__construct();
-        $this->load->library('M_jwt');
+        $this->load->library('M_redis');
         $this->deviceId = 'dccf6c99c17845481eba84692d4027e4';
     }
 
@@ -133,8 +133,8 @@ class Danbaylock extends MY_Controller
     {
         $responseHeaders    = $this->httpCurl('POST', $this->loginUrl, [
             'form_params'     => [
-                'mc_username'        => config('strongberry.danbayUserName'),
-                'mc_password'        => config('strongberry.danbayPassword'),
+                'mc_username'        => config_item(''),
+                'mc_password'        => config_item(''),
                 'random_code'        => 'whatever',
                 'return_url'         => 'res_failed',
                 'ticket_consume_url' => 'res_success',
@@ -163,6 +163,7 @@ class Danbaylock extends MY_Controller
             throw new \Exception("登录出错, mtoken长度错误,可能是蛋贝系统又出问题了!", 500);
         }
 
+        $this->api_res(0,$mtoken);
         return $mtoken;
     }
 
@@ -172,14 +173,11 @@ class Danbaylock extends MY_Controller
      */
     private function setToken()
     {
-        $token ='';
-
+        $token = $this->M_redis->getDanBYToken();
         if (!$token) {
             throw new \Exception('token 过期,请稍后重试!');
         }
-
         $this->token = $token;
-
         return $this;
     }
 
@@ -191,15 +189,13 @@ class Danbaylock extends MY_Controller
         if ($this->token) {
             return $this->token;
         }
-
         $this->setToken();
-
         return $this->token;
     }
 
     public function test()
     {
-        $data       = $this->addTempPwd();
+        $data       = $this->getMtokenByLogin();
         var_dump($data);
     }
 
