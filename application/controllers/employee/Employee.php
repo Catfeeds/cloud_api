@@ -20,23 +20,25 @@ class Employee extends MY_Controller
      */
     public function showMyStores()
     {
-        $employee = Employeemodel::getMyStores();
-        if (!$employee) {
+        $post = $this->input->post(null, true);
+        $city = isset($post['city']) ? $post['city'] : null;
+        $stores = Employeemodel::getMyCitystores($city);
+        if (!$stores) {
             $this->api_res(1009);
         }
-        $this->api_res(0, ['stores'=>$employee[0]->stores]);
+        $this->api_res(0, ['stores'=>$stores]);
     }
 
     /**
      * 显示登录者负责的城市
      */
-    public function showMyCitys()
+    public function showMyCities()
     {
-        $employee = Employeemodel::getMyCitys();
+        $employee = Employeemodel::getMyCities();
         if (!$employee) {
             $this->api_res(1009);
         }
-        $this->api_res(0, ['citys'=>$employee[0]->citys]);
+        $this->api_res(0, ['cities'=>$employee[0]->citys]);
     }
 
     /**

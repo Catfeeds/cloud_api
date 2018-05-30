@@ -130,7 +130,8 @@ class Position extends MY_Controller
 
         if (isset($post['city']) && !empty($post['city'])) {
             $this->load->model('storemodel');
-            $store_ids = Storemodel::where('city', $post['city'])->get(['id'])->map(function ($s) {
+            $store_ids = Storemodel::where('company_id', COMPANY_ID)->where('city', $post['city'])
+                ->get(['id'])->map(function ($s) {
                 return $s['id'];
             });
             $count = ceil((Positionmodel::whereIn('store_id', $store_ids)->where($where)->count()) / PAGINATE);
@@ -148,14 +149,16 @@ class Position extends MY_Controller
             $this->api_res(0, ['count' => $count, 'list' => $category]);
             return;
         }
-
-        $count = ceil((Positionmodel::all()->count()) / PAGINATE);
+        $this->load->model('employeemodel');
+        $employee = Employeemodel::getMyStores();
+        $store_ids = explode(',', $employee[0]->store_ids);
+        $count = ceil((Positionmodel::where('company_id', COMPANY_ID)->whereIn('store_id', $store_ids)->count()) / PAGINATE);
         if ($page > $count) {
             $this->api_res(0, ['count' => $count, 'list' => []]);
             return;
         }
-        $this->load->model('employeemodel');
-        $category = Positionmodel::with('employee')->offset($offset)
+        $category = Positionmodel::with('employee')->where('company_id', COMPANY_ID)
+            ->whereIn('store_id', $store_ids)->offset($offset)
             ->limit(PAGINATE)->orderBy('id', 'desc')
             ->get($filed)->map(function($a){
             $a->count_z = $a->employee->count();
@@ -194,6 +197,19 @@ class Position extends MY_Controller
                 return $a;
             });
         $this->api_res(0,['count'=>$count,'list'=>$category]);
+    }
+
+    /**
+     * 删除职位
+     */
+    public function deletePosition(){
+        $id   = $this->input->post('id',true);
+        $where  = ['company_id'=>COMPANY_ID];
+        if(Positionmodel::where($where)->find($id)->delete()){
+            $this->api_res(0);
+        }else{
+            $this->api_res(1009);
+        }
     }
 
     /**

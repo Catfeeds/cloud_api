@@ -49,6 +49,16 @@ class Employeemodel extends Basemodel{
         return $info;
     }
 
+    //获取当前登陆者拥有权限的某个城市的门店
+    public static function getMyCitystores($city)
+    {
+        require_once 'Storemodel.php';
+        $employee = static::where('bxid', CURRENT_ID)->get(['store_ids']);
+        $store_ids = explode(',', $employee[0]->store_ids);
+        $storems = Storemodel::whereIn('id', $store_ids)->where('city', $city)->get(['id', 'name', 'province', 'city', 'district']);
+        return $storems;
+    }
+
     //获取当前登陆者拥有权限的门店
     public static function getMyStores()
     {
@@ -63,7 +73,7 @@ class Employeemodel extends Basemodel{
     }
 
     //获取当前登陆者拥有权限的城市
-    public static function getMyCitys()
+    public static function getMyCities()
     {
         require_once 'Storemodel.php';
         $employee = static::where('bxid', CURRENT_ID)->get(['store_ids'])->map(function ($a){
@@ -71,7 +81,7 @@ class Employeemodel extends Basemodel{
             $storems = Storemodel::whereIn('id', $store_ids)->get(['city'])->map(function ($b){
                 return $b->city;
             });
-            $a->citys =  $storems;
+            $a->cities =  $storems;
             return $a;
         });
         return $employee;
