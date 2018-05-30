@@ -121,7 +121,7 @@ class Danbaylock extends MY_Controller
         $res = json_decode($res, true);
 
         if (200 != $res['status']) {
-            $this->api_res(1);
+            $this->api_res(10050);
         }
         return $res;
     }
@@ -132,13 +132,13 @@ class Danbaylock extends MY_Controller
     public function handle()
     {
         $token = $this->getMtokenByLogin();
-        var_dump($token);
+
         if($this->m_redis->storeDanbyToken($token)){
-            $token = $this->m_redis->getDanBYToken();
-            var_dump($token);
+            //$token = $this->m_redis->getDanBYToken();
+            //var_dump($token);
             $this->api_res(0,$token);
         }else{
-            var_dump($token);
+            //var_dump($token);
             $this->api_res(1010);
         }
     }
