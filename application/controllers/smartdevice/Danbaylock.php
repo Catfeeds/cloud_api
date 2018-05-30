@@ -134,7 +134,7 @@ class Danbaylock extends MY_Controller
         $token = $this->getMtokenByLogin();
         var_dump($token);
         if($this->m_redis->storeDanbyToken($token)){
-            $token = $this->m_redis->setToken();
+            $token = $this->m_redis->getDanBYToken();
             var_dump($token);
             $this->api_res(0,$token);
         }else{
