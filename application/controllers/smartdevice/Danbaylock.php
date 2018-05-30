@@ -1,5 +1,6 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+use GuzzleHttp\Client;
 /**
  * Author:      hfq<1326432154@qq.com>
  * Date:        2018/5/10
@@ -129,20 +130,19 @@ class Danbaylock extends MY_Controller
      * 服务器端模拟登录蛋贝系统,获取mtoken
      * 获取思路: 成功蛋贝后, 蛋贝会将请求重定向到 ticket_consume_url, 并在 query 里面携带 mtoken, 获取响应头里面的 Location, 并从中解析出 mtoken
      */
-    public function getMtokenByLogin()
+    private function getMtokenByLogin()
     {
-        $responseHeaders    = $this->httpCurl($this->loginUrl,'POST', 'json', [
-            //'form_params'     => [
+        $responseHeaders    = (new Client())->request('POST', $this->loginUrl, [
+            'form_params'     => [
                 'mc_username'        => config_item('danbayUserName'),
                 'mc_password'        => config_item('danbayPassword'),
                 'random_code'        => 'whatever',
                 'return_url'         => 'res_failed',
                 'ticket_consume_url' => 'res_success',
-            //],
-            //'allow_redirects' => false,
-        ])/*->getHeaders()*/;
+            ],
+            'allow_redirects' => false,
+        ])->getHeaders();
 
-        var_dump($responseHeaders);
         $redirectUrl = urldecode($responseHeaders['Location'][0]);
 
         if (strstr($redirectUrl, 'res_failed')) {
@@ -164,7 +164,6 @@ class Danbaylock extends MY_Controller
             throw new \Exception("登录出错, mtoken长度错误,可能是蛋贝系统又出问题了!", 500);
         }
 
-        $this->api_res(0,$mtoken);
         return $mtoken;
     }
 
