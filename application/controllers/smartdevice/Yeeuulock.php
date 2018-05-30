@@ -15,7 +15,7 @@ class Yeeuulock extends MY_Controller
     private $timeStamp;
     private $secret;
     private $apiBaseUrl;
-    private $almsBaseUrl;
+    private $almsUrl;
 
     public function __construct($deviceId = null)
     {
@@ -34,7 +34,7 @@ class Yeeuulock extends MY_Controller
      */
     public function open($deviceNumber)
     {
-        return httpPost($this->apiBaseUrl, [
+        return $this->httpPost($this->apiBaseUrl, [
             'key'       => $this->secret,
             'sn'        => $deviceNumber,
             'action'    => 'open',
@@ -47,7 +47,7 @@ class Yeeuulock extends MY_Controller
      */
     public function getStatus($sn)
     {
-        return httpGet(implode('/', [$this->apiBaseUrl, $sn, 'getState']), [
+        return $this->httpGet(implode('/', [$this->apiBaseUrl, $sn, 'getState']), [
             'key'   => $this->secret,
         ]);
     }
@@ -68,7 +68,7 @@ class Yeeuulock extends MY_Controller
             throw new \Exception('不存在的密码类型');
         }
 
-        return httpGet(implode('/', [$this->apiBaseUrl, $sn, 'ext_password']), [
+        return $this->httpGet(implode('/', [$this->apiBaseUrl, $sn, 'ext_password']), [
             'key'       => $this->secret,
             'password'  => $pwd,
             'type'      => $type,
@@ -81,7 +81,7 @@ class Yeeuulock extends MY_Controller
      */
     public function rmPwd($sn, $index)
     {
-        return httpGet(implode('/', [$this->apiBaseUrl, $sn, 'operation_password']), [
+        return $this->httpGet(implode('/', [$this->apiBaseUrl, $sn, 'operation_password']), [
             'key'       => $this->secret,
             'mode'      => '2',
             'index'     => $index,
@@ -94,7 +94,7 @@ class Yeeuulock extends MY_Controller
      */
     public function switchPwd($sn, $index, $action = 0)
     {
-        return httpGet(implode('/', [$this->apiBaseUrl, $sn, 'modify_password_property']), [
+        return $this->httpGet(implode('/', [$this->apiBaseUrl, $sn, 'modify_password_property']), [
             'key'       => $this->secret,
             'action'    => $action,
             'index'     => $index,
@@ -107,7 +107,7 @@ class Yeeuulock extends MY_Controller
      */
     public function cyclePwd($sn)
     {
-        return httpGet(implode('/', [$this->apiBaseUrl, $sn, 'query_cycle_password']), [
+        return $this->httpGet(implode('/', [$this->apiBaseUrl, $sn, 'query_cycle_password']), [
             'key'   => $this->secret,
         ]);
     }
@@ -119,16 +119,17 @@ class Yeeuulock extends MY_Controller
      */
     public function openRecords($sn, $startDate, $endDate)
     {
-        return httpGet(implode('/', [$this->apiBaseUrl, $sn, 'logs', $startDate, $endDate]), [
+        $res = $this->httpGet(implode('/', [$this->apiBaseUrl, $sn, 'logs', $startDate, $endDate]), [
             'key'   => $this->secret,
         ]);
+        return $res;
     }
 
 
     /**
      * 发送 POST 请求
      */
-    private function httpPost($url, $options = [])
+    public function httpPost($url, $options = [])
     {
         return $this->request($url, 'POST', $options);
     }
@@ -137,7 +138,7 @@ class Yeeuulock extends MY_Controller
     /**
      * 发送 GET 请求
      */
-    private function httpGet($url, $options = [])
+    public function httpGet($url, $options = [])
     {
         return $this->request($url, 'GET', $options);
     }
@@ -187,6 +188,7 @@ class Yeeuulock extends MY_Controller
     }
     public function test()
     {
-        $this->openRecords('00124b000f0b9c9f', 20160102, 20180530);
+        $res = $this->openRecords('00124b000f0b9c9f', 20160102, 20180530);
+        $this->api_res(0,$res);
     }
 }
