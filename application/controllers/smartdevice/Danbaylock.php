@@ -132,8 +132,8 @@ class Danbaylock extends MY_Controller
     public function handle()
     {
         $token = $this->getMtokenByLogin();
-        if($this->M_redis->storeDanbyToken($token)){
-            $token = $this->M_redis->setToken();
+        if($this->m_redis->storeDanbyToken($token)){
+            $token = $this->m_redis->setToken();
             $this->api_res(0,$token);
         }else{
             $this->api_res(1010);
@@ -186,7 +186,7 @@ class Danbaylock extends MY_Controller
      */
     private function setToken()
     {
-        $token = $this->M_redis->getDanBYToken();
+        $token = $this->m_redis->getDanBYToken();
         if (!$token) {
             throw new \Exception('token 过期,请稍后重试!');
         }
