@@ -188,7 +188,7 @@ class Yeeuulock extends MY_Controller
     }
     public function test()
     {
-        $res = $this->openRecords('00124b000f0b9c9f', '20160102', '20180530');
+        $res = $this->openRecords('00124b000f0b9c9f', '20160102', '20180601');
         $this->api_res(0,$res);
     }
 }
