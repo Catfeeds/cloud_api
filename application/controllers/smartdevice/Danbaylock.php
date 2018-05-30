@@ -131,7 +131,7 @@ class Danbaylock extends MY_Controller
      */
     private function getMtokenByLogin()
     {
-        $responseHeaders    = $this->httpCurl('POST', $this->loginUrl, [
+        $responseHeaders    = $this->httpCurl($this->loginUrl,'POST',  [
             'form_params'     => [
                 'mc_username'        => config_item('danbayUserName'),
                 'mc_password'        => config_item('danbayPassword'),
@@ -140,9 +140,9 @@ class Danbaylock extends MY_Controller
                 'ticket_consume_url' => 'res_success',
             ],
             'allow_redirects' => false,
-        ])/*->getHeaders()*/;
+        ])->getHeaders();
 
-        var_dump($responseHeaders);die();
+        var_dump($responseHeaders);
         $redirectUrl = urldecode($responseHeaders['Location'][0]);
 
         if (strstr($redirectUrl, 'res_failed')) {
