@@ -11,15 +11,19 @@ class Danbaylock extends MY_Controller
     protected $deviceId;
     protected $token;
     private   $baseUrl    = 'http://www.danbay.cn/system/';
+    protected $signature    = 'danbay:update-token';
+    protected $description  = 'update-token-for-danbay-api-request';
+    protected $loginUrl     = 'http://www.danbay.cn/system/connect';
 
     const PWD_TYPE_GUEST    = 3;
     const PWD_TYPE_BUTLER   = 2;
     const PWD_TYPE_TEMP     = 0;
 
-    public function __construct($deviceId)
+    public function __construct()
     {
         parent::__construct();
-        $this->deviceId = $deviceId;
+        $this->load->library('M_jwt');
+        $this->deviceId = 'dccf6c99c17845481eba84692d4027e4';
     }
 
     /**
@@ -33,10 +37,9 @@ class Danbaylock extends MY_Controller
             'pwdType'   => 0,
         ]);
 
-        return [
-            'pwd_id'   => $res['pwdID'],
-            'password' => $pwd,
-        ];
+        return ['pwd_id'   => $res['pwdID'],
+                'password' => $pwd,
+                ];
     }
 
     /**
@@ -51,10 +54,11 @@ class Danbaylock extends MY_Controller
             'pwdType'   => self::PWD_TYPE_GUEST,
         ]);
 
-        return [
+        return $res;
+        /*[
             'pwd_id'   => $res['pwdID'],
             'password' => $pwd,
-        ];
+        ];*/
     }
 
     /**
@@ -106,83 +110,69 @@ class Danbaylock extends MY_Controller
      */
     private function sendRequet($uri, $options = [], $method = 'POST', $enctypeMultipart = false)
     {
-        $res = $this->request(
+        $options['deviceid'] = $this->deviceId;
+        $options['mtoken']  = $this->getToken();
+        $res = $this->httpCurl(
             $this->baseUrl . $uri,
             $method,
-            ''
-            //$this->buildRequestBody($options, $enctypeMultipart)
+            $options
         );
-
         $res = json_decode($res, true);
 
         if (200 != $res['status']) {
             throw new \Exception($res['message']);
         }
-
         return $res['result'];
     }
 
-
     /**
-     * 发送请求
+     * 服务器端模拟登录蛋贝系统,获取mtoken
+     * 获取思路: 成功蛋贝后, 蛋贝会将请求重定向到 ticket_consume_url, 并在 query 里面携带 mtoken, 获取响应头里面的 Location, 并从中解析出 mtoken
      */
-    private function request($url, $method,$data,  $contentType = 'application/json', $timeout = 30, $proxy = false) {
-        $ch = null;
-        if('POST' === strtoupper($method)) {
-            $ch = curl_init($url);
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_HEADER,0 );
-            curl_setopt($ch, CURLOPT_FRESH_CONNECT, 1);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_FORBID_REUSE, 1);
-            curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
-            if($contentType) {
-                curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:'.$contentType));
-            }
-            if(is_string($data)){
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-            } else {
-                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
-            }
-        } else if('GET' === strtoupper($method)) {
-            if(is_string($data)) {
-                $real_url = $url. (strpos($url, '?') === false ? '?' : ''). $data;
-            } else {
-                $real_url = $url. (strpos($url, '?') === false ? '?' : ''). http_build_query($data);
-            }
+    private function getMtokenByLogin()
+    {
+        $responseHeaders    = $this->httpCurl('POST', $this->loginUrl, [
+            'form_params'     => [
+                'mc_username'        => config('strongberry.danbayUserName'),
+                'mc_password'        => config('strongberry.danbayPassword'),
+                'random_code'        => 'whatever',
+                'return_url'         => 'res_failed',
+                'ticket_consume_url' => 'res_success',
+            ],
+            'allow_redirects' => false,
+        ])->getHeaders();
 
-            $ch = curl_init($real_url);
-            curl_setopt($ch, CURLOPT_HEADER, 0);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:'.$contentType));
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
-        } else {
-            $args = func_get_args();
-            return false;
+        $redirectUrl = urldecode($responseHeaders['Location'][0]);
+
+        if (strstr($redirectUrl, 'res_failed')) {
+            throw new \Exception('蛋贝系统登录失败!可能是账号或密码出错!');
         }
 
-        if($proxy) {
-            curl_setopt($ch, CURLOPT_PROXY, $proxy);
+        if (!strstr($redirectUrl, 'res_success')) {
+            throw new Exception('蛋贝登录失败!可能是系统故障!');
         }
-        $ret = curl_exec($ch);
-        $info = curl_getinfo($ch);
-        $contents = array(
-            'httpInfo'  => array(
-                'send'  => $data,
-                'url'   => $url,
-                'ret'   => $ret,
-                'http'  => $info,
-            )
-        );
-        curl_close($ch);
-        return json_decode($ret, true);
+
+        //重定向后的url包含ticket和mtoken两个参数
+        //从中分解出mtoken
+        $parameters = explode('mtoken=', $redirectUrl);
+        $parameters = $parameters[1];
+        $parameters = explode('ticket=', $parameters);
+        $mtoken     = $parameters[0];
+
+        if (strlen($mtoken) != 64) {
+            throw new \Exception("登录出错, mtoken长度错误,可能是蛋贝系统又出问题了!", 500);
+        }
+
+        return $mtoken;
     }
+
+
     /**
      * 获取 token
      */
-    /*private function setToken()
+    private function setToken()
     {
-        $token = Cache::get(config_item('danbayTokenKey'));
+        $token ='';
 
         if (!$token) {
             throw new \Exception('token 过期,请稍后重试!');
@@ -191,12 +181,12 @@ class Danbaylock extends MY_Controller
         $this->token = $token;
 
         return $this;
-    }*/
+    }
 
     /**
      * 获取请求凭证 token
      */
-    /*private function getToken()
+    private function getToken()
     {
         if ($this->token) {
             return $this->token;
@@ -205,6 +195,12 @@ class Danbaylock extends MY_Controller
         $this->setToken();
 
         return $this->token;
-    }*/
+    }
+
+    public function test()
+    {
+        $data       = $this->addTempPwd();
+        var_dump($data);
+    }
 
 }
