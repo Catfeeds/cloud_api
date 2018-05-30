@@ -87,6 +87,7 @@ class Ordermodel extends Basemodel{
         'pay_status',
     ];
 
+
     /**
      * 所有的订单类型
      */
@@ -239,7 +240,7 @@ class Ordermodel extends Basemodel{
      */
     public function ordersConfirmedToday()
     {
-        return $this->where('deal', self::DEAL_DONE)
+        return Ordermodel::where('deal', self::DEAL_DONE)
             ->where('status', self::STATE_COMPLETED)
             ->whereDate('updated_at', '=', date('Y-m-d'))
             ->count();
@@ -267,4 +268,143 @@ class Ordermodel extends Basemodel{
         //如果是次月及以后的账单，截止日到次月的缓冲期结束
         return $now->startOfMonth()->addMonth()->startOfMonth()->addDays($bufferDayCount);
     }
+
+    /**
+     * 检索订单, 不包括已生成和已审核的订单
+     **/
+    public function ordersOfRooms(array $where, $page ,$perPage=PAGINATE)
+    {
+        $query  = Ordermodel::with('roomunion');
+
+        $query  = $query->where($where);
+
+        $orders     = $query->whereNotIn('status', [Ordermodel::STATE_AUDITED, Ordermodel::STATE_GENERATED])
+            ->orderBy('status', 'ASC')
+            ->orderBy('room_id', 'ASC')
+            ->orderBy('updated_at', 'DESC')
+            ->get()
+            ->groupBy('room_id');
+
+
+        $pagination     = [
+            'total'         => $orders->count(),
+            'per_page'      => $perPage,
+            'current_page'  => $page,
+        ];
+        $pagination['total_pages']  = (int)ceil($pagination['total'] / $pagination['per_page']);
+
+        $orders     = $orders->forPage($page, $perPage)
+            ->map(function ($items) {
+                $order  = $items->first();
+
+                return [
+                    'room'  => [
+                        'id'        => $order->roomunion->id,
+                        'number'    => $order->roomunion->number,
+                    ],
+                    'orders'    => [
+                        'status'        => $order->status,
+//                        'status_name'   => config('strongberry.orderName.status')[$order->status],
+                        'amount'        => $items->sum('paid'),
+                        'months'        => $items->pluck('month')->unique()->values(),
+                        'updated_at'    => $order->updated_at->format('Y-m-d'),
+                    ],
+                    'resident'  => [
+                        'id'        => $order->resident_id,
+                        'name'      => $order->resident_id > 0 ? $order->resident->name : '未知',
+                        'avatar'    => $order->customer_id > 0 ? $order->customer->avatar : NULL,
+                        'remark'    => $order->resident_id > 0 ? $order->resident->remark : '',
+                    ]
+                ];
+            })
+            ->values();
+
+        return array_merge($pagination, [
+            'data'  => $orders,
+        ]);
+    }
+
+    /**
+     * [更新水电费表和物品租赁表]
+     * @param  [OrderEntity]    $order  [Order 表中的实例]
+     * @param  [String]         $status [新的状态]
+     * @param  [String]         $deal   [新的交易结果]
+     *
+     * @return [integer]        [操作结果]
+     */
+    public function updateDeviceAndUtility($order, $status, $deal)
+    {
+        if (!$order->other_id) return false;
+
+        switch ($order->type) {
+            case Ordermodel::PAYTYPE_DEVICE :
+                $tmpOrder   = Smartdevicemodel::find($order->other_id);
+                break;
+            case Ordermodel::PAYTYPE_UTILITY :
+                $tmpOrder   = Utilitymodel::find($order->other_id);
+                break;
+            default:
+                $tmpOrder   = NULL;
+                break;
+        }
+
+        if (!$tmpOrder) {
+
+            log_message('error','水电或物品订单更新失败:未查找到相应订单!');
+            return false;
+        }
+
+        return $tmpOrder->update([
+            'status'    => $status,
+        ]);
+    }
+
+    /**
+     * [检索住户未完成缴费的账单未支付及未确认完成]
+     * @param  [integer] $residentId [住户id]
+     * @return [OrderCollection]    [订单列表]
+     */
+    public function ordersUnpaidOfResident($residentId)
+    {
+        return Order::where('resident_id', $residentId)->whereIn('status', [Ordermodel::STATE_PENDING, Ordermodel::STATE_CONFIRM])->get();
+    }
+
+
+
+    public function customer()
+    {
+        return $this->belongsTo(Customermodel::class, 'customer_id');
+    }
+
+    public function roomunion()
+    {
+        return $this->belongsTo(Roomunionmodel::class, 'room_id');
+    }
+
+    public function store()
+    {
+        return $this->belongsTo(Storemodel::class, 'store_id');
+    }
+
+    public function resident()
+    {
+        return $this->belongsTo(Residentmodel::class, 'resident_id');
+    }
+
+    public function employee()
+    {
+        return $this->belongsTo(Employeemodel::class, 'employee_id');
+    }
+
+    public function roomtype()
+    {
+        return $this->belongsTo(Roomtypemodel::class, 'room_type_id');
+    }
+
+    public function coupon()
+    {
+        return $this->hasOne(Couponmodel::class, 'order_id');
+    }
+
+
 }

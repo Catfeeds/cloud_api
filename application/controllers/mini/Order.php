@@ -1,5 +1,6 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+use Illuminate\Database\Capsule\Manager as DB;
 /**
  * Author:      zjh<401967974@qq.com>
  * Date:        2018/5/22 0022
@@ -13,6 +14,382 @@ class Order extends MY_Controller
     {
         parent::__construct();
     }
+
+    /**
+     * 订单列表
+     * 根据不同的query返回不同的值
+     * 可选参数包括type, status, room_number
+     */
+    public function listOrder()
+    {
+        //验证表单
+        //根据状态 未支付，已支付，等待确认...
+        //根据类型  房间 物业费 ...
+        //根据支付方式
+
+        $field  = ['status','type','room_number'];
+        if(!$this->validationText($this->validateList())){
+            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+            return;
+        }
+        $input=$this->input->post(null,true);
+
+        $store_id   = $this->employee->store_id;
+        $page   = isset($input['page'])?intval(strip_tags(trim($input['page']))):1;
+        $per_page   = isset($input['per_page'])?intval(strip_tags(trim($input['per_page']))):PAGINATE;
+        $where  = ['store_id'=>$store_id];
+        if(isset($input['status'])){
+            $where['status']    = $input['status'];
+        }
+
+        if(isset($input['type'])){
+            $where['type']    = $input['type'];
+        }
+
+        $this->load->model('roomunionmodel');
+        $this->load->model('ordermodel');
+        $this->load->model('residentmodel');
+        $this->load->model('customermodel');
+
+        if(isset($input['room_number'])){
+            $room   = Roomunionmodel::where([
+                'store_id'=>$store_id,
+                'number'=>$input['number']
+            ])->first();
+            $where['room_id']  = $room->id;
+        }
+        $data   = $this->ordermodel->ordersOfRooms($where,$page,$per_page);
+
+        $this->api_res(0,['data'=>$data]);
+    }
+
+
+
+    /**
+     *  订单列表筛选的规则
+     */
+    private function validateList()
+    {
+
+        return Array(
+
+            array(
+                'field' => 'status',
+                'label' => '订单状态',
+                'rules' => 'trim|in_list[GENERATE,AUDITED,PENDING,CONFIRM,COMPLATE,CLOSE]',
+            ),
+            array(
+                'field' => 'type',
+                'label' => '订单类型',
+                'rules' => 'trim|in_list[ROOM,CLEAN,DEIVCE,UTILITY,REFUND,RESERVE,MANAGEMENT,OTHER,DEPOSIT_O,DEPOSIT_R,WATER,ELECTRICITY,COMPENSATION]',
+            ),
+            array(
+                'field' => 'room_number',
+                'label' => '房间号',
+                'rules' => 'trim',
+            ),
+        );
+
+    }
+
+    /**
+     * 微信支付订单确认
+     * 用户微信支付后, 需要员工进行确认
+     */
+    public function confirm()
+    {
+        //resident_id     : 订单所属住户记录的id
+        //room_id         : 订单所属房间记录的id
+        //order_ids       : 操作的订单id数组, 数组, 数组, 数组
+        $input  = $this->input->post(null,true);
+        $resident_id    = $input['resident_id'];
+        $room_id        = $input['room_id'];
+        $order_ids      = $input['order_ids'];
+
+        $this->load->model('residentmodel');
+        $this->load->model('ordermodel');
+        $this->load->model('contractmodel');
+        $resident   = Residentmodel::find($resident_id);
+        if(!$resident){
+            $this->api_res(1007);
+            return;
+        }
+        $orderIds   = $this->getRequestIds( $order_ids);
+        $orders     = $this->undealOrdersOfSpecifiedResident($resident, $orderIds,true);
+        if(!$orders){
+            $this->api_res(10016);
+            return;
+        }
+
+        //检查是否有合同, 是否能继续进行
+        $contract   = $this->checkContract($resident);
+        if(!$contract){
+            $this->api_res(10017);
+            return;
+        }
+
+        try{
+
+            DB::beginTransaction();
+
+            $this->load->model('smartdevicemodel');
+            $this->load->model('utilitymodel');
+
+            //更新订单订单到完成的状态
+            $orders     = $this->completeOrders($orders);
+
+            //销券
+            $this->load->model('couponmodel');
+            $this->couponmodel->invalidByOrders($orderIds);
+
+            //处理房间及住户的状态
+            $this->load->model('roomunionmodel');
+            $this->updateRoomAndResident($orders, $resident, $resident->roomunion);
+
+            DB::commit();
+        }catch (Exception $e){
+
+            DB::rollBack();
+            throw $e;
+        }
+        $this->api_res(0);
+    }
+
+    /**
+     * [检查参数, 并查询到Resident实例]
+     * @param  Request      $request        [请求]
+     * @param  ResidentRepo $residentRepo   [Resident仓库]
+     *
+     * @return [ResidentEntity]             [Resident实例]
+     */
+    private function checkRequestAndGetResident(Request $request, ResidentRepo $residentRepo)
+    {
+        if (!$request->has('resident_id')) {
+            throw new \Exception('缺少参数: resident_id');
+        }
+
+        return $residentRepo->find($request->input('resident_id'));
+    }
+
+    /**
+     * [获取某住户的指定未支付账单, 请求参数中需要有id的数组]
+     * @param  [ResidentEntity]  $resident [Resident实例]
+     * @param  Request $request  [请求]
+     *
+     * @return [OrderCollection]           [Order集合]
+     */
+    private function undealOrdersOfSpecifiedResident($resident, $request, $confirm = false)
+    {
+        $status     = Ordermodel::STATE_PENDING;
+
+        if ($confirm) {
+            $status     = Ordermodel::STATE_CONFIRM;
+        }
+
+        $orderIds   = $request;
+        $orders     = $resident->orders()
+            ->whereIn('id', $orderIds)
+            ->where('status', $status)
+            ->get();
+
+        if (count($orders) != count($orderIds)) {
+            log_message('error','未找到订单信息或者订单状态错误!');
+            return false;
+        }
+
+        return $orders;
+    }
+
+    /**
+     * 确认订单以及现场支付时的订单状态的更新
+     * 目前的情况下, 如果订单中包含某些特定类型(水电, 物品等费用)订单, 需要同时处理掉
+     * 其余订单的更新还需要补充
+     */
+    private function completeOrders($orders, $payWay = null)
+    {
+        $number     = $orders->first()->number;
+        $count      = $this->ordermodel->ordersConfirmedToday();
+        $status     = Ordermodel::STATE_COMPLETED;
+        $deal       = Ordermodel::DEAL_DONE;
+        $dateString = date('Ymd');
+
+        //更新订单状态
+        foreach ($orders as $order) {
+
+            //如果是水电或者物品租赁账单, 需要更新相应记录
+            $this->ordermodel->updateDeviceAndUtility(
+                $order,
+                Ordermodel::STATE_COMPLETED,
+                Ordermodel::DEAL_DONE
+            );
+
+            $order->pay_type            = $payWay ? : $order->pay_type;
+            $order->sequence_number     = sprintf("%s%06d", $dateString, ++ $count);
+            $order->number              = $number;
+            $order->status              = $status;
+            $order->deal                = $deal;
+            $order->save();
+        }
+
+        return $orders;
+    }
+    /**
+     * [判断合同是否存在, 检查能否进行接下来的操作]
+     * @param  [ResidentEntity]     $resident     [住户的实例]
+     * @param  ResidentRepo         $residentRepo
+     *
+     * @return [bool]               [结果]
+     */
+    private function checkContract($resident)
+    {
+        //没有办理入住的时候, 合同时长是0, 这个时候不需要合同, 如果住户的状态是已经支付过的, 也不用检查
+        if (0 == $resident->contract_time OR Residentmodel::STATE_NOTPAY == $resident->status) {
+            return true;
+        }
+
+        if (empty($resident->contract)) {
+            log_message('error','未检测到该住户的合同, 请生成后重试!');
+            return false;
+            //throw new \Exception('未检测到该住户的合同, 请生成后重试!');
+        }
+
+        return true;
+    }
+
+    /**
+     * [获取某住户指定的未使用的优惠券, 请求参数中需要有id的数组]
+     * @param  [ResidentEntity]  $resident [Resident实例]
+     * @param  [Request]         $request  [请求]
+     *
+     * @return [CouponCollection]          [Order集合]
+     */
+    private function unusedCouponsOfSpecifiedResident($resident, Request $request, CouponRepo $couponRepo)
+    {
+        if (!$request->has('coupon_ids')) {
+            return null;
+        }
+
+        $couponIds  = $this->getRequestIds($request, 'coupon_ids');
+        $coupons    = $resident->coupons()
+            ->whereIn('id', $couponIds)
+            ->where('status', $couponRepo->status_unused)
+            ->get();
+
+        if (count($coupons) != count($couponIds)) {
+            throw new \Exception('未找到相应的优惠券或者优惠券状态错误!');
+        }
+
+        return $coupons;
+    }
+
+    /**
+     * 获取请求参数中的id数组
+     */
+    private function getRequestIds($ids)
+    {
+
+        if (!is_array($ids)) {
+            throw new \Exception('请检查参数: ids的参数类型应该为数组');
+        }
+
+        foreach ($ids as $id) {
+            if (!is_numeric($id)) {
+                throw new \Exception('请检查参数: id应该为整型');
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
+     * 订单确认后房间状态和住户状态的更新
+     * 房间 占用->预订, 占用->出租, 欠费->出租
+     * 住户 未付款->预订, 未付款->出租
+     */
+    private function updateRoomAndResident($orders, $resident, $room)
+    {
+        //检索住户是否仍有未缴费的账单, 如果仍有需缴费的账单, 则不更新
+        $ordersUnpaid   = $this->ordermodel->ordersUnpaidOfResident($resident->id);
+
+        if (count($ordersUnpaid)) {
+            return true;
+        }
+
+//        //判断用户是否有退房记录, 如果有退房记录, 将其标记为已支付待办理状态
+//        if ($record = $resident->checkout_record) {
+//            if (in_array($record->status, [$checkoutRepo->status_applied, $checkoutRepo->status_unpaid])) {
+//                $record->status     = $checkoutRepo->status_pending;
+//                $record->save();
+//            }
+//        }
+//
+//        $residentToUpdate   = $residentRepo->state_notpay == $resident->status;
+//        $roomToUpdate       = in_array($room->status, [
+//            $roomRepo->state_arrears,
+//            $roomRepo->status_occupied,
+//            $roomRepo->state_reserve,
+//        ]);
+//
+//        if (!$roomToUpdate AND !$residentToUpdate) {
+//            return true;
+//        }
+//
+//        //判断是否是预订账单
+//        if ($orders->where('type', $this->repository->type_reserve)->count() == count($orders)) {
+//            $roomNewStatus      = $roomRepo->state_reserve;
+//            $residentNewStatus  = $residentRepo->state_reserve;
+//        } else {
+//            $roomNewStatus      = $roomRepo->state_rent;
+//            $residentNewStatus  = $residentRepo->state_normal;
+//        }
+//
+//        if ($roomToUpdate) {
+//            $room->update(['status' => $roomNewStatus]);
+//        }
+//
+//        //换房等逻辑, 这里需要修改
+//        if ($residentToUpdate) {
+//            if (isset($resident->data['change_room'])) {
+//                //处理换房的事务
+//                dispatch(new EndChangeRoomStuff($resident));
+//            } elseif (isset($resident->data['renewal'])) {
+//                //do something to handle renew stuff
+//            } else {
+//                $resident->update(['status' => $residentNewStatus]);
+//            }
+//        }
+
+        return true;
+    }
+
+    /**
+     * 根据参数检索订单
+     * 可能是根据房间出发检索订单, 也可能是根据住户出发检索订单
+     * $object 可能是Room的实例, 也可能是Resident的实例
+     */
+    private function queryOrders(Request $request, $object)
+    {
+        $this->checkStatusAndType($request->all());
+
+        $orders     = $object->orders()->where('apartment_id', $this->authUser->apartment_id);
+
+        if ($request->has('status')) {
+            $orders = $orders->where('status', $request->input('status'));
+        }
+
+        if ($request->has('type')) {
+            $orders = $orders->where('type', $request->input('type'));
+        }
+
+        if ($request->has('pay_way')) {
+            $orders = $orders->where('pay_type', $request->input('pay_way'));
+        }
+
+        return $orders->orderBy('updated_at', 'DESC')->orderBy('type', 'ASC')->get();
+    }
+
+
+
 
 
 }

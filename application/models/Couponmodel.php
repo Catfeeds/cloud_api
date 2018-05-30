@@ -34,6 +34,19 @@ class Couponmodel extends Basemodel
         return $this->belongsTo(Activitymodel::class,'activity_id')->select('id','name');
     }
 
+    /**
+     * [确认订单时, 将优惠券给销掉]
+     * @param  array  $orderIds [订单的id数组]
+     * @return [type]           [操作结果]
+     */
+    public function invalidByOrders(array $orderIds)
+    {
+        return Couponmodel::whereIn('order_id', $orderIds)->update([
+            'status'    => Couponmodel::STATUS_USED,
+        ]);
+    }
+
+
 
 
 }
