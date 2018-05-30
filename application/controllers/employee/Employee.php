@@ -23,6 +23,7 @@ class Employee extends MY_Controller
         $post = $this->input->post(null, true);
         $city = isset($post['city']) ? $post['city'] : null;
         $stores = Employeemodel::getMyCitystores($city);
+        //$stores = Employeemodel::getMyStores(); //测试用
         if (!$stores) {
             $this->api_res(1009);
         }
@@ -34,11 +35,12 @@ class Employee extends MY_Controller
      */
     public function showMyCities()
     {
-        $employee = Employeemodel::getMyCities();
-        if (!$employee) {
+        $cities = Employeemodel::getMyCities();
+        $cities->prepend("");
+        if (!$cities) {
             $this->api_res(1009);
         }
-        $this->api_res(0, ['cities'=>$employee[0]->cities]);
+        $this->api_res(0, ['cities'=>$cities]);
     }
 
     /**

@@ -63,28 +63,22 @@ class Employeemodel extends Basemodel{
     public static function getMyStores()
     {
         require_once 'Storemodel.php';
-        $employee = static::where('bxid', CURRENT_ID)->get(['store_ids'])->map(function ($a){
-            $store_ids = explode(',', $a->store_ids);
-            $storems = Storemodel::whereIn('id', $store_ids)->get(['id', 'name', 'province', 'city', 'district']);
-            $a->stores =  $storems;
-            return $a;
-        });
-        return $employee;
+        $employee = static::where('bxid', CURRENT_ID)->get(['store_ids']);
+        $store_ids = explode(',', $employee[0]->store_ids);
+        $stores = Storemodel::whereIn('id', $store_ids)->get(['id', 'name', 'province', 'city', 'district']);
+        return $stores;
     }
 
     //获取当前登陆者拥有权限的城市
     public static function getMyCities()
     {
         require_once 'Storemodel.php';
-        $employee = static::where('bxid', CURRENT_ID)->get(['store_ids'])->map(function ($a){
-            $store_ids = explode(',', $a->store_ids);
-            $storems = Storemodel::whereIn('id', $store_ids)->get(['city'])->map(function ($b){
-                return $b->city;
-            });
-            $a->cities =  $storems;
-            return $a;
+        $employee = static::where('bxid', CURRENT_ID)->get(['store_ids']);
+        $store_ids = explode(',', $employee[0]->store_ids);
+        $cities = Storemodel::whereIn('id', $store_ids)->get(['city'])->map(function ($c){
+            return $c->city;
         });
-        return $employee;
+        return $cities;
     }
 
 }
