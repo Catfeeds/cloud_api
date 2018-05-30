@@ -129,17 +129,17 @@ class Danbaylock extends MY_Controller
      * 服务器端模拟登录蛋贝系统,获取mtoken
      * 获取思路: 成功蛋贝后, 蛋贝会将请求重定向到 ticket_consume_url, 并在 query 里面携带 mtoken, 获取响应头里面的 Location, 并从中解析出 mtoken
      */
-    private function getMtokenByLogin()
+    public function getMtokenByLogin()
     {
         $responseHeaders    = $this->httpCurl($this->loginUrl,'POST', 'json', [
-            'form_params'     => [
+            //'form_params'     => [
                 'mc_username'        => config_item('danbayUserName'),
                 'mc_password'        => config_item('danbayPassword'),
                 'random_code'        => 'whatever',
                 'return_url'         => 'res_failed',
                 'ticket_consume_url' => 'res_success',
-            ],
-            'allow_redirects' => false,
+            //],
+            //'allow_redirects' => false,
         ])/*->getHeaders()*/;
 
         var_dump($responseHeaders);

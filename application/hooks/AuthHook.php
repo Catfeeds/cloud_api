@@ -137,6 +137,7 @@ class AuthHook {
             'smartdevice/yeeuulock/test',
             'smartdevice/danbaylock/addtemppwd',
             'smartdevice/danbaylock/test',
+            'smartdevice/danbaylock/getmtokenbylogin',
 
             'common/city',
             'common/province',
