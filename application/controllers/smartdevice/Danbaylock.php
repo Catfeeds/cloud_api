@@ -112,13 +112,13 @@ class Danbaylock extends MY_Controller
     private function sendRequet($uri, $options = [], $method = 'POST', $enctypeMultipart = false)
     {
         $options['deviceid'] = $this->deviceId;
-        $options['mtoken']  = 'HLZZx8Zsnkb8GbBplFL8r+Ly7vy8FTdgv458Bf6lMvEakcaw1+QOsVB7UfmIHE1K';
+        $options['mtoken']  = $this->getToken();
         $res = (new Client())->request(
             $method,
             $this->baseUrl . $uri,
             $options
-        );
-        //$res = json_decode($res, true);
+        )->getBody()->getContents();
+        $res = json_decode($res, true);
 
         if (200 != $res['status']) {
             $this->api_res(1);
@@ -133,7 +133,8 @@ class Danbaylock extends MY_Controller
     {
         $token = $this->getMtokenByLogin();
         if($this->M_redis->storeDanbyToken($token)){
-            $this->api_res(0);
+            $token = $this->M_redis->setToken();
+            $this->api_res(0,$token);
         }else{
             $this->api_res(1010);
         }
@@ -200,7 +201,6 @@ class Danbaylock extends MY_Controller
     {
         if ($this->token) {
             return $this->token;
-            //return "HLZZx8Zsnkb8GbBplFL8r+Ly7vy8FTdgv458Bf6lMvEakcaw1+QOsVB7UfmIHE1K";
         }
         $this->setToken();
         return $this->token;
@@ -208,7 +208,7 @@ class Danbaylock extends MY_Controller
 
     public function test()
     {
-        $data       = $this->addTempPwd();
+        $data       = $this->getLockPwdList();
         var_dump($data);
     }
 
