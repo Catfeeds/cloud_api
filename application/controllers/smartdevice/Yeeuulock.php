@@ -23,7 +23,7 @@ class Yeeuulock extends MY_Controller
         $this->deviceId     = $deviceId;
         $this->nonstr       = str_random(16);
         $this->timeStamp    = time();
-        $this->apiBaseUrl   = 'https://api.yeeuu.com/v1/locks/';
+        $this->apiBaseUrl   = 'https://api.yeeuu.com/v1/locks';
         $this->almsUrl      = 'https://alms.yeeuu.com/apartments/synchronize_apartments';
         $this->partnerId    = config_item('joyLockPartnerId');
         $this->secret       = config_item('joyLockSecret');
@@ -188,7 +188,7 @@ class Yeeuulock extends MY_Controller
     }
     public function test()
     {
-        $res = $this->openRecords('00124b000f0b9c9f', 20160102, 20180530);
+        $res = $this->openRecords('00124b000f0b9c9f', '20160102', '20180530');
         $this->api_res(0,$res);
     }
 }
