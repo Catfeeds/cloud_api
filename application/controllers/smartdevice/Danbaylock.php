@@ -140,8 +140,9 @@ class Danbaylock extends MY_Controller
                 'ticket_consume_url' => 'res_success',
             ],
             'allow_redirects' => false,
-        ])->getHeaders();
+        ])/*->getHeaders()*/;
 
+        var_dump($responseHeaders);die();
         $redirectUrl = urldecode($responseHeaders['Location'][0]);
 
         if (strstr($redirectUrl, 'res_failed')) {
