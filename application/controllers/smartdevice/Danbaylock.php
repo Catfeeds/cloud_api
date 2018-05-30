@@ -23,7 +23,7 @@ class Danbaylock extends MY_Controller
     public function __construct()
     {
         parent::__construct();
-        $this->load->library('M_redis');
+        $this->load->library('m_redis');
         $this->deviceId = 'dccf6c99c17845481eba84692d4027e4';
     }
 
