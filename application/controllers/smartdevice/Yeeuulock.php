@@ -187,8 +187,8 @@ class Yeeuulock extends MY_Controller
         return json_decode($res, true);
     }
     public function test()
-    {
-        $res = $this->openRecords('00124b000f0b9c9f', '20160102', '20180601');
+    {   $sn = '00124b000f0b9c9f';
+        $res = $this->extPwd($sn, '19960102', '1');
         $this->api_res(0,$res);
     }
 }
