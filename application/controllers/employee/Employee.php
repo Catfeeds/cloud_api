@@ -38,7 +38,7 @@ class Employee extends MY_Controller
         if (!$employee) {
             $this->api_res(1009);
         }
-        $this->api_res(0, ['cities'=>$employee[0]->citys]);
+        $this->api_res(0, ['cities'=>$employee[0]->cities]);
     }
 
     /**
