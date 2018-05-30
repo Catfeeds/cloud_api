@@ -30,6 +30,8 @@ class AuthHook {
 
             'demo/sheet/index',
 
+            'bill/bill/generate',
+
             'account/login/login',
             'mini/resident/checkroomunion',
             'mini/resident/checkin',

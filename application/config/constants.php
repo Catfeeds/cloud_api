@@ -102,6 +102,8 @@ define('USERINFO','FUNXDATA:BOSS:USER:INFO:');      //用户信息
 define('COMPANYINFO','FUNXDATA:BOSS:COMPANY:INFO:'); //公司信息
 define('COMPANYPRIVILEGE','FUNXDATA:BOSS:COMPANY:PRIVILEGE:'); //公司权限
 
+define('DANBYTOKEN','FUNXDATA:BOSS:DANBY:TOKEN');
+
 
 //分页
 define('PAGINATE',10);          //分页页码

@@ -24,10 +24,11 @@ class Resident extends MY_Controller
         $this->load->model('residentmodel');
         $this->load->model('couponmodel');
         $this->load->model('activitymodel');
+        $this->load->model('storemodel');
         $post   = $this->input->post(NULL,true);
         $serial = $post['id'];
-        $filed  = ['id','contract_id','resident_id','room_id','status','created_at'];
-        $resident = Contractmodel::where('id',$serial)->with('room')->with('residents')->get($filed);
+        $filed  = ['id','contract_id','resident_id','store_id','room_id','status','created_at'];
+        $resident = Contractmodel::where('id',$serial)->with('store')->with('roomunion')->with('residents')->get($filed);
         $this->api_res(0,['resident'=>$resident]);
     }
 

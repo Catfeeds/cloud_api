@@ -47,20 +47,20 @@ class Roomunionmodel extends Basemodel{
 
     //房型展示
     public function room_type(){
-        return $this->belongsTo(Roomtypemodel::class,'room_type_id')
-            ->select(['id','name','feature']);
+
+        return $this->belongsTo(Roomtypemodel::class,'room_type_id');
     }
 
     //房间住户信息
     public function resident(){
-        return $this->belongsTo(Residentmodel::class,'resident_id')->select(['id','name']);
+
+        return $this->belongsTo(Residentmodel::class,'resident_id');
     }
 
     //房间所属门店信息
     public function store(){
 
-        return $this->belongsTo(Storemodel::class,'store_id')->select(
-            ['id','name','province','city','district','address','describe']);
+        return $this->belongsTo(Storemodel::class,'store_id');
     }
 
     //房间所属楼栋信息
@@ -85,23 +85,33 @@ class Roomunionmodel extends Basemodel{
             ->where('rent_type','RESERVE')->select(['id','name']);
     }
 
-    //房屋公共智能设备
-    public function housesmartdevice(){
-
-        return $this->belongsTo(Smartdevicemodel::class,'house_smart_device_id');
+    public function orders()
+    {
+        return $this->hasMany(Ordermodel::class, 'room_id');
     }
 
-    //房间的智能设备
-    public function smartdevice(){
-
-        return $this->belongsTo(SmartDevicemodel::class,'smart_device_id');
+    public function devices()
+    {
+        return $this->hasMany(Smartdevicemodel::class, 'room_id');
     }
+
+//    //房屋公共智能设备
+//    public function housesmartdevice(){
+//
+//        return $this->belongsTo(Smartdevicemodel::class,'house_smart_device_id');
+//    }
+//
+//    //房间的智能设备
+//    public function smartdevice(){
+//
+//        return $this->belongsTo(SmartDevicemodel::class,'smart_device_id');
+//    }
 
     //合租人信息
-    public function unionresident(){
-
-        return $this->hasMany(Unionresidentmodel::class,'room_id');
-    }
+//    public function unionresident(){
+//
+//        return $this->hasMany(Unionresidentmodel::class,'room_id');
+//    }
 
     /**
      * 是否空闲
