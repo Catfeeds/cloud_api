@@ -131,7 +131,7 @@ class Danbaylock extends MY_Controller
      */
     private function getMtokenByLogin()
     {
-        $responseHeaders    = $this->httpCurl($this->loginUrl,'POST',  [
+        $responseHeaders    = $this->httpCurl($this->loginUrl,'POST', 'json', [
             'form_params'     => [
                 'mc_username'        => config_item('danbayUserName'),
                 'mc_password'        => config_item('danbayPassword'),
