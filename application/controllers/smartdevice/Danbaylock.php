@@ -133,8 +133,8 @@ class Danbaylock extends MY_Controller
     {
         $responseHeaders    = $this->httpCurl('POST', $this->loginUrl, [
             'form_params'     => [
-                'mc_username'        => config_item(''),
-                'mc_password'        => config_item(''),
+                'mc_username'        => config_item('danbayUserName'),
+                'mc_password'        => config_item('danbayPassword'),
                 'random_code'        => 'whatever',
                 'return_url'         => 'res_failed',
                 'ticket_consume_url' => 'res_success',
