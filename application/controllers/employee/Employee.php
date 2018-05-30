@@ -38,24 +38,18 @@ class Employee extends MY_Controller
         $where = isset($post['store_id']) ? ['store_id' => $post['store_id']] : [];
         if (isset($post['city']) && !empty($post['city'])) {
             $this->load->model('storemodel');
-            $this->load->model('employeestoremapmodel');
-
             $store_ids = Storemodel::where('company_id', COMPANY_ID)
                 ->where('city', $post['city'])->get(['id'])->map(function ($s) {
-                return $s->id;
-            });
-            $employee_ids = Employeestoremapmodel::whereIn('store_id', $store_ids)->where($where)
-                ->get(['employee_id'])->map(function ($e) {
-                return $e->employee_id;
-            });
-            $count = ceil((Employeemodel::whereIn('id', $employee_ids)->where('status', 'ENABLE')->count()) / PAGINATE);
+                    return $s->id;
+                });
+            $count = ceil((Employeemodel::whereIn('store_ids', $store_ids)->where('status', 'ENABLE')->count()) / PAGINATE);
             if ($page > $count) {
                 $this->api_res(0, ['count' => $count, 'list' => []]);
                 return;
             }
             $category = Employeemodel::with(['position' => function ($query) {
                 $query->select('id', 'name');
-            }])->whereIn('id', $employee_ids)->where('status', 'ENABLE')
+            }])->whereIn('store_ids', $store_ids)->where($where)->where('status', 'ENABLE')
                 ->offset($offset)->limit(PAGINATE)->orderBy('id', 'desc')->get($field);
             $this->api_res(0, ['count' => $count, 'list' => $category]);
             return;
@@ -83,16 +77,21 @@ class Employee extends MY_Controller
         $name   = isset($post['name'])?$post['name']:null;
         $page   = intval(isset($post['page'])?$post['page']:1);
         $offset = PAGINATE * ($page-1);
-        $count  = ceil((Employeemodel::where('name','like',"%$name%")->count())/PAGINATE);
+        //define('COMPANY_ID', 4); //测试用
+        $count  = ceil((Employeemodel::where('company_id', COMPANY_ID)
+                ->where('name','like',"%$name%")->count())/PAGINATE);
         if($page > $count){
             $this->api_res(0,['count'=>$count,'list'=>[]]);
             return;
         }
-        $mystore = Employeemodel::getMyStores()->toArray();
-        $mystores = explode(',', $mystore[0]['store_ids']);
+        $this->load->model('storemodel');
+        $store_ids = Storemodel::where('company_id', COMPANY_ID)->get(['id'])->map(function ($s) {
+                return $s->id;
+            });
         $category = Employeemodel::with(['position' => function ($query) {
             $query->select('id', 'name');
-        }])->whereIn('store_id', $mystores)->where('status', 'ENABLE')->offset($offset)
+        }])->whereIn('store_ids', $store_ids)->where('name','like',"%$name%")
+            ->where('status', 'ENABLE')->offset($offset)
             ->limit(PAGINATE)->orderBy('id', 'desc')->get($field);
         $this->api_res(0,['count'=>$count,'list'=>$category]);
     }
