@@ -15,14 +15,29 @@ class Employee extends MY_Controller
         $this->load->model('employeemodel');
     }
 
-    /*public function showMyStores()
+    /**
+     * 显示登录者负责的门店
+     */
+    public function showMyStores()
     {
         $employee = Employeemodel::getMyStores();
         if (!$employee) {
             $this->api_res(1009);
         }
-        $this->api_res(0, $employee);
-    }*/
+        $this->api_res(0, ['stores'=>$employee[0]->stores]);
+    }
+
+    /**
+     * 显示登录者负责的城市
+     */
+    public function showMyCitys()
+    {
+        $employee = Employeemodel::getMyCitys();
+        if (!$employee) {
+            $this->api_res(1009);
+        }
+        $this->api_res(0, ['citys'=>$employee[0]->citys]);
+    }
 
     /**
      * 显示员工权限信息
