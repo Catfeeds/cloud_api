@@ -154,7 +154,7 @@ class M_redis
     public function storeDanbyToken($token){
         $key    = DANBYTOKEN;
         $this->redis->set($key,$token,30*60);
-        return;
+        return true;
     }
 
     /**
