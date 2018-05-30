@@ -113,6 +113,7 @@ class Danbaylock extends MY_Controller
     {
         $options['deviceid'] = $this->deviceId;
         $options['mtoken']  = $this->getToken();
+        var_dump($options);
         $res = (new Client())->request(
             $method,
             $this->baseUrl . $uri,
