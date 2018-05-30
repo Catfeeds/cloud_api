@@ -23,7 +23,7 @@ class Danbaylock extends MY_Controller
     public function __construct()
     {
         parent::__construct();
-        $this->load->library('M_redis');
+        //$this->load->library('M_redis');
         $this->deviceId = 'dccf6c99c17845481eba84692d4027e4';
     }
 
@@ -112,18 +112,31 @@ class Danbaylock extends MY_Controller
     private function sendRequet($uri, $options = [], $method = 'POST', $enctypeMultipart = false)
     {
         $options['deviceid'] = $this->deviceId;
-        $options['mtoken']  = $this->getToken();
-        $res = $this->httpCurl(
-            $this->baseUrl . $uri,
+        $options['mtoken']  = 'HLZZx8Zsnkb8GbBplFL8r+Ly7vy8FTdgv458Bf6lMvEakcaw1+QOsVB7UfmIHE1K';
+        $res = (new Client())->request(
             $method,
+            $this->baseUrl . $uri,
             $options
         );
-        $res = json_decode($res, true);
+        //$res = json_decode($res, true);
 
         if (200 != $res['status']) {
-            throw new \Exception($res['message']);
+            $this->api_res(1);
         }
-        return $res['result'];
+        return $res;
+    }
+
+    /**
+     * 刷新蛋贝token
+     */
+    public function handle()
+    {
+        $token = $this->getMtokenByLogin();
+        if($this->M_redis->storeDanbyToken($token)){
+            $this->api_res(0);
+        }else{
+            $this->api_res(1010);
+        }
     }
 
     /**
@@ -187,6 +200,7 @@ class Danbaylock extends MY_Controller
     {
         if ($this->token) {
             return $this->token;
+            //return "HLZZx8Zsnkb8GbBplFL8r+Ly7vy8FTdgv458Bf6lMvEakcaw1+QOsVB7UfmIHE1K";
         }
         $this->setToken();
         return $this->token;
@@ -194,7 +208,7 @@ class Danbaylock extends MY_Controller
 
     public function test()
     {
-        $data       = $this->getMtokenByLogin();
+        $data       = $this->addTempPwd();
         var_dump($data);
     }
 
