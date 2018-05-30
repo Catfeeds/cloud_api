@@ -1,24 +1,30 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+use GuzzleHttp\Client;
 /**
  * Author:      hfq<1326432154@qq.com>
  * Date:        2018/5/9
  * Time:        10:47
- * Describe:    云柚智能设备
+ * Describe:    云柚LOCK
  */
 
 class Yeeuulock extends MY_Controller
 {
+    protected $deviceId;
     private $partnerId;
+    private $timeStamp;
     private $secret;
     private $apiBaseUrl;
     private $almsUrl;
 
-    public function __construct()
+    public function __construct($deviceId = null)
     {
         parent::__construct();
-        $this->apiBaseUrl   = config_item('yeeuuapiBaseUrl');
-        $this->almsUrl      = config_item('yeeuualmsUrl');
+        $this->deviceId     = $deviceId;
+        $this->nonstr       = str_random(16);
+        $this->timeStamp    = time();
+        $this->apiBaseUrl   = 'https://api.yeeuu.com/v1/locks';
+        $this->almsUrl      = 'https://alms.yeeuu.com/apartments/synchronize_apartments';
         $this->partnerId    = config_item('joyLockPartnerId');
         $this->secret       = config_item('joyLockSecret');
     }
@@ -28,7 +34,7 @@ class Yeeuulock extends MY_Controller
      */
     public function open($deviceNumber)
     {
-        return httpPost($this->apiBaseUrl, [
+        return $this->httpPost($this->apiBaseUrl, [
             'key'       => $this->secret,
             'sn'        => $deviceNumber,
             'action'    => 'open',
@@ -41,7 +47,7 @@ class Yeeuulock extends MY_Controller
      */
     public function getStatus($sn)
     {
-        return httpGet(implode('/', [$this->apiBaseUrl, $sn, 'getState']), [
+        return $this->httpGet(implode('/', [$this->apiBaseUrl, $sn, 'getState']), [
             'key'   => $this->secret,
         ]);
     }
@@ -62,7 +68,7 @@ class Yeeuulock extends MY_Controller
             throw new \Exception('不存在的密码类型');
         }
 
-        return httpGet(implode('/', [$this->apiBaseUrl, $sn, 'ext_password']), [
+        return $this->httpGet(implode('/', [$this->apiBaseUrl, $sn, 'ext_password']), [
             'key'       => $this->secret,
             'password'  => $pwd,
             'type'      => $type,
@@ -75,7 +81,7 @@ class Yeeuulock extends MY_Controller
      */
     public function rmPwd($sn, $index)
     {
-        return httpGet(implode('/', [$this->apiBaseUrl, $sn, 'operation_password']), [
+        return $this->httpGet(implode('/', [$this->apiBaseUrl, $sn, 'operation_password']), [
             'key'       => $this->secret,
             'mode'      => '2',
             'index'     => $index,
@@ -88,7 +94,7 @@ class Yeeuulock extends MY_Controller
      */
     public function switchPwd($sn, $index, $action = 0)
     {
-        return httpGet(implode('/', [$this->apiBaseUrl, $sn, 'modify_password_property']), [
+        return $this->httpGet(implode('/', [$this->apiBaseUrl, $sn, 'modify_password_property']), [
             'key'       => $this->secret,
             'action'    => $action,
             'index'     => $index,
@@ -101,7 +107,7 @@ class Yeeuulock extends MY_Controller
      */
     public function cyclePwd($sn)
     {
-        return httpGet(implode('/', [$this->apiBaseUrl, $sn, 'query_cycle_password']), [
+        return $this->httpGet(implode('/', [$this->apiBaseUrl, $sn, 'query_cycle_password']), [
             'key'   => $this->secret,
         ]);
     }
@@ -113,9 +119,10 @@ class Yeeuulock extends MY_Controller
      */
     public function openRecords($sn, $startDate, $endDate)
     {
-        return httpGet(implode('/', [$this->apiBaseUrl, $sn, 'logs', $startDate, $endDate]), [
+        $res = $this->httpGet(implode('/', [$this->apiBaseUrl, $sn, 'logs', $startDate, $endDate]), [
             'key'   => $this->secret,
         ]);
+        return $res;
     }
 
 
@@ -124,7 +131,7 @@ class Yeeuulock extends MY_Controller
      */
     public function httpPost($url, $options = [])
     {
-        return $this->httpCurl($url, 'POST', $options);
+        return $this->request($url, 'POST', $options);
     }
 
 
@@ -133,8 +140,26 @@ class Yeeuulock extends MY_Controller
      */
     public function httpGet($url, $options = [])
     {
-        return $this->httpCurl($url, 'GET', $options);
+        return $this->request($url, 'GET', $options);
     }
+
+
+    /**
+     * 发送请求
+     */
+    private function request($url, $method, $options)
+    {
+        if ('POST' == $method) {
+            $parameters     = ['form_params' => $options];
+        } elseif ('GET' == $method) {
+            $parameters     = ['query' => $options];
+        }
+
+        $res    = (new Client())->request($method, $url, $parameters)->getBody()->getContents();
+
+        return json_decode($res, true);
+    }
+
 
     /**
      * 同步房源
@@ -144,9 +169,12 @@ class Yeeuulock extends MY_Controller
         $time   = time();
         $nonstr = str_random(9);
         $token  = sha1($time . $this->secret . $nonstr);
-        $url    = $this->almsUrl;
+        $url    = 'https://alms.yeeuu.com/apartments/synchronize_apartments';
 
-        $res    = $this->httpCurl($url,'POST',  [
+        $res    = (new Client())->request('POST', $url, [
+            'headers'      => [
+                'Content-Type'  => 'application/json',
+            ],
             'form_params'  => [
                 'partnerId'     => $this->partnerId,
                 'timestamp'     => $time,
@@ -154,13 +182,13 @@ class Yeeuulock extends MY_Controller
                 'token'         => $token,
                 'apartmentList' => $data,
             ],
-        ]);
+        ])->getBody()->getContents();
 
         return json_decode($res, true);
     }
-
     public function test()
-    {
-
+    {   $sn = '00124b000f0b9c9f';
+        $res = $this->extPwd($sn, '19960102', '1');
+        $this->api_res(0,$res);
     }
 }

@@ -49,37 +49,36 @@ class Employeemodel extends Basemodel{
         return $info;
     }
 
-    /* 获取当前登陆者拥有权限的城市门店
-        {
-            "id": 5,
-            "store_ids": "45,46",             登录者可操作门店id
-            "store_names": "福永店,优城店",     登录者可操作门店名
-            "city": {
-                "西安市": [                    门店所在城市
-                    {
-                        "id": 45,
-                        "name": "福永店",
-                    },
-                    {
-                        "id": 46,
-                        "name": "优城店",
-                    }
-                ]
-            }
-        }
-    } */
+    //获取当前登陆者拥有权限的某个城市的门店
+    public static function getMyCitystores($city)
+    {
+        require_once 'Storemodel.php';
+        $employee = static::where('bxid', CURRENT_ID)->get(['store_ids']);
+        $store_ids = explode(',', $employee[0]->store_ids);
+        $storems = Storemodel::whereIn('id', $store_ids)->where('city', $city)->get(['id', 'name', 'province', 'city', 'district']);
+        return $storems;
+    }
+
+    //获取当前登陆者拥有权限的门店
     public static function getMyStores()
     {
         require_once 'Storemodel.php';
-        $field = ['id', 'store_ids', 'store_names'];
-        define('CURRENT_ID', 1);
-        $employee = static::where('bxid', CURRENT_ID)->get($field)->map(function ($a){
-            $store_ids = explode(',', $a->store_ids);
-            $storems = Storemodel::whereIn('id', $store_ids)->get(['id', 'name'])->groupBy('city');
-            $a->city =  $storems;
-            return $a;
+        $employee = static::where('bxid', CURRENT_ID)->get(['store_ids']);
+        $store_ids = explode(',', $employee[0]->store_ids);
+        $stores = Storemodel::whereIn('id', $store_ids)->get(['id', 'name', 'province', 'city', 'district']);
+        return $stores;
+    }
+
+    //获取当前登陆者拥有权限的城市
+    public static function getMyCities()
+    {
+        require_once 'Storemodel.php';
+        $employee = static::where('bxid', CURRENT_ID)->get(['store_ids']);
+        $store_ids = explode(',', $employee[0]->store_ids);
+        $cities = Storemodel::whereIn('id', $store_ids)->get(['city'])->map(function ($c){
+            return $c->city;
         });
-        return $employee;
+        return $cities;
     }
 
 }

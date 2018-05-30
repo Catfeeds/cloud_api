@@ -1,25 +1,30 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+use GuzzleHttp\Client;
 /**
  * Author:      hfq<1326432154@qq.com>
  * Date:        2018/5/10
  * Time:        14:16
- * Describe:    蛋贝
+ * Describe:    蛋贝(对单个门锁进行操作)
  */
 class Danbaylock extends MY_Controller
 {
     protected $deviceId;
     protected $token;
-    private   $baseUrl    = 'http://www.danbay.cn/system/';
+    private   $baseUrl      = 'http://www.danbay.cn/system/';
+    protected $signature    = 'danbay:update-token';
+    protected $description  = 'update-token-for-danbay-api-request';
+    protected $loginUrl     = 'http://www.danbay.cn/system/connect';
 
     const PWD_TYPE_GUEST    = 3;
     const PWD_TYPE_BUTLER   = 2;
     const PWD_TYPE_TEMP     = 0;
 
-    public function __construct($deviceId)
+    public function __construct()
     {
         parent::__construct();
-        $this->deviceId = $deviceId;
+        $this->load->library('m_redis');
+        $this->deviceId = 'dccf6c99c17845481eba84692d4027e4';
     }
 
     /**
@@ -33,10 +38,9 @@ class Danbaylock extends MY_Controller
             'pwdType'   => 0,
         ]);
 
-        return [
-            'pwd_id'   => $res['pwdID'],
-            'password' => $pwd,
-        ];
+        return ['pwd_id'   => $res['pwdID'],
+                'password' => $pwd,
+                ];
     }
 
     /**
@@ -53,8 +57,7 @@ class Danbaylock extends MY_Controller
 
         return [
             'pwd_id'   => $res['pwdID'],
-            'password' => $pwd,
-        ];
+            'password' => $pwd,];
     }
 
     /**
@@ -106,105 +109,124 @@ class Danbaylock extends MY_Controller
      */
     private function sendRequet($uri, $options = [], $method = 'POST', $enctypeMultipart = false)
     {
-        $res = $this->request(
-            $this->baseUrl . $uri,
+        $res = (new Client())->request(
             $method,
-            ''
-            //$this->buildRequestBody($options, $enctypeMultipart)
-        );
-
+            $this->baseUrl . $uri,
+            $this->buildRequestBody($options, $enctypeMultipart)
+        )->getBody()->getContents();
         $res = json_decode($res, true);
 
         if (200 != $res['status']) {
-            throw new \Exception($res['message']);
+            $this->api_res(10050);
         }
-
-        return $res['result'];
+        return $res;
     }
-
 
     /**
-     * 发送请求
+     * 构建请求体
      */
-    private function request($url, $method,$data,  $contentType = 'application/json', $timeout = 30, $proxy = false) {
-        $ch = null;
-        if('POST' === strtoupper($method)) {
-            $ch = curl_init($url);
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_HEADER,0 );
-            curl_setopt($ch, CURLOPT_FRESH_CONNECT, 1);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_FORBID_REUSE, 1);
-            curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
-            if($contentType) {
-                curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:'.$contentType));
-            }
-            if(is_string($data)){
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-            } else {
-                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
-            }
-        } else if('GET' === strtoupper($method)) {
-            if(is_string($data)) {
-                $real_url = $url. (strpos($url, '?') === false ? '?' : ''). $data;
-            } else {
-                $real_url = $url. (strpos($url, '?') === false ? '?' : ''). http_build_query($data);
-            }
-
-            $ch = curl_init($real_url);
-            curl_setopt($ch, CURLOPT_HEADER, 0);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:'.$contentType));
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
-        } else {
-            $args = func_get_args();
-            return false;
-        }
-
-        if($proxy) {
-            curl_setopt($ch, CURLOPT_PROXY, $proxy);
-        }
-        $ret = curl_exec($ch);
-        $info = curl_getinfo($ch);
-        $contents = array(
-            'httpInfo'  => array(
-                'send'  => $data,
-                'url'   => $url,
-                'ret'   => $ret,
-                'http'  => $info,
-            )
-        );
-        curl_close($ch);
-        return json_decode($ret, true);
+    private function buildRequestBody($options, $enctypeMultipart = false)
+    {
+        $form = collect($options)
+            ->put('deviceId', $this->deviceId)
+            ->put('mtoken', $this->getToken())
+            ->when($enctypeMultipart, function ($items) {
+                return $items->transform(function ($item, $key) {
+                    return [
+                        'name'  => $key,
+                        'contents' => $item,
+                    ];
+                })->values();
+            })->toArray();
+        $formKey = $enctypeMultipart ? 'multipart' : 'form_params';
+        return [$formKey => $form];
     }
+
+    /**
+     * 刷新蛋贝token
+     */
+    public function handle()
+    {
+        $token = $this->getMtokenByLogin();
+        if($this->m_redis->storeDanbyToken($token)){
+            //$token = $this->m_redis->getDanBYToken();
+            //var_dump($token);
+            $this->api_res(0,$token);
+        }else{
+            //var_dump($token);
+            $this->api_res(1010);
+        }
+    }
+
+    /**
+     * 服务器端模拟登录蛋贝系统,获取mtoken
+     * 获取思路: 成功蛋贝后, 蛋贝会将请求重定向到 ticket_consume_url, 并在 query 里面携带 mtoken, 获取响应头里面的 Location, 并从中解析出 mtoken
+     */
+    private function getMtokenByLogin()
+    {
+        $responseHeaders    = (new Client())->request('POST', $this->loginUrl, [
+            'form_params'     => [
+                'mc_username'        => config_item('danbayUserName'),
+                'mc_password'        => config_item('danbayPassword'),
+                'random_code'        => 'whatever',
+                'return_url'         => 'res_failed',
+                'ticket_consume_url' => 'res_success',
+            ],
+            'allow_redirects' => false,
+        ])->getHeaders();
+
+        $redirectUrl = urldecode($responseHeaders['Location'][0]);
+
+        if (strstr($redirectUrl, 'res_failed')) {
+            throw new \Exception('蛋贝系统登录失败!可能是账号或密码出错!');
+        }
+
+        if (!strstr($redirectUrl, 'res_success')) {
+            throw new Exception('蛋贝登录失败!可能是系统故障!');
+        }
+
+        //重定向后的url包含ticket和mtoken两个参数
+        //从中分解出mtoken
+        $parameters = explode('mtoken=', $redirectUrl);
+        $parameters = $parameters[1];
+        $parameters = explode('ticket=', $parameters);
+        $mtoken     = $parameters[0];
+
+        if (strlen($mtoken) != 64) {
+            throw new \Exception("登录出错, mtoken长度错误,可能是蛋贝系统又出问题了!", 500);
+        }
+        return $mtoken;
+    }
+
     /**
      * 获取 token
      */
-    /*private function setToken()
+    private function setToken()
     {
-        $token = Cache::get(config_item('danbayTokenKey'));
-
+        $token = $this->m_redis->getDanBYToken();
         if (!$token) {
             throw new \Exception('token 过期,请稍后重试!');
         }
-
         $this->token = $token;
-
         return $this;
-    }*/
+    }
 
     /**
      * 获取请求凭证 token
      */
-    /*private function getToken()
+    private function getToken()
     {
         if ($this->token) {
             return $this->token;
         }
-
         $this->setToken();
-
         return $this->token;
-    }*/
+    }
+
+    public function test()
+    {
+        $data       = $this->getLockPwdList();
+        $this->api_res(0,$data);
+    }
 
 }

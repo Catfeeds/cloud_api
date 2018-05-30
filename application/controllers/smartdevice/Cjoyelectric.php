@@ -1,5 +1,6 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+use GuzzleHttp\Client;
 /**
  * Author:      hfq<1326432154@qq.com>
  * Date:        2018/5/11
@@ -26,38 +27,44 @@ class Cjoyelectric extends MY_Controller
      */
     public function getAccessToken()
     {
-        $publicKey = openssl_pkey_get_public(file_get_contents($this->publicKeyPath));
-
+        $key = <<<EOF
+-----BEGIN PUBLIC KEY-----
+MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJQeFrVhmHoWYNwPkXFVScpdwsZ/BnVh
+sUuGGvozfgcyde6Q7nFaTmvNBGuxbSqsSmatQLKEZWkPDDzP/Yv7zPcCAwEAAQ==
+-----END PUBLIC KEY-----
+EOF;
+        //不要动界定符中内容，空格换行也不行（逼死强逼症）
+        $publicKey = openssl_pkey_get_public($key);
+        var_dump($publicKey);
         $data   = json_encode([
             'client_id' => $this->clientId,
             'datetime'  => date('YmdHis'),
         ]);
-
         return openssl_public_encrypt($data ,$encrypted, $publicKey) ? base64_encode($encrypted) : null;
     }
 
-
     /**
-     * 像超仪服务器发送请求
+     * 向超仪服务器发送请求
      */
-    public function request($uri, array $data)
+    private function request($uri, array $data)
     {
         $data['access_token']   = $this->getAccessToken();
 
-        $res = $this->httpCurl('POST', $this->baseUrl . $uri, [
+        $res = (new Client())->request('POST', $this->baseUrl . $uri, [
             'form_params' => $data,
-        ]);
+        ])->getBody()->getContents();
 
         $res = json_decode($res, true);
 
-        return $res['status'] == 1 ? $res['data'] : null;
+        return $res;
+        //return $res['status'] == 1 ? $res['data'] : null;
     }
 
 
     /**
      * 查询电表状态（电表的连网状态和通电状态）
      */
-    public function meterStatus( $deviceNumber)
+    public function meterStatus($deviceNumber)
     {
         return $this->request('queryMeterStatus.do', [
             'meterNo'   => $deviceNumber,
@@ -239,5 +246,14 @@ class Cjoyelectric extends MY_Controller
         return $this->request('registRoomInfo.do', [
             'roomInfo' => json_encode($data, JSON_UNESCAPED_UNICODE)
         ]);
+    }
+
+    /**
+     * 测试
+     */
+    public function test(){
+        $deviceNumber = "18121547";
+        $res = $this->getAccessToken();
+        var_dump($res);
     }
 }

@@ -129,10 +129,10 @@ class Position extends MY_Controller
         $where = isset($post['store_id']) ? ['store_id' => $post['store_id']] : [];
 
         if (isset($post['city']) && !empty($post['city'])) {
-            $this->load->model('storemodel');
-            $store_ids = Storemodel::where('city', $post['city'])->get(['id'])->map(function ($s) {
-                return $s['id'];
-            });
+            $stores = Employeemodel::getMyCitystores($post['city']);
+            foreach($stores as $store) {
+                $store_ids[] = $store->id;
+            }
             $count = ceil((Positionmodel::whereIn('store_id', $store_ids)->where($where)->count()) / PAGINATE);
             if ($page > $count) {
                 $this->api_res(0, ['count' => $count, 'list' => []]);
@@ -148,14 +148,16 @@ class Position extends MY_Controller
             $this->api_res(0, ['count' => $count, 'list' => $category]);
             return;
         }
-
-        $count = ceil((Positionmodel::all()->count()) / PAGINATE);
+        $this->load->model('employeemodel');
+        $employee = Employeemodel::getMyStores();
+        $store_ids = explode(',', $employee[0]->store_ids);
+        $count = ceil((Positionmodel::where('company_id', COMPANY_ID)->whereIn('store_id', $store_ids)->count()) / PAGINATE);
         if ($page > $count) {
             $this->api_res(0, ['count' => $count, 'list' => []]);
             return;
         }
-        $this->load->model('employeemodel');
-        $category = Positionmodel::with('employee')->offset($offset)
+        $category = Positionmodel::with('employee')->where('company_id', COMPANY_ID)
+            ->whereIn('store_id', $store_ids)->offset($offset)
             ->limit(PAGINATE)->orderBy('id', 'desc')
             ->get($filed)->map(function($a){
             $a->count_z = $a->employee->count();
@@ -181,12 +183,14 @@ class Position extends MY_Controller
         $name   = isset($post['name'])?$post['name']:null;
         $page   = intval(isset($post['page'])?$post['page']:1);
         $offset = PAGINATE * ($page-1);
-        $count  = ceil((Positionmodel::where('name','like',"%$name%")->count())/PAGINATE);
+        $this->load->model('employeemodel');
+        $employee = Employeemodel::getMyStores();
+        $store_ids = explode(',', $employee[0]->store_ids);
+        $count  = ceil((Positionmodel::where('store_id', $store_ids)->where('name','like',"%$name%")->count())/PAGINATE);
         if($page > $count){
             $this->api_res(0,['count'=>$count,'list'=>[]]);
             return;
         }
-        $this->load->model('employeemodel');
         $category = Positionmodel::with('employee')->where('name','like',"%$name%")
             ->offset($offset)->limit(PAGINATE)->orderBy('id', 'desc')
             ->get($filed)->map(function($a){
@@ -194,6 +198,19 @@ class Position extends MY_Controller
                 return $a;
             });
         $this->api_res(0,['count'=>$count,'list'=>$category]);
+    }
+
+    /**
+     * 删除职位
+     */
+    public function deletePosition(){
+        $id   = $this->input->post('id',true);
+        $where  = ['company_id'=>COMPANY_ID];
+        if(Positionmodel::where($where)->find($id)->delete()){
+            $this->api_res(0);
+        }else{
+            $this->api_res(1009);
+        }
     }
 
     /**
