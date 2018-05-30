@@ -111,13 +111,10 @@ class Danbaylock extends MY_Controller
      */
     private function sendRequet($uri, $options = [], $method = 'POST', $enctypeMultipart = false)
     {
-        $options['deviceid'] = $this->deviceId;
-        $options['mtoken']  = $this->getToken();
-        var_dump($options);
         $res = (new Client())->request(
             $method,
             $this->baseUrl . $uri,
-            $options
+            $this->buildRequestBody($options, $enctypeMultipart)
         )->getBody()->getContents();
         $res = json_decode($res, true);
 
@@ -125,6 +122,26 @@ class Danbaylock extends MY_Controller
             $this->api_res(10050);
         }
         return $res;
+    }
+
+    /**
+     * 构建请求体
+     */
+    private function buildRequestBody($options, $enctypeMultipart = false)
+    {
+        $form = collect($options)
+            ->put('deviceId', $this->deviceId)
+            ->put('mtoken', $this->getToken())
+            ->when($enctypeMultipart, function ($items) {
+                return $items->transform(function ($item, $key) {
+                    return [
+                        'name'  => $key,
+                        'contents' => $item,
+                    ];
+                })->values();
+            })->toArray();
+        $formKey = $enctypeMultipart ? 'multipart' : 'form_params';
+        return [$formKey => $form];
     }
 
     /**
