@@ -8,7 +8,7 @@ use GuzzleHttp\Client;
  * Describe:    云柚LOCK
  */
 
-class Yeeuulock extends MY_Controller
+class Yeeuulock
 {
     protected $deviceId;
     private $partnerId;
@@ -19,7 +19,6 @@ class Yeeuulock extends MY_Controller
 
     public function __construct($deviceId = null)
     {
-        parent::__construct();
         $this->deviceId     = $deviceId;
         $this->nonstr       = str_random(16);
         $this->timeStamp    = time();
@@ -32,31 +31,29 @@ class Yeeuulock extends MY_Controller
     /**
      * 开锁
      */
-    public function open($deviceNumber)
+    public function open()
     {
         return $this->httpPost($this->apiBaseUrl, [
             'key'       => $this->secret,
-            'sn'        => $deviceNumber,
+            'sn'        => $this->deviceId,
             'action'    => 'open',
         ]);
     }
 
-
     /**
      * 获取锁的状态
      */
-    public function getStatus($sn)
+    public function getStatus()
     {
-        return $this->httpGet(implode('/', [$this->apiBaseUrl, $sn, 'getState']), [
+        return $this->httpGet(implode('/', [$this->apiBaseUrl, $this->deviceId, 'getState']), [
             'key'   => $this->secret,
         ]);
     }
 
-
     /**
      * 新增/修改密码
      */
-    public function extPwd($sn, $pwd, $type)
+    public function extPwd($pwd, $type)
     {
         $pwdLength  = strlen($pwd);
 
@@ -68,7 +65,7 @@ class Yeeuulock extends MY_Controller
             throw new \Exception('不存在的密码类型');
         }
 
-        return $this->httpGet(implode('/', [$this->apiBaseUrl, $sn, 'ext_password']), [
+        return $this->httpGet(implode('/', [$this->apiBaseUrl, $this->deviceId, 'ext_password']), [
             'key'       => $this->secret,
             'password'  => $pwd,
             'type'      => $type,
@@ -79,9 +76,9 @@ class Yeeuulock extends MY_Controller
     /**
      * 删除密码, 应该是每个锁有那么50个可以使用的密码, 删除指定的密码
      */
-    public function rmPwd($sn, $index)
+    public function rmPwd($index)
     {
-        return $this->httpGet(implode('/', [$this->apiBaseUrl, $sn, 'operation_password']), [
+        return $this->httpGet(implode('/', [$this->apiBaseUrl, $this->deviceId, 'operation_password']), [
             'key'       => $this->secret,
             'mode'      => '2',
             'index'     => $index,
@@ -92,9 +89,9 @@ class Yeeuulock extends MY_Controller
     /**
      * 锁死/解锁密码
      */
-    public function switchPwd($sn, $index, $action = 0)
+    public function switchPwd($index, $action = 0)
     {
-        return $this->httpGet(implode('/', [$this->apiBaseUrl, $sn, 'modify_password_property']), [
+        return $this->httpGet(implode('/', [$this->apiBaseUrl, $this->deviceId, 'modify_password_property']), [
             'key'       => $this->secret,
             'action'    => $action,
             'index'     => $index,
@@ -105,9 +102,9 @@ class Yeeuulock extends MY_Controller
     /**
      * 查询动态密码
      */
-    public function cyclePwd($sn)
+    public function cyclePwd()
     {
-        return $this->httpGet(implode('/', [$this->apiBaseUrl, $sn, 'query_cycle_password']), [
+        return $this->httpGet(implode('/', [$this->apiBaseUrl, $this->deviceId, 'query_cycle_password']), [
             'key'   => $this->secret,
         ]);
     }
@@ -117,9 +114,9 @@ class Yeeuulock extends MY_Controller
      * 查询门锁的开门记录
      * 日期格式: date('Ymd')
      */
-    public function openRecords($sn, $startDate, $endDate)
+    public function openRecords($startDate, $endDate)
     {
-        $res = $this->httpGet(implode('/', [$this->apiBaseUrl, $sn, 'logs', $startDate, $endDate]), [
+        $res = $this->httpGet(implode('/', [$this->apiBaseUrl, $this->deviceId, 'logs', $startDate, $endDate]), [
             'key'   => $this->secret,
         ]);
         return $res;
@@ -138,7 +135,7 @@ class Yeeuulock extends MY_Controller
     /**
      * 发送 GET 请求
      */
-    public function httpGet($url, $options = [])
+    private function httpGet($url, $options = [])
     {
         return $this->request($url, 'GET', $options);
     }
@@ -183,12 +180,6 @@ class Yeeuulock extends MY_Controller
                 'apartmentList' => $data,
             ],
         ])->getBody()->getContents();
-
         return json_decode($res, true);
-    }
-    public function test()
-    {   $sn = '00124b000f0b9c9f';
-        $res = $this->extPwd($sn, '19960102', '1');
-        $this->api_res(0,$res);
     }
 }

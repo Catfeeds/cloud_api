@@ -1,5 +1,8 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+require_once APPPATH.'/libraries/Yeeuulock.php';
+require_once APPPATH.'/libraries/Danbaylock.php';
+require_once APPPATH.'/libraries/Cjoymeter.php';
 /**
  * Author:      hfq<1326432154@qq.com>
  * Date:        2018/5/3
@@ -104,5 +107,17 @@ class Smartdevice extends MY_Controller
                                             ->orderBy('id','desc')->get($filed)->toArray();
         }
         $this->api_res(0,['list'=>$record,'count'=>$count]);
+    }
+
+    /**
+     * 测试
+     */
+    public function test()
+    {
+        $deviceId = '18121960';
+        $yeeuu = new Cjoymeter($deviceId);
+        $res = $yeeuu->meterStatus();
+        //var_dump($res);
+        $this->api_res(0,$res);
     }
 }
