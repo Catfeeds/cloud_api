@@ -26,6 +26,7 @@ class Employee extends MY_Controller
         //$stores = Employeemodel::getMyStores(); //测试用
         if (!$stores) {
             $this->api_res(1009);
+            return;
         }
         $this->api_res(0, ['stores'=>$stores]);
     }
@@ -39,6 +40,7 @@ class Employee extends MY_Controller
         $cities->prepend("");
         if (!$cities) {
             $this->api_res(1009);
+            return;
         }
         $this->api_res(0, ['cities'=>$cities]);
     }
