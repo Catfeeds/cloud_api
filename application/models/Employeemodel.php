@@ -54,6 +54,7 @@ class Employeemodel extends Basemodel{
     {
         require_once 'Storemodel.php';
         $employee = static::where('bxid', CURRENT_ID)->get(['store_ids'])->first();
+        if (!$employee) return FALSE;
         $store_ids = explode(',', $employee->store_ids);
         $storems = Storemodel::whereIn('id', $store_ids)->where('city', $city)->get(['id', 'name', 'province', 'city', 'district']);
         return $storems;
@@ -64,8 +65,10 @@ class Employeemodel extends Basemodel{
     {
         require_once 'Storemodel.php';
         $employee = static::where('bxid', CURRENT_ID)->get(['store_ids'])->first();
+        if (!$employee) return FALSE;
         $store_ids = explode(',', $employee->store_ids);
         $stores = Storemodel::whereIn('id', $store_ids)->where('city', $city)->get(['id']);
+        if (!$stores) return FALSE;
         foreach($stores as $store) {
             $mystore_ids[] = $store->id;
         }
@@ -76,6 +79,7 @@ class Employeemodel extends Basemodel{
     public static function getMyStoreids()
     {
         $employee = static::where('bxid', CURRENT_ID)->get(['store_ids'])->first();
+        if (!$employee) return FALSE;
         $store_ids = explode(',', $employee->store_ids);
         return $store_ids;
     }
@@ -85,6 +89,7 @@ class Employeemodel extends Basemodel{
     {
         require_once 'Storemodel.php';
         $employee = static::where('bxid', CURRENT_ID)->get(['store_ids'])->first();
+        if (!$employee) return FALSE;
         $store_ids = explode(',', $employee->store_ids);
         $cities = Storemodel::whereIn('id', $store_ids)->get(['city'])->map(function ($c){
             return $c->city;

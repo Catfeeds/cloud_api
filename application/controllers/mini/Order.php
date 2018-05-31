@@ -109,7 +109,7 @@ class Order extends MY_Controller
         $this->load->model('residentmodel');
         $this->load->model('ordermodel');
         $this->load->model('contractmodel');
-        $resident   = Residentmodel::find($resident_id);
+        $resident   = Residentmodel::where('room_id',$room_id)->find($resident_id);
         if(!$resident){
             $this->api_res(1007);
             return;
@@ -144,6 +144,7 @@ class Order extends MY_Controller
 
             //处理房间及住户的状态
             $this->load->model('roomunionmodel');
+            $this->load->model('checkoutrecordmodel');
             $this->updateRoomAndResident($orders, $resident, $resident->roomunion);
 
             DB::commit();
@@ -153,22 +154,6 @@ class Order extends MY_Controller
             throw $e;
         }
         $this->api_res(0);
-    }
-
-    /**
-     * [检查参数, 并查询到Resident实例]
-     * @param  Request      $request        [请求]
-     * @param  ResidentRepo $residentRepo   [Resident仓库]
-     *
-     * @return [ResidentEntity]             [Resident实例]
-     */
-    private function checkRequestAndGetResident(Request $request, ResidentRepo $residentRepo)
-    {
-        if (!$request->has('resident_id')) {
-            throw new \Exception('缺少参数: resident_id');
-        }
-
-        return $residentRepo->find($request->input('resident_id'));
     }
 
     /**
@@ -185,13 +170,11 @@ class Order extends MY_Controller
         if ($confirm) {
             $status     = Ordermodel::STATE_CONFIRM;
         }
-
         $orderIds   = $request;
         $orders     = $resident->orders()
             ->whereIn('id', $orderIds)
             ->where('status', $status)
             ->get();
-
         if (count($orders) != count($orderIds)) {
             log_message('error','未找到订单信息或者订单状态错误!');
             return false;
@@ -243,7 +226,7 @@ class Order extends MY_Controller
     private function checkContract($resident)
     {
         //没有办理入住的时候, 合同时长是0, 这个时候不需要合同, 如果住户的状态是已经支付过的, 也不用检查
-        if (0 == $resident->contract_time OR Residentmodel::STATE_NOTPAY == $resident->status) {
+        if (0 == $resident->contract_time OR Residentmodel::STATE_NORMAL == $resident->status) {
             return true;
         }
 
@@ -263,22 +246,17 @@ class Order extends MY_Controller
      *
      * @return [CouponCollection]          [Order集合]
      */
-    private function unusedCouponsOfSpecifiedResident($resident, Request $request, CouponRepo $couponRepo)
+    private function unusedCouponsOfSpecifiedResident($resident,$couponIds)
     {
-        if (!$request->has('coupon_ids')) {
-            return null;
-        }
 
-        $couponIds  = $this->getRequestIds($request, 'coupon_ids');
         $coupons    = $resident->coupons()
             ->whereIn('id', $couponIds)
-            ->where('status', $couponRepo->status_unused)
+            ->where('status', Couponmodel::STATUS_UNUSED)
             ->get();
 
         if (count($coupons) != count($couponIds)) {
-            throw new \Exception('未找到相应的优惠券或者优惠券状态错误!');
+            return false;
         }
-
         return $coupons;
     }
 
@@ -315,49 +293,49 @@ class Order extends MY_Controller
             return true;
         }
 
-//        //判断用户是否有退房记录, 如果有退房记录, 将其标记为已支付待办理状态
-//        if ($record = $resident->checkout_record) {
-//            if (in_array($record->status, [$checkoutRepo->status_applied, $checkoutRepo->status_unpaid])) {
-//                $record->status     = $checkoutRepo->status_pending;
-//                $record->save();
-//            }
-//        }
-//
-//        $residentToUpdate   = $residentRepo->state_notpay == $resident->status;
-//        $roomToUpdate       = in_array($room->status, [
-//            $roomRepo->state_arrears,
-//            $roomRepo->status_occupied,
-//            $roomRepo->state_reserve,
-//        ]);
-//
-//        if (!$roomToUpdate AND !$residentToUpdate) {
-//            return true;
-//        }
-//
-//        //判断是否是预订账单
-//        if ($orders->where('type', $this->repository->type_reserve)->count() == count($orders)) {
-//            $roomNewStatus      = $roomRepo->state_reserve;
-//            $residentNewStatus  = $residentRepo->state_reserve;
-//        } else {
-//            $roomNewStatus      = $roomRepo->state_rent;
-//            $residentNewStatus  = $residentRepo->state_normal;
-//        }
-//
-//        if ($roomToUpdate) {
-//            $room->update(['status' => $roomNewStatus]);
-//        }
-//
-//        //换房等逻辑, 这里需要修改
-//        if ($residentToUpdate) {
-//            if (isset($resident->data['change_room'])) {
-//                //处理换房的事务
-//                dispatch(new EndChangeRoomStuff($resident));
-//            } elseif (isset($resident->data['renewal'])) {
-//                //do something to handle renew stuff
-//            } else {
-//                $resident->update(['status' => $residentNewStatus]);
-//            }
-//        }
+        //判断用户是否有退房记录, 如果有退房记录, 将其标记为已支付待办理状态
+        if ($record = $resident->checkout_record) {
+            if (in_array($record->status, [Checkoutrecordmodel::STATUS_APPLIED, Checkoutrecordmodel::STATUS_UNPAID])) {
+                $record->status     = Checkoutrecordmodel::STATUS_PENDING;
+                $record->save();
+            }
+        }
+
+        $residentToUpdate   = Residentmodel::STATE_NOTPAY == $resident->status;
+        $roomToUpdate       = in_array($room->status, [
+            Roomunionmodel::STATE_ARREARS,
+            Roomunionmodel::STATE_OCCUPIED,
+            Roomunionmodel::STATE_RESERVE,
+        ]);
+
+        if (!$roomToUpdate AND !$residentToUpdate) {
+            return true;
+        }
+
+        //判断是否是预订账单
+        if ($orders->where('type', Ordermodel::PAYTYPE_RESERVE)->count() == count($orders)) {
+            $roomNewStatus      = Roomunionmodel::STATE_RESERVE;
+            $residentNewStatus  = Residentmodel::STATE_RESERVE;
+        } else {
+            $roomNewStatus      = Roomunionmodel::STATE_RENT;
+            $residentNewStatus  = Residentmodel::STATE_NORMAL;
+        }
+
+        if ($roomToUpdate) {
+            $room->update(['status' => $roomNewStatus]);
+        }
+
+        //换房等逻辑, 这里需要修改
+        if ($residentToUpdate) {
+            if (isset($resident->data['change_room'])) {
+                //处理换房的事务
+                //dispatch(new EndChangeRoomStuff($resident));
+            } elseif (isset($resident->data['renewal'])) {
+                //do something to handle renew stuff
+            } else {
+                $resident->update(['status' => $residentNewStatus]);
+            }
+        }
 
         return true;
     }
@@ -387,6 +365,116 @@ class Order extends MY_Controller
 
         return $orders->orderBy('updated_at', 'DESC')->orderBy('type', 'ASC')->get();
     }
+
+    /**
+     * 现场支付
+     * 现场支付, 订单状态直接转变为完成
+     * 携带参数包括room_id, order_ids, coupon_ids, pay_way, resident_id
+     */
+    public function pay()
+    {
+        //现场支付
+        //resident_id     : 订单所属住户记录的id
+        //room_id         : 订单所属房间记录的id
+        //pay_way         : 现场支付的支付方式, 枚举类型, 可选范围(BANK:刷卡,ALIPAY:支付宝转账)
+        //order_ids       : 被操作订单的id数组, 是数组
+        //coupon_ids      : (选填)使用的优惠券的id数组, 此记录也是数组, 不使用则不填
+
+        $input = $this->input->post(null, true);
+
+        $payWay         = $input['pay_way'];
+        $room_id        = $input['room_id'];
+        $coupon_ids     = $input['coupon_ids'];
+        $order_ids      = $input['order_ids'];
+        $resident_id    = $input['resident_id'];
+
+        $this->load->model('residentmodel');
+        $this->load->model('ordermodel');
+        $this->load->model('contractmodel');
+        $this->load->model('couponmodel');
+        $this->load->model('coupontypemodel');
+        $this->load->model('roomunionmodel');
+        $this->load->model('checkoutrecordmodel');
+        $resident = Residentmodel::where('room_id', $room_id)->find($resident_id);
+        if (!$resident) {
+            $this->api_res(1007);
+            return;
+        }
+        if (!in_array($payWay, $this->ordermodel->getAllPayTypes())) {
+            log_message('error', '不支持的支付方式!');
+            $this->api_res(10018);
+            return;
+        }
+        //检查是否有合同, 是否能继续进行
+        $contract = $this->checkContract($resident);
+        if (!$contract) {
+            $this->api_res(10017);
+            return;
+        }
+
+        //获取订单列表与使用的优惠券列表
+        $orderIds = $this->getRequestIds($order_ids);
+        $orders = $this->undealOrdersOfSpecifiedResident($resident, $orderIds);
+        if (!$orders) {
+            $this->api_res(10016);
+            return;
+        }
+        $couponIds = $this->getRequestIds($coupon_ids);
+        $coupons = $this->unusedCouponsOfSpecifiedResident($resident, $couponIds);
+        if (!$coupons) {
+            $this->api_res(10019);
+            return;
+        }
+
+
+        try {
+            DB::beginTransaction();
+            //如果有使用优惠券, 检查优惠券是否可以使用
+            $this->checkCoupons($resident, $orders, $coupons);
+            //将优惠券与订单绑定, 同时更新优惠券的状态
+            $this->couponmodel->bindOrdersAndCalcDiscount($resident, $orders, $coupons, true);
+            //更新订单状态
+            $orders = $this->completeOrders($orders, $payWay);
+            //房间, 住户, 优惠券以及其他订单表的状态
+            $this->updateRoomAndResident($orders, $resident, $resident->roomunion);
+
+            DB::commit();
+            $this->api_res(0);
+
+        } catch (Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    /**
+     * [检查优惠券的有效性]
+     * @param  [type]     $resident   [description]
+     * @param  [type]     $orders     [description]
+     * @param  [type]     $coupons    [description]
+     * @param  CouponRepo $couponRepo [description]
+     * @return [type]                 [description]
+     */
+    private function checkCoupons($resident, $orders, $coupons)
+    {
+        //没有优惠券, 则直接返回
+        if (0 == count($coupons)) return true;
+
+        //获取订单可以使用的优惠券
+        $couponsAvailable   = $this->couponmodel->queryByOrders($resident, $orders);
+        $idsAvailable       = collect($couponsAvailable)->pluck('id')->toArray();
+
+        //检查优惠券的有效性
+        $coupons->map(function ($coupon) use ($idsAvailable) {
+            if (!in_array($coupon->id, $idsAvailable)) {
+                throw new \Exception('有不可用的优惠券, 请检查后重试!');
+            }
+        });
+
+        return true;
+    }
+
+
 
 
 

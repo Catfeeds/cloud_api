@@ -174,7 +174,7 @@ class Position extends MY_Controller
         {
             $fieldarr   = ['name'];
             $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
-            return false;
+            return ;
         }
         $name   = isset($post['name'])?$post['name']:null;
         $page   = intval(isset($post['page'])?$post['page']:1);
@@ -197,13 +197,27 @@ class Position extends MY_Controller
     }
 
     /**
+     * 显示公司职位
+     */
+    public function showPositions() {
+        $where  = ['company_id'=>COMPANY_ID];
+        $position = Positionmodel::where($where)->get(['id', 'name']);
+        if (!$position) {
+            $this->api_res(1009);
+            return;
+        }
+        $this->api_res(0, $position);
+    }
+
+    /**
      * 删除职位
      */
     public function deletePosition(){
         $id   = $this->input->post('id',true);
-        $where  = ['company_id'=>COMPANY_ID];
-        if(Positionmodel::where($where)->find($id)->delete()){
+        $where  = ['company_id'=>COMPANY_ID, 'id' => $id];
+        if(Positionmodel::where($where)->delete()){
             $this->api_res(0);
+            return;
         }else{
             $this->api_res(1009);
         }

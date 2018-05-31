@@ -33,14 +33,20 @@ class AuthHook {
             'bill/bill/generate',
 
             'account/login/login',
+
             'mini/resident/checkroomunion',
             'mini/resident/checkin',
             'mini/resident/destory',
             'mini/resident/showqrcode',
             'mini/resident/reservation',
             'mini/resident/getresident',
+            'mini/resident/listresident',
+
             'mini/activity/showactivity',
+
             'mini/order/listorder',
+            'mini/order/confirm',
+            'mini/order/pay',
             //'store/store/liststore',
             //'store/store/addstoredot',
             //'store/store/addstoreunion',
@@ -144,15 +150,6 @@ class AuthHook {
             'mini/personalcenter/center',
             'mini/room/listroom',
             'mini/room/detailsroom',
-            'mini/employee/showcenter',
-            'mini/employee/listemp',
-            'mini/employee/addemp',
-            'mini/messagesnd/templatefields',
-            'mini/messagesnd/sendmsgtype',
-            'mini/messagesnd/sendnotice',
-            'mini/residentct/showcenter',
-            'mini/residentct/showdetail',
-            'mini/residentct/searchresident',
 
             'contract/operation/operatlist',
             'contract/operation/operationfind',
