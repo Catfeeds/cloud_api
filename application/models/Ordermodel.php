@@ -366,7 +366,7 @@ class Ordermodel extends Basemodel{
      */
     public function ordersUnpaidOfResident($residentId)
     {
-        return Order::where('resident_id', $residentId)->whereIn('status', [Ordermodel::STATE_PENDING, Ordermodel::STATE_CONFIRM])->get();
+        return Ordermodel::where('resident_id', $residentId)->whereIn('status', [Ordermodel::STATE_PENDING, Ordermodel::STATE_CONFIRM])->get();
     }
 
 
@@ -404,6 +404,19 @@ class Ordermodel extends Basemodel{
     public function coupon()
     {
         return $this->hasOne(Couponmodel::class, 'order_id');
+    }
+
+    /**
+     * 订单的所有支付类型
+     */
+    public function getAllPayTypes()
+    {
+        return array(
+            Ordermodel::PAYWAY_JSAPI,
+            Ordermodel::PAYWAY_BANK,
+            Ordermodel::PAYWAY_ALIPAY,
+            Ordermodel::PAYWAY_DEPOSIT,
+        );
     }
 
 

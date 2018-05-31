@@ -41,6 +41,8 @@ class AuthHook {
             'mini/resident/getresident',
             'mini/activity/showactivity',
             'mini/order/listorder',
+            'mini/order/confirm',
+            'mini/order/pay',
             //'store/store/liststore',
             //'store/store/addstoredot',
             //'store/store/addstoreunion',
