@@ -7,7 +7,7 @@ use GuzzleHttp\Client;
  * Time:        14:16
  * Describe:    蛋贝(对单个门锁进行操作)
  */
-class Danbaylock extends MY_Controller
+class Danbaylock
 {
     protected $deviceId;
     protected $token;
@@ -20,11 +20,9 @@ class Danbaylock extends MY_Controller
     const PWD_TYPE_BUTLER   = 2;
     const PWD_TYPE_TEMP     = 0;
 
-    public function __construct()
+    public function __construct($deviceId)
     {
-        parent::__construct();
-        $this->load->library('m_redis');
-        $this->deviceId = 'dccf6c99c17845481eba84692d4027e4';
+        $this->deviceId = $deviceId;
     }
 
     /**
@@ -117,7 +115,7 @@ class Danbaylock extends MY_Controller
         $res = json_decode($res, true);
 
         if (200 != $res['status']) {
-            $this->api_res(10050);
+            log_message('error','DANBAY参数请求失败');
         }
         return $res;
     }
@@ -148,21 +146,18 @@ class Danbaylock extends MY_Controller
     public function handle()
     {
         $token = $this->getMtokenByLogin();
-        if($this->m_redis->storeDanbyToken($token)){
-            //$token = $this->m_redis->getDanBYToken();
-            //var_dump($token);
-            $this->api_res(0,$token);
+        /*if($this->m_redis->storeDanbyToken($token)){
+            return $token;
         }else{
-            //var_dump($token);
             $this->api_res(1010);
-        }
+        }*/
     }
 
     /**
      * 服务器端模拟登录蛋贝系统,获取mtoken
      * 获取思路: 成功蛋贝后, 蛋贝会将请求重定向到 ticket_consume_url, 并在 query 里面携带 mtoken, 获取响应头里面的 Location, 并从中解析出 mtoken
      */
-    private function getMtokenByLogin()
+    public function getMtokenByLogin()
     {
         $responseHeaders    = (new Client())->request('POST', $this->loginUrl, [
             'form_params'     => [
@@ -178,11 +173,11 @@ class Danbaylock extends MY_Controller
         $redirectUrl = urldecode($responseHeaders['Location'][0]);
 
         if (strstr($redirectUrl, 'res_failed')) {
-            throw new \Exception('蛋贝系统登录失败!可能是账号或密码出错!');
+            log_message('error','蛋贝系统登录失败!可能是账号或密码出错!');
         }
 
         if (!strstr($redirectUrl, 'res_success')) {
-            throw new Exception('蛋贝登录失败!可能是系统故障!');
+            log_message('error','蛋贝登录失败!可能是系统故障!');
         }
 
         //重定向后的url包含ticket和mtoken两个参数
@@ -193,7 +188,7 @@ class Danbaylock extends MY_Controller
         $mtoken     = $parameters[0];
 
         if (strlen($mtoken) != 64) {
-            throw new \Exception("登录出错, mtoken长度错误,可能是蛋贝系统又出问题了!", 500);
+            log_message('error',"登录出错, mtoken长度错误,可能是蛋贝系统又出问题了!");
         }
         return $mtoken;
     }
@@ -205,7 +200,7 @@ class Danbaylock extends MY_Controller
     {
         $token = $this->m_redis->getDanBYToken();
         if (!$token) {
-            throw new \Exception('token 过期,请稍后重试!');
+            log_message('error','token 过期,请稍后重试!');
         }
         $this->token = $token;
         return $this;
@@ -226,7 +221,7 @@ class Danbaylock extends MY_Controller
     public function test()
     {
         $data       = $this->getLockPwdList();
-        $this->api_res(0,$data);
+        //$this->api_res(0,$data);
     }
 
 }
