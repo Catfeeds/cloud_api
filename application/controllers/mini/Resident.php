@@ -960,7 +960,7 @@ class Resident extends MY_Controller
         }
         $total_page = ceil(Residentmodel::where($where)->count()/$per_page);
         if($page>$total_page){
-            $this->api_res(0,[]);
+            $this->api_res(0,['total_page'=>$total_page,'current_page'=>$page,'per_page'=>$per_page,'residents'=>[]]);
             return;
         }
         $residents  = Residentmodel::with('roomunion')->where($where)
@@ -1000,9 +1000,24 @@ class Resident extends MY_Controller
 
     /**
      * 预订的房间转办理入住
+     * 传入resident_id
      */
     public function bookingToCheckIn($residentId, ResidentCreateRequest $request, RoomRepo $roomRepo, OrderRepo $orderRepo, ActivityRepo $actRepo)
     {
+//        $field  = [
+//            'room_id','begin_time','people_count','contract_time','discount_id','first_pay_money',
+//            'deposit_money','deposit_month','tmp_deposit','rent_type','pay_frequency',
+//            'name','phone','card_type','card_number','card_one','card_two','card_three',
+//            'name_two','phone_two','card_type_two','card_number_two','alter_phone','alternative','address'
+//        ];
+//        if(!$this->validationText($this->validateCheckIn())){
+//            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+//            return;
+//        }
+        $input  = $this->input->post(null,true);
+        $resident_id    = trim(strip_tags($input['resident_id']));
+
+
         try {
             $data       = $this->handleCheckInData($request);
             $resident   = $this->resident->find($residentId);
