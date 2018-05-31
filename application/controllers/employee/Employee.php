@@ -221,7 +221,8 @@ class Employee extends MY_Controller
 
         if ($employee->save())
         {
-            $this->api_res(0);
+            $data = ['id' => $employee->id, 'url' => 'http://tapi.boss.funxdata.com/employee/employee/bindwechat'];
+            $this->api_res(0, $data);
         }else{
             $this->api_res(1009);
         }
@@ -284,10 +285,42 @@ class Employee extends MY_Controller
         $employee->phone        = $phone;
         $employee->status       = $status;
 
-        if ($employee->save())
-        {
+        if ($employee->save()) {
             $this->api_res(0);
-        }else{
+        } else {
+            $this->api_res(1009);
+        }
+
+    }
+
+    //微信绑定
+    public function bindwechat()
+    {
+        $post = $this->input->post(null, true);
+        $id = isset($post['id']) ? $post['id'] : null;
+        $code = $post['code'];
+        $code   = str_replace(' ','',trim(strip_tags($code)));
+        $appid  = config_item('wx_web_appid');
+        $secret = config_item('wx_web_secret');
+        $url    = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid='.$appid.'&secret='.$secret.'&code='.$code.'&grant_type=authorization_code';
+        $user   = $this->httpCurl($url,'get','json');
+        if(array_key_exists('errcode',$user))
+        {
+            log_message('error',$user['errmsg']);
+            $this->api_res(1006);
+            return false;
+        }
+        //$access_token   = $user['access_token'];
+        //$refresh_token  = $user['refresh_token'];
+        $openid         = $user['openid'];
+        $unionid        = $user['unionid'];
+
+        $employee = Employeemodel::find($id);
+        $employee->$openid = $openid;
+        $employee->$unionid = $unionid;
+        if ($employee->save()) {
+            $this->api_res(0);
+        } else {
             $this->api_res(1009);
         }
 
@@ -338,7 +371,7 @@ class Employee extends MY_Controller
         $code   = isset($post['code'])?$post['code']:NULL;
         $code   = str_replace(' ','',trim(strip_tags($code)));
 
-        $appid  = config_item('wx_web_appid');
+        /*$appid  = config_item('wx_web_appid');
         $secret = config_item('wx_web_secret');
         $url    = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid='.$appid.'&secret='.$secret.'&code='.$code.'&grant_type=authorization_code';
         $user   = $this->httpCurl($url,'get','json');
@@ -346,7 +379,7 @@ class Employee extends MY_Controller
         {
             $this->api_res(1003);
             return false;
-        }
+        }*/
 
         $employee               = new Employeemodel();
         $employee->store_ids    = $store_ids;
@@ -356,8 +389,8 @@ class Employee extends MY_Controller
         $employee->name         = $name;
         $employee->phone        = $phone;
         $employee->hiredate     = $hiredate;
-        $employee->openid       = $user['openid'];
-        $employee->unionid      = $user['unionid'];
+        //$employee->openid       = $user['openid'];
+        //$employee->unionid      = $user['unionid'];
         $employee->status       = 'ENABLE';
 
         if ($employee->save())
