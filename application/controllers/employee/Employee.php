@@ -271,6 +271,7 @@ class Employee extends MY_Controller
      */
     public function qrcodeAddCompany(){
         $post   = $this->input->post(NULL,true);
+
         $id     = isset($post['id'])?$post['id']:NULL;
         $code   = isset($post['code'])?$post['code']:NULL;
 

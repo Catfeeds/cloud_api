@@ -84,7 +84,7 @@ class Operation extends MY_Controller
         if(!empty($post['store_id'])){$where['id']  = $post['store_id'];}
         if(!empty($post['begin_time'])){$btime=$post['begin_time'];}else{$btime = date('Y-m-d H:i:s',0);};
         if(!empty($post['end_time'])){$etime=$post['end_time'];}else{$etime = date('Y-m-d H:i:s',time());};
-        $filed  = ['id','contract_id','resident_id','store_id','room_id','employee_id','status'];
+        $filed  = ['id','contract_id','resident_id','store_id','room_id','employee_id'];
         if ($where){
             $operation = Contractmodel::with('bookresident')->with('employee')->with('store')->with('roomunion')->
             where($where)->whereBetween('created_at', [$btime, $etime])->take(PAGINATE)->skip($offset)->
@@ -111,6 +111,29 @@ class Operation extends MY_Controller
 
         $operation = Contractmodel::where('id',$serial)->with('roomunion')->with('store')->with('booking')->get($filed);
         $this->api_res(0,['info'=>$operation]);
+    }
+
+    /**
+     * 查看PDF合同
+     */
+    public function pdfLook()
+    {
+        $post  =$this->input->post(NULL,true);
+        $id = $post['id'];
+        $filed  =['view_url'];
+        $pdf  = Contractmodel::where('id',$id)->get($filed);
+//        foreach ($pdf as $value){
+//            $pdf['view_url'] = $this->fullAliossUrl($value['view_url']);
+//        }
+        $this->api_res(0,['seepdf'=>$pdf]);
+    }
+
+    /**
+     *上传合同
+     */
+    public function loadcontract()
+    {
+
     }
 
 
