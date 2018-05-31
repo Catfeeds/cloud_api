@@ -123,6 +123,14 @@ use Carbon\Carbon;
      }
 
      /**
+      * 住户的退房记录, 每户只有一条
+      */
+     public function checkout_record()
+     {
+         return $this->hasOne(Checkoutrecordmodel::class, 'resident_id');
+     }
+
+     /**
       * 计算用户的合同结束时间
       * 主要是考虑到, 租房合同开始日期是某个月的月底而结束月份是2月份的情况
       */
@@ -265,6 +273,8 @@ use Carbon\Carbon;
 
          return $data;
      }
+
+
 
 
 

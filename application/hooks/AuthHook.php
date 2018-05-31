@@ -30,14 +30,24 @@ class AuthHook {
 
             'demo/sheet/index',
 
+            'bill/bill/generate',
+
             'account/login/login',
+
             'mini/resident/checkroomunion',
             'mini/resident/checkin',
             'mini/resident/destory',
             'mini/resident/showqrcode',
             'mini/resident/reservation',
             'mini/resident/getresident',
+            'mini/resident/listresident',
+            'mini/resident/bookingtocheckin',
+
             'mini/activity/showactivity',
+
+            'mini/order/listorder',
+            'mini/order/confirm',
+            'mini/order/pay',
             //'store/store/liststore',
             //'store/store/addstoredot',
             //'store/store/addstoreunion',
@@ -116,23 +126,12 @@ class AuthHook {
             'shop/goodsorder/listgoodsorder',
             'shop/goodsorder/detail',
 
-            'employee/position/addposition',
-            'employee/position/getposition',
-            'employee/position/editposition',
-            'employee/position/listposition',
-            'employee/position/searchposition',
-            'employee/position/submitposition',
-            'employee/employee/showmystores',
-            'employee/employee/listemp',
-            'employee/employee/getstore',
-            'employee/employee/getempinfo',
-            'employee/employee/showstore',
-            'employee/employee/searchemp',
-            'employee/employee/delemp',
-
             'smartdevice/smartdevice/listsmartdevice',
             'smartdevice/smartdevice/record',
+            'smartdevice/smartdevice/test',
             'smartdevice/yeeuulock/test',
+            'smartdevice/danbaylock/test',
+            'smartdevice/cjoyelectric/test',
 
             'common/city',
             'common/province',
@@ -152,15 +151,6 @@ class AuthHook {
             'mini/personalcenter/center',
             'mini/room/listroom',
             'mini/room/detailsroom',
-            'mini/employee/showcenter',
-            'mini/employee/listemp',
-            'mini/employee/addemp',
-            'mini/messagesnd/templatefields',
-            'mini/messagesnd/sendmsgtype',
-            'mini/messagesnd/sendnotice',
-            'mini/residentct/showcenter',
-            'mini/residentct/showdetail',
-            'mini/residentct/searchresident',
 
             'contract/operation/operatlist',
             'contract/operation/operationfind',

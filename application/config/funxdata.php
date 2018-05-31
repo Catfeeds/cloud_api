@@ -28,8 +28,6 @@ $config['wx_map_secret']    = '00e6fd3ce1151e3d2bd0e01c98c925d3';
 $config['wx_map_token']     = 'aJ1B3XhY7qRvTG3DrbxNhCLo90kpsds4';
 $config['wx_map_aes_key']   = 'IwTUFptFaJ1B3XhY7qRvTG3DrbxNhCLo90kpsqP0cNL';
 
-
-
 //云片信息
 //https://sms.yunpian.com/v1/sms/send.json
 $config['yunpian_api_url']  = 'http://sms.yunpian.com/v2/sms/single_send.json';
@@ -42,7 +40,6 @@ $config['jwt_iss'] = 'http://funxdata.com';
 $config['jwt_exp'] = (time()+7200); //过期时间
 //$config['jwt_nbf'] = 1357000000;
 
-
 //上传附件的cdn地址
 $config['cdn_path'] = 'http://tfunx.oss-cn-shenzhen.aliyuncs.com';
 
@@ -51,7 +48,7 @@ $config['yeeuuapiBaseUrl']  = 'https://api.yeeuu.com/v1/locks';
 $config['yeeuualmsUrl']     = 'https://alms.yeeuu.com/apartments/synchronize_apartments';
 
 $config['joyMeterClientId'] = 'joy000001';
-$config['joyMeterApiUrl']   = 'http://122.225.71.66:8787/amr/joy/';
+$config['joyMeterApiUrl']   = 'http://139.196.103.205:8787/jindicaomei/joy/';/*'http://122.225.71.66:211/test/joy/';*/
 $config['joyPublicKeyPath'] = 'private/keys/rsa_public_key.pem';
 $config['joyPrivateKeyPath']= 'private/keys/rsa_private_key.pem';
 $config['joyLockPartnerId'] = '59cf50b69e23627437000028';
@@ -59,8 +56,6 @@ $config['joyLockSecret']    = 'fahwkc5M';
 
 $config['danbayUserName']   = 'jindihuohua';
 $config['danbayPassword']   = 'a123456';
-$config['danbaymToken']     = '6nQIQ3EOpkaNtRly1M2MDoDjX7jxGjntldYv1JbsQB7srroptaUc3z2QypzDbgzc';
-
 
 //法大大电子合同接口
 $config['fadada_api_app_secret'] ='PMKQo0b3RCb911OaqmsGAFnw';
@@ -74,7 +69,6 @@ $config['uploadtemplate.api'] ='uploadtemplate.api';
 $config['generate_contract.api'] ='generate_contract.api';
 $config['extsign.api'] ='extsign.api';
 $config['extsign_auto.api'] ='extsign_auto.api';
-
 
 //员工端相关配置信息
 $config['miniAppid']        = 'wx5721f56e75cc901e';

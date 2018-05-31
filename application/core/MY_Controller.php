@@ -177,4 +177,46 @@ class MY_Controller extends CI_Controller {
         }
         return $alioss_path;
     }
+
+    /**
+     * 判断是否是公寓管理员或者是超级管理员
+     */
+    public function position(){
+
+    }
+
+    /**
+     * 获取并检查输入的年份
+     * 要求输入的 key 为 year
+     */
+    protected function checkAndGetYear($year,$withDefault = true)
+    {
+
+        if (preg_match('/^(19|20)[0-9]{2}$/', $year)) {
+            return $year;
+        }
+
+        if ($withDefault) {
+            return date('Y');
+        }
+
+        return null;
+    }
+
+    /**
+     * 获取输入的月份值，要求键为 month
+     */
+    protected function checkAndGetMonth($month,$withDefault = true)
+    {
+
+        if (preg_match('/^(0?[1-9]|1[0-2])$/', $month)) {
+            return $month;
+        }
+
+        if ($withDefault) {
+            return date('n');
+        }
+
+        return null;
+    }
 }
