@@ -108,8 +108,38 @@ class Residentct extends MY_Controller
             return;
         }
         $resident[0]['type'] = $devicetype[0]['type'];
+        $resident[0]['status'] = $this->getRoomStatus($resident[0]['status']);
 
         $this->api_res(0, $resident);
+    }
+
+    /**
+     * 获取房间状态
+     */
+    public function getRoomStatus($status)
+    {
+        switch ($status) {
+            case 'NOT_PAY':
+                return '办理入住未支付';
+            case 'PRE_RESERVE':
+                return '办理预订未支付';
+            case 'PRE_CHECKIN':
+                return '预订转入住未支付';
+            case 'PRE_CHANGE':
+                return '换房未支付';
+            case 'PRE_RENEW':
+                return '续约未支付';
+            case 'RESERVE':
+                return '预订';
+            case 'NORMAL':
+                return '正常';
+            case 'NORMAL_REFUND':
+                return '正常退房';
+            case 'UNDER_CONTRACT':
+                return '违约退房';
+            case 'INVALID':
+                return '无效';
+        }
     }
 
 }
