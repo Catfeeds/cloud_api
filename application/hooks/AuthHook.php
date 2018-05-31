@@ -33,13 +33,17 @@ class AuthHook {
             'bill/bill/generate',
 
             'account/login/login',
+
             'mini/resident/checkroomunion',
             'mini/resident/checkin',
             'mini/resident/destory',
             'mini/resident/showqrcode',
             'mini/resident/reservation',
             'mini/resident/getresident',
+            'mini/resident/listresident',
+
             'mini/activity/showactivity',
+
             'mini/order/listorder',
             'mini/order/confirm',
             'mini/order/pay',
