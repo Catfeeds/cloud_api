@@ -89,12 +89,24 @@ class Residentct extends MY_Controller
                   'real_property_costs', 'deposit_money', 'status', 'contract_time'];
 
         $resident = Residentmodel::where('id', $id)->get($filed)->toArray();
+        if (!$resident) {
+            $this->api_res(1009, ['error' => '住户信息不符']);
+            return;
+        }
         $this->load->model('roomunionmodel');
         $room_id = $resident[0]['room_id'];
         $room = Roomunionmodel::where('id', $room_id)->get(['number'])->toArray();
+        if (!$room) {
+            $this->api_res(1009, ['error' => '住户房间号不符']);
+            return;
+        }
         $resident[0]['number'] = $room[0]['number'];
         $this->load->model('smartdevicemodel');
         $devicetype = Smartdevicemodel::where('room_id', $room_id)->get(['type'])->toArray();
+        if (!$room) {
+            $this->api_res(1009, ['error' => '住户房间号不符']);
+            return;
+        }
         $resident[0]['type'] = $devicetype[0]['type'];
 
         $this->api_res(0, $resident);
