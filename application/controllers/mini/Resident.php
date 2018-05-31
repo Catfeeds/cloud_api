@@ -819,12 +819,13 @@ class Resident extends MY_Controller
             $resident->name     = $name;
             $resident->phone        = $phone;
             $resident->book_money   = $book_money;
-            $resident->book_time    =  Carbon::parse($book_time);
+            $resident->book_time    = Carbon::parse($book_time);
             $resident->begin_time   = Carbon::now();
             $resident->end_time     = Carbon::now();
             $resident->employee_id  = $this->employee->id;
             $resident->status       = Residentmodel::STATE_NOTPAY;
             $resident->remark       = $remark;
+            $resident->store_id     = $this->employee->store_id;
             $a  = $resident->save();
             //更新房间状态
             $room->Occupie();
