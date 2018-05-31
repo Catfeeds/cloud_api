@@ -217,6 +217,7 @@ class Employee extends MY_Controller
         $employee->name         = $name;
         $employee->phone        = $phone;
         $employee->hiredate     = $hiredate;
+        $employee->status       = 'ENABLE';
 
         if ($employee->save())
         {
@@ -357,6 +358,7 @@ class Employee extends MY_Controller
         $employee->hiredate     = $hiredate;
         $employee->openid       = $user['openid'];
         $employee->unionid      = $user['unionid'];
+        $employee->status       = 'ENABLE';
 
         if ($employee->save())
         {

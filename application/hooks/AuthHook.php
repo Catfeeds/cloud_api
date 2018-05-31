@@ -145,12 +145,6 @@ class AuthHook {
             'mini/personalcenter/center',
             'mini/room/listroom',
             'mini/room/detailsroom',
-            'mini/employee/showcenter',
-            'mini/employee/listemp',
-            'mini/employee/addemp',
-            'mini/messagesnd/templatefields',
-            'mini/messagesnd/sendmsgtype',
-            'mini/messagesnd/sendnotice',
 
             'contract/operation/operatlist',
             'contract/operation/operationfind',
