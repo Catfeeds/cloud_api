@@ -217,6 +217,7 @@ class Employee extends MY_Controller
         $employee->name         = $name;
         $employee->phone        = $phone;
         $employee->hiredate     = $hiredate;
+        $employee->status       = 'ENABLE';
 
         if ($employee->save())
         {
@@ -295,12 +296,46 @@ class Employee extends MY_Controller
     /**
      * 添加员工 二维码
      */
-    public function qrcodeAddCompany(){
+    public function qrcodeAddCompany()
+    {
         $post   = $this->input->post(NULL,true);
-        $id     = isset($post['id'])?$post['id']:NULL;
-        $code   = isset($post['code'])?$post['code']:NULL;
+        $config = $this->validation();
+        if(!$this->validationText($config))
+        {
+            $fieldarr = ['name', 'phone', 'position', 'store_ids', 'store_names', 'hiredate'];
+            $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
+            return false;
+        }
+        $name = $post['name'];
+        $position = $post['position'];
+        $this->load->model('positionmodel');
+        $position_arr = Positionmodel::where('name', $position)->get(['id'])->toArray();
+        if (!$position_arr) {
+            $this->api_res(1009);
+            return false;
+        }
+        $position_id = $position_arr[0]['id'];
+        $store_ids = $post['store_ids'];
+        $store_names = $post['store_names'];
+        $phone = $post['phone'];
+        $hiredate = $post['hiredate'];
 
-        $id     = str_replace(' ','',trim(strip_tags($id)));
+        $this->load->model('storemodel');
+        if (!defined('COMPANY_ID')) {
+            $this->api_res(1002,['error'=>'公司信息不符']);
+            return;
+        }
+        $ids= Storemodel::where('company_id',COMPANY_ID)->get(['id'])->map(function($a){
+            return $a->id;
+        })->toArray();
+
+        $store_ids_arr = explode(',' ,$store_ids);
+        if(!empty(array_diff($store_ids_arr, $ids))){
+            $this->api_res(1002,['error'=>'门店不符']);
+            return;
+        }
+        $store_id = $store_ids_arr[0];
+        $code   = isset($post['code'])?$post['code']:NULL;
         $code   = str_replace(' ','',trim(strip_tags($code)));
 
         $appid  = config_item('wx_web_appid');
@@ -312,17 +347,26 @@ class Employee extends MY_Controller
             $this->api_res(1003);
             return false;
         }
-        $company             = Employeemodel::where('id',$id)->first();
-        $company->openid     = $user['openid'];
-        $company->unionid    = $user['unionid'];
-        if($company->save()){
-            $company->status = 'NORMAL';
-            $company->save();
+
+        $employee               = new Employeemodel();
+        $employee->store_ids    = $store_ids;
+        $employee->store_names  = $store_names;
+        $employee->store_id     = $store_id;
+        $employee->position_id  = $position_id;
+        $employee->name         = $name;
+        $employee->phone        = $phone;
+        $employee->hiredate     = $hiredate;
+        $employee->openid       = $user['openid'];
+        $employee->unionid      = $user['unionid'];
+        $employee->status       = 'ENABLE';
+
+        if ($employee->save())
+        {
             $this->api_res(0);
-        }else{
+        } else {
             $this->api_res(1009);
-            return false;
         }
+
     }
 
     /**
