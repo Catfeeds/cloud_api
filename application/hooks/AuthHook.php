@@ -121,17 +121,6 @@ class AuthHook {
             'shop/goodsorder/listgoodsorder',
             'shop/goodsorder/detail',
 
-            'employee/position/addposition',
-            'employee/position/getposition',
-            'employee/position/editposition',
-            'employee/position/searchposition',
-            'employee/position/submitposition',
-            'employee/employee/getstore',
-            'employee/employee/getempinfo',
-            'employee/employee/showstore',
-            'employee/employee/searchemp',
-            'employee/employee/delemp',
-
             'smartdevice/smartdevice/listsmartdevice',
             'smartdevice/smartdevice/record',
             'smartdevice/yeeuulock/test',
