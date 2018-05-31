@@ -129,10 +129,7 @@ class Position extends MY_Controller
         $where = isset($post['store_id']) ? ['store_id' => $post['store_id']] : [];
 
         if (isset($post['city']) && !empty($post['city'])) {
-            $stores = Employeemodel::getMyCitystores($post['city']);
-            foreach($stores as $store) {
-                $store_ids[] = $store->id;
-            }
+            $store_ids = Employeemodel::getMyCitystoreids($post['city']);
             $count = ceil((Positionmodel::whereIn('store_id', $store_ids)->where($where)->count()) / PAGINATE);
             if ($page > $count) {
                 $this->api_res(0, ['count' => $count, 'list' => []]);
@@ -149,8 +146,7 @@ class Position extends MY_Controller
             return;
         }
         $this->load->model('employeemodel');
-        $employee = Employeemodel::getMyStores();
-        $store_ids = explode(',', $employee[0]->store_ids);
+        $store_ids = Employeemodel::getMyStoreids();
         $count = ceil((Positionmodel::where('company_id', COMPANY_ID)->whereIn('store_id', $store_ids)->count()) / PAGINATE);
         if ($page > $count) {
             $this->api_res(0, ['count' => $count, 'list' => []]);
