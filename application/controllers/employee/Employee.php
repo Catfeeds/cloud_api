@@ -316,8 +316,8 @@ class Employee extends MY_Controller
         $unionid        = $user['unionid'];
 
         $employee = Employeemodel::find($id);
-        $employee->$openid = $openid;
-        $employee->$unionid = $unionid;
+        $employee->openid = $openid;
+        $employee->unionid = $unionid;
         if ($employee->save()) {
             $this->api_res(0);
         } else {
