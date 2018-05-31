@@ -94,7 +94,7 @@ class Resident extends MY_Controller
         //var_dump($data);die();
         //获取房间信息
         $this->load->model('roomunionmodel');
-        $room   = Roomunionmodel::where('store_id',$post['store_id'])->find($post['room_id']);
+        $room   = Roomunionmodel::where('store_id',$this->employee->store_id)->find($post['room_id']);
         if(!$room){
             $this->api_res(1007);
             return;
@@ -1016,6 +1016,7 @@ class Resident extends MY_Controller
         }
         $post  = $this->input->post(null,true);
         $resident_id    = trim(strip_tags($post['resident_id']));
+        $this->load->model('residentmodel');
         if(!$this->checkPhoneNumber($post['phone'])){
             $this->api_res(1002,['error'=>'请检查手机号']);
             return;
@@ -1044,7 +1045,6 @@ class Resident extends MY_Controller
         //获取请求参数,
         $data   = $this->handleCheckInData($post);
         //判断用户状态
-        $this->load->model('residentmodel');
         $resident   = Residentmodel::find($resident_id);
         if($resident->status!=Residentmodel::STATE_RESERVE){
             $this->api_res(10011);
@@ -1057,77 +1057,53 @@ class Resident extends MY_Controller
             $this->api_res(1007);
             return;
         }
-        if ($data['room_id'] == $resident->room_id) {
-            if($room->status!=Roomunionmodel::STATE_RESERVE){
-                $this->api_res(10021);
-                return;
-            }
-        } else {
-            //与预定时候房间不一样时
-            if(!$room->isBlank()){
-                $this->api_res(10010);
-                return;
-            }
-            //需要将原房间置空
-            $old_room   = $resident->roomunion;
-
-
-        }
-
-//        $room   = Roomunionmodel::find($post['room_id']);
-//
-
-        //如果入住的房间和预订的房间不一样, 要将原房间置空
-        if ($data['room_id'] == $resident->room_id) {
-            $roomunion   = $resident->roomunion;
-            if($roomunion->status!=Roomunionmodel::STATE_RESERVE){
-                $this->api_res(10021);
-                return;
-            }
-        } else {
-            $room   = $this->getCheckInRoom($data['room_id'], $roomRepo);
-            $roomRepo->isBlank($room);
-            $roomRepo->update([
-                'status'        => $roomRepo->state_blank,
-                'people_count'  => 0,
-                'resident_id'   => 0,
-            ], $resident->room_id);
-        }
-
-
-
-
-        try {
-            $data       = $this->handleCheckInData($request);
-            $resident   = $this->resident->find($residentId);
-
-            if ($this->resident->state_reserve != $resident->status) {
-                throw new \Exception('不允许的操作, 请检查该住户的状态!');
-            }
-
+        try{
+            DB::beginTransaction();
             //如果入住的房间和预订的房间不一样, 要将原房间置空
             if ($data['room_id'] == $resident->room_id) {
-                $room   = $resident->room;
+                //一样的时候判断房间状态是不是预定
+                if($room->status!=Roomunionmodel::STATE_RESERVE){
+                    $this->api_res(10021);
+                    return;
+                }
             } else {
-                $room   = $this->getCheckInRoom($data['room_id'], $roomRepo);
-                $roomRepo->isBlank($room);
-                $roomRepo->update([
-                    'status'        => $roomRepo->state_blank,
-                    'people_count'  => 0,
-                    'resident_id'   => 0,
-                ], $resident->room_id);
+                //与预定时候房间不一样时
+                if(!$room->isBlank()){
+                    $this->api_res(10010);
+                    return;
+                }
+                //需要将原房间置空
+                $old_room   = $resident->roomunion;
+                $old_room->status   = Roomunionmodel::STATE_BLANK;
+                $old_room->people_count  = 0;
+                $old_room->resident_id   = 0;
+                $old_room->save();
             }
+            $resident->fill($data);
+            $resident->rent_price   = $room->rent_price;
+            $resident->property_price   = $room->property_price;
 
-            //更新住户信息
-            $resident   = $this->resident->update($data, $residentId);
-
-            $this->handleCheckInCommonEvent($resident, $room, $request, $roomRepo, $orderRepo, $actRepo);
-        } catch (\Exception $e) {
-            \Log::error($e->getMessage());
-            return $this->respError($e->getMessage());
+            // $resident->employee_id  = $this->employee->id;
+            $resident->card_one = $this->splitAliossUrl($data['card_one']);
+            $resident->card_two = $this->splitAliossUrl($data['card_two']);
+            $resident->card_three = $this->splitAliossUrl($data['card_three']);
+            $a=$resident->save();
+            //把房间状态改成占用
+            $b=$this->occupiedByResident($room, $resident);
+            //$b=$this->handleCheckInCommonEvent($resident, $room);
+            if($a && $b){
+                DB::commit();
+            }else{
+                DB::rollBack();
+                $this->api_res(1009);
+                return;
+            }
+            $this->api_res(0,['resident_id'=>$resident->id]);
+        }catch (Exception $e){
+            DB::rollBack();
+            throw $e;
         }
 
-        return $this->respSuccess($resident, new ResidentTransformer(), '办理入住成功!');
     }
 
 
