@@ -67,13 +67,10 @@ class Employee extends MY_Controller
         $config = $this->validationCodeAddEmp();
         if(!$this->validationText($config))
         {
-            $this->api_res(1002,['error'=>$this->form_first_error(['code'])]);
+            $this->api_res(1002,['error'=>$this->form_first_error(['code', 'name', 'phone'])]);
             return false;
         }
-        $id     = isset($post['id'])?$post['id']:NULL;
         $code   = $post['code'];
-
-        $id     = str_replace(' ','',trim(strip_tags($id)));
         $code   = str_replace(' ','',trim(strip_tags($code)));
 
         $appid  = config_item('wx_web_appid');
@@ -85,39 +82,18 @@ class Employee extends MY_Controller
             $this->api_res(1003);
             return false;
         }
-        $company             = Employeemodel::where('id',$id)->first();
-        $company->openid     = $user['openid'];
-        $company->unionid    = $user['unionid'];
-        if($company->save()){
-            $company->status = 'NORMAL';
-            $company->save();
+        $employee             = new Employeemodel();
+        $employee->name       = $post['name'];
+        $employee->phone      = $post['phone'];
+        $employee->openid     = $user['openid'];
+        $employee->unionid    = $user['unionid'];
+        $employee->status     = 'NORMAL';
+        if($employee->save()){
+            $employee->save();
             $this->api_res(0);
         }else{
             $this->api_res(1009);
             return false;
-        }
-    }
-
-    /**
-     * 添加员工
-     */
-    public function addEmp()
-    {
-        $post   = $this->input->post(NULL,true);
-        $config = $this->validationAddEmp();
-        if(!$this->validationText($config))
-        {
-            $this->api_res(1002,['error'=>$this->form_first_error(['name', 'phone'])]);
-            return false;
-        }
-        $employee               = new Employeemodel();
-        $employee->name         = $post['name'];
-        $employee->phone        = $post['phone'];
-        if ($employee->save())
-        {
-            $this->api_res(0);
-        }else{
-            $this->api_res(1009);
         }
     }
 
@@ -143,22 +119,6 @@ class Employee extends MY_Controller
         $this->load->library('form_validation');
         $config = array(
             array(
-                'field' => 'code',
-                'label' => '生成码',
-                'rules' => 'trim|required',
-            ),
-        );
-
-        return $config;
-    }
-
-    /**
-     * 添加员工验证
-     */
-    public function validationAddEmp()
-    {
-        $config = array(
-            array(
                 'field' => 'name',
                 'label' => '员工姓名',
                 'rules' => 'trim|required|max_length[255]',
@@ -167,6 +127,11 @@ class Employee extends MY_Controller
                 'field' => 'phone',
                 'label' => '手机号',
                 'rules' => 'trim|required|max_length[13]|numeric',
+            ),
+            array(
+                'field' => 'code',
+                'label' => '生成码',
+                'rules' => 'trim|required',
             ),
         );
 
