@@ -94,7 +94,7 @@ class Resident extends MY_Controller
         //var_dump($data);die();
         //获取房间信息
         $this->load->model('roomunionmodel');
-        $room   = Roomunionmodel::find($post['room_id']);
+        $room   = Roomunionmodel::where('store_id',$post['store_id'])->find($post['room_id']);
         if(!$room){
             $this->api_res(1007);
             return;
@@ -1000,22 +1000,95 @@ class Resident extends MY_Controller
 
     /**
      * 预订的房间转办理入住
-     * 传入resident_id
+     * 传入resident_id 可能所选的房间跟之前预定的不一样
      */
-    public function bookingToCheckIn($residentId, ResidentCreateRequest $request, RoomRepo $roomRepo, OrderRepo $orderRepo, ActivityRepo $actRepo)
+    public function bookingToCheckIn()
     {
-//        $field  = [
-//            'room_id','begin_time','people_count','contract_time','discount_id','first_pay_money',
-//            'deposit_money','deposit_month','tmp_deposit','rent_type','pay_frequency',
-//            'name','phone','card_type','card_number','card_one','card_two','card_three',
-//            'name_two','phone_two','card_type_two','card_number_two','alter_phone','alternative','address'
-//        ];
-//        if(!$this->validationText($this->validateCheckIn())){
-//            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
-//            return;
-//        }
-        $input  = $this->input->post(null,true);
-        $resident_id    = trim(strip_tags($input['resident_id']));
+        $field  = [
+            'room_id','begin_time','people_count','contract_time','discount_id','first_pay_money',
+            'deposit_money','deposit_month','tmp_deposit','rent_type','pay_frequency',
+            'name','phone','card_type','card_number','card_one','card_two','card_three',
+            'name_two','phone_two','card_type_two','card_number_two','alter_phone','alternative','address'
+        ];
+        if(!$this->validationText($this->validateCheckIn())){
+            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+            return;
+        }
+        $post  = $this->input->post(null,true);
+        $resident_id    = trim(strip_tags($post['resident_id']));
+        if(!$this->checkPhoneNumber($post['phone'])){
+            $this->api_res(1002,['error'=>'请检查手机号']);
+            return;
+        }
+        //var_dump($this->checkIdCardNumber($post['card_type'],$post['card_number']));exit;
+        if(!$this->checkIdCardNumber($post['card_type'],$post['card_number'])){
+            $this->api_res(1002,['error'=>'请检查身份证号']);
+            return;
+        }
+
+        if(!empty($post['name_two'])){
+            if(empty($post['phone_two']) || empty($post['card_type_two'] || empty($post['card_number_two']))){
+                $this->api_res(1002,['error'=>'住户二信息不全']);
+                return;
+
+            }
+            if(!$this->checkPhoneNumber($post['phone_two'])){
+                $this->api_res(1002,['error'=>'请检查手机号']);
+                return;
+            }
+            if(!$this->checkIdCardNumber($post['card_type_two'],$post['card_number_two'])){
+                $this->api_res(1002,['error'=>'请检查身份证号']);
+                return;
+            }
+        }
+        //获取请求参数,
+        $data   = $this->handleCheckInData($post);
+        //判断用户状态
+        $this->load->model('residentmodel');
+        $resident   = Residentmodel::find($resident_id);
+        if($resident->status!=Residentmodel::STATE_RESERVE){
+            $this->api_res(10011);
+            return;
+        }
+        //获取房间信息
+        $this->load->model('roomunionmodel');
+        $room    = Roomunionmodel::where(['store_id'=>$this->employee->store_id])->find($post['room_id']);
+        if(!$room){
+            $this->api_res(1007);
+            return;
+        }
+        if ($data['room_id'] == $resident->room_id) {
+            $roomunion   = $resident->roomunion;
+            if($roomunion->status!=Roomunionmodel::STATE_RESERVE){
+                $this->api_res(10021);
+                return;
+            }
+        } else {
+            $roomunion  = $room;
+
+        }
+
+//        $room   = Roomunionmodel::find($post['room_id']);
+//
+
+        //如果入住的房间和预订的房间不一样, 要将原房间置空
+        if ($data['room_id'] == $resident->room_id) {
+            $roomunion   = $resident->roomunion;
+            if($roomunion->status!=Roomunionmodel::STATE_RESERVE){
+                $this->api_res(10021);
+                return;
+            }
+        } else {
+            $room   = $this->getCheckInRoom($data['room_id'], $roomRepo);
+            $roomRepo->isBlank($room);
+            $roomRepo->update([
+                'status'        => $roomRepo->state_blank,
+                'people_count'  => 0,
+                'resident_id'   => 0,
+            ], $resident->room_id);
+        }
+
+
 
 
         try {
@@ -1050,6 +1123,7 @@ class Resident extends MY_Controller
 
         return $this->respSuccess($resident, new ResidentTransformer(), '办理入住成功!');
     }
+
 
 
 
