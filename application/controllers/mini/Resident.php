@@ -1052,19 +1052,25 @@ class Resident extends MY_Controller
         }
         //获取房间信息
         $this->load->model('roomunionmodel');
-        $room    = Roomunionmodel::where(['store_id'=>$this->employee->store_id])->find($post['room_id']);
+        $room    = Roomunionmodel::where(['store_id'=>$this->employee->store_id])->find($data['room_id']);
         if(!$room){
             $this->api_res(1007);
             return;
         }
         if ($data['room_id'] == $resident->room_id) {
-            $roomunion   = $resident->roomunion;
-            if($roomunion->status!=Roomunionmodel::STATE_RESERVE){
+            if($room->status!=Roomunionmodel::STATE_RESERVE){
                 $this->api_res(10021);
                 return;
             }
         } else {
-            $roomunion  = $room;
+            //与预定时候房间不一样时
+            if(!$room->isBlank()){
+                $this->api_res(10010);
+                return;
+            }
+            //需要将原房间置空
+            $old_room   = $resident->roomunion;
+
 
         }
 
