@@ -220,9 +220,8 @@ class Employee extends MY_Controller
         $employee->hiredate     = $hiredate;
         $employee->status       = 'ENABLE';
 
-        if ($employee->save())
-        {
-            $this->api_res(0);
+        if ($employee->save()) {
+            $this->api_res(0, ['id' => $employee->id]);
         }else{
             $this->api_res(1009);
         }

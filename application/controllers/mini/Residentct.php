@@ -126,20 +126,29 @@ class Residentct extends MY_Controller
     /**
      * 获取房间状态
      */
-    public function getDeviceType($type)
+    public function getDeviceType($type_tmp)
     {
-        switch ($type) {
-            case 'LOCK':
-                return '门锁';
-            case 'HOT_WATER_METER':
-                return '热水表';
-            case 'COLD_WATER_METER':
-                return '冷水表';
-            case 'ELECTRIC_METER':
-                return '电表';
-            case 'UNKNOW':
-                return '不明';
+        $types = explode(',', $type_tmp);
+        foreach ($types as $key => $value) {
+            switch ($value) {
+                case 'LOCK':
+                    $type[] = '门锁';
+                    break;
+                case 'HOT_WATER_METER':
+                    $type[] = '热水表';
+                    break;
+                case 'COLD_WATER_METER':
+                    $type[] = '冷水表';
+                    break;
+                case 'ELECTRIC_METER':
+                    $type[] = '电表';
+                    break;
+                case 'UNKNOW':
+                    $type[] = '不明';
+                    break;
+            }
         }
+        return $type;
     }
 
     /**
