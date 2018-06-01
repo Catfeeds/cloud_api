@@ -315,7 +315,7 @@ class Employee extends MY_Controller
             return;
         }
         try{
-            $app        = new Application(getWechatCustomerConfig());
+            $app        = new Application(getMiniWechatConfig());
             $qrcode     = $app->qrcode;
             $result     = $qrcode->temporary($id, 6 * 24 * 3600);
             $ticket     = $result->ticket;
