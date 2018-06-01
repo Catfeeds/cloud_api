@@ -1,5 +1,6 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+use EasyWeChat\Foundation\Application;
 /**
  * Author:      zjh<401967974@qq.com>
  * Date:        2018/5/14 0014
@@ -179,6 +180,11 @@ class Employee extends MY_Controller
             $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
             return false;
         }
+        $this->load->helper('check');
+        if (!isMobile($post['phone'])) {
+            $this->api_res(1002,['error'=>'请检查手机号']);
+            return false;
+        }
         $name = $post['name'];
         $position = $post['position'];
         $this->load->model('positionmodel');
@@ -243,6 +249,11 @@ class Employee extends MY_Controller
             $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
             return false;
         }
+        $this->load->helper('check');
+        if (!isMobile($post['phone'])) {
+            $this->api_res(1002,['error'=>'请检查手机号']);
+            return false;
+        }
 
         $id = isset($post['id']) ? $post['id'] : null;
         $position = $post['position'];
@@ -290,6 +301,31 @@ class Employee extends MY_Controller
             $this->api_res(1009);
         }
 
+    }
+
+    /**
+     * 生成员工二维码
+     */
+    public function showQrCode()
+    {
+        $id = $this->input->post('id',true);
+        $this->load->helper('common');
+        $employee = Employeemodel::find($id);
+        if(!$employee){
+            $this->api_res(1007);
+            return;
+        }
+        try{
+            $app        = new Application(getWechatCustomerConfig());
+            $qrcode     = $app->qrcode;
+            $result     = $qrcode->temporary($id, 6 * 24 * 3600);
+            $ticket     = $result->ticket;
+            $url        = $qrcode->url($ticket);
+            $this->api_res(0,['url'=>$url]);
+        }catch (Exception $e){
+            log_message('error',$e->getMessage());
+            throw $e;
+        }
     }
 
     /**

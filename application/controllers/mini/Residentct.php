@@ -98,11 +98,11 @@ class Residentct extends MY_Controller
         $id   = isset($post['id'])?$post['id']:null;
         $filed_one = ['name', 'phone', 'room_id', 'card_type', 'card_number', 'card_one', 'card_two', 'card_three',
                   'alternative', 'alter_phone', 'people_count', 'address', 'real_rent_money',
-                  'real_property_costs', 'deposit_money', 'status', 'contract_time'];
+                  'real_property_costs', 'deposit_money', 'status', 'begin_time', 'end_time'];
         $filed_two = ['name', 'phone', 'room_id', 'card_type', 'card_number', 'name_two', 'phone_two',
             'card_type_two', 'card_number_two', 'card_one', 'card_two', 'card_three',
             'alternative', 'alter_phone', 'people_count', 'address', 'real_rent_money',
-            'real_property_costs', 'deposit_money', 'status', 'contract_time'];
+            'real_property_costs', 'deposit_money', 'status', 'begin_time', 'end_time'];
 
         $resident = Residentmodel::where('id', $id)->first(['people_count']);
         if (!$resident) {
@@ -133,6 +133,14 @@ class Residentct extends MY_Controller
         $resident->status = $this->getRoomStatus($resident->status);
 
         $this->api_res(0, $resident);
+    }
+
+    /**
+     * 数据统计
+     */
+    public function DataStatistics()
+    {
+
     }
 
     /**

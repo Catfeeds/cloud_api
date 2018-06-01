@@ -1,6 +1,5 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
-use EasyWeChat\template_message;
 use EasyWeChat\Foundation\Application;
 /**
  * Author:      chenkk<cooook@163.com>
