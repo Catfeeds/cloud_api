@@ -180,14 +180,15 @@ class Position extends MY_Controller
         $page   = intval(isset($post['page'])?$post['page']:1);
         $offset = PAGINATE * ($page-1);
         $this->load->model('employeemodel');
-        $employee = Employeemodel::getMyStores();
-        $store_ids = explode(',', $employee[0]->store_ids);
-        $count  = ceil((Positionmodel::where('store_id', $store_ids)->where('name','like',"%$name%")->count())/PAGINATE);
+        $store_ids = Employeemodel::getMyStoreids();
+        $count  = ceil((Positionmodel::whereIn('store_id', $store_ids)->where('name','like',"%$name%")->count())/PAGINATE);
         if($page > $count){
             $this->api_res(0,['count'=>$count,'list'=>[]]);
             return;
         }
-        $category = Positionmodel::with('employee')->where('name','like',"%$name%")
+        $category = Positionmodel::with('employee')
+            ->whereIn('store_id', $store_ids)
+            ->where('name','like',"%$name%")
             ->offset($offset)->limit(PAGINATE)->orderBy('id', 'desc')
             ->get($filed)->map(function($a){
                 $a->count_z = $a->employee->count();

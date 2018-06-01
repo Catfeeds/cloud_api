@@ -158,6 +158,7 @@ class AuthHook {
             'contract/operation/booking',
             'contract/operation/book',
             'contract/resident/resident',
+            'contract/operation/pdflook',
         );
 
 

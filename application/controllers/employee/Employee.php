@@ -172,7 +172,7 @@ class Employee extends MY_Controller
     public function submitEmp()
     {
         $post = $this->input->post(null, true);
-        $config = $this->validation();
+        $config = $this->validationSubmitEmp();
         if(!$this->validationText($config))
         {
             $fieldarr = ['name', 'phone', 'position', 'store_ids', 'store_names', 'hiredate'];
@@ -210,6 +210,7 @@ class Employee extends MY_Controller
         $store_id = $store_ids_arr[0];
 
         $employee               = new Employeemodel();
+        $employee->company_id   = COMPANY_ID;
         $employee->store_ids    = $store_ids;
         $employee->store_names  = $store_names;
         $employee->store_id     = $store_id;
@@ -219,10 +220,8 @@ class Employee extends MY_Controller
         $employee->hiredate     = $hiredate;
         $employee->status       = 'ENABLE';
 
-        if ($employee->save())
-        {
-            $data = ['id' => $employee->id, 'url' => 'http://tapi.boss.funxdata.com/employee/employee/bindwechat'];
-            $this->api_res(0, $data);
+        if ($employee->save()) {
+            $this->api_res(0, ['id' => $employee->id]);
         }else{
             $this->api_res(1009);
         }
@@ -234,7 +233,7 @@ class Employee extends MY_Controller
     public function updateEmp()
     {
         $post = $this->input->post(null, true);
-        $config = $this->validation();
+        $config = $this->validationSubmitEmp();
         array_pull($config, '5');
         $status_val = ['field' => 'status', 'label' => '员工状态', 'rules' => 'trim|required|in_list[ENABLE,DISABLE]'];
         $config = array_add($config, '5', $status_val);
@@ -293,13 +292,19 @@ class Employee extends MY_Controller
 
     }
 
-    //微信绑定
+    /**
+     * 二维码添加员工
+     */
     public function bindwechat()
     {
         $post = $this->input->post(null, true);
-        $id = isset($post['id']) ? $post['id'] : null;
+        $config = $this->validationCodeAddEmp();
+        if(!$this->validationText($config))
+        {
+            $this->api_res(1002,['error'=>$this->form_first_error(['id', 'code'])]);
+            return false;
+        }
         $code = $post['code'];
-        $code   = str_replace(' ','',trim(strip_tags($code)));
         $appid  = config_item('wx_web_appid');
         $secret = config_item('wx_web_secret');
         $url    = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid='.$appid.'&secret='.$secret.'&code='.$code.'&grant_type=authorization_code';
@@ -315,86 +320,10 @@ class Employee extends MY_Controller
         $openid         = $user['openid'];
         $unionid        = $user['unionid'];
 
-        $employee = Employeemodel::find($id);
+        $employee = Employeemodel::find($post['id']);
         $employee->openid = $openid;
         $employee->unionid = $unionid;
         if ($employee->save()) {
-            $this->api_res(0);
-        } else {
-            $this->api_res(1009);
-        }
-
-    }
-
-    /**
-     * 添加员工 二维码
-     */
-    public function qrcodeAddCompany()
-    {
-        $post   = $this->input->post(NULL,true);
-        $config = $this->validation();
-        if(!$this->validationText($config))
-        {
-            $fieldarr = ['name', 'phone', 'position', 'store_ids', 'store_names', 'hiredate'];
-            $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
-            return false;
-        }
-        $name = $post['name'];
-        $position = $post['position'];
-        $this->load->model('positionmodel');
-        $position_arr = Positionmodel::where('name', $position)->get(['id'])->toArray();
-        if (!$position_arr) {
-            $this->api_res(1009);
-            return false;
-        }
-        $position_id = $position_arr[0]['id'];
-        $store_ids = $post['store_ids'];
-        $store_names = $post['store_names'];
-        $phone = $post['phone'];
-        $hiredate = $post['hiredate'];
-
-        $this->load->model('storemodel');
-        if (!defined('COMPANY_ID')) {
-            $this->api_res(1002,['error'=>'公司信息不符']);
-            return;
-        }
-        $ids= Storemodel::where('company_id',COMPANY_ID)->get(['id'])->map(function($a){
-            return $a->id;
-        })->toArray();
-
-        $store_ids_arr = explode(',' ,$store_ids);
-        if(!empty(array_diff($store_ids_arr, $ids))){
-            $this->api_res(1002,['error'=>'门店不符']);
-            return;
-        }
-        $store_id = $store_ids_arr[0];
-        $code   = isset($post['code'])?$post['code']:NULL;
-        $code   = str_replace(' ','',trim(strip_tags($code)));
-
-        /*$appid  = config_item('wx_web_appid');
-        $secret = config_item('wx_web_secret');
-        $url    = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid='.$appid.'&secret='.$secret.'&code='.$code.'&grant_type=authorization_code';
-        $user   = $this->httpCurl($url,'get','json');
-        if(array_key_exists('errcode',$user))
-        {
-            $this->api_res(1003);
-            return false;
-        }*/
-
-        $employee               = new Employeemodel();
-        $employee->store_ids    = $store_ids;
-        $employee->store_names  = $store_names;
-        $employee->store_id     = $store_id;
-        $employee->position_id  = $position_id;
-        $employee->name         = $name;
-        $employee->phone        = $phone;
-        $employee->hiredate     = $hiredate;
-        //$employee->openid       = $user['openid'];
-        //$employee->unionid      = $user['unionid'];
-        $employee->status       = 'ENABLE';
-
-        if ($employee->save())
-        {
             $this->api_res(0);
         } else {
             $this->api_res(1009);
@@ -425,11 +354,32 @@ class Employee extends MY_Controller
         }
     }
 
-
     /**
      * 验证
      */
-    public function validation()
+    public function validationCodeAddEmp()
+    {
+        $config = array(
+            array(
+                'field' => 'id',
+                'label' => '员工id',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'code',
+                'label' => '二维码',
+                'rules' => 'trim|required',
+            ),
+        );
+
+        return $config;
+    }
+
+
+    /**
+     * 添加员工验证
+     */
+    public function validationSubmitEmp()
     {
         $config = array(
             array(
