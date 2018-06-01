@@ -227,7 +227,7 @@ class Employee extends MY_Controller
         $employee->status       = 'ENABLE';
 
         if ($employee->save()) {
-            $this->api_res(0, ['id' => $employee->id]);
+            $this->showQrCode($employee->id);
         }else{
             $this->api_res(1009);
         }
@@ -306,9 +306,8 @@ class Employee extends MY_Controller
     /**
      * 生成员工二维码
      */
-    public function showQrCode()
+    public function showQrCode($id)
     {
-        $id = $this->input->post('id',true);
         $this->load->helper('common');
         $employee = Employeemodel::find($id);
         if(!$employee){
