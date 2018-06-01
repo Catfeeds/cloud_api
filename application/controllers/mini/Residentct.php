@@ -84,33 +84,62 @@ class Residentct extends MY_Controller
     {
         $post = $this->input->post(null, true);
         $id   = isset($post['id'])?$post['id']:null;
-        $filed = ['name', 'phone', 'room_id', 'card_type', 'card_number', 'card_one', 'card_two', 'card_three',
+        $filed_one = ['name', 'phone', 'room_id', 'card_type', 'card_number', 'card_one', 'card_two', 'card_three',
                   'alternative', 'alter_phone', 'people_count', 'address', 'real_rent_money',
                   'real_property_costs', 'deposit_money', 'status', 'contract_time'];
+        $filed_two = ['name', 'phone', 'room_id', 'card_type', 'card_number', 'name_two', 'phone_two',
+            'card_type_two', 'card_number_two', 'card_one', 'card_two', 'card_three',
+            'alternative', 'alter_phone', 'people_count', 'address', 'real_rent_money',
+            'real_property_costs', 'deposit_money', 'status', 'contract_time'];
 
-        $resident = Residentmodel::where('id', $id)->get($filed)->toArray();
+        $resident = Residentmodel::where('id', $id)->first(['people_count']);
         if (!$resident) {
             $this->api_res(1009, ['error' => '住户信息不符']);
             return;
         }
+
+        if ($resident->people_count > 1) {
+            $resident = Residentmodel::where('id', $id)->first($filed_two);
+        } else {
+            $resident = Residentmodel::where('id', $id)->first($filed_one);
+        }
         $this->load->model('roomunionmodel');
-        $room_id = $resident[0]['room_id'];
-        $room = Roomunionmodel::where('id', $room_id)->get(['number'])->toArray();
+        $room_id = $resident->room_id;
+        $room = Roomunionmodel::where('id', $room_id)->first(['number']);
         if (!$room) {
             $this->api_res(1009, ['error' => '住户房间号不符']);
             return;
         }
-        $resident[0]['number'] = $room[0]['number'];
+        $resident->number = $room->number;
         $this->load->model('smartdevicemodel');
-        $devicetype = Smartdevicemodel::where('room_id', $room_id)->get(['type'])->toArray();
-        if (!$room) {
+        $devicetype = Smartdevicemodel::where('room_id', $room_id)->first(['type']);
+        if (!$devicetype) {
             $this->api_res(1009, ['error' => '住户房间号不符']);
             return;
         }
-        $resident[0]['type'] = $devicetype[0]['type'];
-        $resident[0]['status'] = $this->getRoomStatus($resident[0]['status']);
+        $resident->type = $this->getDeviceType($devicetype->type);
+        $resident->status = $this->getRoomStatus($resident->status);
 
         $this->api_res(0, $resident);
+    }
+
+    /**
+     * 获取房间状态
+     */
+    public function getDeviceType($type)
+    {
+        switch ($type) {
+            case 'LOCK':
+                return '门锁';
+            case 'HOT_WATER_METER':
+                return '热水表';
+            case 'COLD_WATER_METER':
+                return '冷水表';
+            case 'ELECTRIC_METER':
+                return '电表';
+            case 'UNKNOW':
+                return '不明';
+        }
     }
 
     /**

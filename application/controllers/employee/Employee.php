@@ -210,6 +210,7 @@ class Employee extends MY_Controller
         $store_id = $store_ids_arr[0];
 
         $employee               = new Employeemodel();
+        $employee->company_id   = COMPANY_ID;
         $employee->store_ids    = $store_ids;
         $employee->store_names  = $store_names;
         $employee->store_id     = $store_id;
@@ -221,8 +222,7 @@ class Employee extends MY_Controller
 
         if ($employee->save())
         {
-            $data = ['id' => $employee->id, 'url' => 'http://tapi.boss.funxdata.com/employee/employee/bindwechat'];
-            $this->api_res(0, $data);
+            $this->api_res(0);
         }else{
             $this->api_res(1009);
         }
