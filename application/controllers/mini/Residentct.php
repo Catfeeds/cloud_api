@@ -21,6 +21,9 @@ class Residentct extends MY_Controller
     public function showCenter()
     {
         $post = $this->input->post(null, true);
+        $this->load->model('employeemodel');
+        $store_ids = Employeemodel::getMyStoreids();
+
         $page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
         $page_count = isset($post['page_count']) ? intval($post['page_count']) : 10;//当前页显示条数
         $offset = $page_count * ($page - 1);
@@ -28,16 +31,17 @@ class Residentct extends MY_Controller
         $this->load->model('roomunionmodel');
         $this->load->model('customermodel');
 
-        $count_total = Residentmodel::all()->count();
+        $count_total = Residentmodel::whereIn('store_id', $store_ids)->count();
         $count = ceil($count_total / $page_count);//总页数
         if ($page > $count) {
+            $this->api_res(0,['count'=>$count,'list'=>[]]);
             return;
         }
         $category = Residentmodel::with(['roomunion' => function ($query) {
             $query->select('id', 'number');
         }])->with(['customer' => function ($query) {
             $query->select('id', 'avatar');
-        }])->take($page_count)->skip($offset)
+        }])->whereIn('store_id', $store_ids)->take($page_count)->skip($offset)
             ->orderBy('id', 'desc')->get($field)->toArray();
         $this->api_res(0, ['list' => $category, 'page' => $page, 'count_total' => $count_total, 'count' => $count]);
     }
@@ -47,24 +51,32 @@ class Residentct extends MY_Controller
      */
     public function searchResident()
     {
-        $field = ['id', 'name', 'room_id', 'customer_id','status'];
         $post   = $this->input->post(null,true);
+        $this->load->model('employeemodel');
+        $store_ids = Employeemodel::getMyStoreids();
+
+        $field = ['id', 'name', 'room_id', 'customer_id','status'];
         $page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
         $page_count = isset($post['page_count']) ? intval($post['page_count']) : 10;//当前页显示条数
         $offset = $page_count * ($page - 1);
-        $count_total = Residentmodel::all()->count();
-        $count = ceil($count_total / $page_count);//总页数
-        if ($page > $count) {
-            return;
-        }
+
+        $this->load->model('roomunionmodel');
         $number = isset($post['number'])?$post['number']:null;
         if (!$number) {
             $this->api_res(1009,['error'=>'未指定房间号']);
             return;
         }
-        $this->load->model('roomunionmodel');
-        $room_union = Roomunionmodel::where('number', $number)->first();
-        if (!$room_union) {
+        $count_total = Roomunionmodel::whereIn('store_id', $store_ids)->where('number', $number)->count();
+        $count = ceil($count_total / $page_count);//总页数
+        if ($page > $count) {
+            return;
+        }
+
+        $room_ids = Roomunionmodel::whereIn('store_id', $store_ids)
+            ->where('number', $number)->get(['id'])->map(function ($r) {
+                return $r->id;
+            });
+        if (!$room_ids) {
             $this->api_res(1009);
         }
         $this->load->model('customermodel');
@@ -72,8 +84,8 @@ class Residentct extends MY_Controller
             $query->select('id', 'number');
         }])->with(['customer' => function ($query) {
             $query->select('id', 'avatar');
-        }])->where('room_id',$room_union->id)->take($page_count)->skip($offset)
-            ->orderBy('id', 'desc')->get($field)->toArray();
+        }])->whereIn('store_id', $store_ids)->whereIn('room_id',$room_ids)
+            ->take($page_count)->skip($offset)->orderBy('id', 'desc')->get($field)->toArray();
         $this->api_res(0, ['list' => $category, 'page' => $page, 'count_total' => $count_total, 'count' => $count]);
     }
 
@@ -126,29 +138,23 @@ class Residentct extends MY_Controller
     /**
      * 获取房间状态
      */
-    public function getDeviceType($type_tmp)
+    public function getDeviceType($type)
     {
-        $types = explode(',', $type_tmp);
-        foreach ($types as $key => $value) {
-            switch ($value) {
-                case 'LOCK':
-                    $type[] = '门锁';
-                    break;
-                case 'HOT_WATER_METER':
-                    $type[] = '热水表';
-                    break;
-                case 'COLD_WATER_METER':
-                    $type[] = '冷水表';
-                    break;
-                case 'ELECTRIC_METER':
-                    $type[] = '电表';
-                    break;
-                case 'UNKNOW':
-                    $type[] = '不明';
-                    break;
-            }
+
+        switch ($type) {
+            case 'LOCK':
+                return '门锁';
+            case 'HOT_WATER_METER':
+                return '热水表';
+            case 'COLD_WATER_METER':
+                return '冷水表';
+            case 'ELECTRIC_METER':
+                return '电表';
+            case 'UNKNOW':
+                return '不明';
+            default:
+                return '智能设备不明';
         }
-        return $type;
     }
 
     /**
@@ -177,6 +183,8 @@ class Residentct extends MY_Controller
                 return '违约退房';
             case 'INVALID':
                 return '无效';
+            default:
+                return '房间状态不明';
         }
     }
 
