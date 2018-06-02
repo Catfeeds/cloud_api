@@ -43,7 +43,8 @@ class Couponmodel extends Basemodel
      */
     public function coupon_type()
     {
-        return $this->belongsTo(Coupontypemodel::class, 'coupon_type_id');
+        return $this->belongsTo(Coupontypemodel::class, 'coupon_type_id')
+                    ->select('id','name','discount');
     }
     /**
      * [确认订单时, 将优惠券给销掉]
