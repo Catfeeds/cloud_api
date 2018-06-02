@@ -127,7 +127,7 @@ use Carbon\Carbon;
       */
      public function checkout_record()
      {
-         return $this->hasOne(Checkoutrecordmodel::class, 'resident_id');
+         return $this->hasOne(Checkoutmodel::class, 'resident_id');
      }
 
      /**

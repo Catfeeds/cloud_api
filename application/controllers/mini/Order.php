@@ -144,7 +144,7 @@ class Order extends MY_Controller
 
             //处理房间及住户的状态
             $this->load->model('roomunionmodel');
-            $this->load->model('checkoutrecordmodel');
+            $this->load->model('Checkoutmodel');
             $this->updateRoomAndResident($orders, $resident, $resident->roomunion);
 
             DB::commit();
@@ -295,8 +295,8 @@ class Order extends MY_Controller
 
         //判断用户是否有退房记录, 如果有退房记录, 将其标记为已支付待办理状态
         if ($record = $resident->checkout_record) {
-            if (in_array($record->status, [Checkoutrecordmodel::STATUS_APPLIED, Checkoutrecordmodel::STATUS_UNPAID])) {
-                $record->status     = Checkoutrecordmodel::STATUS_PENDING;
+            if (in_array($record->status, [Checkoutmodel::STATUS_APPLIED, Checkoutmodel::STATUS_UNPAID])) {
+                $record->status     = Checkoutmodel::STATUS_PENDING;
                 $record->save();
             }
         }
@@ -394,7 +394,7 @@ class Order extends MY_Controller
         $this->load->model('couponmodel');
         $this->load->model('coupontypemodel');
         $this->load->model('roomunionmodel');
-        $this->load->model('checkoutrecordmodel');
+        $this->load->model('Checkoutmodel');
         $resident = Residentmodel::where('room_id', $room_id)->find($resident_id);
         if (!$resident) {
             $this->api_res(1007);

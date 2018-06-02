@@ -469,7 +469,7 @@ class Roomunion extends MY_Controller
             array(
                 'field' => 'building_name',
                 'label' => '楼栋名称',
-                'rules' => 'trim|required'
+                'rules' => 'trim|required|alpha_numeric'
             ),
             array(
                 'field' => 'layer_total',

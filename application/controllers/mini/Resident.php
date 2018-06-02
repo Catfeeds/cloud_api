@@ -1216,9 +1216,15 @@ class Resident extends MY_Controller
                 ]
             );
 
+            $resident->status   = Residentmodel::STATE_RENEWAL;
+
+            $c=$resident->save();
+
+            //原住户信息是否需要更新下 比如end_time
+
             $b=$this->occupiedByResident($roomunion, $newResident);
 
-            if($a&&$b){
+            if($a&&$b&&$c){
                 DB::commit();
             }else{
                 DB::rollBack();
@@ -1337,13 +1343,6 @@ class Resident extends MY_Controller
 
         return true;
     }
-
-
-
-
-
-
-
 
 }
 
