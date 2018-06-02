@@ -154,12 +154,12 @@ class Resident extends MY_Controller
             'end_time'      => $this->residentmodel->contractEndDate($data['begin_time'], $data['contract_time']),
             'employee_id'   => $this->employee->id,
             'store_id'      => $this->employee->store_id,
-            'data'          => json_encode(['card_img_path' => [
+            'data'          => ['card_img_path' => [
                                                 'card_one'      => $this->splitAliossUrl($data['card_one']),
                                                 'card_two'      => $this->splitAliossUrl($data['card_two']),
                                                 'card_three'    => $this->splitAliossUrl($data['card_three']),
                                             ],
-                ]),
+                ],
 
         ]);
         return $data;
@@ -1193,13 +1193,13 @@ class Resident extends MY_Controller
             $newResident->tmp_deposit           = max($resident->tmp_deposit, $input['tmp_deposit']);
             $newResident->special_term          = $input['special_term'];
             $newResident->status                = Residentmodel::STATE_NOTPAY;
-            $newResident->data                  = json_encode([
+            $newResident->data                  = [
                 'org_resident_id'   => $resident->id,
                 'renewal'           => [
                     'delt_other_deposit'    => max(0, $input['tmp_deposit'] - $resident->tmp_deposit),
                     'delt_rent_deposit'     => max(0, ceil($input['deposit_money'] - $resident->deposit_money)),
                 ],
-            ]);
+            ];
             $a=$newResident->save();
 
 //          发放优惠券

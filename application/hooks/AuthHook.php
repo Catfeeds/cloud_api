@@ -45,6 +45,7 @@ class AuthHook {
             'mini/resident/renew',
             'mini/checkout/listcheckout',
             'mini/checkout/store',
+            'mini/checkout/submitforapproval',
 
             'mini/activity/showactivity',
 
