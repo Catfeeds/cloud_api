@@ -57,6 +57,7 @@ class Checkout extends MY_Controller
 //        }
 //        $this->load->model('checkoutmodel');
 //        $this->load->model('residentmodel');
+        $this->load->model('ordermodel');
 //        //正常退房 不能押金抵扣，如果押金抵扣了，就一定是违约退房
 //        if(!$this->checkCheckOutType($input)){
 //            $this->api_res(10025);
