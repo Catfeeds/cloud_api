@@ -11,7 +11,7 @@ class Coupon extends MY_Controller
     public function __construct()
     {
         parent::__construct();
-        $this->load->model('couponmodel');
+        $this->load->model('coupontypemodel');
     }
 
     /**
@@ -21,17 +21,15 @@ class Coupon extends MY_Controller
     {
         $post = $this->input->post(null,true);
         $page = isset($post['page'])?intval($post['page']):1;
-        $this->load->model('Coupontypemodel');
-        $filed = ['coupon_type_id','status','deadline'];
+        $filed = ['id','name','type','limit','description','deadline','discount'];
         $offset = PAGINATE * ($page - 1);
-        $count = ceil((Couponmodel::get($filed)->count())/PAGINATE);
-        var_dump($count);
+        $count = ceil((Coupontypemodel::get($filed)->count())/PAGINATE);
         if ($count<$page||$page<0){
             $this->api_res(0,[]);
             return;
         }
-        $coupon = Couponmodel::with('coupon_type')->orderBy('created_at','DESC')
-                                ->offset($offset)->limit(PAGINATE)->get($filed);
+        $coupon = Coupontypemodel::orderBy('created_at','DESC')
+                                ->offset($offset)->limit(PAGINATE)->get($filed)->toArray();
         $this->api_res(0,['count'=>$count,'list'=>$coupon]);
     }
 
@@ -58,6 +56,9 @@ class Coupon extends MY_Controller
 
     }
 
+    /**
+     * 编辑优惠券
+     */
     public function updateCoupon()
     {
         $this->load->model('coupontypemodel');
@@ -78,6 +79,18 @@ class Coupon extends MY_Controller
         }
     }
 
+    /**
+     * 分配优惠券
+     */
+    public function sendCoupon()
+    {
+        $this->input->post(null,true);
+
+    }
+
+    /**
+     * 表单验证规则
+     */
     public function validation()
     {
         $this->load->library('form_validation');
