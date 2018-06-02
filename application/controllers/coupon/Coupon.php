@@ -20,17 +20,23 @@ class Coupon extends MY_Controller
     public function listCoupon()
     {
         $post = $this->input->post(null,true);
+        $id = isset($post['id'])?intval($post['id']):null;
         $page = isset($post['page'])?intval($post['page']):1;
-        $filed = ['id','name','type','limit','description','deadline','discount'];
+        $filed = ['id','name','type','limit','description','valid_time','deadline','discount'];
         $offset = PAGINATE * ($page - 1);
         $count = ceil((Coupontypemodel::get($filed)->count())/PAGINATE);
         if ($count<$page||$page<0){
             $this->api_res(0,[]);
             return;
         }
-        $coupon = Coupontypemodel::orderBy('created_at','DESC')
-                                ->offset($offset)->limit(PAGINATE)->get($filed)->toArray();
-        $this->api_res(0,['count'=>$count,'list'=>$coupon]);
+        if($id){
+            $coupon = Coupontypemodel::where('id',$id)->get($filed)->toArray();
+            $this->api_res(0,['coupon'=>$coupon]);
+        }else{
+            $coupon = Coupontypemodel::orderBy('created_at','DESC')
+                ->offset($offset)->limit(PAGINATE)->get($filed)->toArray();
+            $this->api_res(0,['count'=>$count,'list'=>$coupon]);
+        }
     }
 
     /**
@@ -48,6 +54,13 @@ class Coupon extends MY_Controller
         }
         $coupon = new Coupontypemodel();
         $coupon->fill($post);
+        if ($post['deadline']==''){$coupon->deadline = '0000-00-00 00:00:00';}
+        if ($post['deadline']){$coupon->valid_time = 0;}
+        if ($post['valid_time']==''){$coupon->valid_time = 0;}
+        if ($post['deadline']==''&&$post['valid_time']==''){
+            $this->api_res(1002);
+            return;
+        }
         if ($coupon->save()){
             $this->api_res(0);
         }else{
@@ -74,7 +87,12 @@ class Coupon extends MY_Controller
 
         $coupon->fill($post);
         if ($post['deadline']==''){$coupon->deadline = '0000-00-00 00:00:00';}
+        if ($post['deadline']){$coupon->valid_time = 0;}
         if ($post['valid_time']==''){$coupon->valid_time = 0;}
+        if ($post['deadline']==''&&$post['valid_time']==''){
+            $this->api_res(1002);
+            return;
+        }
         if ($coupon->save()){
             $this->api_res(0);
         }else{
