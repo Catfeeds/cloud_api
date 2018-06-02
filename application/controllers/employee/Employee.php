@@ -72,8 +72,8 @@ class Employee extends MY_Controller
             $category = Employeemodel::with(['position' => function ($query) {
                 $query->select('id', 'name');
             }])->whereIn('store_ids', $store_ids)->where($where)
-                ->offset($offset)->limit(PAGINATE)->orderBy('hiredate', 'asc')
-                ->orderBy('status', 'asc')->get($field)->groupBy('status');
+                ->offset($offset)->limit(PAGINATE)->orderBy('status', 'asc')
+                ->orderBy('hiredate', 'asc')->get($field);
             $this->api_res(0, ['count' => $count, 'list' => $category]);
             return;
         }
@@ -85,8 +85,8 @@ class Employee extends MY_Controller
         $category = Employeemodel::with(['position' => function ($query) {
             $query->select('id', 'name');
         }])->where('company_id', COMPANY_ID)->offset($offset)
-            ->limit(PAGINATE)->orderBy('hiredate', 'asc')
-            ->orderBy('status', 'asc')->get($field)->groupBy('status');
+            ->limit(PAGINATE)->orderBy('status', 'asc')
+            ->orderBy('hiredate', 'asc')->get($field);
         $this->api_res(0, ['count' => $count, 'list' => $category]);
     }
 
@@ -115,8 +115,8 @@ class Employee extends MY_Controller
         $category = Employeemodel::with(['position' => function ($query) {
             $query->select('id', 'name');
         }])->whereIn('store_ids', $store_ids)->where('name','like',"%$name%")
-            ->offset($offset)->limit(PAGINATE)->orderBy('hiredate', 'asc')
-            ->orderBy('status', 'asc')->get($field)->groupBy('status');
+            ->offset($offset)->limit(PAGINATE)->orderBy('status', 'asc')
+            ->orderBy('hiredate', 'asc')->get($field);
         $this->api_res(0,['count'=>$count,'list'=>$category]);
     }
 
