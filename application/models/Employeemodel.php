@@ -94,6 +94,7 @@ class Employeemodel extends Basemodel{
         $cities = Storemodel::whereIn('id', $store_ids)->get(['city'])->map(function ($c){
             return $c->city;
         });
+        $cities = $cities->unique(); //去除集合中重复值
         return $cities;
     }
 
