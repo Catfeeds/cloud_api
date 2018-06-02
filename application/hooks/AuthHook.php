@@ -44,6 +44,7 @@ class AuthHook {
             'mini/resident/bookingtocheckin',
             'mini/resident/renew',
             'mini/checkout/listcheckout',
+            'mini/checkout/store',
 
             'mini/activity/showactivity',
 
