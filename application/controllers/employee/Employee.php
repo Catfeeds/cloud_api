@@ -1,5 +1,6 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+use EasyWeChat\Foundation\Application;
 /**
  * Author:      zjh<401967974@qq.com>
  * Date:        2018/5/14 0014
@@ -63,27 +64,29 @@ class Employee extends MY_Controller
                 ->where('city', $post['city'])->get(['id'])->map(function ($s) {
                     return $s->id;
                 });
-            $count = ceil((Employeemodel::whereIn('store_ids', $store_ids)->where('status', 'ENABLE')->count()) / PAGINATE);
+            $count = ceil((Employeemodel::whereIn('store_ids', $store_ids)->count()) / PAGINATE);
             if ($page > $count) {
                 $this->api_res(0, ['count' => $count, 'list' => []]);
                 return;
             }
             $category = Employeemodel::with(['position' => function ($query) {
                 $query->select('id', 'name');
-            }])->whereIn('store_ids', $store_ids)->where($where)->where('status', 'ENABLE')
-                ->offset($offset)->limit(PAGINATE)->orderBy('id', 'desc')->get($field);
+            }])->whereIn('store_ids', $store_ids)->where($where)
+                ->offset($offset)->limit(PAGINATE)->orderBy('status', 'asc')
+                ->orderBy('hiredate', 'asc')->get($field);
             $this->api_res(0, ['count' => $count, 'list' => $category]);
             return;
         }
-        $count = ceil((Employeemodel::where('company_id', COMPANY_ID)->where('status', 'ENABLE')->count()) / PAGINATE);
+        $count = ceil((Employeemodel::where('company_id', COMPANY_ID)->count()) / PAGINATE);
         if ($page > $count) {
             $this->api_res(0, ['count' => $count, 'list' => []]);
             return;
         }
         $category = Employeemodel::with(['position' => function ($query) {
             $query->select('id', 'name');
-        }])->where('company_id', COMPANY_ID)->where('status', 'ENABLE')->offset($offset)
-            ->limit(PAGINATE)->orderBy('id', 'desc')->get($field);
+        }])->where('company_id', COMPANY_ID)->offset($offset)
+            ->limit(PAGINATE)->orderBy('status', 'asc')
+            ->orderBy('hiredate', 'asc')->get($field);
         $this->api_res(0, ['count' => $count, 'list' => $category]);
     }
 
@@ -112,8 +115,8 @@ class Employee extends MY_Controller
         $category = Employeemodel::with(['position' => function ($query) {
             $query->select('id', 'name');
         }])->whereIn('store_ids', $store_ids)->where('name','like',"%$name%")
-            ->where('status', 'ENABLE')->offset($offset)
-            ->limit(PAGINATE)->orderBy('id', 'desc')->get($field);
+            ->offset($offset)->limit(PAGINATE)->orderBy('status', 'asc')
+            ->orderBy('hiredate', 'asc')->get($field);
         $this->api_res(0,['count'=>$count,'list'=>$category]);
     }
 
@@ -179,15 +182,26 @@ class Employee extends MY_Controller
             $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
             return false;
         }
+        $this->load->helper('check');
+        if (!isMobile($post['phone'])) {
+            $this->api_res(1002,['error'=>'请检查手机号']);
+            return false;
+        }
         $name = $post['name'];
+        $isNameEqual = Employeemodel::where('company_id',COMPANY_ID)->where('name', $name)->first();
+        if ($isNameEqual) {
+            $this->api_res(1009, ['error' => '员工姓名已存在']);
+            return false;
+        }
         $position = $post['position'];
         $this->load->model('positionmodel');
-        $position_arr = Positionmodel::where('name', $position)->get(['id'])->toArray();
-        if (!$position_arr) {
+        $position = Positionmodel::where('company_id', COMPANY_ID)
+            ->where('name', $position)->first(['id']);
+        if (!$position) {
             $this->api_res(1009);
             return false;
         }
-        $position_id = $position_arr[0]['id'];
+        $position_id = $position->id;
         $store_ids = $post['store_ids'];
         $store_names = $post['store_names'];
         $phone = $post['phone'];
@@ -239,23 +253,38 @@ class Employee extends MY_Controller
         $config = array_add($config, '5', $status_val);
         if(!$this->validationText($config))
         {
-            $fieldarr   = ['name', 'phone', 'position', 'store_ids', 'store_names', 'status'];
+            $fieldarr = ['name', 'phone', 'position', 'store_ids', 'store_names', 'status'];
             $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
+            return false;
+        }
+        $this->load->helper('check');
+        if (!isMobile($post['phone'])) {
+            $this->api_res(1002,['error'=>'请检查手机号']);
             return false;
         }
 
         $id = isset($post['id']) ? $post['id'] : null;
+        if (!$id) {
+            $this->api_res(1002,['error'=>'未指定员工id']);
+            return false;
+        }
+        $name = $post['name'];
+        $isNameEqual = Employeemodel::where('company_id',COMPANY_ID)->where('name', $name)->first();
+        if ($isNameEqual && ($isNameEqual->id != $id)) {
+            $this->api_res(1009, ['error' => '姓名已存在']);
+            return false;
+        }
         $position = $post['position'];
         $this->load->model('positionmodel');
-        $position_arr = Positionmodel::where('name', $position)->get(['id'])->toArray();
-        if (!$position_arr) {
+        $position = Positionmodel::where('company_id', COMPANY_ID)
+            ->where('name', $position)->first(['id']);
+        if (!$position) {
             $this->api_res(1009);
-            return;
+            return false;
         }
-        $position_id = $position_arr[0]['id'];
-        $store_ids  = $this->input->post('store_ids',true);
-        $store_names  = $this->input->post('store_names',true);
-        $name = $post['name'];
+        $position_id = $position->id;
+        $store_ids  = $post['store_ids'];
+        $store_names  = $post['store_names'];
         $phone = $post['phone'];
         $status = $post['status'];
 
@@ -276,6 +305,10 @@ class Employee extends MY_Controller
         $store_id = $store_ids_arr[0];
 
         $employee = Employeemodel::find($id);
+        if (!$employee) {
+            $this->api_res(1007);
+            return;
+        }
         $employee->position_id  = $position_id;
         $employee->store_ids    = $store_ids;
         $employee->store_names  = $store_names;
@@ -290,6 +323,26 @@ class Employee extends MY_Controller
             $this->api_res(1009);
         }
 
+    }
+
+    /**
+     * 每个5秒检测指定员工是否绑定$openid与$unionid
+     */
+    public function isBindWxid()
+    {
+        $post = $this->input->post(null, true);
+        $id = isset($post['id']) ? $post['id'] : null;
+        $emloyee = Employeemodel::find($id);
+        if ($emloyee) {
+            if (($emloyee->openid == NULL) && ($emloyee->unionid == NULL)) {
+                $this->api_res(0, ['NO']);
+                return;
+            } else {
+                $this->api_res(0, ['YES']);
+            }
+        } else {
+            $this->api_res(1007);
+        }
     }
 
     /**

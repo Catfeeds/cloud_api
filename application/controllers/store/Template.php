@@ -35,7 +35,7 @@ class Template extends MY_Controller
      * 添加模板
      */
     public function addTemplate(){
-        $field  = ['name','type','file_url'];
+        $field  = ['name','type'];
         if(!$this->validationText($this->validateAdd())){
             $this->api_res(1002,['error'=>$this->form_first_error($field)]);
             return;
@@ -43,9 +43,22 @@ class Template extends MY_Controller
         $post   = $this->input->post(NULL,true);
         //找到员工所在的门店id
         $name   = isset($post['name'])?$post['name']:null;
-        $rent_type   = isset($post['type'])?$post['type']:null;
-        $file_url   = isset($post['file_url'])?$post['file_url']:null;
-        if(empty($name) || empty($file_url) ||empty($rent_type)){
+        $rent_type  = isset($post['type'])?$post['type']:null;
+
+        $config   = [
+          'allowed_types'   => 'pdf',
+          'upload_path'     => 'temp',
+        ];
+        $this->load->library('upload',$config);
+
+        if (!$this->upload->do_upload('file'))
+        {
+            var_dump($this->upload->display_errors());exit;
+        }
+        //$data   = $this->upload->data();
+        $data   = $this->upload->data('full_path');
+        //var_dump($data);die();
+        if(empty($name) || empty($rent_type)){
             $this->api_res(1002);
             return;
         }
@@ -53,10 +66,12 @@ class Template extends MY_Controller
             $this->api_res(1008);
             return;
         }
+       // var_dump($data);die();
         $template   = new Contracttemplatemodel();
         $template->name = $name;
         $template->rent_type = $rent_type;
-        $template->url  = $this->splitAliossUrl($file_url);
+        //$template->url  = $this->fullAliossUrl($data);
+        $template->url  = $data;
         if($template->save()){
             $this->api_res(0);
         }else{
@@ -125,7 +140,6 @@ class Template extends MY_Controller
         }else{
             $this->api_res(0,['template'=>$template]);
         }
-
     }
 
     /**
@@ -133,7 +147,7 @@ class Template extends MY_Controller
      */
     public function updateTemplate(){
         $template_id    = $this->input->post('template_id',true);
-        $field  = ['name','type','file_url'];
+        $field  = ['name','type'];
         if(!$template_id){
             $this->api_res(1002);
             return;
@@ -146,9 +160,28 @@ class Template extends MY_Controller
         //找到员工所在的门店id
         $name   = isset($post['name'])?$post['name']:null;
         $rent_type   = isset($post['type'])?$post['type']:null;
-        $file_url   = isset($post['file_url'])?$post['file_url']:null;
-        if(empty($name) || empty($file_url) || empty($rent_type)){
+       // $file   = isset($post['file'])?$post['file']:null;
+        if(empty($name) ||  empty($rent_type)){
             $this->api_res(1002);
+            return;
+        }
+        $config   = [
+            'allowed_types'   => 'pdf',
+            'upload_path'     => 'temp',
+        ];
+        $this->load->library('upload',$config);
+        if (!$this->upload->do_upload('file'))
+        {
+            var_dump($this->upload->display_errors());exit;
+        }
+        $data   = $this->upload->data('full_path');
+        //var_dump($data);die();
+        if(empty($name) || empty($rent_type)){
+            $this->api_res(1002);
+            return;
+        }
+        if(Contracttemplatemodel::where(['name'=>$name])->exists()){
+            $this->api_res(1008);
             return;
         }
         $template   = Contracttemplatemodel::find($template_id);
@@ -157,7 +190,8 @@ class Template extends MY_Controller
         }
         $template->name = $name;
         $template->rent_type = $rent_type;
-        $template->url  = $this->splitAliossUrl($file_url);
+        //$template->url  = $this->splitAliossUrl($file);
+        $template->url  = $data;
         if($template->save()){
             $this->api_res(0);
         }else{
@@ -193,11 +227,6 @@ class Template extends MY_Controller
                 'field' => 'type',
                 'label' => '模板类型',
                 'rules' => 'required|trim|in_list[LONG,SHORT,RESERVE]'
-            ),
-            array(
-                'field' => 'file_url',
-                'label' => '模板类型',
-                'rules' => 'required|trim'
             ),
         );
     }
