@@ -94,7 +94,9 @@ class Resident extends MY_Controller
         //var_dump($data);die();
         //获取房间信息
         $this->load->model('roomunionmodel');
-        $room   = Roomunionmodel::find($post['room_id']);
+        $this->load->model('storemodel');
+        $room   = Roomunionmodel::where('store_id',$this->employee->store_id)->find($post['room_id']);
+        $store  = $room->store;
         if(!$room){
             $this->api_res(1007);
             return;
@@ -110,6 +112,9 @@ class Resident extends MY_Controller
             $resident->fill($data);
             $resident->rent_price   = $room->rent_price;
             $resident->property_price   = $room->property_price;
+            $resident->water_price   = $store->water_price;
+            $resident->hot_water_price   = $store->hot_water_price;
+            $resident->electricity_price   = $store->electricity_price;
 
            // $resident->employee_id  = $this->employee->id;
             $resident->card_one = $this->splitAliossUrl($data['card_one']);
@@ -244,16 +249,16 @@ class Resident extends MY_Controller
                 'label' => '出租类型',
                 'rules' => 'trim|required|in_list[LONG,SHORT]',
             ),
-//            array(
-//                'field' => 'real_rent_money',
-//                'label' => '实际租金',
-//                'rules' => 'trim|required|integer',
-//            ),
-//            array(
-//                'field' => 'real_property_costs',
-//                'label' => '实际物业费',
-//                'rules' => 'trim|integer|required',
-//            ),
+            array(
+                'field' => 'real_rent_money',
+                'label' => '实际租金',
+                'rules' => 'trim|required|integer',
+            ),
+            array(
+                'field' => 'real_property_costs',
+                'label' => '实际物业费',
+                'rules' => 'trim|integer|required',
+            ),
             array(
                 'field' => 'first_pay_money',
                 'label' => '首次支付',
@@ -388,17 +393,17 @@ class Resident extends MY_Controller
     public function occupiedByResident($room, $resident, $status = Roomunionmodel::STATE_OCCUPIED)
     {
         if (!in_array($room->status, [Roomunionmodel::STATE_RESERVE, Roomunionmodel::STATE_BLANK])) {
-            log_message('error','房间当前状态无法办理!');
+
             throw new \Exception('房间当前状态无法办理!');
         }
 
         if (Roomunionmodel::STATE_RESERVE == $room->status AND $room->resident_id != $resident->id) {
-            log_message('error','该房间已经被其他人预约了!');
+
             throw new \Exception('该房间已经被其他人预约了!');
         }
 
         if (!in_array($status, [Roomunionmodel::STATE_OCCUPIED, Roomunionmodel::STATE_RESERVE])) {
-            log_message('error','status 参数不合法!');
+
             throw new \Exception('status 参数不合法!');
         }
 
@@ -819,12 +824,13 @@ class Resident extends MY_Controller
             $resident->name     = $name;
             $resident->phone        = $phone;
             $resident->book_money   = $book_money;
-            $resident->book_time    =  Carbon::parse($book_time);
+            $resident->book_time    = Carbon::parse($book_time);
             $resident->begin_time   = Carbon::now();
             $resident->end_time     = Carbon::now();
             $resident->employee_id  = $this->employee->id;
             $resident->status       = Residentmodel::STATE_NOTPAY;
             $resident->remark       = $remark;
+            $resident->store_id     = $this->employee->store_id;
             $a  = $resident->save();
             //更新房间状态
             $room->Occupie();
@@ -948,22 +954,27 @@ class Resident extends MY_Controller
         $this->load->model('roomunionmodel');
         $this->load->model('residentmodel');
         if(isset($input['room_number'])){
-            $room   = Roomunionmodel::where([
+            $ids   = Roomunionmodel::where([
                 'store_id'=>$store_id,
                 'number'=>$input['room_number']
-            ])->first();
-            if(!$room){
-                $this->api_res(1007);
-                return;
-            }
-            $where['room_id']  = $room->id;
+            ])
+                ->where('resident_id', '>', 0)
+                ->pluck('resident_id')
+                ->toArray();
+        }else{
+            $ids    = Roomunionmodel::where([
+                'store_id'=>$store_id,
+            ])
+                ->where('resident_id', '>', 0)
+                ->pluck('resident_id')
+                ->toArray();
         }
-        $total_page = ceil(Residentmodel::where($where)->count()/$per_page);
+        $total_page = ceil(Residentmodel::where($where)->whereIn('id',$ids)->count()/$per_page);
         if($page>$total_page){
-            $this->api_res(0,[]);
+            $this->api_res(0,['total_page'=>$total_page,'current_page'=>$page,'per_page'=>$per_page,'residents'=>[]]);
             return;
         }
-        $residents  = Residentmodel::with('roomunion')->where($where)
+        $residents  = Residentmodel::with('roomunion')->where($where)->whereIn('id',$ids)
             ->offset(($page-1)*$per_page)->limit($per_page)
             ->orderBy('end_time', 'ASC')->orderBy('room_id', 'ASC')
             ->get();
@@ -1000,46 +1011,338 @@ class Resident extends MY_Controller
 
     /**
      * 预订的房间转办理入住
+     * 传入resident_id 可能所选的房间跟之前预定的不一样
      */
-    public function bookingToCheckIn($residentId, ResidentCreateRequest $request, RoomRepo $roomRepo, OrderRepo $orderRepo, ActivityRepo $actRepo)
+    public function bookingToCheckIn()
     {
-        try {
-            $data       = $this->handleCheckInData($request);
-            $resident   = $this->resident->find($residentId);
-
-            if ($this->resident->state_reserve != $resident->status) {
-                throw new \Exception('不允许的操作, 请检查该住户的状态!');
-            }
-
-            //如果入住的房间和预订的房间不一样, 要将原房间置空
-            if ($data['room_id'] == $resident->room_id) {
-                $room   = $resident->room;
-            } else {
-                $room   = $this->getCheckInRoom($data['room_id'], $roomRepo);
-                $roomRepo->isBlank($room);
-                $roomRepo->update([
-                    'status'        => $roomRepo->state_blank,
-                    'people_count'  => 0,
-                    'resident_id'   => 0,
-                ], $resident->room_id);
-            }
-
-            //更新住户信息
-            $resident   = $this->resident->update($data, $residentId);
-
-            $this->handleCheckInCommonEvent($resident, $room, $request, $roomRepo, $orderRepo, $actRepo);
-        } catch (\Exception $e) {
-            \Log::error($e->getMessage());
-            return $this->respError($e->getMessage());
+        $field  = [
+            'room_id','begin_time','people_count','contract_time','discount_id','first_pay_money',
+            'deposit_money','deposit_month','tmp_deposit','rent_type','pay_frequency',
+            'name','phone','card_type','card_number','card_one','card_two','card_three',
+            'name_two','phone_two','card_type_two','card_number_two','alter_phone','alternative','address'
+        ];
+        if(!$this->validationText($this->validateCheckIn())){
+            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+            return;
+        }
+        $post  = $this->input->post(null,true);
+        $resident_id    = trim(strip_tags($post['resident_id']));
+        $this->load->model('residentmodel');
+        if(!$this->checkPhoneNumber($post['phone'])){
+            $this->api_res(1002,['error'=>'请检查手机号']);
+            return;
+        }
+        //var_dump($this->checkIdCardNumber($post['card_type'],$post['card_number']));exit;
+        if(!$this->checkIdCardNumber($post['card_type'],$post['card_number'])){
+            $this->api_res(1002,['error'=>'请检查身份证号']);
+            return;
         }
 
-        return $this->respSuccess($resident, new ResidentTransformer(), '办理入住成功!');
+        if(!empty($post['name_two'])){
+            if(empty($post['phone_two']) || empty($post['card_type_two'] || empty($post['card_number_two']))){
+                $this->api_res(1002,['error'=>'住户二信息不全']);
+                return;
+
+            }
+            if(!$this->checkPhoneNumber($post['phone_two'])){
+                $this->api_res(1002,['error'=>'请检查手机号']);
+                return;
+            }
+            if(!$this->checkIdCardNumber($post['card_type_two'],$post['card_number_two'])){
+                $this->api_res(1002,['error'=>'请检查身份证号']);
+                return;
+            }
+        }
+        //获取请求参数,
+        $data   = $this->handleCheckInData($post);
+        //判断用户状态
+        $resident   = Residentmodel::find($resident_id);
+        if($resident->status!=Residentmodel::STATE_RESERVE){
+            $this->api_res(10011);
+            return;
+        }
+        //获取房间信息
+        $this->load->model('roomunionmodel');
+        $room    = Roomunionmodel::where(['store_id'=>$this->employee->store_id])->find($data['room_id']);
+        if(!$room){
+            $this->api_res(1007);
+            return;
+        }
+        try{
+            DB::beginTransaction();
+            //如果入住的房间和预订的房间不一样, 要将原房间置空
+            if ($data['room_id'] == $resident->room_id) {
+                //一样的时候判断房间状态是不是预定
+                if($room->status!=Roomunionmodel::STATE_RESERVE){
+                    $this->api_res(10021);
+                    return;
+                }
+            } else {
+                //与预定时候房间不一样时
+                if(!$room->isBlank()){
+                    $this->api_res(10010);
+                    return;
+                }
+                //需要将原房间置空
+                $old_room   = $resident->roomunion;
+                $old_room->status   = Roomunionmodel::STATE_BLANK;
+                $old_room->people_count  = 0;
+                $old_room->resident_id   = 0;
+                $old_room->save();
+            }
+            $resident->fill($data);
+            $resident->rent_price   = $room->rent_price;
+            $resident->property_price   = $room->property_price;
+
+            // $resident->employee_id  = $this->employee->id;
+            $resident->card_one = $this->splitAliossUrl($data['card_one']);
+            $resident->card_two = $this->splitAliossUrl($data['card_two']);
+            $resident->card_three = $this->splitAliossUrl($data['card_three']);
+            $a=$resident->save();
+            //把房间状态改成占用
+            $b=$this->occupiedByResident($room, $resident);
+            //$b=$this->handleCheckInCommonEvent($resident, $room);
+            if($a && $b){
+                DB::commit();
+            }else{
+                DB::rollBack();
+                $this->api_res(1009);
+                return;
+            }
+            $this->api_res(0,['resident_id'=>$resident->id]);
+        }catch (Exception $e){
+            DB::rollBack();
+            throw $e;
+        }
+
     }
 
+    /**
+     * 住户续租
+     */
+    public function renew()
+    {
+
+        $field  = [
+            'room_id','begin_time','people_count','contract_time','discount_id','first_pay_money',
+            'deposit_money','deposit_month','tmp_deposit','rent_type','pay_frequency',
+            'special_term','remark','real_rent_money','real_property_costs',
+        ];
+        $input  = $this->input->post(null,true);
+        if(!$this->validationText($this->validateRenewRequest())){
+            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+            return;
+        }
+        $store_id   = $this->employee->store_id;
+        $this->load->model('residentmodel');
+        $resident   = Residentmodel::where(['store_id'=>$store_id])->findOrFail($input['resident_id']);
+        $this->load->model('roomunionmodel');
+        $this->load->model('storemodel');
+        $this->load->model('ordermodel');
+        $roomunion  = Roomunionmodel::where(['store_id'=>$store_id])->findOrFail($input['room_id']);
+        $store  = $roomunion->store;
+
+        if(0 <$roomunion->resident_id && $input['resident_id'] != $roomunion->resident_id){
+            $this->api_res(10022);
+            return;
+        }
+
+        if($resident->room_id != $input['room_id']){
+            if(!$roomunion->isBlank()){
+                $this->api_res(10010);
+                return;
+            }
+        }
+
+        if (Residentmodel::STATE_NORMAL != $resident->status) {
+            $this->api_res(10024);
+            return;
+        }
+
+        if(!$this->checkUnfinishedBills($resident)){
+            $this->api_res(10023);
+            return;
+        }
+
+        $orgInfo    = $resident->toArray();
+        array_forget($orgInfo, ['id', 'discount_id', 'customer_id', 'uxid','created_at']);
+
+        //住户的个人信息, 用之前的记录填充
+        try{
+
+            DB::beginTransaction();
+            $newResident                        = new Residentmodel();
+            $newResident->fill($orgInfo);
+            $newResident->employee_id           = $this->employee->id;
+            $newResident->room_id               = $input['room_id'];
+            $newResident->begin_time            = $input['begin_time'];
+            $newResident->end_time              = $this->residentmodel->contractEndDate($input['begin_time'], $input['contract_time']);
+            $newResident->pay_frequency         = $input['pay_frequency'];
+            $newResident->real_rent_money       = $input['real_rent_money'];
+            $newResident->real_property_costs   = $input['real_property_costs'];
+            $newResident->water_price           = $store->water_price;
+            $newResident->hot_water_price       = $store->hot_water_price;
+            $newResident->electricity_price     = $store->electricity_price;
+            $newResident->discount_id           = $input['discount_id'];
+            $newResident->first_pay_money       = $input['first_pay_money'];
+            $newResident->contract_time         = $input['contract_time'];
+            $newResident->rent_type             = $input['rent_type'];
+            $newResident->remark                = isset($input['remark'])?$input['remark']:'无';
+            $newResident->deposit_month         = max($resident->deposit_month, $input['deposit_month']);
+            $newResident->deposit_money         = max($resident->deposit_money, $input['deposit_money']);
+            $newResident->tmp_deposit           = max($resident->tmp_deposit, $input['tmp_deposit']);
+            $newResident->special_term          = $input['special_term'];
+            $newResident->status                = Residentmodel::STATE_NOTPAY;
+            $newResident->data                  = json_encode([
+                'org_resident_id'   => $resident->id,
+                'renewal'           => [
+                    'delt_other_deposit'    => max(0, $input['tmp_deposit'] - $resident->tmp_deposit),
+                    'delt_rent_deposit'     => max(0, ceil($input['deposit_money'] - $resident->deposit_money)),
+                ],
+            ]);
+            $a=$newResident->save();
+
+//          发放优惠券
+//            if ($request->has('normal_discount_ids')) {
+//                $actRepo->assignCheckInCoupons($resident, $request->input('normal_discount_ids'));
+//            }
+
+            //重置原房间状态
+            $resident->roomunion->update(
+                [
+                    'status'        => Roomunionmodel::STATE_BLANK,
+                    'people_count'  => 0,
+                    'resident_id'   => 0,
+                ]
+            );
+
+            $resident->status   = Residentmodel::STATE_RENEWAL;
+
+            $c=$resident->save();
+
+            //原住户信息是否需要更新下 比如end_time
+
+            $b=$this->occupiedByResident($roomunion, $newResident);
+
+            if($a&&$b&&$c){
+                DB::commit();
+            }else{
+                DB::rollBack();
+                $this->api_res(1009);
+                return;
+            }
+
+        }catch (Exception $e){
+            DB::rollBack();
+            throw $e;
+        }
+
+        $this->api_res(0,['resident_id'=>$newResident->id]);
+
+    }
+
+    private function validateRenewRequest()
+    {
+        return array(
+            array(
+                'field' => 'resident_id',
+                'label' => '住户id',
+                'rules' => 'required|trim',
+            ),
+            array(
+                'field' => 'room_id',
+                'label' => '房间号',
+                'rules' => 'required|trim',
+            ),
+            array(
+                'field' => 'begin_time',
+                'label' => '开始时间',
+                'rules' => 'required|trim',
+            ),
+            array(
+                'field' => 'contract_time',
+                'label' => '合同时长',
+                'rules' => 'required|trim|integer',
+            ),
+            array(
+                'field' => 'discount_id',
+                'label' => '折扣id',
+                'rules' => 'trim|integer',
+            ),
+            array(
+                'field' => 'rent_type',
+                'label' => '出租类型',
+                'rules' => 'trim|required|in_list[LONG,SHORT]',
+            ),
+            array(
+                'field' => 'real_rent_money',
+                'label' => '实际租金',
+                'rules' => 'trim|required|integer',
+            ),
+            array(
+                'field' => 'real_property_costs',
+                'label' => '实际物业费',
+                'rules' => 'trim|integer|required',
+            ),
+            array(
+                'field' => 'first_pay_money',
+                'label' => '首次支付',
+                'rules' => 'trim|numeric|required',
+            ),
+            array(
+                'field' => 'pay_frequency',
+                'label' => '付款周期',
+                'rules' => 'trim|numeric|required',
+            ),
+            array(
+                'field' => 'deposit_money',
+                'label' => '押金',
+                'rules' => 'trim|numeric|required',
+            ),
+            array(
+                'field' => 'deposit_month',
+                'label' => '押金月份',
+                'rules' => 'trim|integer|required',
+            ),
+            array(
+                'field' => 'tmp_deposit',
+                'label' => '其他押金',
+                'rules' => 'trim|numeric|required',
+            ),
+            array(
+                'field' => 'remark',
+                'label' => '备注',
+                'rules' => 'trim',
+            ),
+            array(
+                'field' => 'special_term',
+                'label' => '合同中的特别说明',
+                'rules' => 'trim',
+            ),
 
 
+        );
 
+    }
 
+    /**
+     * 查询住户是否有未完成的账单
+     */
+    private function checkUnfinishedBills($resident)
+    {
+        $query  = $resident->orders()->whereIn('status', [
+            Ordermodel::STATE_PENDING,
+            Ordermodel::STATE_AUDITED,
+            Ordermodel::STATE_GENERATED,
+            Ordermodel::STATE_CONFIRM,
+        ]);
+
+        if ($query->exists()) {
+           return false;
+        }
+
+        return true;
+    }
 
 }
 

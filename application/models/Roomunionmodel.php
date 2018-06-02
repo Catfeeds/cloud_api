@@ -90,9 +90,10 @@ class Roomunionmodel extends Basemodel{
         return $this->hasMany(Ordermodel::class, 'room_id');
     }
 
+
     public function devices()
     {
-        return $this->hasMany(Smartdevicemodel::class, 'room_id');
+        return $this->hasMany(Devicemodel::class, 'room_id');
     }
 
 //    //房屋公共智能设备

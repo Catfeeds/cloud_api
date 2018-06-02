@@ -37,7 +37,7 @@ class Contractmodel extends Basemodel {
     //建筑名 房号
     public function roomunion()
     {
-        return $this->belongsTo(Roomunionmodel::class,'room_id')->select('id','building_name','number');
+        return $this->belongsTo(Roomunionmodel::class,'room_id')->select('id','building_name','number','status');
     }
 
     //房间id号

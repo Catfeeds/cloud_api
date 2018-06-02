@@ -6,7 +6,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Time:        19:32
  * Describe:
  */
-class Checkoutrecordmodel extends Basemodel
+class Checkoutmodel extends Basemodel
 {
     protected $table    = 'boss_checkout_record';
 
@@ -55,6 +55,14 @@ class Checkoutrecordmodel extends Basemodel
     public function resident()
     {
         return $this->belongsTo(Residentmodel::class, 'resident_id');
+    }
+
+    /**
+     * 退房记录所属住户
+     */
+    public function store()
+    {
+        return $this->belongsTo(Storemodel::class, 'store_id');
     }
 
     /**

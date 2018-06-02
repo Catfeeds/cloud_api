@@ -41,6 +41,9 @@ class AuthHook {
             'mini/resident/reservation',
             'mini/resident/getresident',
             'mini/resident/listresident',
+            'mini/resident/bookingtocheckin',
+            'mini/resident/renew',
+            'mini/checkout/listcheckout',
 
             'mini/activity/showactivity',
 
@@ -156,12 +159,16 @@ class AuthHook {
             'contract/operation/booking',
             'contract/operation/book',
             'contract/resident/resident',
+<<<<<<< HEAD
 
             'activity/activity/listactivity',
 
             'coupon/coupon/listcoupon',
             'coupon/coupon/addcoupon',
             'coupon/coupon/updatecoupon',
+=======
+            'contract/operation/pdflook',
+>>>>>>> 557eb343dc1b40cdc151329b5579b4ca7686c27d
         );
 
 
