@@ -38,7 +38,7 @@ class Employee extends MY_Controller
     public function showMyCities()
     {
         $cities = Employeemodel::getMyCities();
-        $cities->prepend("");
+        $cities->prepend(""); //前端用于占位
         if (!$cities) {
             $this->api_res(1009);
             return;
