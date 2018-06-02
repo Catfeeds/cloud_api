@@ -335,10 +335,10 @@ class Employee extends MY_Controller
         $emloyee = Employeemodel::find($id);
         if ($emloyee) {
             if (($emloyee->openid == NULL) && ($emloyee->unionid == NULL)) {
-                $this->api_res(0, ['YES']);
+                $this->api_res(0, ['NO']);
                 return;
             } else {
-                $this->api_res(0, ['NO']);
+                $this->api_res(0, ['YES']);
             }
         } else {
             $this->api_res(1007);
