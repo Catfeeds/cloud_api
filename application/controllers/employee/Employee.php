@@ -188,7 +188,7 @@ class Employee extends MY_Controller
             return false;
         }
         $name = $post['name'];
-        $isNameEqual = Employeemodel::where('name', $name)->first();
+        $isNameEqual = Employeemodel::where('company_id',COMPANY_ID)->where('name', $name)->first();
         if ($isNameEqual) {
             $this->api_res(1009, ['error' => '员工姓名已存在']);
             return false;
@@ -269,7 +269,7 @@ class Employee extends MY_Controller
             return false;
         }
         $name = $post['name'];
-        $isNameEqual = Employeemodel::where('name', $name)->first();
+        $isNameEqual = Employeemodel::where('company_id',COMPANY_ID)->where('name', $name)->first();
         if ($isNameEqual && ($isNameEqual->id != $id)) {
             $this->api_res(1009, ['error' => '姓名已存在']);
             return false;

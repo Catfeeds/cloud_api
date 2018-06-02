@@ -65,7 +65,7 @@ class Position extends MY_Controller
         }
         $id = $post['id'];
         $name = $post['name'];
-        $isNameEqual = Positionmodel::where('name', $name)->first();
+        $isNameEqual = Positionmodel::where('company_id',COMPANY_ID)->where('name', $name)->first();
         if ($isNameEqual && ($isNameEqual->id != $id)) {
             $this->api_res(1009, ['error' => '职位已存在']);
             return false;
@@ -97,7 +97,7 @@ class Position extends MY_Controller
         }
 
         $name = $post['name'];
-        $isNameEqual = Positionmodel::where('name', $name)->first();
+        $isNameEqual = Positionmodel::where('company_id',COMPANY_ID)->where('name', $name)->first();
         if ($isNameEqual) {
             $this->api_res(1009, ['error' => '职位已存在']);
             return false;
@@ -109,6 +109,7 @@ class Position extends MY_Controller
             DB::beginTransaction();
             $result = Positionmodel::insert(
                 [   'name' => $name,
+                    'company_id' => COMPANY_ID,
                     'pc_privilege' => $pc_privilege,
                     'mini_privilege' => $mini_privilege,
                     'created_at' => date('Y-m-d H:i:s', time()),
