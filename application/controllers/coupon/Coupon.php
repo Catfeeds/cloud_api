@@ -42,7 +42,7 @@ class Coupon extends MY_Controller
         $post = $this->input->post();
         if(!$this->validation())
         {
-            $fieldarr   = ['name','description','type','limit','discount','deadline'];
+            $fieldarr   = ['name','description','type','limit','discount','valid_time','deadline'];
             $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
             return ;
         }
@@ -66,12 +66,15 @@ class Coupon extends MY_Controller
         $id = isset($post['id'])?intval($post['id']):null;
         if(!$this->validation())
         {
-            $fieldarr   = ['name','description','type','limit','discount','deadline'];
+            $fieldarr   = ['name','description','type','limit','discount','valid_time','deadline'];
             $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
             return ;
         }
         $coupon = Coupontypemodel::findorFail($id);
+
         $coupon->fill($post);
+        if ($post['deadline']==''){$coupon->deadline = '0000-00-00 00:00:00';}
+        if ($post['valid_time']==''){$coupon->valid_time = 0;}
         if ($coupon->save()){
             $this->api_res(0);
         }else{
@@ -84,7 +87,8 @@ class Coupon extends MY_Controller
      */
     public function sendCoupon()
     {
-        $this->input->post(null,true);
+        $post = $this->input->post(null,true);
+        $uid = isset($post['id'])?explode(',',$post['id']):null;
 
     }
 
@@ -121,9 +125,14 @@ class Coupon extends MY_Controller
                 'rules' => 'trim|required',
             ),
             array(
+                'field' => 'valid_time',
+                'label' => '有效时长',
+                'rules' => 'trim|integer',
+            ),
+            array(
                 'field' => 'deadline',
                 'label' => '截止日期',
-                'rules' => 'trim|required',
+                'rules' => 'trim',
             ),
 
         );
