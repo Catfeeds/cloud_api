@@ -47,20 +47,62 @@ class Checkout extends MY_Controller
      */
     public function store()
     {
-        $field  = [];
+        $field  = ['room_id','resident_id','pay_or_not','type','water','electricity'
+            ,'clean','compensation','other_deposit_deduction'];
         $input  = $this->input->post(null,true);
+        $store_id   = $this->employee->store_id;
+        if($this->validationText($this->validateStore())){
+            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+            return;
+        }
+        $this->load->model('checkoutmodel');
+        $this->load->model('residentmodel');
         //正常退房 不能押金抵扣，如果押金抵扣了，就一定是违约退房
         if(!$this->checkCheckOutType($input)){
             $this->api_res(10025);
             return;
         }
 
+        //检查是否已经存在该住户的退房记录
+        $record = Checkoutmodel::where(['resident_id' => $input['resident_id']])->count();
+        if($record>0){
+               $this->api_res(10026);
+               return;
+           }
+
+        $resident    = Residentmodel::where('store_id',$store_id)->findOrFial($input['resident_id']);
+        if($resident->status != Residentmodel::STATE_NORMAL){
+            $this->api_res(10011);
+            return;
+        }
+
+        $checkout    = new Checkoutmodel();
+        $checkout->resident_id  = $input['resident_id'];
+        $checkout->room_id      = $input['room_id'];
+        $checkout->employee_id  = $this->employee->id;
+        $checkout->pay_or_not   = $input['pay_or_not'];
+        $checkout->type         = $input['type'];
+        $checkout->other_deposit_deduction  = $input['other_deposit_deduction'];
+        $checkout->status       = Checkoutmodel::STATUS_UNPAID;
+        $checkout->store_id     = $store_id;
+        $checkout->time         = Carbon::now();
+        $checkout->save();
+
+        $number     = $this->ordermodel->getOrderNumber();
 
 
 
-        
-        
-        
+        //$record  = $this->repository->findWhere(['resident_id' => $input['resident_id']]);
+
+
+
+
+
+
+
+
+
+
         try {
             $this->checkCheckOutType($request);
             $input  = $request->all();
