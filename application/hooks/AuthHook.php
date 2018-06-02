@@ -156,6 +156,12 @@ class AuthHook {
             'contract/operation/booking',
             'contract/operation/book',
             'contract/resident/resident',
+
+            'activity/activity/listactivity',
+
+            'coupon/coupon/listcoupon',
+            'coupon/coupon/addcoupon',
+            'coupon/coupon/updatecoupon',
         );
 
 
