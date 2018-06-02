@@ -1,4 +1,5 @@
 <?php
+defined('BASEPATH') OR exit('No direct script access allowed');
 /**
  * Author:      chenkk<cooook@163.com>
  * Date:        2018/6/2
@@ -9,9 +10,9 @@
 class Ownermodel extends Basemodel
 {
 
-    public function __construct(array $attributes = [])
+    public function __construct()
     {
-        parent::__construct($attributes);
+        parent::__construct();
     }
 
     protected $table    = 'boss_owner';
