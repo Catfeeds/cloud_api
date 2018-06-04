@@ -33,28 +33,34 @@ class Room extends MY_Controller
         $this->load->model('roomtypemodel');
         $room = Roomunionmodel::with('room_type')->where($where)->get($filed)->groupBy('layer')
                 ->map(function ($room){
-                    $room = $room->toArray();
-                    $room['count_total']    = count($room);;
-                    $room['count_rent']     = 0;
-                    $room['count_blank']    = 0;
-                    $room['count_arrears']  = 0;
-                    $room['count_repair']   = 0;
-                    for($i = 0;$i<$room['count_total'];$i++){
-                        $status = $room[$i]['status'];
+                    $roominfo = $room->toArray();
+                    $roominfo['count_total']    = count($room);;
+                    $roominfo['count_rent']     = 0;
+                    $roominfo['count_blank']    = 0;
+                    $roominfo['count_arrears']  = 0;
+                    $roominfo['count_repair']   = 0;
+                    for($i = 0;$i<$roominfo['count_total'];$i++){
+                        $status = $roominfo[$i]['status'];
                         if ($status == 'RENT'){
-                            $room['count_rent']     += 1;
+                            $roominfo['count_rent']     += 1;
                         }
                         if ($status == 'BLANK'){
-                            $room['count_blank']    += 1;
+                            $roominfo['count_blank']    += 1;
                         }
                         if ($status == 'ARREARS'){
-                            $room['count_arrears']  += 1;
+                            $roominfo['count_arrears']  += 1;
                         }
                         if ($status == 'REPAIR'){
-                            $room['count_repair']   += 1;
+                            $roominfo['count_repair']   += 1;
                         }
                     }
-                    return $room;
+                    return [$room,'count'=>[
+                            'count_total'   =>$roominfo['count_total'],
+                            'count_rent'    =>$roominfo['count_rent'],
+                            'count_blank'   =>$roominfo['count_blank'],
+                            'count_arrears' =>$roominfo['count_arrears'],
+                            'count_repair'  =>$roominfo['count_repair']
+                        ]];
                 })
             ->toArray();
         $this->api_res(0,['list'=>$room]);
