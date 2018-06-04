@@ -60,7 +60,7 @@ class Employee extends MY_Controller
     }
 
     /**
-     * 显示员工权限信息
+     * 显示员工信息
      */
     public function listEmp()
     {
