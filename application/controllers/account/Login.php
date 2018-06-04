@@ -19,7 +19,12 @@ class Login extends MY_Controller
      * 手机或者微信登陆
      * 接收参数 type code
      */
-    public function login(){
+    public function login()
+    {
+        if ($this->employee->status == "DISABLE") {
+            $this->api_res(1003, ['DISABLE']);
+            return false;
+        }
         $input  = $this->input->post(NULL, TRUE);
         if(!isset($input['type']))
         {
