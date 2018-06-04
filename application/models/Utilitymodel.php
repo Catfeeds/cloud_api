@@ -24,12 +24,12 @@ class Utilitymodel extends Basemodel
         return $this->belongsTo(Roomtypemodel::class, 'room_type_id');
     }
 
-    public function room()
+    public function roomunion()
     {
         return $this->belongsTo(Roomunionmodel::class, 'room_id');
     }
 
-    public function apartment()
+    public function store()
     {
         return $this->belongsTo(Storemodel::class, 'store_id');
     }
