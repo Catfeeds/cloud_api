@@ -24,26 +24,27 @@ class Residentct extends MY_Controller
         $this->load->model('employeemodel');
         $store_ids = Employeemodel::getMyStoreids();
 
-        $page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
-        $page_count = isset($post['page_count']) ? intval($post['page_count']) : 10;//当前页显示条数
-        $offset = $page_count * ($page - 1);
+        $current_page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
+        $pre_page = isset($post['pre_page']) ? intval($post['pre_page']) : 10;//当前页显示条数
+        $offset = $pre_page * ($current_page - 1);
         $field = ['id', 'name', 'room_id', 'customer_id','status'];
         $this->load->model('roomunionmodel');
         $this->load->model('customermodel');
 
-        $count_total = Residentmodel::whereIn('store_id', $store_ids)->count();
-        $count = ceil($count_total / $page_count);//总页数
-        if ($page > $count) {
-            $this->api_res(0,['count'=>$count,'list'=>[]]);
+        $total = Residentmodel::whereIn('store_id', $store_ids)->count();
+        $total_pages = ceil($total / $pre_page);//总页数
+        if ($current_page > $total_pages) {
+            $this->api_res(0,['count'=>$total_pages,'list'=>[]]);
             return;
         }
         $category = Residentmodel::with(['roomunion' => function ($query) {
             $query->select('id', 'number');
         }])->with(['customer' => function ($query) {
             $query->select('id', 'avatar');
-        }])->whereIn('store_id', $store_ids)->take($page_count)->skip($offset)
+        }])->whereIn('store_id', $store_ids)->take($pre_page)->skip($offset)
             ->orderBy('id', 'desc')->get($field)->toArray();
-        $this->api_res(0, ['list' => $category, 'page' => $page, 'count_total' => $count_total, 'count' => $count]);
+        $this->api_res(0, ['total' => $total, 'pre_page' => $pre_page, 'current_page' => $current_page,
+            'total_pages' => $total_pages, 'data' => $category]);
     }
 
     /**
