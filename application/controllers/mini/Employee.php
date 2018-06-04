@@ -37,22 +37,23 @@ class Employee extends MY_Controller
     {
         $post = $this->input->post(null, true);
         $field = ['id', 'name', 'avatar', 'phone', 'position_id'];
-        $page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
-        $page_count = isset($post['page_count']) ? intval($post['page_count']) : 10;//当前页显示条数
-        $offset = $page_count * ($page - 1);
-        $count_total = Employeemodel::where('company_id', COMPANY_ID)
+        $current_page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
+        $pre_page = isset($post['pre_page']) ? intval($post['pre_page']) : 10;//当前页显示条数
+        $offset = $pre_page * ($current_page - 1);
+        $total = Employeemodel::where('company_id', COMPANY_ID)
             ->where('status', 'ENABLE')->count();
-        $count = ceil($count_total / $page_count);//总页数
-        if ($page > $count) {
+        $total_pages = ceil($total / $pre_page);//总页数
+        if ($current_page > $total_pages) {
             return;
         }
         $this->load->model('positionmodel');
         $category = Employeemodel::with(['position' => function ($query) {
             $query->select('id', 'name');
         }])->where('company_id', COMPANY_ID)
-            ->where('status', 'ENABLE')->take($page_count)->skip($offset)
+            ->where('status', 'ENABLE')->take($pre_page)->skip($offset)
             ->orderBy('id', 'desc')->get($field)->toArray();
-        $this->api_res(0, ['list' => $category, 'page' => $page, 'count_total' => $count_total, 'count' => $count]);
+        $this->api_res(0, ['total' => $total, 'pre_page' => $pre_page, 'current_page' => $current_page,
+                                'total_pages' => $total_pages, 'data' => $category]);
     }
 
     /**
