@@ -128,15 +128,15 @@ class Owner extends MY_Controller
             $this->api_res(1007);
             return;
         }
-        $owner = $this->decodejson($owner);
+        /*$owner = $this->decodejson($owner);
         if (!$owner) {
             $this->api_res(1007);
             return;
-        }
+        }*/
         $this->api_res(0, $owner);
     }
 
-
+    /*
     //将json字段转换成字符串赋值给对象属性
     private function decodejson($owner)
     {
@@ -157,7 +157,7 @@ class Owner extends MY_Controller
         $owner->bank_card_back = $bank_card_urls->back;
         unset($owner->bank_card_urls);
         return $owner;
-    }
+    }*/
 
     /**
      * 显示小业主账单
