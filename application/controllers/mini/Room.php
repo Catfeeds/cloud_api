@@ -21,9 +21,9 @@ class Room extends MY_Controller
     {
         $post       = $this->input->post(null,true);
         $where      = [];
-        if(isset($post['building_id'])){$where['building_id'] = intval($post['building_id']);};
-        if(isset($post['status'])){$where['status'] = $post['status'];};
-        if(isset($post['store_id'])){
+        if(!empty($post['building_id'])){$where['building_id'] = intval($post['building_id']);};
+        if(!empty($post['status'])){$where['status'] = $post['status'];};
+        if(!empty($post['store_id'])){
             $where['store_id'] = intval($post['store_id']);
         }else{
             $this->api_res(0,[]);
