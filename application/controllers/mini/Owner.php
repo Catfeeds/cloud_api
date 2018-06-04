@@ -21,9 +21,9 @@ class Owner extends MY_Controller
     {
         $post = $this->input->post(null, true);
         $field = ['id', 'name', 'start_date', 'end_date', 'customer_id', 'house_id'];
-        $page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
-        $page_count = isset($post['page_count']) ? intval($post['page_count']) : 10;//当前页显示条数
-        $offset = $page_count * ($page - 1);
+        $current_page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
+        $pre_page = isset($post['pre_page']) ? intval($post['pre_page']) : 10;//当前页显示条数
+        $offset = $pre_page * ($current_page - 1);
         $this->load->model('employeemodel');
         $store_ids = Employeemodel::getMyStoreids();
         if (!$store_ids) {
@@ -38,9 +38,9 @@ class Owner extends MY_Controller
             $this->api_res(1007);
             return;
         }
-        $count_total = Ownermodel::whereIn('house_id', $house_ids)->count();
-        $count = ceil($count_total / $page_count);//总页数
-        if ($page > $count) {
+        $total = Ownermodel::whereIn('house_id', $house_ids)->count();
+        $total_pages = ceil($total / $pre_page);//总页数
+        if ($current_page > $total_pages) {
             return;
         }
         $this->load->model('customermodel');
@@ -48,13 +48,14 @@ class Owner extends MY_Controller
             $query->select('id', 'avatar');
         }])->with(['house' => function ($query) {
             $query->select('id', 'number');
-        }])->whereIn('house_id', $house_ids)->take($page_count)
+        }])->whereIn('house_id', $house_ids)->take($pre_page)
             ->skip($offset)->orderBy('id', 'desc')->get($field)->toArray();
         if (!$oweners) {
             $this->api_res(1002);
             return;
         }
-        $this->api_res(0, ['list' => $oweners, 'page' => $page, 'count_total' => $count_total, 'count' => $count]);
+        $this->api_res(0, ['total' => $total, 'pre_page' => $pre_page, 'current_page' => $current_page,
+                                'total_pages' => $total_pages, 'data' => $oweners]);
     }
 
     /**
