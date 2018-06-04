@@ -21,39 +21,41 @@ class Room extends MY_Controller
     {
         $post       = $this->input->post(null,true);
         $where      = [];
-        if(isset($post['building_id'])){$where['building_id'] = intval($post['building_id']);};
-        if(isset($post['status'])){$where['status'] = $post['status'];};
-        if(isset($post['store_id'])){
-            $where['store_id'] = intval($post['store_id']);
-        }else{
-            $this->api_res(0,[]);
-            return;
-        }
-        $filed      = ['id','layer','status','number'];
-        $room = Roomunionmodel::where($where)->get($filed)->groupBy('layer')
+        if(!empty($post['building_id'])){$where['building_id'] = intval($post['building_id']);};
+        if(!empty($post['status'])){$where['status'] = $post['status'];};
+        if(!empty($post['store_id'])){$where['store_id'] = intval($post['store_id']);}
+        $filed      = ['id','layer','status','number','room_type_id'];
+        $this->load->model('roomtypemodel');
+        $room = Roomunionmodel::with('room_type')->where($where)->get($filed)->groupBy('layer')
                 ->map(function ($room){
-                    $room = $room->toArray();
-                    $room['count_total']    = count($room);;
-                    $room['count_rent']     = 0;
-                    $room['count_blank']    = 0;
-                    $room['count_arrears']  = 0;
-                    $room['count_repair']   = 0;
-                    for($i = 0;$i<$room['count_total'];$i++){
-                        $status = $room[$i]['status'];
+                    $roominfo = $room->toArray();
+                    $roominfo['count_total']    = count($room);;
+                    $roominfo['count_rent']     = 0;
+                    $roominfo['count_blank']    = 0;
+                    $roominfo['count_arrears']  = 0;
+                    $roominfo['count_repair']   = 0;
+                    for($i = 0;$i<$roominfo['count_total'];$i++){
+                        $status = $roominfo[$i]['status'];
                         if ($status == 'RENT'){
-                            $room['count_rent']     += 1;
+                            $roominfo['count_rent']     += 1;
                         }
                         if ($status == 'BLANK'){
-                            $room['count_blank']    += 1;
+                            $roominfo['count_blank']    += 1;
                         }
                         if ($status == 'ARREARS'){
-                            $room['count_arrears']  += 1;
+                            $roominfo['count_arrears']  += 1;
                         }
                         if ($status == 'REPAIR'){
-                            $room['count_repair']   += 1;
+                            $roominfo['count_repair']   += 1;
                         }
                     }
-                    return $room;
+                    return [$room,'count'=>[
+                            'count_total'   =>$roominfo['count_total'],
+                            'count_rent'    =>$roominfo['count_rent'],
+                            'count_blank'   =>$roominfo['count_blank'],
+                            'count_arrears' =>$roominfo['count_arrears'],
+                            'count_repair'  =>$roominfo['count_repair']
+                        ]];
                 })
             ->toArray();
         $this->api_res(0,['list'=>$room]);
@@ -81,5 +83,17 @@ class Room extends MY_Controller
         $this->api_res(0,$details);
     }
 
+    public function building()
+    {
+        $this->load->model('buildingmodel');
+        $post = $this->input->post(null,true);
+        if($post['store_id']){
+            $store_id = intval($post['store_id']);
+            $building = Buildingmodel::where('store_id',$store_id)->get(['id','name'])->toArray();
+            $this->api_res(0,$building);
+        }else{
+            $this->api_res(0,[]);
+        }
+    }
 
 }
