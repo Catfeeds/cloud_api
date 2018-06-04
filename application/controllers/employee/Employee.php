@@ -219,21 +219,7 @@ class Employee extends MY_Controller
         $store_names = $post['store_names'];
         $phone = $post['phone'];
         $hiredate = $post['hiredate'];
-
-        $this->load->model('storemodel');
-        if (!defined('COMPANY_ID')) {
-            $this->api_res(1002,['error'=>'公司信息不符']);
-            return;
-        }
-        $ids= Storemodel::where('company_id',COMPANY_ID)->get(['id'])->map(function($a){
-            return $a->id;
-        })->toArray();
-
         $store_ids_arr = explode(',' ,$store_ids);
-        if(!empty(array_diff($store_ids_arr, $ids))){
-            $this->api_res(1002,['error'=>'门店不符']);
-            return;
-        }
         $store_id = $store_ids_arr[0];
 
         $employee               = new Employeemodel();
@@ -300,21 +286,7 @@ class Employee extends MY_Controller
         $store_names  = $post['store_names'];
         $phone = $post['phone'];
         $status = $post['status'];
-
-        $this->load->model('storemodel');
-        if (!defined('COMPANY_ID')) {
-            $this->api_res(1002,['error'=>'公司信息不符']);
-            return;
-        }
-        $ids= Storemodel::where('company_id',COMPANY_ID)->get(['id'])->map(function($a){
-            return $a->id;
-        })->toArray();
-
         $store_ids_arr = explode(',' ,$store_ids);
-        if(!empty(array_diff($store_ids_arr, $ids))){
-            $this->api_res(1002,['error'=>'门店不符']);
-            return;
-        }
         $store_id = $store_ids_arr[0];
 
         $employee = Employeemodel::find($id);

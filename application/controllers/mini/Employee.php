@@ -44,6 +44,8 @@ class Employee extends MY_Controller
             ->where('status', 'ENABLE')->count();
         $total_pages = ceil($total / $pre_page);//总页数
         if ($current_page > $total_pages) {
+            $this->api_res(0, ['total' => $total, 'pre_page' => $pre_page, 'current_page' => $current_page,
+                'total_pages' => $total_pages, 'data' => []]);
             return;
         }
         $this->load->model('positionmodel');
