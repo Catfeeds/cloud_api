@@ -172,6 +172,7 @@ class AuthHook {
             'coupon/coupon/addcoupon',
             'coupon/coupon/updatecoupon',
             'coupon/coupon/sendcoupon',
+            'coupon/coupon/resident',
 
             'contract/operation/pdflook',
 

@@ -91,11 +91,41 @@ class Coupon extends MY_Controller
      */
     public function sendCoupon()
     {
+        $this->load->model('residentmodel');
         $post = $this->input->post(null,true);
-        $c_id = isset($post['id'])?explode(',',$post['id']):null;
-        $coupon = Coupontypemodel::where('id',$c_id)->get(['id','deadline'])->toArray();
+        $coupon_id = isset($post['coupon_id'])?explode(',',$post['coupon_id']):null;
+        $resident_id = isset($post['resident_id'])?explode(',',$post['resident_id']):null;
+        $coupon = Coupontypemodel::where('id',$coupon_id)->get(['id','deadline'])->toArray();
+        $resident = Residentmodel::where('id',$resident_id)->get(['id','name'])->toArray();
+        //var_dump($coupon);
+        foreach ($coupon as $key=>$value){
+            foreach ($resident as $key1=>$value1){
+                foreach ($resident[$key] as $key2=>$value2){
+                    var_dump($resident[$key]);
+                }
+            }
+        }
 
-        $this->api_res(0,$coupon);
+    }
+
+    /**
+     * 客户列表
+     */
+    public function resident()
+    {
+        $this->load->model('residentmodel');
+        $post = $this->input->post(null,true);
+        $page = isset($post['page'])?intval($post['page']):1;
+        $filed = ['room_id','name','phone','card_number','created_at','status'];
+        $offset = PAGINATE * ($page - 1);
+        $count = ceil((Residentmodel::get($filed)->count())/PAGINATE);
+        if ($count<$page||$page<0){
+            $this->api_res(0,[]);
+            return;
+        }
+        $customer = Residentmodel::orderBy('created_at','DESC')->offset($offset)->limit(PAGINATE)
+                                    ->get($filed)->toArray();
+        $this->api_res(0,['count'=>$count,'list'=>$customer]);
     }
 
     /**
@@ -140,5 +170,4 @@ class Coupon extends MY_Controller
         $this->form_validation->set_rules($config)->set_error_delimiters('','');
         return $this->form_validation->run();
     }
-
 }

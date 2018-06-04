@@ -47,6 +47,19 @@ class Employee extends MY_Controller
     }
 
     /**
+     * 显示登录者公司所负责门店的所有城市
+     */
+    public function showMyCompanyCities()
+    {
+        $cities = Employeemodel::getMyCompanyCities();
+        if (!$cities) {
+            $this->api_res(1009);
+            return;
+        }
+        $this->api_res(0, ['cities'=>$cities]);
+    }
+
+    /**
      * 显示员工权限信息
      */
     public function listEmp()

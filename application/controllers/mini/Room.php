@@ -30,8 +30,34 @@ class Room extends MY_Controller
             return;
         }
         $filed      = ['id','layer','status','number'];
-
         $room = Roomunionmodel::where($where)->get($filed)->groupBy('layer')
+                ->map(function ($room){
+                    $room = $room->toArray();
+                    $room['count_total']    = count($room);;
+                    $room['count_rent']     = 0;
+                    $room['count_blank']    = 0;
+                    $room['count_arrears']  = 0;
+                    $room['count_repair']   = 0;
+                    for($i = 0;$i<$room['count_total'];$i++){
+                        $status = $room[$i]['status'];
+                        if ($status == 'RENT'){
+                            $room['count_rent']     += 1;
+                        }
+                        if ($status == 'BLANK'){
+                            $room['count_blank']    += 1;
+                        }
+                        if ($status == 'ARREARS'){
+                            $room['count_arrears']  += 1;
+                        }
+                        if ($status == 'REPAIR'){
+                            $room['count_repair']   += 1;
+                        }
+                    }
+                    return $room;
+                })
+            ->toArray();
+        $this->api_res(0,['list'=>$room]);
+        /* $room = Roomunionmodel::where($where)->get($filed)->groupBy('layer')
                 ->map(function($room){
                     $status = $room->groupBy('status')->toArray();
                     $status = array_keys($status);
@@ -44,8 +70,7 @@ class Room extends MY_Controller
                         }
                     }
                     return $room;
-                })->toArray();
-        $this->api_res(0,['list'=>$room]);
+                })->toArray();*/
     }
 
     public function detailsRoom()
