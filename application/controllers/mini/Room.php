@@ -23,12 +23,7 @@ class Room extends MY_Controller
         $where      = [];
         if(!empty($post['building_id'])){$where['building_id'] = intval($post['building_id']);};
         if(!empty($post['status'])){$where['status'] = $post['status'];};
-        if(!empty($post['store_id'])){
-            $where['store_id'] = intval($post['store_id']);
-        }else{
-            $this->api_res(0,[]);
-            return;
-        }
+        if(!empty($post['store_id'])){$where['store_id'] = intval($post['store_id']);}
         $filed      = ['id','layer','status','number','room_type_id'];
         $this->load->model('roomtypemodel');
         $room = Roomunionmodel::with('room_type')->where($where)->get($filed)->groupBy('layer')
@@ -88,5 +83,17 @@ class Room extends MY_Controller
         $this->api_res(0,$details);
     }
 
+    public function building()
+    {
+        $this->load->model('buildingmodel');
+        $post = $this->input->post(null,true);
+        if($post['store_id']){
+            $store_id = intval($post['store_id']);
+            $building = Buildingmodel::where('store_id',$store_id)->get(['id','name'])->toArray();
+            $this->api_res(0,$building);
+        }else{
+            $this->api_res(0,[]);
+        }
+    }
 
 }
