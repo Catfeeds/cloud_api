@@ -64,8 +64,8 @@ class Meterreadingmodel extends Basemodel
     /**
      * 该记录所属房间
      */
-    public function room()
+    public function roomunion()
     {
-        return $this->belongsTo(Roommodel::class, 'room_id');
+        return $this->belongsTo(Roomunionmodel::class, 'room_id');
     }
 }

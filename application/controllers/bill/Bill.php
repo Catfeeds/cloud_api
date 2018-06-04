@@ -7,13 +7,66 @@ use Illuminate\Database\Capsule\Manager as DB;
  * Author:      zjh<401967974@qq.com>
  * Date:        2018/5/29 0029
  * Time:        10:11
- * Describe:    房租等账单
+ * Describe:    账单
  */
 class Bill extends MY_Controller
 {
     public function __construct()
     {
         parent::__construct();
+    }
+
+    /**
+     * 展示账单列表
+     */
+    public function listBill(){
+
+        $input  = $this->input->post(null,true);
+
+       /* $args = [
+            'year'        => $this->checkAndGetYear($this->input->post('year',true)),
+            'month'       => $this->checkAndGetMonth($this->input->post('month',true)),
+            'status_show' => $this->input->post('status_show',true),
+            'room_number' => $this->input->post('room_number',true),
+        ];*/
+
+
+
+//        $city       = $input['city'];
+//        $store_id   = $input['store_id'];
+//        $year       = $input['year'];
+//        $month      = $input['month'];
+//        $room_number    = $input['room_number'];
+//        $status     = $input['status'];
+
+        //判断权限
+//        if(!$this->isAdmin()){
+//            $this->api_res(1011);
+//            return;
+//        }
+
+
+
+
+        //$apartmentId = (int) $this->apartmentIdFilter();
+
+        $where  = [];
+
+        $this->load->model('roomunionmodel');
+        $this->load->model('residentmodel');
+        $this->load->model('ordermodel');
+
+        $query  = Roomunionmodel::where('resident_id','>',0)->where($where);
+
+
+        var_dump($data->toArray());
+
+
+
+
+
+
+
     }
 
     /**

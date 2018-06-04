@@ -219,4 +219,46 @@ class MY_Controller extends CI_Controller {
 
         return null;
     }
+
+    /**
+     * 判断是不是管理员
+     */
+    public function isAdmin()
+    {
+        return ($this->employee->position   == 'ADMIN');
+    }
+
+    /**
+     * 检测当前权限是否是公寓管理员
+     */
+    protected function isApartment()
+    {
+        return ($this->employee->position == 'APARTMENT');
+    }
+
+    /**
+     * 财务
+     */
+    protected function isFinance()
+    {
+        return ($this->employee->position == 'FINANCE');
+    }
+
+
+    /**
+     * 处理请请求参数中的 apartment_id
+     */
+    protected function apartmentIdFilter()
+    {
+        if ($this->isApartment()) {
+            return $this->employee->store_id;
+        }
+
+        if ($this->isAdmin()) {
+            return $this->input->post('apartment_id');
+        }
+
+        return 0;
+    }
+
 }
