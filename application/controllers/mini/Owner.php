@@ -89,7 +89,7 @@ class Owner extends MY_Controller
 
 
     //将json字段转换成字符串赋值给对象属性
-    public function decodejson($owner)
+    private function decodejson($owner)
     {
         if (!$owner->agent_info) return false;
         $agent_info = json_decode($owner->agent_info);
@@ -108,6 +108,14 @@ class Owner extends MY_Controller
         $owner->bank_card_back = $bank_card_urls->back;
         unset($owner->bank_card_urls);
         return $owner;
+    }
+
+    /**
+     * 按房号查找
+     */
+    public function searchOwner()
+    {
+
     }
 
     /**
