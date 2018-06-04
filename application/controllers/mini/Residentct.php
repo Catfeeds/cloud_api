@@ -34,7 +34,8 @@ class Residentct extends MY_Controller
         $total = Residentmodel::whereIn('store_id', $store_ids)->count();
         $total_pages = ceil($total / $pre_page);//总页数
         if ($current_page > $total_pages) {
-            $this->api_res(0,['count'=>$total_pages,'list'=>[]]);
+            $this->api_res(0, ['total' => $total, 'pre_page' => $pre_page, 'current_page' => $current_page,
+                'total_pages' => $total_pages, 'data' => []]);
             return;
         }
         $category = Residentmodel::with(['roomunion' => function ($query) {
@@ -57,9 +58,9 @@ class Residentct extends MY_Controller
         $store_ids = Employeemodel::getMyStoreids();
 
         $field = ['id', 'name', 'room_id', 'customer_id','status'];
-        $page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
-        $page_count = isset($post['page_count']) ? intval($post['page_count']) : 10;//当前页显示条数
-        $offset = $page_count * ($page - 1);
+        $current_page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
+        $pre_page = isset($post['pre_page']) ? intval($post['pre_page']) : 10;//当前页显示条数
+        $offset = $pre_page * ($current_page - 1);
 
         $this->load->model('roomunionmodel');
         $number = isset($post['number'])?$post['number']:null;
@@ -67,9 +68,11 @@ class Residentct extends MY_Controller
             $this->api_res(1009,['error'=>'未指定房间号']);
             return;
         }
-        $count_total = Roomunionmodel::whereIn('store_id', $store_ids)->where('number', $number)->count();
-        $count = ceil($count_total / $page_count);//总页数
-        if ($page > $count) {
+        $total = Roomunionmodel::whereIn('store_id', $store_ids)->where('number', $number)->count();
+        $total_pages = ceil($total / $pre_page);//总页数
+        if ($current_page > $total_pages) {
+            $this->api_res(0, ['total' => $total, 'pre_page' => $pre_page, 'current_page' => $current_page,
+                'total_pages' => $total_pages, 'data' => []]);
             return;
         }
 
@@ -86,8 +89,9 @@ class Residentct extends MY_Controller
         }])->with(['customer' => function ($query) {
             $query->select('id', 'avatar');
         }])->whereIn('store_id', $store_ids)->whereIn('room_id',$room_ids)
-            ->take($page_count)->skip($offset)->orderBy('id', 'desc')->get($field)->toArray();
-        $this->api_res(0, ['list' => $category, 'page' => $page, 'count_total' => $count_total, 'count' => $count]);
+            ->take($pre_page)->skip($offset)->orderBy('id', 'desc')->get($field)->toArray();
+        $this->api_res(0, ['total' => $total, 'pre_page' => $pre_page, 'current_page' => $current_page,
+                                'total_pages' => $total_pages, 'data' => $category]);
     }
 
     /**
