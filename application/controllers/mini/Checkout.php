@@ -196,6 +196,214 @@ class Checkout extends MY_Controller
         $this->api_res(0,['checkout_id'=>$record->id]);
     }
 
+    /**
+     * 店长或者运营经理的审核
+     */
+    public function approve()
+    {
+        $field  = ['remark','operator_role','checkout_id'];
+        if(!$this->validationText($this->validateApprove())){
+            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+            return;
+        }
+        $input  = $this->input->post(null,true);
+        $role   = $input['operator_role'];
+        $id   = $input['checkout_id'];
+        $remark = isset($input['remark'])?$input['remark']:'无';
+
+        if ('PRINCIPAL' == $role AND !$this->isPrincipal()) {
+            $this->api_res(1011);
+            return;
+        } elseif (!$this->isManager() AND !$this->isPrincipal()) {
+            $this->api_res(1011);
+            return;
+        }
+
+        $this->load->model('checkoutmodel');
+        $record     = Checkoutmodel::find($id);
+        if(!$record){
+            $this->api_res(1007);
+            return;
+        }
+
+        if ('MANAGER' == $role) {
+            if (Checkoutmodel::STATUS_BY_MANAGER != $record->status) {
+                $this->api_res(10027);
+                return;
+            }
+            $record->status             = Checkoutmodel::STATUS_MANAGER_APPROVED;
+            $record->manager_remark     = $remark;
+        }
+
+        if ('PRINCIPAL' == $role) {
+            if (Checkoutmodel::STATUS_MANAGER_APPROVED != $record->status) {
+                $this->api_res(10027);
+                return;
+            }
+            $record->status             = Checkoutmodel::STATUS_PRINCIPAL_APPROVED;
+            $record->principal_remark   = $remark;
+        }
+
+        if($record->save()){
+            $this->api_res(0,['checkout_id'=>$record->id]);
+        }else{
+            $this->api_res(1009);
+        }
+    }
+
+
+    /**
+     * 显示退房记录的详情
+     * 根据记录的状态不同, 显示不同的信息
+     * 未提交审核前, 调取相关表查询数据
+     */
+    public function show()
+    {
+        $input  = $this->input->post(null,true);
+        $id = $input['checkout_id'];
+        $store_id   = $this->employee->store_id;
+        $this->load->model('checkoutmodel');
+        $this->load->model('residentmodel');
+        $this->load->model('ordermodel');
+        $this->load->model('roomunionmodel');
+        $record = Checkoutmodel::find($id);
+        if(!$record){
+            $this->api_res(1007);
+            return;
+        }
+        $resident   = $record->resident;
+        $data   = $record->data;
+
+        if(in_array($record->status, [
+            Checkoutmodel::STATUS_APPLIED,
+            Checkoutmodel::STATUS_UNPAID,
+            Checkoutmodel::STATUS_PENDING,
+        ])){
+            $orderIds   = isset($data['checkout_orders']) ? $data['checkout_orders'] : [];
+            $debt       = $resident->orders()->where('status', Ordermodel::STATE_PENDING)->sum('money');
+            $bills      = $resident->orders()
+                ->whereIn('id', $orderIds)
+                ->get()
+                ->groupBy('type')
+                ->map(function ($items) {
+                    return $items->sum('money');
+                })
+                ->union($this->ordermodel->orderMoneyCheckOutInit());
+
+            if (Checkoutmodel::TYPE_NORMAL == $record->type) {
+                $depositTrans   = 0;
+                $deduction      = 0;
+                $refund         = $resident->deposit_money + $resident->tmp_deposit - $record->other_deposit_deduction;
+            } elseif ($record->pay_or_not) {
+                $depositTrans   = $resident->deposit_money + $resident->tmp_deposit - $record->other_deposit_deduction;
+                $deduction      = 0;
+                $refund         = $resident->tmp_deposit - $record->other_deposit_deduction;
+            } else {
+                $depositTrans   = $resident->deposit_money - $debt;
+                $deduction      = $debt;
+                $refund         = 0;
+            }
+
+        }else{
+
+            $bills          = isset($data['checkout_money']) ? $data['checkout_money'] : $this->ordermodel->orderMoneyCheckOutInit();
+            $debt           = $record->debt;
+            $refund         = $record->refund;
+            $depositTrans   = $record->deposit_trans;
+            $deduction      = $record->rent_deposit_deduction;
+        }
+
+        $data       = array(
+            'room'      => [
+                'id'        => $resident->roomunion->id,
+                'number'    => $resident->roomunion->number,
+            ],
+            'resident'  => [
+                'name'                  => $resident->name,
+                'card_one_url'          => $this->fullAliossUrl($resident->card_one),
+                'card_two_url'          => $this->fullAliossUrl($resident->card_two),
+                'card_three_url'        => $this->fullAliossUrl($resident->card_three),
+                'begin_time'            => $resident->begin_time->format('Y-m-d'),
+                'end_time'              => $resident->end_time->format('Y-m-d'),
+                'deposit_money_rent'    => $resident->deposit_money,
+                'deposit_money_other'   => $resident->tmp_deposit,
+                'rent_type'             => $resident->rent_type,
+                'rent_price'            => $resident->real_rent_money,
+                'management_price'      => $resident->real_property_costs,
+                'phone'                 => $resident->phone,
+                'card_number'           => $resident->card_number,
+            ],
+            'time'                      => $record->time->format('Y-m-d'),
+            'type'                      => $record->type,
+            'pay_or_not'                => $record->pay_or_not,
+            'debt'                      => $debt,
+            'rent_deposit_deduction'    => (int)$deduction,
+            'other_deposit_deduction'   => (int)$record->other_deposit_deduction,
+            'refund'                    => $refund,
+            'bills'                     => $bills,
+            'deposit_trans'             => $depositTrans,
+            'account'                   => $record->account,
+            'bank'                      => $record->bank,
+            'bank_card_number'          => $record->bank_card_number,
+            'employee_remark'           => $record->employee_remark,
+            'manager_remark'            => $record->manager_remark,
+            'principal_remark'          => $record->principal_remark,
+            'accountant_remark'         => $record->accountant_remark,
+            'status'                    => $record->status,
+        );
+
+        $this->api_res(0,['data'=>$data]);
+    }
+
+    /**
+     * 取消办理退房
+     */
+    public function destroy()
+    {
+        $input  = $this->input->post(null,true);
+        $id = $input['checkout_id'];
+        $this->load->model('checkoutmodel');
+
+        $record = Checkoutmodel::find($id);
+        if(!$record){
+            $this->api_res(1007);
+            return;
+        }
+        if (!in_array($record->status, [Checkoutmodel::STATUS_UNPAID,Checkoutmodel::STATUS_APPLIED])) {
+            $this->api_res(10027);
+            return;
+        }
+
+        $this->load->model('ordermodel');
+
+        //删除退房生成的订单
+       try{
+           DB::beginTransaction();
+           $data   = $record->data;
+           if (isset($data['checkout_orders'])) {
+
+               $ids    = $data['checkout_orders'];
+
+               $query  = Ordermodel::whereIn('id', $ids)->whereIn('status', [Ordermodel::STATE_CONFIRM, Ordermodel::STATE_COMPLETED]);
+
+               if ($query->exists()) {
+
+                   $this->api_res(10030);
+                   return;
+
+               }
+
+               Ordermodel::whereIn('id', $ids)->delete();
+           }
+           $record->delete();
+
+           DB::commit();
+       }catch (Exception $e){
+           DB::rollBack();
+           throw $e;
+       }
+        $this->api_res(0);
+    }
 
     /**
      * 处理退房时的明细
@@ -591,7 +799,6 @@ class Checkout extends MY_Controller
         return true;
     }
 
-
     private function validateStore()
     {
 
@@ -684,6 +891,27 @@ class Checkout extends MY_Controller
         );
     }
 
+    private function validateApprove()
+    {
+        return array(
+            array(
+                'field' => 'checkout_id',
+                'label' => '退房id',
+                'rules' => 'trim|required|integer',
+            ),
+            array(
+                'field' => 'operator_role',
+                'label' => '职位',
+                'rules' => 'trim|required|in_list[MANAGER,PRINCIPAL]',
+            ),
+            array(
+                'field' => 'remark',
+                'label' => '备注',
+                'rules' => 'trim|max_length[128]',
+            ),
+        );
+    }
+
 
     private function allStatus()
     {
@@ -697,6 +925,23 @@ class Checkout extends MY_Controller
             Checkoutmodel::STATUS_PRINCIPAL_APPROVED,
             Checkoutmodel::STATUS_COMPLETED,
         );
+    }
+
+    /**
+     * 判断员工是否是运营经理
+     */
+    private function isPrincipal()
+    {
+        return isset($this->employee) && $this->employee->position == 'PRINCIPAL';
+    }
+
+
+    /**
+     * 判断员工是否是店长
+     */
+    private function isManager()
+    {
+        return isset($this->employee) && $this->employee->position == 'MANAGER';
     }
 
 

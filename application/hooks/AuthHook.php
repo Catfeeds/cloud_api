@@ -46,6 +46,9 @@ class AuthHook {
             'mini/checkout/listcheckout',
             'mini/checkout/store',
             'mini/checkout/submitforapproval',
+            'mini/checkout/approve',
+            'mini/checkout/show',
+            'mini/checkout/destroy',
 
             'mini/activity/showactivity',
 
