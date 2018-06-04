@@ -90,10 +90,10 @@ class Roomunionmodel extends Basemodel{
         return $this->hasMany(Ordermodel::class, 'room_id');
     }
 
-    public function utilities()
-    {
-        return $this->hasMany(Utilitymodel::class, 'room_id');
-    }
+//    public function utilities()
+//    {
+//        return $this->hasMany(Utilitymodel::class, 'room_id');
+//    }
 
     public function devices()
     {
