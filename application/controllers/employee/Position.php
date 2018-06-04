@@ -197,14 +197,8 @@ class Position extends MY_Controller
      */
     public function showPrivilege()
     {
+        $parent_ids = PRIVILEGE_IDS;
         $this->load->model('privilegemodel');
-        $parent_ids= privilegemodel::where('parent_id', 0)->get(['id'])->map(function ($p) {
-            return $p->id;
-        });
-        if (!$parent_ids) {
-            $this->api_res(1009);
-            return;
-        }
         $privilege= privilegemodel::whereIn('parent_id', $parent_ids)->get(['id', 'name']);
         if (!$parent_ids) {
             $this->api_res(1009);
