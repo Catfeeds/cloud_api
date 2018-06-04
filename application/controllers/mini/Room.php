@@ -29,8 +29,9 @@ class Room extends MY_Controller
             $this->api_res(0,[]);
             return;
         }
-        $filed      = ['id','layer','status','number'];
-        $room = Roomunionmodel::where($where)->get($filed)->groupBy('layer')
+        $filed      = ['id','layer','status','number','room_type_id'];
+        $this->load->model('roomtypemodel');
+        $room = Roomunionmodel::with('room_type')->where($where)->get($filed)->groupBy('layer')
                 ->map(function ($room){
                     $room = $room->toArray();
                     $room['count_total']    = count($room);;
