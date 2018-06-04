@@ -79,6 +79,19 @@ use Carbon\Carbon;
         'data',
      ];
 
+     protected $dates    = [
+         'book_time',
+         'refund_time',
+         'begin_time',
+         'end_time',
+         'created_at',
+         'updated_at',
+     ];
+
+     protected $casts    = [
+         'data' => 'array',
+     ];
+
      protected $hidden  = [];
 
      //住户的房间信息

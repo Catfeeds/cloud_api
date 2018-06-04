@@ -154,4 +154,24 @@ class Roomunionmodel extends Basemodel{
         $this->arrears_count  = Roomunionmodel::where('status','ARREARS')->get($filed)->count();
         return $this;
     }
+
+    /**
+     * 取消办理, 房间状态置空
+     */
+    public function resetRoom($roomId)
+    {
+        $room   = Room::find($roomId);
+
+        if (!$room) {
+            throw new \Exception('未找到该房间');
+        }
+
+        $room->update([
+            'status'        => Roomunionmodel::STATE_BLANK,
+            'people_count'  => 0,
+            'resident_id'   => 0,
+        ]);
+
+        return true;
+    }
 }

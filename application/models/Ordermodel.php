@@ -45,6 +45,7 @@ class Ordermodel extends Basemodel{
     const PAYTYPE_DEPOSIT_O     = 'DEPOSIT_O';      // 其他押金
     const PAYTYPE_OTHER         = 'OTHER';          // 其他收费
     const PAYTYPE_ELECTRIC      = 'ELECTRICITY';    // 电费
+    //const PAYTYPE_ELECTRICITY   = 'ELECTRICITY';    // 电费
     const PAYTYPE_WATER         = 'WATER';          // 水费
     const PAYTYPE_WATER_HOT     = 'HOT_WATER';      // 热水水费
     const PAYTYPE_REPAIR        = 'REPAIR';         // 物品维修费
@@ -232,7 +233,8 @@ class Ordermodel extends Basemodel{
      */
     public function getOrderNumber()
     {
-        return date('YmdHis').mt_rand(1000000000, 9999999999);
+        return date('YmdHis').mt_rand(1000000000, intval(9999999999));
+        //return date('YmdHis').mt_rand(1000000000, 9999999999);
     }
 
     /**
@@ -418,6 +420,80 @@ class Ordermodel extends Basemodel{
             Ordermodel::PAYWAY_DEPOSIT,
         );
     }
+
+    /**
+     * 添加退房时的订单
+     */
+    public function addCheckOutOrderByType($resident, $room, $number, $employeeId, $type, $money, Carbon $time)
+    {
+        $order  = new Ordermodel();
+        $data   =[
+            'number'        => $number,
+            'resident_id'   => $resident->id,
+            'room_id'       => $room->id,
+            'store_id'      => $room->store_id,
+            'room_type_id'  => $room->room_type_id,
+            'customer_id'   => $resident->customer_id,
+            'uxid'          => $resident->uxid,
+            'employee_id'   => $employeeId,
+            'type'          => strtoupper($type),
+            'money'         => $money,
+            'paid'          => $money,
+            'status'        => Ordermodel::STATE_PENDING,
+            'year'          => $time->year,
+            'month'         => $time->month,
+        ];
+        $order->fill($data);
+        $order->save();
+        return $order;
+    }
+
+    /**
+     * 获取指定住户在指定月份即之后的账单
+     * 刚开始写这个是为了在退房时统计房租和住宿费的缴费情况
+     */
+    public function rentAndPropertyForThisMonthAndLater($residentId, Carbon $time)
+    {
+        return Ordermodel::where('resident_id', $residentId)
+            ->where(function ($query) use ($time) {
+                $query->where('year', '>', $time->year)
+                    ->orWhere([
+                        ['year', '=', $time->year],
+                        ['month', '>=', $time->month],
+                    ]);
+            })
+            ->whereIn('type', [
+                Ordermodel::PAYTYPE_ROOM,
+                Ordermodel::PAYTYPE_MANAGEMENT,
+            ])
+            ->get();
+    }
+
+    /**
+     * 处理退房时账单用押金抵扣的部分
+     */
+    public function payByDeposit(array $orderIds)
+    {
+        return Ordermodel::whereIn('id', $orderIds)->update([
+            'pay_type'  => Ordermodel::PAYWAY_DEPOSIT,
+            'status'    => Ordermodel::STATE_COMPLETED,
+        ]);
+    }
+
+    public function orderMoneyCheckOutInit()
+    {
+        return [
+            Ordermodel::PAYTYPE_WATER        => 0,
+            Ordermodel::PAYTYPE_ELECTRIC     => 0,
+            Ordermodel::PAYTYPE_CLEAN        => 0,
+            Ordermodel::PAYTYPE_COMPENSATION => 0,
+            Ordermodel::PAYTYPE_ROOM         => 0,
+            Ordermodel::PAYTYPE_MANAGEMENT   => 0,
+        ];
+    }
+
+
+
 
 
 }
