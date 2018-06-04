@@ -52,6 +52,8 @@ class AuthHook {
 
             'mini/activity/showactivity',
 
+            'bill/meter/confirm',
+
             'mini/order/listorder',
             'mini/order/confirm',
             'mini/order/pay',
