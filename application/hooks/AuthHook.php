@@ -162,6 +162,7 @@ class AuthHook {
             'mini/room/listroom',
             'mini/room/detailsroom',
             'mini/room/building',
+            'mini/room/countroom',
 
             'contract/operation/operatlist',
             'contract/operation/operationfind',

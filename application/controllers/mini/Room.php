@@ -75,6 +75,42 @@ class Room extends MY_Controller
                 })->toArray();*/
     }
 
+    /**
+     *  门店下的房间状态统计
+     */
+    public function countRoom()
+    {
+        $post = $this->input->post(null,true);
+        if ($post['store_id']){
+            $store_id = intval($post['store_id']);
+            $room = Roomunionmodel::where('store_id',$store_id)->get(['id','status'])->toArray();
+            $count = [];
+            $count['count_total']   = count($room);
+            $count['count_blank']   = 0;
+            $count['count_rent']    = 0;
+            $count['count_arrears'] = 0;
+            for($i = 0;$i<$count['count_total'];$i++){
+                $status = $room[$i]['status'];
+                if ($status == 'RENT'){
+                    $count['count_rent']     += 1;
+                }
+                if ($status == 'BLANK'){
+                    $count['count_blank']    += 1;
+                }
+                if ($status == 'ARREARS'){
+                    $count['count_arrears']  += 1;
+                }
+            }
+            $this->api_res(0,$count);
+
+        }else{
+            $this->api_res(1002);
+        }
+    }
+
+    /**
+     * 房间详情
+     */
     public function detailsRoom()
     {
         $post  = $this->input->post(null,true);
