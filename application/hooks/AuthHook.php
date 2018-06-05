@@ -198,20 +198,16 @@ class AuthHook {
                 $d_company_id   = $decoded->company_id;
                 define('CURRENT_ID',$d_bxid);
                 define('COMPANY_ID',$d_company_id);
-                /*
-                //操作记录测试
-                $this->operationRecord($full_path);*/
-
-                /*//权限测试
-                $privilege_ids = $this->getCurrentPrivilege();
-                if (!$privilege_ids) {
+                /*//操作记录测试
+                if (!$this->operationRecord($full_path)) {
                     header("Content-Type:application/json;charset=UTF-8");
-                    echo json_encode(array('rescode' => 1009, 'resmsg' => '操作数据库出错', 'data' => []));
+                    echo json_encode(array('rescode' => 1012, 'resmsg' => '操作log出错', 'data' => []));
                     exit;
-                }
-                if (!$this->privilegeMatch($class, $privilege_ids)) {
+                }*/
+                /*//权限匹配
+                if (!$this->privilegeMatch($class, $full_path)) {
                     header("Content-Type:application/json;charset=UTF-8");
-                    echo json_encode(array('rescode' => 1001, 'resmsg' => '您没有访问权限', 'data' => []));
+                    echo json_encode(array('rescode' => 1011, 'resmsg' => '没有访问权限', 'data' => []));
                     exit;
                 }*/
             } catch (Exception $e) {
@@ -222,28 +218,52 @@ class AuthHook {
         }
     }
 
-    public function getCurrentPrivilege()
+    public function privilegeMatch($class, $full_path)
     {
         $this->CI->load->model('employeemodel');
         $this->CI->load->model('positionmodel');
         $employee = Employeemodel::with('position')->where('bxid', CURRENT_ID)->first(['id', 'position_id']);
-        if (!$employee || !$employee->position) return false;
-        $pc_privilege_ids = $employee->position->pc_privilege_ids;
-        //$mini_privilege_ids = $employee->position->mini_privilege_ids;
-        //return (substr($directory, 0, 4) == 'mini') ? $mini_privilege_ids : $pc_privilege_ids;
-        $privilege_ids = explode(',', $pc_privilege_ids);
-        return $privilege_ids;
+        if (!$employee || !$employee->position) {
+            header("Content-Type:application/json;charset=UTF-8");
+            echo json_encode(array('rescode' => 1009, 'resmsg' => '操作数据库出错', 'data' => []));
+            exit;
+        }
+        if (!$this->privilegeMatchOne($class, $employee)) return false;
+        if (!$this->privilegeMatchTwo($full_path, $employee)) return false;
     }
 
-    public function privilegeMatch($class, $privilege_ids)
+    public function privilegeMatchOne($class, $employee)
     {
+        $pc_privilege_names = $employee->position->pc_privilege;
+        $privilege_names = explode(',', $pc_privilege_names);
         $this->CI->load->model('privilegemodel');
-        $urls = Privilegemodel::whereIn('id', $privilege_ids)->get(['url'])->map(function ($p) {
+        $urls = Privilegemodel::whereIn('name', $privilege_names)->get(['url'])->map(function ($p) {
             return $p->url;
         })->toArray();
-        if (!$urls) return false;
+        if (!$urls) {
+            header("Content-Type:application/json;charset=UTF-8");
+            echo json_encode(array('rescode' => 1009, 'resmsg' => '操作数据库出错', 'data' => []));
+            exit;
+        }
         $controller_url = strtolower($class);
         return in_array($controller_url, $urls);
+    }
+
+    public function privilegeMatchTwo($full_path, $employee)
+    {
+        $pc_privilege_ids = $employee->position->pc_privilege_ids;
+        $pc_privilege_ids = explode(',', $pc_privilege_ids);
+        $this->CI->load->model('privilegemodel');
+        $urls = Privilegemodel::whereIn('id', $pc_privilege_ids)->get(['url'])->map(function ($p) {
+            return $p->url;
+        })->toArray();
+        if (!$urls) {
+            header("Content-Type:application/json;charset=UTF-8");
+            echo json_encode(array('rescode' => 1009, 'resmsg' => '操作数据库出错', 'data' => []));
+            exit;
+        }
+        $full_path = strtolower($full_path);
+        return in_array($full_path, $urls);
     }
 
     public function operationRecord($full_path)
@@ -252,11 +272,7 @@ class AuthHook {
         $this->CI->load->model('operationrecordmodel');
         $operation = new Operationrecordmodel();
         $employee = Employeemodel::where('bxid', CURRENT_ID)->first();
-        if (!$employee) {
-            header("Content-Type:application/json;charset=UTF-8");
-            echo json_encode(array('rescode' => 1001, 'resmsg' => '', 'data' => []));
-            exit;
-        }
+        if (!$employee) return false;
         $operation->bxid = CURRENT_ID;
         $operation->company_id = COMPANY_ID;
         $operation->employee_id = $employee->id;
@@ -265,9 +281,7 @@ class AuthHook {
         $operation->created_at = date('Y-m-d H:i:s', time());
         $operation->updated_at = date('Y-m-d H:i:s', time());
         if (!$operation->save()) {
-            header("Content-Type:application/json;charset=UTF-8");
-            echo json_encode(array('rescode' => 1001, 'resmsg' => '访问数据库出错', 'data' => []));
-            exit;
+            return false;
         }
     }
 }
