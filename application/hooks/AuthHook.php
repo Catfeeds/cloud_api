@@ -201,11 +201,15 @@ class AuthHook {
                 /*
                 //操作记录测试
                 $this->operationRecord($full_path);*/
-                /*
-                //权限测试
-                define('CURRENT_ID',1);
-                $positions = $this->getCurrentPrivilege($directory);
-                if (!$this->privilegeMatch($class, $positions)) {
+
+                /*//权限测试
+                $privilege_ids = $this->getCurrentPrivilege();
+                if (!$privilege_ids) {
+                    header("Content-Type:application/json;charset=UTF-8");
+                    echo json_encode(array('rescode' => 1009, 'resmsg' => '操作数据库出错', 'data' => []));
+                    exit;
+                }
+                if (!$this->privilegeMatch($class, $privilege_ids)) {
                     header("Content-Type:application/json;charset=UTF-8");
                     echo json_encode(array('rescode' => 1001, 'resmsg' => '您没有访问权限', 'data' => []));
                     exit;
@@ -218,29 +222,28 @@ class AuthHook {
         }
     }
 
-    public function getCurrentPrivilege($directory)
+    public function getCurrentPrivilege()
     {
         $this->CI->load->model('employeemodel');
         $this->CI->load->model('positionmodel');
-        $employee = Employeemodel::with('position')->where('bxid', CURRENT_ID)->first();
-        $pc_privilege = $employee->position->pc_privilege;
-        $mini_privilege = $employee->position->mini_privilege;
-        return (substr($directory, 0, 4) == 'mini') ? $mini_privilege : $pc_privilege;
+        $employee = Employeemodel::with('position')->where('bxid', CURRENT_ID)->first(['id', 'position_id']);
+        if (!$employee || !$employee->position) return false;
+        $pc_privilege_ids = $employee->position->pc_privilege_ids;
+        //$mini_privilege_ids = $employee->position->mini_privilege_ids;
+        //return (substr($directory, 0, 4) == 'mini') ? $mini_privilege_ids : $pc_privilege_ids;
+        $privilege_ids = explode(',', $pc_privilege_ids);
+        return $privilege_ids;
     }
 
-    public function privilegeMatch($class, $positions)
+    public function privilegeMatch($class, $privilege_ids)
     {
-        $positionmap = [
-            '员工管理' => 'employee',
-            '职位管理' => 'position'
-        ];
-        $positions = explode(',', $positions);
-        foreach($positions as $position) {
-            $value = array_get($positionmap, $position);
-            $controllers[] = $value;
-        }
+        $this->CI->load->model('privilegemodel');
+        $urls = Privilegemodel::whereIn('id', $privilege_ids)->get(['url'])->map(function ($p) {
+            return $p->url;
+        })->toArray();
+        if (!$urls) return false;
         $controller_url = strtolower($class);
-        return in_array($controller_url, $controllers);
+        return in_array($controller_url, $urls);
     }
 
     public function operationRecord($full_path)
