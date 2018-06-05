@@ -1357,11 +1357,11 @@ class Resident extends MY_Controller
         $this->load->model('roomunionmodel');
         $this->load->model('residentmodel');
         $data   = Roomunionmodel::with('resident')->where($where)->where('resident_id','>',0)
-            ->get()->where('resident.customer_id',0)->toArray();
+            ->get()->where('resident.customer_id',0);
         $total  = ceil(count($data)/$per_page);
 
         $count  = count($data);
-        $list   = $data->forPage($page,$per_page);
+        $list   = $data->forPage($page,$per_page)->toArray();
 
         $this->api_res(0,['total_page'=>$total,'count'=>$count,'page'=>$page,'data'=>$list]);
     }
