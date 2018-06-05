@@ -194,7 +194,7 @@ class Position extends MY_Controller
 
     /**
      * 显示所有权限
-     */
+     *
     public function showPrivilege()
     {
         $parent_ids = PRIVILEGE_IDS;
@@ -205,7 +205,7 @@ class Position extends MY_Controller
             return;
         }
         $this->api_res(0, ['pc_privilege' => $privilege]);
-    }
+    }*/
 
     /**
      * 显示所有详细权限
