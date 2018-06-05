@@ -215,27 +215,34 @@ class Position extends MY_Controller
     public function showPrivilegeDetail()
     {
         $this->load->model('privilegemodel');
-        $privileges = privilegemodel::whereIn('parent_id', PRIVILEGE_DETAIL_IDS)->get(['id', 'parent_id', 'name']);
-        if (!$privileges) {
+        $privileges_one = privilegemodel::where('parent_id', 0)->get(['id', 'parent_id', 'name']);
+        if (!$privileges_one) {
             $this->api_res(1009);
             return;
         }
-        foreach ($privileges as $privilege_f) {
-            $id = $privilege_f->id;
-            foreach ($privileges as $privilege_t) {
-                if ($id == $privilege_t->parent_id) {
-                    $privilege_id[] = $privilege_t->id;
-                    $privilege_name[] = $privilege_t->name;
+        $privileges_two = privilegemodel::whereIn('parent_id', PRIVILEGE_IDS_ONE)->get(['id', 'parent_id', 'name']);
+        if (!$privileges_two) {
+            $this->api_res(1009);
+            return;
+        }
+        /*$privileges_ids_three = PRIVILEGE_IDS_THREE;
+        $privileges_ids_three = array_prepend($privileges_ids_three, 1);
+        $privileges_three = privilegemodel::whereIn('parent_id', $privileges_ids_three)->get(['id', 'parent_id', 'name']);
+        if (!$privileges_three) {
+            $this->api_res(1009);
+            return;
+        }*/
+        foreach ($privileges_one as $privilege_one) {
+            $id = $privilege_one->id;
+            foreach ($privileges_two as $privilege_two) {
+                if ($id == $privilege_two->parent_id) {
+                    $tmp[] = ['id' => $privilege_two->id, 'name' => $privilege_two->name];
                 }
             }
-            $privilege_f->ids = [$privilege_f->id => $privilege_id];
-            $privilege_f->names = [$privilege_f->name => $privilege_name];
-            $privilege_id = [];
-            $privilege_name = [];
-            if ($privilege_f->id > 8) break;
+            $privilege_one->list = $tmp;
+            $tmp = [];
         }
-        $privilege_filtered = $privileges->whereIn('id', PRIVILEGE_DETAIL_IDS);
-        $this->api_res(0, ['pc_privilege' => $privilege_filtered]);
+        $this->api_res(0, ['pc_privilege' => $privileges_one]);
     }
 
     /**
