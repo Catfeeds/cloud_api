@@ -175,13 +175,15 @@ class Position extends MY_Controller
         $name   = isset($post['name'])?$post['name']:null;
         $page   = intval(isset($post['page'])?$post['page']:1);
         $offset = PAGINATE * ($page-1);
-        $count  = ceil((Positionmodel::where('name','like',"%$name%")->count())/PAGINATE);
+        $count  = ceil((Positionmodel::where('company_id', COMPANY_ID)
+                ->where('name','like',"%$name%")->count())/PAGINATE);
         if($page > $count){
             $this->api_res(0,['count'=>$count,'list'=>[]]);
             return;
         }
         $this->load->model('employeemodel');
         $category = Positionmodel::with('employee')
+            ->where('company_id', COMPANY_ID)
             ->where('name','like',"%$name%")
             ->offset($offset)->limit(PAGINATE)
             ->orderBy('id', 'desc')
