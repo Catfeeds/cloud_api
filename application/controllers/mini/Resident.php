@@ -1319,8 +1319,6 @@ class Resident extends MY_Controller
                 'label' => '合同中的特别说明',
                 'rules' => 'trim',
             ),
-
-
         );
 
     }
@@ -1342,6 +1340,25 @@ class Resident extends MY_Controller
         }
 
         return true;
+    }
+
+    /**
+     * 未完成订单（生成住户，住户未扫描）
+     */
+    public function unConfirm()
+    {
+        $input  = $this->input->post(null,true);
+        $page   = isset($input['page'])?$input['page']:1;
+        //$offset = ($page-1)*PAGINATE;
+        $store_id   = $this->employee->id;
+        $this->load->model('roomunionmodel');
+        $this->load->model('residentmodel');
+        $data   = Roomunionmodel::with('resident')->where(['store_id'=>$store_id])->where('resident_id','>',0)
+            ->get()->where('resident.customer_id',0);
+        $count  = ceil(count($data)/PAGINATE);
+        $list   = $data->forPage($page,PAGINATE);
+
+        $this->api_res(0,['total_page'=>$count,'page'=>$page,'data'=>$list]);
     }
 
 }
