@@ -1348,7 +1348,7 @@ class Resident extends MY_Controller
     public function unConfirm()
     {
         $input  = $this->input->post(null,true);
-        $page   = isset($input['page'])?$input['page']:1;
+        $page   = (int)isset($input['page'])?$input['page']:1;
         $per_page   = isset($input['per_page'])?$input['per_page']:PAGINATE;
         //$offset = ($page-1)*PAGINATE;
         $store_id   = $this->employee->id;
