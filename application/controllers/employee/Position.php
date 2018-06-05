@@ -215,34 +215,29 @@ class Position extends MY_Controller
     public function showPrivilegeDetail()
     {
         $this->load->model('privilegemodel');
-        $privileges_one = privilegemodel::where('parent_id', 0)->get(['id', 'parent_id', 'name']);
+        $privileges_one = privilegemodel::where('parent_id', 0)->get(['id', 'parent_id', 'name'])->toArray();
         if (!$privileges_one) {
             $this->api_res(1009);
             return;
         }
-        $privileges_two = privilegemodel::whereIn('parent_id', PRIVILEGE_IDS_ONE)->get(['id', 'parent_id', 'name']);
-        if (!$privileges_two) {
-            $this->api_res(1009);
-            return;
-        }
-        /*$privileges_ids_three = PRIVILEGE_IDS_THREE;
-        $privileges_ids_three = array_prepend($privileges_ids_three, 1);
-        $privileges_three = privilegemodel::whereIn('parent_id', $privileges_ids_three)->get(['id', 'parent_id', 'name']);
-        if (!$privileges_three) {
-            $this->api_res(1009);
-            return;
-        }*/
-        foreach ($privileges_one as $privilege_one) {
-            $id = $privilege_one->id;
-            foreach ($privileges_two as $privilege_two) {
-                if ($id == $privilege_two->parent_id) {
-                    $tmp[] = ['id' => $privilege_two->id, 'name' => $privilege_two->name];
-                }
+        foreach ($privileges_one as $key=>$privilege_two) {
+            $temps= privilegemodel::where('parent_id', $privilege_two['id'])->get(['id', 'parent_id', 'name'])->toArray();
+            if (!$temps) {
+                $this->api_res(1009);
+                return;
             }
-            $privilege_one->list = $tmp;
-            $tmp = [];
+            foreach ($temps as $k2=>$temp) {
+                if ($temp['id'] == 37) break;
+                $res= privilegemodel::where('parent_id', $temp['id'])->get(['id', 'parent_id', 'name'])->toArray();
+                if (!$res) {
+                    $this->api_res(1009);
+                    return;
+                }
+                $temps[$k2]['list']=$res;
+            }
+            $privileges_one[$key]['list']=$temps;
         }
-        $this->api_res(0, ['pc_privilege' => $privileges_one]);
+        $this->api_res(0, $privileges_one);
     }
 
     /**
