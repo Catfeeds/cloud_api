@@ -1349,6 +1349,7 @@ class Resident extends MY_Controller
     {
         $input  = $this->input->post(null,true);
         $page   = isset($input['page'])?$input['page']:1;
+        $per_page   = isset($input['per_page'])?$input['per_page']:PAGINATE;
         //$offset = ($page-1)*PAGINATE;
         $store_id   = $this->employee->id;
         $where  = ['store_id'=>$store_id];
@@ -1357,10 +1358,12 @@ class Resident extends MY_Controller
         $this->load->model('residentmodel');
         $data   = Roomunionmodel::with('resident')->where($where)->where('resident_id','>',0)
             ->get()->where('resident.customer_id',0);
-        $count  = ceil(count($data)/PAGINATE);
-        $list   = $data->forPage($page,PAGINATE);
+        $total  = ceil(count($data)/$per_page);
 
-        $this->api_res(0,['total_page'=>$count,'page'=>$page,'data'=>$list]);
+        $count  = count($data);
+        $list   = $data->forPage($page,$per_page);
+
+        $this->api_res(0,['total_page'=>$total,'count'=>$count,'page'=>$page,'data'=>$list]);
     }
 
 }
