@@ -230,8 +230,10 @@ class Position extends MY_Controller
             $privilege_f->names = [$privilege_f->name => $privilege_name];
             $privilege_id = [];
             $privilege_name = [];
+            if ($privilege_f->id > 8) break;
         }
-        $this->api_res(0, ['pc_privilege' => $privileges]);
+        $privilege_filtered = $privileges->whereIn('id', PRIVILEGE_DETAIL_IDS);
+        $this->api_res(0, ['pc_privilege' => $privilege_filtered]);
     }
 
     /**
