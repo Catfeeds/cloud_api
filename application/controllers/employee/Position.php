@@ -66,7 +66,7 @@ class Position extends MY_Controller
         }
         $id = $post['id'];
         $name = $post['name'];
-        $isNameEqual = Positionmodel::where('name', $name)->first();
+        $isNameEqual = Positionmodel::where('company_id',COMPANY_ID)->where('name', $name)->first();
         if ($isNameEqual && ($isNameEqual->id != $id)) {
             $this->api_res(1009, ['error' => '职位已存在']);
             return false;
@@ -100,7 +100,7 @@ class Position extends MY_Controller
         }
 
         $name = $post['name'];
-        $isNameEqual = Positionmodel::where('name', $name)->first();
+        $isNameEqual = Positionmodel::where('company_id',COMPANY_ID)->where('name', $name)->first();
         if ($isNameEqual) {
             $this->api_res(1009, ['error' => '职位已存在']);
             return false;
@@ -143,13 +143,13 @@ class Position extends MY_Controller
         $page = intval(isset($post['page']) ? $post['page'] : 1);
         $offset = PAGINATE * ($page - 1);
         $filed = ['id', 'name', 'pc_privilege_ids', 'pc_privilege', 'created_at'];
-        $count = ceil((Positionmodel::all()->count()) / PAGINATE);
+        $count = ceil((Positionmodel::where('company_id', COMPANY_ID)->count()) / PAGINATE);
         if ($page > $count) {
             $this->api_res(0, ['count' => $count, 'list' => []]);
             return;
         }
         $this->load->model('employeemodel');
-        $category = Positionmodel::with('employee')
+        $category = Positionmodel::with('employee')->where('company_id', COMPANY_ID)
             ->offset($offset)->limit(PAGINATE)->orderBy('created_at', 'asc')
             ->get($filed)->map(function($a){
                 $a->count_z = $a->employee->count();
@@ -208,11 +208,38 @@ class Position extends MY_Controller
     }
 
     /**
-     * 显示所有职位
+     * 显示所有详细权限
+     */
+    public function showPrivilegeDetail()
+    {
+        $this->load->model('privilegemodel');
+        $privileges = privilegemodel::whereIn('parent_id', PRIVILEGE_DETAIL_IDS)->get(['id', 'parent_id', 'name']);
+        if (!$privileges) {
+            $this->api_res(1009);
+            return;
+        }
+        foreach ($privileges as $privilege_f) {
+            $id = $privilege_f->id;
+            foreach ($privileges as $privilege_t) {
+                if ($id == $privilege_t->parent_id) {
+                    $privilege_id[] = $privilege_t->id;
+                    $privilege_name[] = $privilege_t->name;
+                }
+            }
+            $privilege_f->ids = [$privilege_f->id => $privilege_id];
+            $privilege_f->names = [$privilege_f->name => $privilege_name];
+            $privilege_id = [];
+            $privilege_name = [];
+        }
+        $this->api_res(0, ['pc_privilege' => $privileges]);
+    }
+
+    /**
+     * 显示公司职位
      */
     public function showPositions()
     {
-        $position = Positionmodel::get(['id', 'name']);
+        $position = Positionmodel::where('company_id', COMPANY_ID)->get(['id', 'name']);
         if (!$position) {
             $this->api_res(1009);
             return;
@@ -226,7 +253,7 @@ class Position extends MY_Controller
     public function deletePosition()
     {
         $id   = $this->input->post('id',true);
-        $where  = ['id' => $id];
+        $where  = ['company_id'=>COMPANY_ID, 'id' => $id];
         if(Positionmodel::where($where)->delete()){
             $this->api_res(0);
             return;
