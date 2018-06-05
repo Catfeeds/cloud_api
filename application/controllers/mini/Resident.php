@@ -1348,9 +1348,9 @@ class Resident extends MY_Controller
     public function unConfirm()
     {
         $input  = $this->input->post(null,true);
-        $page   = (int)isset($input['page'])?$input['page']:1;
+        $page   = (int)(isset($input['page'])?$input['page']:1);
         $per_page   = isset($input['per_page'])?$input['per_page']:PAGINATE;
-        //$offset = ($page-1)*PAGINATE;
+        $offset = ($page-1)*PAGINATE;
         $store_id   = $this->employee->id;
         $where  = ['store_id'=>$store_id];
         isset($input['room_number'])?$where['number']=$input['room_number']:null;
@@ -1361,7 +1361,11 @@ class Resident extends MY_Controller
         $total  = ceil(count($data)/$per_page);
 
         $count  = count($data);
-        $list   = $data->forPage($page,$per_page)->toArray();
+
+        $list   = Roomunionmodel::with('resident')->offset($offset)->limit($per_page)->where($where)->where('resident_id','>',0)
+            ->get()->where('resident.customer_id',0);
+        //$list   = $data->forPage($page,$per_page)->toArray();
+
 
         $this->api_res(0,['total_page'=>$total,'count'=>$count,'page'=>$page,'data'=>$list]);
     }
