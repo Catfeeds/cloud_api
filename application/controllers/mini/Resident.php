@@ -1351,9 +1351,11 @@ class Resident extends MY_Controller
         $page   = isset($input['page'])?$input['page']:1;
         //$offset = ($page-1)*PAGINATE;
         $store_id   = $this->employee->id;
+        $where  = ['store_id'=>$store_id];
+        isset($input['room_number'])?$where['number']=$input['room_number']:null;
         $this->load->model('roomunionmodel');
         $this->load->model('residentmodel');
-        $data   = Roomunionmodel::with('resident')->where(['store_id'=>$store_id])->where('resident_id','>',0)
+        $data   = Roomunionmodel::with('resident')->where($where)->where('resident_id','>',0)
             ->get()->where('resident.customer_id',0);
         $count  = ceil(count($data)/PAGINATE);
         $list   = $data->forPage($page,PAGINATE);
