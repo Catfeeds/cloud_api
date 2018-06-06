@@ -94,7 +94,22 @@ class Employeemodel extends Basemodel{
         $cities = Storemodel::whereIn('id', $store_ids)->get(['city'])->map(function ($c){
             return $c->city;
         });
+        $cities = $cities->unique(); //去除集合中重复值
         return $cities;
+    }
+
+    //获取当前登陆者公司所负责的所有城市
+    public static function getMyCompanyCities()
+    {
+        require_once 'Storemodel.php';
+        $cities = Storemodel::where('company_id', COMPANY_ID)->get(['city'])->map(function ($c){
+            return $c->city;
+        });
+        $cities = $cities->unique(); //去除集合中重复值
+        foreach($cities as $city) {
+            $my_cities[] = $city;
+        }
+        return $my_cities;
     }
 
 }

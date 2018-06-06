@@ -40,7 +40,7 @@ class Store extends MY_Controller
             $this->api_res(0,['count'=>$count,'city'=>$cities,'type'=>$types,'status'=>$status,'list'=>[]]);
             return;
         }
-        $stores = Storemodel::offset($offset)->where($where)->limit(PAGINATE)->orderBy('id','desc')->get($field);
+        $stores = Storemodel::offset($offset)->where($where)->limit(PAGINATE)->orderBy('id','asc')->get($field);
         $this->api_res(0,['count'=>$count,'city'=>$cities,'type'=>$types,'status'=>$status,'list'=>$stores]);
     }
 

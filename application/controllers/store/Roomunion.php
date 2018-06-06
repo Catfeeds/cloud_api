@@ -219,7 +219,8 @@ class Roomunion extends MY_Controller
             $rooms  = Roomunionmodel::leftJoin('boss_store','boss_store.id','=','boss_room_union.store_id')
                 ->leftJoin('boss_room_type','boss_room_type.id','=','boss_room_union.room_type_id')
                 ->select($field)->offset($offset)->limit(PAGINATE)->orderBy('boss_room_union.id')
-                ->whereIn('boss_room_union.store_id',$store_ids)->where($where)->where(function($query) use ($search){
+                ->whereIn('boss_room_union.store_id',$store_ids)->where($where)
+                ->orWhere(function($query) use ($search){
                     $query->where('boss_room_union.number','like',"%$search%");
                 })
                 ->get();
@@ -469,7 +470,7 @@ class Roomunion extends MY_Controller
             array(
                 'field' => 'building_name',
                 'label' => '楼栋名称',
-                'rules' => 'trim|required'
+                'rules' => 'trim|required|alpha_numeric'
             ),
             array(
                 'field' => 'layer_total',

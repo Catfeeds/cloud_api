@@ -154,12 +154,12 @@ class Resident extends MY_Controller
             'end_time'      => $this->residentmodel->contractEndDate($data['begin_time'], $data['contract_time']),
             'employee_id'   => $this->employee->id,
             'store_id'      => $this->employee->store_id,
-            'data'          => json_encode(['card_img_path' => [
+            'data'          => ['card_img_path' => [
                                                 'card_one'      => $this->splitAliossUrl($data['card_one']),
                                                 'card_two'      => $this->splitAliossUrl($data['card_two']),
                                                 'card_three'    => $this->splitAliossUrl($data['card_three']),
                                             ],
-                ]),
+                ],
 
         ]);
         return $data;
@@ -1193,13 +1193,13 @@ class Resident extends MY_Controller
             $newResident->tmp_deposit           = max($resident->tmp_deposit, $input['tmp_deposit']);
             $newResident->special_term          = $input['special_term'];
             $newResident->status                = Residentmodel::STATE_NOTPAY;
-            $newResident->data                  = json_encode([
+            $newResident->data                  = [
                 'org_resident_id'   => $resident->id,
                 'renewal'           => [
                     'delt_other_deposit'    => max(0, $input['tmp_deposit'] - $resident->tmp_deposit),
                     'delt_rent_deposit'     => max(0, ceil($input['deposit_money'] - $resident->deposit_money)),
                 ],
-            ]);
+            ];
             $a=$newResident->save();
 
 //          发放优惠券
@@ -1216,9 +1216,15 @@ class Resident extends MY_Controller
                 ]
             );
 
+            $resident->status   = Residentmodel::STATE_RENEWAL;
+
+            $c=$resident->save();
+
+            //原住户信息是否需要更新下 比如end_time
+
             $b=$this->occupiedByResident($roomunion, $newResident);
 
-            if($a&&$b){
+            if($a&&$b&&$c){
                 DB::commit();
             }else{
                 DB::rollBack();
@@ -1313,8 +1319,6 @@ class Resident extends MY_Controller
                 'label' => '合同中的特别说明',
                 'rules' => 'trim',
             ),
-
-
         );
 
     }
@@ -1338,12 +1342,33 @@ class Resident extends MY_Controller
         return true;
     }
 
+    /**
+     * 未完成订单（生成住户，住户未扫描）
+     */
+    public function unConfirm()
+    {
+        $input  = $this->input->post(null,true);
+        $page   = (int)(isset($input['page'])?$input['page']:1);
+        $per_page   = isset($input['per_page'])?$input['per_page']:PAGINATE;
+        $offset = ($page-1)*PAGINATE;
+        $store_id   = $this->employee->id;
+        $where  = ['store_id'=>$store_id];
+        isset($input['room_number'])?$where['number']=$input['room_number']:null;
+        $this->load->model('roomunionmodel');
+        $this->load->model('residentmodel');
+        $data   = Roomunionmodel::with('resident')->where($where)->where('resident_id','>',0)
+            ->get()->where('resident.customer_id',0);
+        $total  = ceil(count($data)/$per_page);
+
+        $count  = count($data);
+
+        $list   = Roomunionmodel::with('resident')->offset($offset)->limit($per_page)->where($where)->where('resident_id','>',0)
+            ->get()->where('resident.customer_id',0);
+        //$list   = $data->forPage($page,$per_page)->toArray();
 
 
-
-
-
-
+        $this->api_res(0,['total_page'=>$total,'count'=>$count,'page'=>$page,'data'=>$list]);
+    }
 
 }
 

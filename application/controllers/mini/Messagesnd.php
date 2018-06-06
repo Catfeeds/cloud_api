@@ -15,8 +15,6 @@ class Messagesnd extends MY_Controller
     public function __construct()
     {
         parent::__construct();
-        //$this->template_message = new template_message();
-        //$this->template_message = $template_message;
     }
 
     public function sendMsgType()
@@ -58,24 +56,23 @@ class Messagesnd extends MY_Controller
         }])->where('store_id', $store_id)->get(['customer_id']);
         //$this->api_res(0,$customers);
         $type = $post['type'];
-        $title = $this->getNoticeType($type);
+        //$title = $this->getNoticeType($type);
         $template_id = $this->getTemplateIds($type);
 
         $this->load->helper('common');
-        $app = new Application(getWechatCustomerConfig());
+        $app = new Application(getMiniWechatConfig());
         foreach ($customers as $customer) {
             $app->notice->send([
                 'touser' => $customer->openid,
                 'template_id' => $template_id,
                 'url' => 'https://easywechat.org',
                 'data' => [
-                    $title['title'] => $post['title'],
-                    $title['hremind'] => $post['hremind'],
-                    $title['time'] => $post['time'],
-                    $title['area'] => $post['area'],
-                    $title['reason'] => $post['reason'],
-                    $title['fremind'] => $post['fremind'],
-                    $title['preview'] => $post['preview'],
+                    'keyword1' => $post['hremind'],
+                    'keyword2' => $post['time'],
+                    'keyword3' => $post['area'],
+                    'keyword4' => $post['reason'],
+                    'keyword5' => $post['fremind'],
+                    'keyword6' => $post['preview'],
                 ],
             ]);
         }
@@ -86,9 +83,9 @@ class Messagesnd extends MY_Controller
     {
         switch ($type) {
             case '0':
-                return OhCKlytLt8bUCiP9xhNFNtq1NmV_KbLBBuyS7EJGnSk;
+                return 'UXFAM4yAgFQ--rwIqIkpmltfz6n3nIQW7COgIwm32v8';
             case '1':
-                return OhCKlytLt8bUCiP9xhNFNtq1NmV_KbLBBuyS7EJGnSa;
+                return 'OhCKlytLt8bUCiP9xhNFNtq1NmV_KbLBBuyS7EJGnSa';
             case '2':
                 break;
             case '3':

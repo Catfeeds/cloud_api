@@ -23,17 +23,32 @@ class Position extends MY_Controller
     public function getPosition()
     {
         $post = $this->input->post(null,true);
+        $filed = ['name', 'pc_privilege_ids'];
         if (isset($post['id']) && !empty($post['id'])) {
-            $position = Positionmodel::find($post['id']);
+            $position = Positionmodel::where('id', $post['id'])->first($filed);
             if (!$position) {
                 $this->api_res(1009);
                 return;
             }
-            $category = ['name' => $position->name,
-                        'pc_privilege' => $position->pc_privilege,
-                        'mini_privilege' => $position->mini_privilege
-                        ];
-            $this->api_res(0, $category);
+            /*$this->load->model('privilegemodel');
+            $pc_privilege_ids = explode(',', $position->pc_privilege_ids);
+            $parent_ids = Privilegemodel::whereIn('id', $pc_privilege_ids)->get(['parent_id'])->map(function ($p){
+                return $p->parent_id;
+            });
+            if (!$parent_ids) {
+                $this->api_res(1009);
+            }
+            $parent_ids = $parent_ids->unique();
+            $names = Privilegemodel::whereIn('id', $parent_ids)->get(['name']);
+            if (!$names) {
+                $this->api_res(1009);
+            }
+            $temp_string = '';
+            foreach ($names as $name) {
+                $temp_string = $temp_string.$name['name']."/";
+            }
+            $position->pc_privilege = $temp_string;*/
+            $this->api_res(0, $position);
         } else {
             $this->api_res(1002);
             return;
@@ -57,18 +72,26 @@ class Position extends MY_Controller
             $this->api_res(1002);
             return;
         }
-        if(!$this->validation())
+        $config = $this->validation();
+        if(!$this->validationText($config))
         {
-            $fieldarr = ['name'];
-            $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
+            $this->api_res(1002,['error'=>$this->form_first_error(['name'])]);
+            return ;
+        }
+        $id = $post['id'];
+        $name = $post['name'];
+        $isNameEqual = Positionmodel::where('company_id',COMPANY_ID)->where('name', $name)->first();
+        if ($isNameEqual && ($isNameEqual->id != $id)) {
+            $this->api_res(1009, ['error' => '职位已存在']);
             return false;
         }
-        $name = isset($post['name']) ? $post['name'] : null;
-        $pc_privilege = isset($post['pc_privilege']) ? $post['pc_privilege'] : null;
-        $mini_privilege = isset($post['mini_privilege']) ? $post['mini_privilege'] : null;
+        $pc_privilege_ids = isset($post['pc_privilege_ids']) ? $post['pc_privilege_ids'] : null;
+        //$pc_privilege = isset($post['pc_privilege']) ? $post['pc_privilege'] : null;
+        //$mini_privilege = isset($post['mini_privilege']) ? $post['mini_privilege'] : null;
         $position->name = $name;
-        $position->pc_privilege = $pc_privilege;
-        $position->mini_privilege = $mini_privilege;
+        $position->pc_privilege_ids = $pc_privilege_ids;
+        //$position->pc_privilege = $pc_privilege;
+        //$position->mini_privilege = $mini_privilege;
         $result = $position->save();
         if (!$result) {
             $this->api_res(1009);
@@ -83,23 +106,31 @@ class Position extends MY_Controller
     public function addPosition()
     {
         $post = $this->input->post(null, true);
-        if(!$this->validation())
+        $config = $this->validation();
+        if(!$this->validationText($config))
         {
-            $fieldarr   = ['name'];
-            $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
-            return false;
+            $this->api_res(1002,['error'=>$this->form_first_error(['name'])]);
+            return;
         }
 
-        $name = isset($post['name']) ? $post['name'] : null;
-        $pc_privilege = isset($post['pc_privilege']) ? $post['pc_privilege'] : null;
-        $mini_privilege = isset($post['mini_privilege']) ? $post['mini_privilege'] : null;
+        $name = $post['name'];
+        $isNameEqual = Positionmodel::where('company_id',COMPANY_ID)->where('name', $name)->first();
+        if ($isNameEqual) {
+            $this->api_res(1009, ['error' => '职位已存在']);
+            return false;
+        }
+        $pc_privilege_ids = isset($post['pc_privilege_ids']) ? $post['pc_privilege_ids'] : null;
+        //$pc_privilege = isset($post['pc_privilege']) ? $post['pc_privilege'] : null;
+        //$mini_privilege = isset($post['mini_privilege']) ? $post['mini_privilege'] : null;
 
         try {
             DB::beginTransaction();
             $result = Positionmodel::insert(
                 [   'name' => $name,
-                    'pc_privilege' => $pc_privilege,
-                    'mini_privilege' => $mini_privilege,
+                    'company_id' => COMPANY_ID,
+                    'pc_privilege_ids' => $pc_privilege_ids,
+                    //'pc_privilege' => $pc_privilege,
+                    //'mini_privilege' => $mini_privilege,
                     'created_at' => date('Y-m-d H:i:s', time()),
                     'updated_at' => date('Y-m-d H:i:s', time())
                 ]);
@@ -125,42 +156,41 @@ class Position extends MY_Controller
         $post = $this->input->post(null, true);
         $page = intval(isset($post['page']) ? $post['page'] : 1);
         $offset = PAGINATE * ($page - 1);
-        $filed = ['id', 'name', 'pc_privilege', 'mini_privilege', 'created_at'];
-        $where = isset($post['store_id']) ? ['store_id' => $post['store_id']] : [];
-
-        if (isset($post['city']) && !empty($post['city'])) {
-            $store_ids = Employeemodel::getMyCitystoreids($post['city']);
-            $count = ceil((Positionmodel::whereIn('store_id', $store_ids)->where($where)->count()) / PAGINATE);
-            if ($page > $count) {
-                $this->api_res(0, ['count' => $count, 'list' => []]);
-                return;
-            }
-            $this->load->model('employeemodel');
-            $category = Positionmodel::with('employee')->whereIn('store_id', $store_ids)->where($where)
-                ->offset($offset)->limit(PAGINATE)->orderBy('id', 'desc')
-                ->get($filed)->map(function($a){
-                    $a->count_z = $a->employee->count();
-                    return  $a;
-                });
-            $this->api_res(0, ['count' => $count, 'list' => $category]);
-            return;
-        }
-        $this->load->model('employeemodel');
-        $store_ids = Employeemodel::getMyStoreids();
-        $count = ceil((Positionmodel::where('company_id', COMPANY_ID)->whereIn('store_id', $store_ids)->count()) / PAGINATE);
+        $filed = ['id', 'name', 'pc_privilege_ids', 'created_at'];
+        $count = ceil((Positionmodel::where('company_id', COMPANY_ID)->count()) / PAGINATE);
         if ($page > $count) {
             $this->api_res(0, ['count' => $count, 'list' => []]);
             return;
         }
-        $category = Positionmodel::with('employee')->where('company_id', COMPANY_ID)
-            ->whereIn('store_id', $store_ids)->offset($offset)
-            ->limit(PAGINATE)->orderBy('id', 'desc')
-            ->get($filed)->map(function($a){
-            $a->count_z = $a->employee->count();
-            return  $a;
-        });
 
-        $this->api_res(0, ['count' => $count, 'list' => $category]);
+        $this->load->model('employeemodel');
+        $positions = Positionmodel::with('employee')->where('company_id', COMPANY_ID)
+            ->offset($offset)->limit(PAGINATE)->orderBy('created_at', 'asc')
+            ->get($filed)->map(function($a){
+                $a->count_z = $a->employee->count();
+                return  $a;
+            });
+        $this->load->model('privilegemodel');
+        $position = $positions->map(function ($p) {
+            $pc_privilege_ids = explode(',', $p->pc_privilege_ids);
+            $parent_ids = Privilegemodel::whereIn('id', $pc_privilege_ids)->groupBy(['parent_id'])->get(['parent_id'])->toArray();
+            if (!$parent_ids) {
+                $this->api_res(1009);
+            }
+            $names = Privilegemodel::whereIn('id', $parent_ids)->get(['name'])->toArray();
+            if (!$names) {
+                $this->api_res(1009);
+            }
+            $temp_string='';
+            foreach ($names as $name){
+                $temp_string = $temp_string.$name['name']." / ";
+            }
+            $temp_string = rtrim($temp_string, ' / ');
+            $p->pc_privilege = $temp_string;
+
+            return $p;
+        });
+        $this->api_res(0, ['count' => $count, 'list' => $position]);
     }
 
     /**
@@ -168,28 +198,29 @@ class Position extends MY_Controller
      */
     public function searchPosition()
     {
-        $filed = ['id', 'name', 'pc_privilege', 'mini_privilege', 'created_at'];
+        $filed = ['id', 'name', 'pc_privilege_ids', 'created_at'];
         $post   = $this->input->post(null,true);
-        if(!$this->validation())
+        $config = $this->validation();
+        if(!$this->validationText($config))
         {
-            $fieldarr   = ['name'];
-            $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
+            $this->api_res(1002,['error'=>$this->form_first_error(['name'])]);
             return ;
         }
         $name   = isset($post['name'])?$post['name']:null;
         $page   = intval(isset($post['page'])?$post['page']:1);
         $offset = PAGINATE * ($page-1);
-        $this->load->model('employeemodel');
-        $store_ids = Employeemodel::getMyStoreids();
-        $count  = ceil((Positionmodel::whereIn('store_id', $store_ids)->where('name','like',"%$name%")->count())/PAGINATE);
+        $count  = ceil((Positionmodel::where('company_id', COMPANY_ID)
+                ->where('name','like',"%$name%")->count())/PAGINATE);
         if($page > $count){
             $this->api_res(0,['count'=>$count,'list'=>[]]);
             return;
         }
+        $this->load->model('employeemodel');
         $category = Positionmodel::with('employee')
-            ->whereIn('store_id', $store_ids)
+            ->where('company_id', COMPANY_ID)
             ->where('name','like',"%$name%")
-            ->offset($offset)->limit(PAGINATE)->orderBy('id', 'desc')
+            ->offset($offset)->limit(PAGINATE)
+            ->orderBy('id', 'desc')
             ->get($filed)->map(function($a){
                 $a->count_z = $a->employee->count();
                 return $a;
@@ -198,11 +229,57 @@ class Position extends MY_Controller
     }
 
     /**
+     * 显示所有权限
+     *
+    public function showPrivilege()
+    {
+        $parent_ids = PRIVILEGE_IDS;
+        $this->load->model('privilegemodel');
+        $privilege= privilegemodel::whereIn('parent_id', $parent_ids)->get(['id', 'name']);
+        if (!$parent_ids) {
+            $this->api_res(1009);
+            return;
+        }
+        $this->api_res(0, ['pc_privilege' => $privilege]);
+    }*/
+
+    /**
+     * 显示所有详细权限
+     */
+    public function showPrivilegeDetail()
+    {
+        $this->load->model('privilegemodel');
+        $privileges_one = privilegemodel::where('parent_id', 0)->get(['id', 'parent_id', 'name'])->toArray();
+        if (!$privileges_one) {
+            $this->api_res(1009);
+            return;
+        }
+        foreach ($privileges_one as $key=>$privilege_two) {
+            $temps= privilegemodel::where('parent_id', $privilege_two['id'])->get(['id', 'parent_id', 'name'])->toArray();
+            if (!$temps) {
+                $this->api_res(1009);
+                return;
+            }
+            foreach ($temps as $k2=>$temp) {
+                if ($temp['id'] == 37) break;
+                $res= privilegemodel::where('parent_id', $temp['id'])->get(['id', 'parent_id', 'name'])->toArray();
+                if (!$res) {
+                    $this->api_res(1009);
+                    return;
+                }
+                $temps[$k2]['list']=$res;
+            }
+            $privileges_one[$key]['list']=$temps;
+        }
+        $this->api_res(0, $privileges_one);
+    }
+
+    /**
      * 显示公司职位
      */
-    public function showPositions() {
-        $where  = ['company_id'=>COMPANY_ID];
-        $position = Positionmodel::where($where)->get(['id', 'name']);
+    public function showPositions()
+    {
+        $position = Positionmodel::where('company_id', COMPANY_ID)->get(['id', 'name']);
         if (!$position) {
             $this->api_res(1009);
             return;
@@ -213,7 +290,8 @@ class Position extends MY_Controller
     /**
      * 删除职位
      */
-    public function deletePosition(){
+    public function deletePosition()
+    {
         $id   = $this->input->post('id',true);
         $where  = ['company_id'=>COMPANY_ID, 'id' => $id];
         if(Positionmodel::where($where)->delete()){
@@ -229,7 +307,6 @@ class Position extends MY_Controller
      */
     public function validation()
     {
-        $this->load->library('form_validation');
         $config = array(
             array(
                 'field' => 'name',
@@ -237,9 +314,7 @@ class Position extends MY_Controller
                 'rules' => 'trim|required|max_length[255]',
             ),
         );
-
-        $this->form_validation->set_rules($config)->set_error_delimiters('','');
-        return $this->form_validation->run();
+        return $config;
     }
 
 }

@@ -48,7 +48,8 @@ class Roomunionmodel extends Basemodel{
     //房型展示
     public function room_type(){
 
-        return $this->belongsTo(Roomtypemodel::class,'room_type_id');
+        return $this->belongsTo(Roomtypemodel::class,'room_type_id')
+                            ->select('id','room_number','hall_number','toilet_number');
     }
 
     //房间住户信息
@@ -90,9 +91,14 @@ class Roomunionmodel extends Basemodel{
         return $this->hasMany(Ordermodel::class, 'room_id');
     }
 
+//    public function utilities()
+//    {
+//        return $this->hasMany(Utilitymodel::class, 'room_id');
+//    }
+
     public function devices()
     {
-        return $this->hasMany(Smartdevicemodel::class, 'room_id');
+        return $this->hasMany(Devicemodel::class, 'room_id');
     }
 
 //    //房屋公共智能设备
@@ -152,5 +158,25 @@ class Roomunionmodel extends Basemodel{
         $this->rent_count     = Roomunionmodel::where('status','RENT')->get($filed)->count();
         $this->arrears_count  = Roomunionmodel::where('status','ARREARS')->get($filed)->count();
         return $this;
+    }
+
+    /**
+     * 取消办理, 房间状态置空
+     */
+    public function resetRoom($roomId)
+    {
+        $room   = Room::find($roomId);
+
+        if (!$room) {
+            throw new \Exception('未找到该房间');
+        }
+
+        $room->update([
+            'status'        => Roomunionmodel::STATE_BLANK,
+            'people_count'  => 0,
+            'resident_id'   => 0,
+        ]);
+
+        return true;
     }
 }

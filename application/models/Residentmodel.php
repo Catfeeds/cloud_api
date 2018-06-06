@@ -79,6 +79,19 @@ use Carbon\Carbon;
         'data',
      ];
 
+     protected $dates    = [
+         'book_time',
+         'refund_time',
+         'begin_time',
+         'end_time',
+         'created_at',
+         'updated_at',
+     ];
+
+     protected $casts    = [
+         'data' => 'array',
+     ];
+
      protected $hidden  = [];
 
      //住户的房间信息
@@ -127,7 +140,7 @@ use Carbon\Carbon;
       */
      public function checkout_record()
      {
-         return $this->hasOne(Checkoutrecordmodel::class, 'resident_id');
+         return $this->hasOne(Checkoutmodel::class, 'resident_id');
      }
 
      /**
@@ -183,6 +196,8 @@ use Carbon\Carbon;
              'deposit_money_rent'    => $resident->deposit_money,
              'deposit_money_other'   => $resident->tmp_deposit,
              'deposit_month'         => $resident->deposit_month,
+             'book_money'            => $resident->book_money,
+             'book_time'             => $resident->book_time,
              'contract_time'         => $resident->contract_time,
              'rent_type'             => $resident->rent_type,
              'pay_type'              => $resident->pay_frequency,

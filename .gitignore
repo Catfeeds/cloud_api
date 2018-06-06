@@ -2,6 +2,7 @@ application/logs/
 application/cache/
 public/.htaccess
 application/config/config.php
+public/temp/
 
 .gitignore
 .DS_Store
