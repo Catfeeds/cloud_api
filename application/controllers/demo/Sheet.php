@@ -68,21 +68,15 @@ class Sheet extends MY_Controller{
 
     }
 
+
+
+
     public function output(){
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setCellValue('A1', 'Hello World !');
-        $writer = new Xlsx($spreadsheet);
-        header("Pragma: public");
-        header("Expires: 0");
-        header("Cache-Control:must-revalidate, post-check=0, pre-check=0");
-        header("Content-Type:application/force-download");
-        header("Content-Type:application/vnd.ms-excel");
-        header("Content-Type:application/octet-stream");
-        header("Content-Type:application/download");;
-        header('Content-Disposition:attachment;filename="report.xls"');
-        header("Content-Transfer-Encoding:binary");
-        $writer->save('php://output');
+        $transfer   = [''];
+        $data   = [[1,2,3,4,5],[2,3,4,5,6]];
+
+        $this->out($transfer,$data);
+
     }
 
     /*
@@ -99,8 +93,25 @@ class Sheet extends MY_Controller{
     /**
      * 输出
      */
-    public function out(){
+    public function out($transfer,$data){
 
+        $spreadsheet    = new Spreadsheet();
+        $sheet  = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1','列A1');
+        $data   = [['s'=>1,2,3,4,5],[2,3,4,5,6]];
+        $sheet->fromArray($data,null,'A2');
+        $writer = new Xlsx($spreadsheet);
+
+        header("Pragma: public");
+        header("Expires: 0");
+        header("Cache-Control:must-revalidate, post-check=0, pre-check=0");
+        header("Content-Type:application/force-download");
+        header("Content-Type:application/vnd.ms-excel");
+        header("Content-Type:application/octet-stream");
+        header("Content-Type:application/download");;
+        header('Content-Disposition:attachment;filename="report.xls"');
+        header("Content-Transfer-Encoding:binary");
+        $writer->save('php://output');
     }
 
 }

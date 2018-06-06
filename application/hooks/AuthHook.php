@@ -28,7 +28,10 @@ class AuthHook {
             'common/imageupload',
             'common/fileupload',
 
+            'bill/order/download',
+
             'demo/sheet/index',
+            'demo/sheet/output',
 
             'bill/bill/generate',
 
