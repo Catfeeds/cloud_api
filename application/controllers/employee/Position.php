@@ -185,6 +185,7 @@ class Position extends MY_Controller
             foreach ($names as $name){
                 $temp_string = $temp_string.$name['name']." / ";
             }
+            $temp_string = rtrim($temp_string, ' / ');
             $p->pc_privilege = $temp_string;
 
             return $p;
