@@ -165,6 +165,10 @@ class AuthHook {
             'mini/room/building',
             'mini/room/countroom',
 
+            'mini/owner/listowners',
+            'mini/owner/searchowner',
+            'mini/owner/showdetail',
+
             'contract/operation/operatlist',
             'contract/operation/operationfind',
             'contract/operation/booking',
