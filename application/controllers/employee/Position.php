@@ -86,11 +86,11 @@ class Position extends MY_Controller
             return false;
         }
         $pc_privilege_ids = isset($post['pc_privilege_ids']) ? $post['pc_privilege_ids'] : null;
-        $pc_privilege = isset($post['pc_privilege']) ? $post['pc_privilege'] : null;
+        //$pc_privilege = isset($post['pc_privilege']) ? $post['pc_privilege'] : null;
         //$mini_privilege = isset($post['mini_privilege']) ? $post['mini_privilege'] : null;
         $position->name = $name;
         $position->pc_privilege_ids = $pc_privilege_ids;
-        $position->pc_privilege = $pc_privilege;
+        //$position->pc_privilege = $pc_privilege;
         //$position->mini_privilege = $mini_privilege;
         $result = $position->save();
         if (!$result) {
@@ -120,7 +120,7 @@ class Position extends MY_Controller
             return false;
         }
         $pc_privilege_ids = isset($post['pc_privilege_ids']) ? $post['pc_privilege_ids'] : null;
-        $pc_privilege = isset($post['pc_privilege']) ? $post['pc_privilege'] : null;
+        //$pc_privilege = isset($post['pc_privilege']) ? $post['pc_privilege'] : null;
         //$mini_privilege = isset($post['mini_privilege']) ? $post['mini_privilege'] : null;
 
         try {
@@ -129,7 +129,7 @@ class Position extends MY_Controller
                 [   'name' => $name,
                     'company_id' => COMPANY_ID,
                     'pc_privilege_ids' => $pc_privilege_ids,
-                    'pc_privilege' => $pc_privilege,
+                    //'pc_privilege' => $pc_privilege,
                     //'mini_privilege' => $mini_privilege,
                     'created_at' => date('Y-m-d H:i:s', time()),
                     'updated_at' => date('Y-m-d H:i:s', time())
@@ -197,7 +197,7 @@ class Position extends MY_Controller
      */
     public function searchPosition()
     {
-        $filed = ['id', 'name', 'pc_privilege_ids', 'pc_privilege', 'created_at'];
+        $filed = ['id', 'name', 'pc_privilege_ids', 'created_at'];
         $post   = $this->input->post(null,true);
         $config = $this->validation();
         if(!$this->validationText($config))
