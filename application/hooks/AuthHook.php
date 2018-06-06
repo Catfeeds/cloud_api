@@ -198,12 +198,12 @@ class AuthHook {
                 $d_company_id   = $decoded->company_id;
                 define('CURRENT_ID',$d_bxid);
                 define('COMPANY_ID',$d_company_id);
-                /*//操作记录测试
+                //操作记录测试
                 if (!$this->operationRecord($full_path)) {
                     header("Content-Type:application/json;charset=UTF-8");
                     echo json_encode(array('rescode' => 1012, 'resmsg' => '操作log出错', 'data' => []));
                     exit;
-                }*/
+                }
                 /*//权限匹配
                 if (!$this->privilegeMatch($class, $full_path)) {
                     header("Content-Type:application/json;charset=UTF-8");
@@ -285,5 +285,6 @@ class AuthHook {
         if (!$operation->save()) {
             return false;
         }
+        return true;
     }
 }
