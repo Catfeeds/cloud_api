@@ -30,7 +30,7 @@ class Position extends MY_Controller
                 $this->api_res(1009);
                 return;
             }
-            $this->load->model('privilegemodel');
+            /*$this->load->model('privilegemodel');
             $pc_privilege_ids = explode(',', $position->pc_privilege_ids);
             $parent_ids = Privilegemodel::whereIn('id', $pc_privilege_ids)->get(['parent_id'])->map(function ($p){
                 return $p->parent_id;
@@ -47,7 +47,7 @@ class Position extends MY_Controller
             foreach ($names as $name) {
                 $temp_string = $temp_string.$name['name']."/";
             }
-            $position->pc_privilege = $temp_string;
+            $position->pc_privilege = $temp_string;*/
             $this->api_res(0, $position);
         } else {
             $this->api_res(1002);
@@ -183,9 +183,8 @@ class Position extends MY_Controller
             }
             $temp_string='';
             foreach ($names as $name){
-                $temp_string = $temp_string.$name['name']."/";
+                $temp_string = $temp_string.$name['name']." / ";
             }
-
             $p->pc_privilege = $temp_string;
 
             return $p;
