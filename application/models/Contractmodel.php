@@ -13,6 +13,14 @@ class Contractmodel extends Basemodel {
 
     protected $hidden   = ['deleted_at'];
 
+    /**
+     * 签署状态
+     */
+    const STATUS_GENERATED   = 'GENERATED';   // 未签署
+    const STATUS_SIGNING     = 'SIGNING';     // 签署中
+    const STATUS_ARCHIVED    = 'ARCHIVED';    // 已存档
+
+
     //签署人
     public function resident()
     {

@@ -33,25 +33,43 @@ class Operation extends MY_Controller
         $count  = ceil(Contractmodel::count()/PAGINATE);
         $where          = [];
         if(!empty($post['store_id'])){$where['id']  = $post['store_id'];}
-
+        if(!empty($post['status'])){$stat=$post['status'];}else{$stat = [
+            Contractmodel::STATUS_GENERATED,
+            Contractmodel::STATUS_SIGNING,
+            Contractmodel::STATUS_ARCHIVED,
+        ];}
         if(!empty($post['begin_time'])){$btime=$post['begin_time'];}else{$btime = date('Y-m-d H:i:s',0);};
         if(!empty($post['end_time'])){$etime=$post['end_time'];}else{$etime = date('Y-m-d H:i:s',time());};
         $filed  = ['id','contract_id','resident_id','sign_type','store_id','room_id','created_at','status','employee_id'];
-        if ($where) {
+        if ($where||$stat){
             $operation = Contractmodel::with('resident')->with('employee')->with('store')->with('roomunion')->
-            where($where)->whereBetween('created_at', [$btime, $etime])->take(PAGINATE)->
+            where($where)->whereIn('status',[
+                Contractmodel::STATUS_GENERATED,
+                Contractmodel::STATUS_SIGNING,
+                Contractmodel::STATUS_ARCHIVED,
+                ])->where('status',$stat)->whereBetween('created_at', [$btime, $etime])->take(PAGINATE)->
             skip($offset)->orderBy('id', 'desc')->get($filed);
+            $this->api_res(0,['operationlist'=>$operation,'count'=>$count]);
         }elseif ($btime||$etime){
-            $operation = Contractmodel::with('resident')->with('employee')->with('store')->with('roomunion')->
-            whereBetween('created_at', [$btime, $etime])->take(PAGINATE)->
-            skip($offset)->orderBy('id', 'desc')->get($filed);
+            $operation = Contractmodel::with('resident')->with('employee')->with('store')->with('roomunion')
+                ->whereIn('status',[
+                Contractmodel::STATUS_GENERATED,
+                Contractmodel::STATUS_SIGNING,
+                Contractmodel::STATUS_ARCHIVED,
+            ])->where('status',$stat)->whereBetween('created_at', [$btime, $etime])->take(PAGINATE)->
+                skip($offset)->orderBy('id', 'desc')->get($filed);
+            $this->api_res(0,['operationlist'=>$operation,'count'=>$count]);
         }else{
             $operation = Contractmodel::with('resident')->with('employee')->with('store')->with('roomunion')
-                ->take(PAGINATE)->skip($offset)->orderBy('id', 'desc')->get($filed);
+                ->whereIn('status',[
+                    Contractmodel::STATUS_GENERATED,
+                    Contractmodel::STATUS_SIGNING,
+                    Contractmodel::STATUS_ARCHIVED,
+                ])->take(PAGINATE)->skip($offset)->orderBy('id', 'desc')->get($filed);
+            $this->api_res(0,['operationlist'=>$operation,'count'=>$count]);
         }
-
-        $this->api_res(0,['operationlist'=>$operation,'count'=>$count]);
     }
+
 
     /**
      *查看入住合同
