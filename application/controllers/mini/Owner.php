@@ -186,6 +186,27 @@ class Owner extends MY_Controller
     }
 
     /**
+     * 保存编辑后的小业主身份证或者证件照片
+     */
+    public function saveIDPhoto()
+    {
+        $post = $this->input->post(null, true);
+        $id = isset($post['id']) ? $post['id'] : null;
+        $url = isset($post['url']) ? $post['url'] : null;
+        if ($id || $url) {
+            $this->api_res(1003);
+        }
+        $owner      = new Ownermodel();
+        $owner->url = $url;
+
+        if ($owner->save()) {
+            $this->api_res(0);
+        }else{
+            $this->api_res(1009);
+        }
+    }
+
+    /**
      * 验证
      */
     public function validationCodeAddEmp()
