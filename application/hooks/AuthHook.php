@@ -143,6 +143,7 @@ class AuthHook {
             'smartdevice/smartdevice/listsmartdevice',
             'smartdevice/smartdevice/record',
             'smartdevice/smartdevice/test',
+            'smartdevice/smartdevice/getallrecord',
             'smartdevice/readmeter/handle',
 
             'common/city',

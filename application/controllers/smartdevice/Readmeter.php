@@ -14,11 +14,11 @@ class Readmeter extends MY_Controller
 
     public $tries = 3;
 
-    public function __construct($id = 8)
+    public function __construct($id = 6)
     {
         parent::__construct();
         $this->store_id = $id;
-        $this->load->model('meterreadingtransfermodel');
+
     }
 
     public function handle()
@@ -40,26 +40,38 @@ class Readmeter extends MY_Controller
             log_message('error','无表计信息！');
         }
 
-        $serialNumbers = collect($devices)->pluck('serial_number')->toArray();
-
-        $readings = (new Cjoymeter())->readMultipleByMeterNo($serialNumbers);
-var_dump($readings);die();
-        if (!$readings) {
-            log_message('error',"获取读数失败！");
-        }
-//var_dump($readings);
-        collect($readings)->map(function ($reading, $sn) use ($devices) {
-            $device = $devices->where('serial_number', $sn)->first();
-            $this->recordMeterReading($device, $reading);
+        $devices->chunk(20)->each(function ($items) {
+            return $this->readingRequest($items);
         });
         return true;
     }
 
     /**
-     * 记录读数
+     * 向超仪发送请求
      */
-    private function recordMeterReading($device, $reading)
+    private function readingRequest($devices)
     {
+        $serialNumbers = $devices->pluck('serial_number')->toArray();
+
+        $readings = (new Cjoymeter())->readMultipleByMeterNo($serialNumbers);
+
+        if (!$readings) {
+            log_message('error',"获取读数失败！");
+        }
+
+        return collect($readings)->map(function ($reading, $sn) use ($devices) {
+            $device = $devices->where('serial_number', $sn)->first();
+            $this->recordUtilityTransfer($device, $reading);
+            $this->recordMeterReading($device, $reading);
+        });
+    }
+
+    /**
+     * 记录缓冲区的读数
+     */
+    private function recordUtilityTransfer($device, $reading)
+    {
+        $this->load->model('meterreadingtransfermodel');
         $transfer   = Meterreadingtransfermodel::where([
             'room_id' => $device->room_id,
             'type'    => $device->type,
@@ -74,11 +86,34 @@ var_dump($readings);die();
                 'room_id' => $device->room_id,
                 'type'    => $device->type,
             ],[
-                'confirmed'    => Meterreadingtransfermodel::UNCONFIRMED,
-                'building_id'  => $device->building_id,
-                'store_id' => $this->store_id,
-                'last_reading' => $reading,
-                'this_reading' => $reading,
+                'confirmed'     => Meterreadingtransfermodel::UNCONFIRMED,
+                'building_id'   => $device->building_id,
+                'store_id'      => $this->store_id,
+                'last_reading'  => $reading,
+                'this_reading'  => $reading,
+            ]);
+        }
+        return true;
+    }
+
+    /**
+     * 将读数写入读数历史记录表
+     */
+    private function recordMeterReading($device, $reading)
+    {
+        $this->load->model('meterreadingmodel');
+        $record = Meterreadingmodel::where([
+            'type'      => $device->type,
+            'room_id'   => $device->room_id,
+        ])
+            ->orderBy('created_at', 'DESC')
+            ->first();
+
+        if (!$record || 0.01 < $reading - $record->reading) {
+            meterreadingmodel::create([
+                'room_id'   => $device->room_id,
+                'type'      => $device->type,
+                'reading'   => $reading,
             ]);
         }
         return true;
