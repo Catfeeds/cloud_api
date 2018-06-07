@@ -208,12 +208,12 @@ class AuthHook {
                     echo json_encode(array('rescode' => 1012, 'resmsg' => '操作log出错', 'data' => []));
                     exit;
                 }*/
-                //权限匹配
+                /*//权限匹配
                 if (!$this->privilegeMatch($directory, $class, $full_path)) {
                     header("Content-Type:application/json;charset=UTF-8");
                     echo json_encode(array('rescode' => 1011, 'resmsg' => '没有访问权限', 'data' => []));
                     exit;
-                }
+                }*/
             } catch (Exception $e) {
                 header("Content-Type:application/json;charset=UTF-8");
                 echo json_encode(array('rescode' => 1001, 'resmsg' => 'token无效', 'data' => []));
