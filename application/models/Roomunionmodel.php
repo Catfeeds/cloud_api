@@ -152,8 +152,9 @@ class Roomunionmodel extends Basemodel{
         $this->details        = Roomunionmodel::with('room_type')->with('resident')->where($where)
                                         ->whereBetween('updated_at',$time)
                                         ->get($filed)->groupBy('layer')->toArray();
-        var_dump($where);
-        if ($where['status']){unset($where['status']);}
+        //var_dump($where);
+        if (!empty($where['status'])){unset($where['status']);}
+        //var_dump($where);
         $this->total_count    = Roomunionmodel::where($where)->get($filed)->count();
         $this->blank_count    = Roomunionmodel::where($where)->where('status','BLANK')->get($filed)->count();
         $this->reserve_count  = Roomunionmodel::where($where)->where('status','RESERVE')->get($filed)->count();
