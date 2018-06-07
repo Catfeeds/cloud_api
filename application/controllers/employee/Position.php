@@ -172,6 +172,7 @@ class Position extends MY_Controller
             });
         $this->load->model('privilegemodel');
         $position = $positions->map(function ($p) {
+            unset($p->employee);
             $pc_privilege_ids = explode(',', $p->pc_privilege_ids);
             $parent_ids = Privilegemodel::whereIn('id', $pc_privilege_ids)->groupBy(['parent_id'])->get(['parent_id'])->toArray();
             if (!$parent_ids) {
