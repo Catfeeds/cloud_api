@@ -16,6 +16,8 @@ class Roomtypemodel extends Basemodel{
         'toward','description','images',
         ];
 
+    protected $casts    = ['images'=>'array'];
+
     protected $hidden   = ['created_at','updated_at','deleted_at'];
 
     //房型的合同模板

@@ -17,6 +17,8 @@ class Storemodel extends Basemodel{
         'contact_phone','counsel_phone','counsel_time','describe','history','shop','relax','bus',
     ];
 
+    protected $casts    = ['images'=>'array'];
+
     protected $hidden   = ['updated_at','deleted_at'];
 
     //门店所管辖的楼栋

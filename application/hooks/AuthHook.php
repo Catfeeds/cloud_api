@@ -25,6 +25,9 @@ class AuthHook {
         //注意，所有url统一用小写，不要大写
         $authArr = array(
 
+            'demo/copy/transferimages',
+            'demo/copy/run',
+
             'common/imageupload',
             'common/fileupload',
 
