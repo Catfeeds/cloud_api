@@ -31,6 +31,7 @@ class Operation extends MY_Controller
         $page           = empty($post['page'])?1:intval($post['page']);
         $offset         = PAGINATE*($page-1);
         $count  = ceil(Contractmodel::count()/PAGINATE);
+        var_dump($count);
         $where          = [];
         if(!empty($post['store_id'])){$where['id']  = $post['store_id'];}
         if(!empty($post['status'])){$stat=$post['status'];}else{$stat = [
@@ -41,7 +42,7 @@ class Operation extends MY_Controller
         if(!empty($post['begin_time'])){$btime=$post['begin_time'];}else{$btime = date('Y-m-d H:i:s',0);};
         if(!empty($post['end_time'])){$etime=$post['end_time'];}else{$etime = date('Y-m-d H:i:s',time());};
         $filed  = ['id','contract_id','resident_id','sign_type','store_id','room_id','created_at','status','employee_id'];
-        if ($where||$stat){
+        if ($where||$stat||$btime||$etime){
             $operation = Contractmodel::with('resident')->with('employee')->with('store')->with('roomunion')->
             where($where)->whereIn('status',[
                 Contractmodel::STATUS_GENERATED,
@@ -49,16 +50,6 @@ class Operation extends MY_Controller
                 Contractmodel::STATUS_ARCHIVED,
                 ])->where('status',$stat)->whereBetween('created_at', [$btime, $etime])->take(PAGINATE)->
                 skip($offset)->orderBy('id', 'desc')->get($filed);
-            $this->api_res(0,['operationlist'=>$operation,'count'=>$count]);
-        }elseif ($btime||$etime){
-            $operation = Contractmodel::with('resident')->with('employee')->with('store')->with('roomunion')
-                ->whereIn('status',[
-                Contractmodel::STATUS_GENERATED,
-                Contractmodel::STATUS_SIGNING,
-                Contractmodel::STATUS_ARCHIVED,
-                ])->where('status',$stat)->whereBetween('created_at', [$btime, $etime])->take(PAGINATE)->
-                skip($offset)->orderBy('id', 'desc')->get($filed);
-            $this->api_res(0,['operationlist'=>$operation,'count'=>$count]);
         }else{
             $operation = Contractmodel::with('resident')->with('employee')->with('store')->with('roomunion')
                 ->whereIn('status',[
@@ -66,10 +57,9 @@ class Operation extends MY_Controller
                     Contractmodel::STATUS_SIGNING,
                     Contractmodel::STATUS_ARCHIVED,
                 ])->take(PAGINATE)->skip($offset)->orderBy('id', 'desc')->get($filed);
-            $this->api_res(0,['operationlist'=>$operation,'count'=>$count]);
         }
+        $this->api_res(0,['operationlist'=>$operation,'count'=>$count]);
     }
-
 
     /**
      *查看入住合同
@@ -117,18 +107,11 @@ class Operation extends MY_Controller
             where($where)->whereIn('status', [Roomunionmodel::STATE_BLANK, Roomunionmodel::STATE_RESERVE, Roomunionmodel::STATE_RENT,
                 Roomunionmodel::STATE_ARREARS, Roomunionmodel::STATE_REFUND, Roomunionmodel::STATE_OTHER, Roomunionmodel::STATE_OCCUPIED,
             ])->where('status', $stat)->whereBetween('created_at', [$btime, $etime])->take(PAGINATE)->skip($offset)->orderBy('id', 'desc')->get($filed);
-            $this->api_res(0, ['bookinglist' => $operation, 'count' => $count]);
-        } elseif ($btime || $etime) {
-            $operation = Contractmodel::with('bookresident')->with('employee')->with('store')->with('roomunion')
-                ->whereIn('status', [Roomunionmodel::STATE_BLANK, Roomunionmodel::STATE_RESERVE, Roomunionmodel::STATE_RENT,
-                    Roomunionmodel::STATE_ARREARS, Roomunionmodel::STATE_REFUND, Roomunionmodel::STATE_OTHER, Roomunionmodel::STATE_OCCUPIED,
-                ])->where('status', $stat)->whereBetween('created_at', [$btime, $etime])->take(PAGINATE)->skip($offset)->orderBy('id', 'desc')->get($filed);
-            $this->api_res(0, ['bookinglist' => $operation, 'count' => $count]);
         } else {
             $operation = Contractmodel::with('bookresident')->with('employee')->with('store')->with('roomunion')->
             take(PAGINATE)->skip($offset)->orderBy('id', 'desc')->get($filed);
-            $this->api_res(0, ['bookinglist' => $operation, 'count' => $count]);
         }
+        $this->api_res(0, ['bookinglist' => $operation, 'count' => $count]);
     }
 
     /**
