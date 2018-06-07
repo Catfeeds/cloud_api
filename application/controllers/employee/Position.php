@@ -82,7 +82,7 @@ class Position extends MY_Controller
         $name = $post['name'];
         $isNameEqual = Positionmodel::where('company_id',COMPANY_ID)->where('name', $name)->first();
         if ($isNameEqual && ($isNameEqual->id != $id)) {
-            $this->api_res(1009, ['error' => '职位已存在']);
+            $this->api_res(1013);
             return false;
         }
         $pc_privilege_ids = isset($post['pc_privilege_ids']) ? $post['pc_privilege_ids'] : null;
@@ -116,7 +116,7 @@ class Position extends MY_Controller
         $name = $post['name'];
         $isNameEqual = Positionmodel::where('company_id',COMPANY_ID)->where('name', $name)->first();
         if ($isNameEqual) {
-            $this->api_res(1009, ['error' => '职位已存在']);
+            $this->api_res(1013);
             return false;
         }
         $pc_privilege_ids = isset($post['pc_privilege_ids']) ? $post['pc_privilege_ids'] : null;
