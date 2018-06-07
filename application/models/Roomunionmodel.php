@@ -155,11 +155,11 @@ class Roomunionmodel extends Basemodel{
         //var_dump($where);
         if (!empty($where['status'])){unset($where['status']);}
         //var_dump($where);
-        $this->total_count    = Roomunionmodel::where($where)->get($filed)->count();
-        $this->blank_count    = Roomunionmodel::where($where)->where('status','BLANK')->get($filed)->count();
-        $this->reserve_count  = Roomunionmodel::where($where)->where('status','RESERVE')->get($filed)->count();
-        $this->rent_count     = Roomunionmodel::where($where)->where('status','RENT')->get($filed)->count();
-        $this->arrears_count  = Roomunionmodel::where($where)->where('status','ARREARS')->get($filed)->count();
+        $this->total_count    = Roomunionmodel::where($where)->whereBetween('updated_at',$time)->get($filed)->count();
+        $this->blank_count    = Roomunionmodel::where($where)->where('status','BLANK')->whereBetween('updated_at',$time)->get($filed)->count();
+        $this->reserve_count  = Roomunionmodel::where($where)->where('status','RESERVE')->whereBetween('updated_at',$time)->get($filed)->count();
+        $this->rent_count     = Roomunionmodel::where($where)->where('status','RENT')->whereBetween('updated_at',$time)->get($filed)->count();
+        $this->arrears_count  = Roomunionmodel::where($where)->where('status','ARREARS')->whereBetween('updated_at',$time)->get($filed)->count();
         return $this;
     }
 
