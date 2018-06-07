@@ -136,9 +136,7 @@ class AuthHook {
             'smartdevice/smartdevice/listsmartdevice',
             'smartdevice/smartdevice/record',
             'smartdevice/smartdevice/test',
-            'smartdevice/yeeuulock/test',
-            'smartdevice/danbaylock/test',
-            'smartdevice/cjoyelectric/test',
+            'smartdevice/readmeter/handle',
 
             'common/city',
             'common/province',

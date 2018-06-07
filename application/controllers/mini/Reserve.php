@@ -28,7 +28,6 @@ class Reserve extends MY_Controller
 
         $count_total = ceil(Reserveordermodel::whereIn('status', ['WAIT', 'BEGIN'])->count());//总条数
         $count = ceil($count_total / $page_count);//总页数
-
         if ($page > $count) {
             return;
         }
