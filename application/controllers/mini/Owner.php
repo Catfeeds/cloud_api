@@ -128,15 +128,20 @@ class Owner extends MY_Controller
             $this->api_res(1007);
             return;
         }
-        $owner = $this->decodejson($owner);
+        $owner->rent_increase_rate = explode(',', $owner->rent_increase_rate);
+        $owner->no_rent_days = explode(',', $owner->no_rent_days);
+        $owner->agent_info = json_decode($owner->agent_info);
+        $owner->id_card_urls = json_decode($owner->id_card_urls);
+        $owner->bank_card_urls = json_decode($owner->bank_card_urls);
+        /*$owner = $this->decodejson($owner);
         if (!$owner) {
             $this->api_res(1007);
             return;
-        }
+        }*/
         $this->api_res(0, $owner);
     }
 
-
+    /*
     //将json字段转换成字符串赋值给对象属性
     private function decodejson($owner)
     {
@@ -157,7 +162,7 @@ class Owner extends MY_Controller
         $owner->bank_card_back = $bank_card_urls->back;
         unset($owner->bank_card_urls);
         return $owner;
-    }
+    }*/
 
     /**
      * 显示小业主账单
@@ -178,6 +183,38 @@ class Owner extends MY_Controller
             return;
         }
         $this->api_res(0, $earnings);
+    }
+
+    /**
+     * 保存编辑后的小业主身份证或者证件照片
+     */
+    public function saveIDPhoto()
+    {
+        $post = $this->input->post(null, true);
+        $id = isset($post['id']) ? $post['id'] : null;
+        $url = isset($post['url']) ? $post['url'] : null;
+        if (!$id || !$url) {
+            $this->api_res(1003);
+            return;
+        }
+        $url_json = json_decode($url);
+        $id_card = $url_json->id_card;
+        $id_card = json_encode($id_card);
+        $bank_card = $url_json->bank_card;
+        $bank_card = json_encode($bank_card);
+        $owner      = Ownermodel::find($id);
+        if (!$owner) {
+            $this->api_res(1009);
+            return;
+        }
+        $owner->id_card_urls = $id_card;
+        $owner->bank_card_urls = $bank_card;
+
+        if ($owner->save()) {
+            $this->api_res(0);
+        } else {
+            $this->api_res(1009);
+        }
     }
 
     /**

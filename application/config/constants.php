@@ -110,3 +110,5 @@ define('PAGINATE',10);          //分页页码
 
 //微信生成带参数的二维码 前缀
 define('QRCODERESIDENT',101);          //办理用户入住
+define('PRIVILEGE_IDS_ONE',range(1,9)); //一级权限分类ids
+define('PRIVILEGE_IDS_THREE',range(10,36)); //三级权限分类父ids

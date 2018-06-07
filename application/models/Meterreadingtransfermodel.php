@@ -41,9 +41,9 @@ class Meterreadingtransfermodel extends Basemodel
     /**
      * 该记录所属房间
      */
-    public function room()
+    public function roomunion()
     {
-        return $this->belongsTo(Roommodel::class, 'room_id');
+        return $this->belongsTo(Roomunionmodel::class, 'room_id');
     }
 
     public function building()
@@ -51,9 +51,9 @@ class Meterreadingtransfermodel extends Basemodel
         return $this->belongsTo(BuildingModel::class, 'building_id');
     }
 
-    public function apartment()
+    public function store()
     {
-        return $this->belongsTo(Apartmentmodel::class, 'apartment_id');
+        return $this->belongsTo(Storemodel::class, 'store_id');
     }
 }
 
