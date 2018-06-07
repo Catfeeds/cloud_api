@@ -172,6 +172,7 @@ class Position extends MY_Controller
             });
         $this->load->model('privilegemodel');
         $position = $positions->map(function ($p) {
+            unset($p->employee);
             $pc_privilege_ids = explode(',', $p->pc_privilege_ids);
             $parent_ids = Privilegemodel::whereIn('id', $pc_privilege_ids)->groupBy(['parent_id'])->get(['parent_id'])->toArray();
             if (!$parent_ids) {
@@ -216,7 +217,7 @@ class Position extends MY_Controller
             return;
         }
         $this->load->model('employeemodel');
-        $category = Positionmodel::with('employee')
+        $positions = Positionmodel::with('employee')
             ->where('company_id', COMPANY_ID)
             ->where('name','like',"%$name%")
             ->offset($offset)->limit(PAGINATE)
@@ -225,7 +226,25 @@ class Position extends MY_Controller
                 $a->count_z = $a->employee->count();
                 return $a;
             });
-        $this->api_res(0,['count'=>$count,'list'=>$category]);
+        $this->load->model('privilegemodel');
+        foreach($positions as $position) {
+            $pc_privilege_ids = explode(',', $position->pc_privilege_ids);
+            $parent_ids = Privilegemodel::whereIn('id', $pc_privilege_ids)->groupBy(['parent_id'])->get(['parent_id'])->toArray();
+            if (!$parent_ids) {
+                $this->api_res(1009);
+            }
+            $names = Privilegemodel::whereIn('id', $parent_ids)->get(['name'])->toArray();
+            if (!$names) {
+                $this->api_res(1009);
+            }
+            $temp_string='';
+            foreach ($names as $name){
+                $temp_string = $temp_string.$name['name']." / ";
+            }
+            $temp_string = rtrim($temp_string, ' / ');
+            $position->pc_privilege = $temp_string;
+        }
+        $this->api_res(0,['count'=>$count,'list'=>$positions]);
     }
 
     /**
