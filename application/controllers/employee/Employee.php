@@ -197,7 +197,7 @@ class Employee extends MY_Controller
         }
         $this->load->helper('check');
         if (!isMobile($post['phone'])) {
-            $this->api_res(1002,['error'=>'请检查手机号']);
+            $this->api_res(1016);
             return false;
         }
         $name = $post['name'];
@@ -263,7 +263,7 @@ class Employee extends MY_Controller
         }
         $this->load->helper('check');
         if (!isMobile($post['phone'])) {
-            $this->api_res(1002,['error'=>'请检查手机号']);
+            $this->api_res(1016);
             return false;
         }
 
