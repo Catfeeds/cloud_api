@@ -203,7 +203,7 @@ class Employee extends MY_Controller
         $name = $post['name'];
         $isNameEqual = Employeemodel::where('company_id',COMPANY_ID)->where('name', $name)->first();
         if ($isNameEqual) {
-            $this->api_res(1014);
+            $this->api_res(1013);
             return false;
         }
         $position = $post['position'];
@@ -270,7 +270,7 @@ class Employee extends MY_Controller
         $name = $post['name'];
         $isNameEqual = Employeemodel::where('company_id',COMPANY_ID)->where('name', $name)->first();
         if ($isNameEqual && ($isNameEqual->id != $id)) {
-            $this->api_res(1014);
+            $this->api_res(1013);
             return false;
         }
         $position = $post['position'];
