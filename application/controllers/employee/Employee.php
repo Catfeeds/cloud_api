@@ -206,6 +206,12 @@ class Employee extends MY_Controller
             $this->api_res(1013);
             return false;
         }
+        $phone = $post['phone'];
+        $isPhoneEqual = Employeemodel::where('company_id',COMPANY_ID)->where('phone', $phone)->first();
+        if ($isPhoneEqual) {
+            $this->api_res(1015);
+            return false;
+        }
         $position = $post['position'];
         $this->load->model('positionmodel');
         $position = Positionmodel::where('company_id', COMPANY_ID)
@@ -217,7 +223,6 @@ class Employee extends MY_Controller
         $position_id = $position->id;
         $store_ids = $post['store_ids'];
         $store_names = $post['store_names'];
-        $phone = $post['phone'];
         $hiredate = $post['hiredate'];
         $store_ids_arr = explode(',' ,$store_ids);
         $store_id = $store_ids_arr[0];
@@ -273,6 +278,12 @@ class Employee extends MY_Controller
             $this->api_res(1013);
             return false;
         }
+        $phone = $post['phone'];
+        $isPhoneEqual = Employeemodel::where('company_id',COMPANY_ID)->where('phone', $phone)->first();
+        if ($isPhoneEqual && ($isPhoneEqual->id != $id)) {
+            $this->api_res(1015);
+            return false;
+        }
         $position = $post['position'];
         $this->load->model('positionmodel');
         $position = Positionmodel::where('company_id', COMPANY_ID)
@@ -284,7 +295,6 @@ class Employee extends MY_Controller
         $position_id = $position->id;
         $store_ids  = $post['store_ids'];
         $store_names  = $post['store_names'];
-        $phone = $post['phone'];
         $status = $post['status'];
         $store_ids_arr = explode(',' ,$store_ids);
         $store_id = $store_ids_arr[0];
