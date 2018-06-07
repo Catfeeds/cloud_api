@@ -57,7 +57,10 @@ class Storemodel extends Basemodel{
 //    {
 //        return $this->belongsToMany(Activitymodel::class, 'boss_activity_coupontype', 'activity_id', 'coupontype_id');
 //    }
-
+    public function contracts()
+    {
+        return $this->hasMany(Contractmodel::class, 'store_id');
+    }
 
 
 

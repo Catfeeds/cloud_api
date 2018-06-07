@@ -13,6 +13,14 @@ class Contractmodel extends Basemodel {
 
     protected $hidden   = ['deleted_at'];
 
+    /**
+     * 签署状态
+     */
+    const STATUS_GENERATED   = 'GENERATED';   // 未签署
+    const STATUS_SIGNING     = 'SIGNING';     // 签署中
+    const STATUS_ARCHIVED    = 'ARCHIVED';    // 已存档
+
+
     //签署人
     public function resident()
     {
@@ -52,6 +60,12 @@ class Contractmodel extends Basemodel {
         return $this->belongsTo(Residentmodel::class,'resident_id')->select('id',
             'begin_time','end_time','refund_time','real_rent_money','pay_frequency','deposit_month','name_two','deposit_money');
     }
+//    //住户户信息
+//    public function resident(){
+//
+//        return $this->belongsTo(Residentmodel::class,'resident_id');
+//    }
+
 
 
 

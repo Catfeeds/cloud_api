@@ -120,4 +120,24 @@ class Smartdevice extends MY_Controller
         //var_dump($res);
         $this->api_res(0,$res);
     }
+
+    /**
+     * 获取所有CJOY所有表读数
+     */
+    public function getAllRecord()
+    {
+        $this->load->model('');
+        $deviceId = Smartdevicemodel::where('supplier','CJOY')->where('id','<',1000)->get(['serial_number'])->toArray();
+        $number = ['17111635','17111438','17111672','17111573','17111626'];
+        /*foreach ($deviceId as $key=>$value){
+            array_push($number,$deviceId[$key]['serial_number']);
+        };*/
+        $cjoy = new Cjoymeter();
+        $res = $cjoy->readMultipleByMeterNo(['17111687']);
+        var_dump($res);
+
+
+        //$this->api_res(0,$res);
+    }
+
 }

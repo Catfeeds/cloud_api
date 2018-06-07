@@ -52,7 +52,7 @@ EOF;
         $res = (new Client())->request('POST', $this->baseUrl . $uri, [
             'form_params' => $data,
         ])->getBody()->getContents();
-        var_dump($res);
+        //var_dump($res);
         $res = json_decode($res, true);
         return $res;
         //return $res['status'] == 1 ? $res['data'] : null;
@@ -163,15 +163,18 @@ EOF;
     /**
      * 根据表号抄表（多表）
      */
-    public function readMultipleByMeterNo( )
+    public function readMultipleByMeterNo(array $number)
     {
         $res = $this->request('readByMeterNo.do', [
-            'meterNo'   => implode($this->deviceNumber, ','),
+            'meterNo'   => implode($number, ','),
         ]);
-
-        return collect($res)->pluck('this_read', 'meter_no')->toArray();
+        $res = $res['data'];
+        //$result = [];
+        //$result['meter_no'] = $res['data']['meter_no'];
+        //$result['this_read']= $res['data']['this_read'];
+        //var_dump($res);
+        return collect($res)->pluck('this_read','meter_no')->toArray();
     }
-
 
     /**
      * 根据表号抄表(单表)
