@@ -186,6 +186,38 @@ class Owner extends MY_Controller
     }
 
     /**
+     * 保存编辑后的小业主身份证或者证件照片
+     */
+    public function saveIDPhoto()
+    {
+        $post = $this->input->post(null, true);
+        $id = isset($post['id']) ? $post['id'] : null;
+        $url = isset($post['url']) ? $post['url'] : null;
+        if (!$id || !$url) {
+            $this->api_res(1003);
+            return;
+        }
+        $url_json = json_decode($url);
+        $id_card = $url_json->id_card;
+        $id_card = json_encode($id_card);
+        $bank_card = $url_json->bank_card;
+        $bank_card = json_encode($bank_card);
+        $owner      = Ownermodel::find($id);
+        if (!$owner) {
+            $this->api_res(1009);
+            return;
+        }
+        $owner->id_card_urls = $id_card;
+        $owner->bank_card_urls = $bank_card;
+
+        if ($owner->save()) {
+            $this->api_res(0);
+        } else {
+            $this->api_res(1009);
+        }
+    }
+
+    /**
      * 验证
      */
     public function validationCodeAddEmp()

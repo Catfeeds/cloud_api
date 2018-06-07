@@ -16,7 +16,7 @@ class Meterreadingtransfermodel extends Basemodel
     protected $dates    = ['created_at', 'updated_at'];
 
     protected $fillable = [
-        'apartment_id',
+        'store_id',
         'building_id',
         'room_id',
         'type',
