@@ -204,6 +204,18 @@ class AuthHook {
                 $d_company_id   = $decoded->company_id;
                 define('CURRENT_ID',$d_bxid);
                 define('COMPANY_ID',$d_company_id);
+
+                $pre    = substr(CURRENT_ID,0,2);
+                if($pre == SUPERPRE){
+                    //super 拥有所有的权限
+                    $this->CI->position = 'SUPER';
+                }else{
+                    $this->CI->position = 'EMPLOYEE';
+                    $this->CI->load->model('employeemodel');
+                    $this->CI->employee = Employeemodel::where('bxid',CURRENT_ID)->first();
+                }
+
+
                 /*//操作记录测试
                 if (!$this->operationRecord($full_path)) {
                     header("Content-Type:application/json;charset=UTF-8");

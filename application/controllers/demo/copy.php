@@ -12,7 +12,31 @@ class copy extends MY_Controller
     public function run(){
        // $this->copy_contract_template();
        // $this->templateToUnionRoom();
+        //$this->customerUxid();
+        //$this->residentUxid();
+        //$this->contractUxid();
+
+        //$uxid   = CURRENT_ID;
+        /*$customer_id    = $this->user->customer_id;
+        $ids=Residentmodel::where('customer_id',$customer_id)->get(['id'])->map(function($resi){
+            return $resi->id;
+        })->toArray();
+
+        /*
+         /*$rooms=Roomunionmodel::whereIn('resident_id',$ids)->get();
+
+        $smart  = Smartdevicemodel::whereIn('room_id',$room_ids)
+
+        Roomunionmodel::where(['resident'=>function($query){
+
+        }])->get();*/
+
+
+
+
     }
+
+
 
     /**
      * 把图片 images copy到 门店或者房型下
@@ -164,6 +188,71 @@ class copy extends MY_Controller
 
             $this->api_res(0);
         }
+    }
+
+    /**
+     * 给customer编uxid
+     */
+    public function customerUxid(){
+
+        $this->load->model('customermodel');
+
+        $customers  = Customermodel::all();
+
+        foreach ($customers as $customer){
+            $customer1   = Customermodel::find($customer->id);
+            $customer1->company_id   =1;
+            $customer1->uxid = $customer->id;
+            $customer1->save();
+
+        }
+        $this->api_res(0);
+
+    }
+
+    /**
+     * 给resident 的uxid 和company_id 赋值
+     */
+    public function residentUxid(){
+
+        $this->load->model('residentmodel');
+
+        $resident   = Residentmodel::all()->map(function($query){
+            $resident   = Residentmodel::find($query->id);
+            $resident->uxid = $resident->customer_id;
+            $resident->company_id = 1;
+
+            $resident->save();
+        });
+
+        $this->api_res(0);
+
+    }
+
+    /**
+     * 合同表里添加customer_id 和uxid
+     *
+     */
+    public function contractUxid(){
+        $this->load->model('contractmodel');
+        $this->load->model('residentmodel');
+        $contracts = Contractmodel::all();
+
+        foreach ($contracts as $contract){
+            $resident   = Residentmodel::find($contract->resident_id);
+            if(empty($resident)){
+                continue;
+            }
+            $contract->uxid = $contract->resident->uxid;
+            $contract->customer_id = $contract->resident->customer_id;
+            $contract->save();
+
+        }
+
+        $this->api_res(0);
+
+
+
     }
 
 
