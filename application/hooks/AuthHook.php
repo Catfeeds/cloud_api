@@ -252,7 +252,7 @@ class AuthHook {
         $ids_two = Privilegemodel::whereIn('id', $ids_three)->get(['parent_id'])->map(function ($p) {
             return $p->parent_id;
         });
-        $ids_two = $ids_two->unique();
+        //$ids_two = $ids_two->unique();
         if (!$ids_two) {
             header("Content-Type:application/json;charset=UTF-8");
             echo json_encode(array('rescode' => 1009, 'resmsg' => '操作数据库出错', 'data' => []));
@@ -269,7 +269,7 @@ class AuthHook {
         $ids_one = Privilegemodel::whereIn('id', $ids_two)->get(['parent_id'])->map(function ($p) {
             return $p->parent_id;
         });
-        $ids_one = $ids_one->unique();
+        //$ids_one = $ids_one->unique();
         if (!$ids_one) {
             header("Content-Type:application/json;charset=UTF-8");
             echo json_encode(array('rescode' => 1009, 'resmsg' => '操作数据库出错', 'data' => []));
