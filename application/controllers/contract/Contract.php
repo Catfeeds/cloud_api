@@ -45,7 +45,7 @@ class Contract extends MY_Controller
                 ->take(PAGINATE)->skip($offset)
                 ->orderBy('id','desc')->get($filed);
         }
-        $this->api_res(0,$order);
+        $this->api_res(0,['list'=>$order,'count'=>$count]);
     }
 
 
