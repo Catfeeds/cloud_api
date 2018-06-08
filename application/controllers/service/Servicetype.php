@@ -34,7 +34,7 @@ class Servicetype extends MY_Controller
             return;
         }else{
             $type   = Servicetypemodel::where($where)->take(PAGINATE)->skip($offset)
-                                        ->orderBy('id','desc')->get($filed)->toArray();
+                                        ->orderBy('id')->get($filed)->toArray();
         }
         foreach ($type as $key=>$value){
             $type[$key]['image_url'] = $this->fullAliossUrl($value['image_url']);
