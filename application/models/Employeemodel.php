@@ -38,10 +38,10 @@ class Employeemodel extends Basemodel{
     public function getInfo($type,$sign){
         switch ($type){
             case 'wechat':
-                $info   = $this->where(WXID,$sign)->first();
+                $info   = $this->where(WXID,$sign)->where('status','ENABLE')->first();
                 break;
             case 'phone':
-                $info   = $this->where('phone',$sign)->first();
+                $info   = $this->where('phone',$sign)->where('status','ENABLE')->first();
                 break;
             default:
                 $info   = null;
