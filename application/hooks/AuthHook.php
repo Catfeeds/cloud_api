@@ -215,13 +215,12 @@ class AuthHook {
                     $this->CI->employee = Employeemodel::where('bxid',CURRENT_ID)->first();
                 }
 
-
-                /*//操作记录测试
+                //操作记录测试
                 if (!$this->operationRecord($full_path)) {
                     header("Content-Type:application/json;charset=UTF-8");
                     echo json_encode(array('rescode' => 1012, 'resmsg' => '操作log出错', 'data' => []));
                     exit;
-                }*/
+                }
                 /*//权限匹配
                 if (!$this->privilegeMatch($directory, $class, $full_path)) {
                     header("Content-Type:application/json;charset=UTF-8");
@@ -236,7 +235,7 @@ class AuthHook {
         }
     }
 
-    public function privilegeMatch($directory, $class, $full_path)
+    public function privilegeMatch($full_path)
     {
         $this->CI->load->model('employeemodel');
         $this->CI->load->model('positionmodel');
@@ -249,63 +248,10 @@ class AuthHook {
         $this->CI->load->model('privilegemodel');
         $pc_privilege_ids = $employee->position->pc_privilege_ids;
         $ids_three = explode(',', $pc_privilege_ids);
-        $ids_two = Privilegemodel::whereIn('id', $ids_three)->get(['parent_id'])->map(function ($p) {
-            return $p->parent_id;
-        });
-        //$ids_two = $ids_two->unique();
-        if (!$ids_two) {
-            header("Content-Type:application/json;charset=UTF-8");
-            echo json_encode(array('rescode' => 1009, 'resmsg' => '操作数据库出错', 'data' => []));
-            exit;
-        }
-        $urls_two = Privilegemodel::whereIn('id', $ids_two)->get(['url'])->map(function ($p) {
-            return $p->url;
-        })->toArray();
-        if (!$urls_two) {
-            header("Content-Type:application/json;charset=UTF-8");
-            echo json_encode(array('rescode' => 1009, 'resmsg' => '操作数据库出错', 'data' => []));
-            exit;
-        }
-        $ids_one = Privilegemodel::whereIn('id', $ids_two)->get(['parent_id'])->map(function ($p) {
-            return $p->parent_id;
-        });
-        //$ids_one = $ids_one->unique();
-        if (!$ids_one) {
-            header("Content-Type:application/json;charset=UTF-8");
-            echo json_encode(array('rescode' => 1009, 'resmsg' => '操作数据库出错', 'data' => []));
-            exit;
-        }
-        $urls_one = Privilegemodel::whereIn('id', $ids_one)->get(['url'])->map(function ($p) {
-            return $p->url;
-        })->toArray();
-        if (!$urls_one) {
-            header("Content-Type:application/json;charset=UTF-8");
-            echo json_encode(array('rescode' => 1009, 'resmsg' => '操作数据库出错', 'data' => []));
-            exit;
-        }
-        $directory = strtolower(rtrim($directory, '/'));
-        if (in_array($directory, $urls_one)) {
-            if (in_array($class, $urls_two)) {
-                $urls_three = Privilegemodel::whereIn('id', $ids_three)->get(['url'])->map(function ($p) {
-                    return $p->url;
-                })->toArray();
-                if (!$urls_three) {
-                    header("Content-Type:application/json;charset=UTF-8");
-                    echo json_encode(array('rescode' => 1009, 'resmsg' => '操作数据库出错', 'data' => []));
-                    exit;
-                }
-                if (in_array($full_path, $urls_three)) {
-                    return true;
-                } else {
-                    return false;
-                }
-            } else {
-                return false;
-            }
-        } else {
+        $ids_two = Privilegemodel::whereIn('id', $ids_three)->where('url',$full_path)->get();
+        if(empty($ids_two)){
             return false;
         }
-
     }
 
     public function operationRecord($full_path)
