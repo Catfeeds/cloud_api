@@ -235,12 +235,11 @@ class Login extends MY_Controller
 
     public function listmenu()
     {
-        $this->load->model('employeemodel');
         $this->load->model('positionmodel');
         $this->load->model('privilegemodel');
 
-        $employee = Employeemodel::with('position')->where('bxid', 1002)->first(['id', 'position_id']);
-        $pc_privilege_ids_string = $employee->position->pc_privilege_ids;
+        $position_id = $this->employee->position_id;
+        $pc_privilege_ids_string = Positionmodel::where('id', $position_id)->first(['pc_privilege_ids']);
         $employee_all_privilege = explode(',', $pc_privilege_ids_string);
 
         $privileges_one = privilegemodel::where('parent_id', 0)->get(['id', 'parent_id', 'name'])->toArray();
