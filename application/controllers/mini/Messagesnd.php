@@ -19,19 +19,17 @@ class Messagesnd extends MY_Controller
 
     public function sendMsgType()
     {
-        return  ['type' =>
-                        [ 0 => '停水通知',
-                          1 => '停电通知',
-                          2 => '活动通知',
-                          3 => '设施更新通知'
-                        ]
-                ];
+        $field = [ 'TS' => '停水通知', 'TD' => '停电通知', 'HD' => '活动通知', 'SSGX' => '设施更新通知'];
+        $this->api_res(0, ['type' => $field]);
     }
 
     public function templateFields()
     {
         $post = $this->input->post(null, true);
         $type = isset($post['type']) ? $post['type'] : null;
+        if (!$type) {
+            $this->api_res(1002, ['type' => '请输入通知类型']);
+        }
         $title = $this->getNoticeType($type);
         if (!$title) $this->api_res(0, ['error' => '未找到通知标题']);
         $this->api_res(0, $title);
@@ -40,24 +38,32 @@ class Messagesnd extends MY_Controller
     public function sendNotice()
     {
         $post = $this->input->post(null, true);
-        //$config = $this->validation();
-        /*if(!$this->validationText($config))
+        $config = $this->validation();
+        if(!$this->validationText($config))
         {
             $fieldarr   = ['store_id', 'type', 'title', 'hremind', 'time', 'area', 'reason', 'fremind', 'preview'];
             $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
             return false;
-        }*/
+        }
 
         $store_id = $post['store_id'];
         $this->load->model('residentmodel');
         $this->load->model('customermodel');
         $customers = Residentmodel::with(['customer' => function ($query) {
             $query->select('id','openid');
-        }])->where('store_id', $store_id)->get(['customer_id']);
+        }])->whereIn('store_id', $store_id)->where('status', 'NORMAL')->get(['customer_id']);
         //$this->api_res(0,$customers);
         $type = $post['type'];
-        //$title = $this->getNoticeType($type);
+        $title = $this->getNoticeType($type);
+        if (!$title) {
+            $this->api_res(1007, ['error' => '没有找到通知标题']);
+            return;
+        }
         $template_id = $this->getTemplateIds($type);
+        if (!$template_id) {
+            $this->api_res(1007, ['error' => '没有找到通知模版']);
+            return;
+        }
 
         $this->load->helper('common');
         $app = new Application(getMiniWechatConfig());
@@ -82,23 +88,25 @@ class Messagesnd extends MY_Controller
     public function getTemplateIds($type)
     {
         switch ($type) {
-            case '0':
+            case 'TS':
                 return 'UXFAM4yAgFQ--rwIqIkpmltfz6n3nIQW7COgIwm32v8';
-            case '1':
-                return 'OhCKlytLt8bUCiP9xhNFNtq1NmV_KbLBBuyS7EJGnSa';
-            case '2':
-                break;
-            case '3':
-                break;
+            case 'TD':
+                return 'UXFAM4yAgFQ--rwIqIkpmltfz6n3nIQW7COgIwm32v8';
+            case 'HD':
+                return 'UXFAM4yAgFQ--rwIqIkpmltfz6n3nIQW7COgIwm32v8';
+            case 'SSGX':
+                return 'UXFAM4yAgFQ--rwIqIkpmltfz6n3nIQW7COgIwm32v8';
+            case 'ZNJ':
+                return 'UXFAM4yAgFQ--rwIqIkpmltfz6n3nIQW7COgIwm32v8';
             default:
-                break;
+                return null;
         }
     }
 
     public function getNoticeType($type)
     {
         switch ($type) {
-            case '0':
+            case 'TS':
                 return [
                     'title'   => '停水通知',
                     'hremind' => '首段提醒',
@@ -108,7 +116,7 @@ class Messagesnd extends MY_Controller
                     'fremind' => '末尾提醒',
                     'preview' => '预览'
                 ];
-            case '1':
+            case 'TD':
                 return [
                     'title'   => '停电通知',
                     'hremind' => '首段提醒',
@@ -118,20 +126,35 @@ class Messagesnd extends MY_Controller
                     'fremind' => '末尾提醒',
                     'preview' => '预览'
                 ];
-            case '2':
+            case 'HD':
                 return [
-                    'title'   => '停电通知',
+                    'title'   => '标题',
                     'hremind' => '首段提醒',
-                    'time'    => '累计天数',
-                    'area'    => '累计金额',
-                    'reason'  => '停电原因',
+                    'time'    => '活动时间',
+                    'area'    => '活动区域',
                     'fremind' => '末尾提醒',
                     'preview' => '预览'
                 ];
-            case '3':
-                break;
+            case 'SSGX':
+                return [
+                    'title'   => '标题',
+                    'hremind' => '首段提醒',
+                    'time'    => '设施更新时间',
+                    'area'    => '设施更新区域',
+                    'fremind' => '末尾提醒',
+                    'preview' => '预览'
+                ];
+            case 'ZNJ':
+                return [
+                    'title'   => '标题',
+                    'hremind' => '首段提醒',
+                    'time'    => '累计天数',
+                    'area'    => '累计金额',
+                    'fremind' => '末尾提醒',
+                    'preview' => '预览'
+                ];
             default:
-                break;
+                return null;
         }
     }
 
