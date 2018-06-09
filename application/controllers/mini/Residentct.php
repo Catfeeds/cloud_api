@@ -141,9 +141,36 @@ class Residentct extends MY_Controller
     }
 
     /**
+     * 切换公寓
+     */
+    public function switchoverApartment()
+    {
+        $post = $this->input->post(null, true);
+        $this->load->model('employeemodel');
+        $store_ids = Employeemodel::getMyStoreids();
+
+        $current_page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
+        $pre_page = isset($post['pre_page']) ? intval($post['pre_page']) : 10;//当前页显示条数
+        $offset = $pre_page * ($current_page - 1);
+
+        $total = count($store_ids);
+        $total_pages = ceil($total / $pre_page);//总页数
+        if ($current_page > $total_pages) {
+            $this->api_res(0, ['total' => $total, 'pre_page' => $pre_page, 'current_page' => $current_page,
+                'total_pages' => $total_pages, 'data' => []]);
+            return;
+        }
+        $this->load->model('storemodel');
+        $store_names = Storemodel::whereIn('id', $store_ids)->take($pre_page)->skip($offset)
+            ->orderBy('id', 'asc')->get(['id', 'name']);
+        $this->api_res(0, ['total' => $total, 'pre_page' => $pre_page, 'current_page' => $current_page,
+            'total_pages' => $total_pages, 'data' => $store_names]);
+    }
+
+    /**
      * 数据统计
      */
-    public function DataStatistics()
+    public function dataStatistics()
     {
 
     }

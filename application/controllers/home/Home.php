@@ -58,7 +58,16 @@ class Home extends MY_Controller
 
         $money_ys = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->get(['money'])->sum('money'); //月报表实收
 
-        $count = [
+        $count_thz = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('begin_time', $date_d)->count();  //住户增
+        $count_thj = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('end_time', $date_d)->count();  //住户减
+        $count_zj = $count_thz - $count_thj;
+        $count_yxq = Contractmodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->count(); //新签数
+        $count_ytz = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('refund_time', $date_m)->count();  //退租
+        //$count_yxz = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('end_time', $date_m)->where(strtotime('refund_time'), '>', strtotime('end_time'))->count();  //续租
+        $r = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('end_time', $date_m)->get(['refund_time'])->map(function ($t) {
+            return $t->refund_time;
+        });
+        /*$count = [
             'c_yylf' => $count_yylf,
             'c_dsdd' => $count_dsdd,
             'c_dsh'  => $count_dsh,
@@ -74,8 +83,12 @@ class Home extends MY_Controller
             'c_ycz'  => $count_ycz,
             'c_kz'   => $count_kz,
             'c_bfb'  => $count_bfb,
-            'c_ys'   => $money_ys
+            'c_ys'   => $money_ys,
+            'c_zj'   => $count_zj,
+            'c_yxq'  => $count_yxq,
+            'c_ytz'  => $count_ytz,
         ];
-        $this->api_res(0, $count);
+        $this->api_res(0, $count);*/
+        $this->api_res(0, [$r]);
     }
 }
