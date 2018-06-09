@@ -103,6 +103,11 @@ use Carbon\Carbon;
 
          return $this->belongsTo(Roomunionmodel::class,'room_id')->select('id','store_id','number');
      }
+     public function customer_s(){
+
+         return $this->belongsTo(Customermodel::class,'customer_id')
+             ->select('id','gender');
+     }
 
      //住户的订单
      public function orders(){

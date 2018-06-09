@@ -195,6 +195,7 @@ class AuthHook {
             'pricecontrol/pricecontrol/changeutility',
 
             'resident/resident/showresident',
+            'resident/resident/residentinfo',
 
         );
 
