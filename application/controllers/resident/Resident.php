@@ -92,15 +92,13 @@ class Resident extends MY_Controller
         $resident->fill($post);
 
         $card_one  = $this->splitAliossUrl($post['card_one']);
-        $card_one = json_encode($card_one);
         $resident->card_one=$card_one;
 
         $card_two  = $this->splitAliossUrl($post['card_two']);
-        $card_two = json_encode($card_two);
+
         $resident->card_two=$card_two;
 
         $card_three  = $this->splitAliossUrl($post['card_three']);
-        $card_three = json_encode($card_three);
         $resident->card_three=$card_three;
 
         $customer->gender = $post['gender'];
@@ -140,9 +138,11 @@ class Resident extends MY_Controller
         $post = $this->input->post(null,true);
         $resident_id = intval($post['id']);
         $filed = ['money','type','status'];
-        $order = Ordermodel::where('resident_id',$resident_id)->get($filed)->toArray();
-        $this->api_res(0,$order);
+        $order = Ordermodel::where('resident_id',$resident_id)->get($filed)->groupBy('status')
+            /*->map(function ($s){
 
+            })*/->toArray();
+        $this->api_res(0,$order);
     }
 
     /**
