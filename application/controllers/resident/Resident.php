@@ -112,6 +112,22 @@ class Resident extends MY_Controller
         }
     }
 
+    /**
+     * 住户合同信息
+     */
+    public function contract()
+    {
+        $this->load->model('roomunionmodel');
+        $this->load->model('contractmodel');
+        $this->load->model('couponmodel');
+        $this->load->model('activitymodel');
+        $this->load->model('storemodel');
+        $post   = $this->input->post(NULL,true);
+        $serial = intval($post['id']);
+        $filed  = ['id','contract_id','resident_id','store_id','room_id','status','created_at'];
+        $resident = Contractmodel::where('id',$serial)->with('store')->with('roomunion')->with('residents')->get($filed);
+        $this->api_res(0,['resident'=>$resident]);
+    }
 
 
     /**
