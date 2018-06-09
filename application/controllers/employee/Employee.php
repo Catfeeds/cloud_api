@@ -166,14 +166,15 @@ class Employee extends MY_Controller
             $this->load->model('positionmodel');
             $position = Positionmodel::find($emloyee->position_id);
             if (!$position) {
-                $this->api_res(1009, ['error' => '没有找到职位信息']);
-                return false;
+                $name_tmp = null;
+            } else {
+                $name_tmp = $position->name;
             }
 
             $category = [
                 'name' => $emloyee->name,
                 'phone' => $emloyee->phone,
-                'position' => $position->name,
+                'position' => $name_tmp,
                 'status' => $emloyee->status,
                 'store_ids' => $emloyee->store_ids,
                 'store_names' => $emloyee->store_names,
@@ -252,12 +253,13 @@ class Employee extends MY_Controller
     {
         $post = $this->input->post(null, true);
         $config = $this->validationSubmitEmp();
+        array_pull($config, '2');
         array_pull($config, '5');
         $status_val = ['field' => 'status', 'label' => '员工状态', 'rules' => 'trim|required|in_list[ENABLE,DISABLE]'];
         $config = array_add($config, '5', $status_val);
         if(!$this->validationText($config))
         {
-            $fieldarr = ['name', 'phone', 'position', 'store_ids', 'store_names', 'status'];
+            $fieldarr = ['name', 'phone', 'store_ids', 'store_names', 'status'];
             $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
             return false;
         }
@@ -284,7 +286,11 @@ class Employee extends MY_Controller
             $this->api_res(1015);
             return false;
         }
-        $position = $post['position'];
+        $position = isset($post['position']) ? $post['position'] : null;
+        if (!$position) {
+            $this->api_res(1002, ['error' => '请输入职位名称']);
+            return false;
+        }
         $this->load->model('positionmodel');
         $position = Positionmodel::where('company_id', COMPANY_ID)
             ->where('name', $position)->first(['id']);
