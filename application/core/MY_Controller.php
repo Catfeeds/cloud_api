@@ -7,8 +7,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Time:        09:11
  * Describe:    授权登录token验证Hook
  */
-class MY_Controller extends CI_Controller {
-
+class MY_Controller extends CI_Controller
+{
     public function __construct()
     {
         parent::__construct();

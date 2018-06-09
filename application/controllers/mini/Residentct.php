@@ -170,9 +170,19 @@ class Residentct extends MY_Controller
     /**
      * 员工个人中心
      */
-    public function displayCneter()
+    public function displayCenter()
     {
-
+        $post = $this->input->post(null, true);
+        $field = ['id', 'name', 'position_id', 'store_id', 'avatar'];
+        $this->load->model('employeemodel');
+        $this->load->model('positionmodel');
+        $employee = Employeemodel::with(['position' => function ($query) {
+            $query->select('id', 'name');
+        }])->where('bxid', CURRENT_ID)->first($field);
+        $this->load->model('storemodel');
+        $store = Storemodel::where('id', $employee->store_id)->first(['name']);
+        $employee->store_name = $store->name;
+        $this->api_res(0, ['data' => $employee]);
     }
 
     /**
@@ -180,6 +190,15 @@ class Residentct extends MY_Controller
      */
     public function dataStatistics()
     {
+        /*$post = $this->input->post(null, true);
+        $this->load->model('employeemodel');
+        $store_ids = Employeemodel::getMyStoreids();
+
+        $count_cz = Residentmodel::whereIn('store_id', $store_ids)->where('status', 'RENT')->count();
+        $count = Residentmodel::whereIn('store_id', $store_ids)->count();
+        if ($count_cz != 0) {
+            $count_cz / $count
+        }*/
 
     }
 
