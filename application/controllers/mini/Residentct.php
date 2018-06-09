@@ -172,7 +172,6 @@ class Residentct extends MY_Controller
      */
     public function displayCenter()
     {
-        $post = $this->input->post(null, true);
         $field = ['id', 'name', 'position_id', 'store_id', 'avatar'];
         $this->load->model('employeemodel');
         $this->load->model('positionmodel');
@@ -193,12 +192,26 @@ class Residentct extends MY_Controller
         /*$post = $this->input->post(null, true);
         $this->load->model('employeemodel');
         $store_ids = Employeemodel::getMyStoreids();
+        $this->load->model('roomunionmodel');
+        $count_cz = Roomunionmodel::whereIn('store_id', $store_ids)->whereIn('begin_time', )->where('status', 'RENT')->count();
+        $count = Roomunionmodel::whereIn('store_id', $store_ids)->count();
+        if ($count != 0) {
+            if ($count_cz != 0) {
+                $percentage = round(($count_cz / $count), 2) * 100;
+                $count_ybfb = $percentage.'%'; //百分比
+            } else {
+                $count_ybfb = 0;
+            }
+        }
+        if ($count_ybfb != 0) {
+            $count_wcz = 100 - $percentage;
+            $count_wbfb = $count_wcz.'%';
+        } else {
+            $count_wbfb = '100'.'%';
+        }
 
-        $count_cz = Residentmodel::whereIn('store_id', $store_ids)->where('status', 'RENT')->count();
-        $count = Residentmodel::whereIn('store_id', $store_ids)->count();
-        if ($count_cz != 0) {
-            $count_cz / $count
-        }*/
+        $this->load->model('reserveordermodel');
+        Reserveordermodel::*/
 
     }
 
