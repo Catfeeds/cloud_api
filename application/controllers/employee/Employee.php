@@ -77,7 +77,7 @@ class Employee extends MY_Controller
                 ->where('city', $post['city'])->get(['id'])->map(function ($s) {
                     return $s->id;
                 });
-            $count = ceil((Employeemodel::whereIn('store_ids', $store_ids)->count()) / PAGINATE);
+            $count = ceil((Employeemodel::whereIn('store_ids', $store_ids)->where($where)->count()) / PAGINATE);
             if ($page > $count) {
                 $this->api_res(0, ['count' => $count, 'list' => []]);
                 return;
