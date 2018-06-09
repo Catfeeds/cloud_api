@@ -164,7 +164,9 @@ class Position extends MY_Controller
         }
 
         $this->load->model('employeemodel');
-        $positions = Positionmodel::with('employee')->where('company_id', COMPANY_ID)
+        $positions = Positionmodel::with(['employee' => function ($query) {
+            $query->where('status', 'ENABLE');
+        }])->where('company_id', COMPANY_ID)
             ->offset($offset)->limit(PAGINATE)->orderBy('created_at', 'asc')
             ->get($filed)->map(function($a){
                 $a->count_z = $a->employee->count();
@@ -211,8 +213,9 @@ class Position extends MY_Controller
             return;
         }
         $this->load->model('employeemodel');
-        $positions = Positionmodel::with('employee')
-            ->where('company_id', COMPANY_ID)
+        $positions = Positionmodel::with(['employee' => function ($query) {
+            $query->where('status', 'ENABLE');
+        }])->where('company_id', COMPANY_ID)
             ->where('name','like',"%$name%")
             ->offset($offset)->limit(PAGINATE)
             ->orderBy('id', 'desc')
