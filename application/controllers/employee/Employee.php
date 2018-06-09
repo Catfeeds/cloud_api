@@ -109,7 +109,7 @@ class Employee extends MY_Controller
      */
     public function searchEmp()
     {
-        $field = ['name', 'phone', 'position_id', 'store_ids', 'hiredate', 'status'];
+        $field = ['id', 'name', 'phone', 'position_id', 'store_ids', 'hiredate', 'status'];
         $this->load->model('positionmodel');
         $post   = $this->input->post(null,true);
         $name   = isset($post['name'])?$post['name']:null;
@@ -143,6 +143,7 @@ class Employee extends MY_Controller
         $filed = ['id', 'name','city'];
         $this->load->model('storemodel');
         $category = Storemodel::get($filed)->groupBy('city');
+
         if(!$category){
             $this->api_res(1009);
             return;
