@@ -172,13 +172,17 @@ class Residentct extends MY_Controller
      */
     public function displayCenter()
     {
-        /*$post = $this->input->post(null, true);
-        $field = ['id, name, position_id, store_id', 'avatar'];
+        $post = $this->input->post(null, true);
+        $field = ['id', 'name', 'position_id', 'store_id', 'avatar'];
         $this->load->model('employeemodel');
-        $employees = Employeemodel::with(['position' => function ($query) {
+        $this->load->model('positionmodel');
+        $employee = Employeemodel::with(['position' => function ($query) {
             $query->select('id', 'name');
-        }])->where('bxid', CURRENT_ID)->get($field);
-        $this->load->model('storemodel');*/
+        }])->where('bxid', CURRENT_ID)->first($field);
+        $this->load->model('storemodel');
+        $store = Storemodel::where('id', $employee->store_id)->first(['name']);
+        $employee->store_name = $store->name;
+        $this->api_res(0, ['data' => $employee]);
     }
 
     /**
