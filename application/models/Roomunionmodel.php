@@ -69,11 +69,19 @@ class Roomunionmodel extends Basemodel{
 
         return $this->belongsTo(Storemodel::class,'store_id');
     }
+    public function store_s(){
+
+        return $this->belongsTo(Storemodel::class,'store_id')->select('id','name');
+    }
 
     //房间所属楼栋信息
     public function building(){
 
         return $this->belongsTo(Buildingmodel::class,'building_id');
+    }
+    public function building_s(){
+
+        return $this->belongsTo(Buildingmodel::class,'building_id')->select('id','name');
     }
 
     //房间的长租合同模板

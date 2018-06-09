@@ -43,10 +43,9 @@ class Contract extends MY_Controller
                 ->with('employee')->with('resident')->with('store')->with('roomunion')
                 ->whereBetween('created_at',[$bt,$et])
                 ->take(PAGINATE)->skip($offset)
-                ->orderBy('id','desc')->get($filed);
+                ->orderBy('id','desc')->get($filed)->toArray();
         }
         $this->api_res(0,['list'=>$order,'count'=>$count]);
     }
-
 
 }

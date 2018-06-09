@@ -187,7 +187,9 @@ class AuthHook {
             'coupon/coupon/resident',
 
             'contract/operation/pdflook',
-            'contract/operation/loadcontract'
+            'contract/operation/loadcontract',
+
+            'pricecontrol/pricecontrol/pricecontrol',
 
         );
 
