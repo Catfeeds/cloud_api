@@ -104,11 +104,14 @@ class Order extends MY_Controller
         $input  = $this->input->post(null,true);
         $resident_id    = $input['resident_id'];
         $room_id        = $input['room_id'];
+        //$store_pay_id   = $input[];
         $order_ids      = $input['order_ids'];
 
         $this->load->model('residentmodel');
         $this->load->model('ordermodel');
         $this->load->model('contractmodel');
+        $this->load->model('billmodel');
+        $this->load->model('storepaymodel');
         $resident   = Residentmodel::where('room_id',$room_id)->find($resident_id);
         if(!$resident){
             $this->api_res(1007);
@@ -190,46 +193,75 @@ class Order extends MY_Controller
      */
     private function completeOrders($orders, $payWay = null,$resident)
     {
-        $number     = $orders->first()->number;
-        $count      = $this->newordermodel->ordersConfirmedToday()+1;
-        $status     = Newordermodel::STATE_COMPLETED;
-        $deal       = Newordermodel::DEAL_DONE;
+        //$number     = $orders->first()->number;
+        $count      = $this->ordermodel->ordersConfirmedToday()+1;
+        $status     = Ordermodel::STATE_COMPLETED;
+        $deal       = Ordermodel::DEAL_DONE;
         $dateString = date('Ymd');
-        $this->load->model('billmodel');
-        $bill=New Billmodel();
-        $bill->sequence_number  = sprintf("%s%06d", $dateString, $count);
-        $bill->store_id = $resident->store_id;
-        $bill->room_id = $resident->room_id;
-        $bill->employee_id = $this->employee->id;
-        $bill->customer_id = $resident->customer_id;
-        $bill->uxid = $resident->uxid;
-        $bill->money    = $orders->sum('money');
-        $bill->paid    = $orders->sum('paid');
-        $bill->pay_type    = $payWay ?$payWay : ($orders->toArray())[0]['pay_type'];;
-        $bill->pay_date    = ($orders->toArray())[0]['pay_date'];
-        $bill->data    = ['orders'=>$orders];
-        $bill->save();
-        //$bill->pay_type            = $payWay ? : $order->pay_type;
 
-        //更新订单状态
-        foreach ($orders as $order) {
+        $groups = $orders->groupBy('store_pay_id');
 
-            //如果是水电或者物品租赁账单, 需要更新相应记录
-            $this->newordermodel->updateDeviceAndUtility(
-                $order,
-                Newordermodel::STATE_COMPLETED,
-                Newordermodel::DEAL_DONE
-            );
+        foreach ($groups as $key=>$orders)
+        {
+            if(!empty($key)){
+                $store_pay  = Storepaymodel::find($key);
+                $bill       = new Billmodel();
+                $bill->store_pay_id = $key;
+                $bill->sequence_number  = sprintf("%s%06d", $dateString, $count);
+                $bill->out_trade_no = $store_pay->out_trade_no;
+                $bill->store_id     = $resident->store_id;
+                $bill->employee_id = $this->employee->id;
+                $bill->customer_id = $resident->customer_id;
+                $bill->uxid = $resident->uxid;
+                $bill->room_id = $resident->room_id;
+                $bill->money    = $orders->sum('money');
+                $bill->paid    = $orders->sum('paid');
+                $bill->type    = "INPUT";
+                $bill->pay_type    = 'JSAPI';
+                $bill->confirm_date    = date('Y-m-d H:i:s',time());
+                $bill->status    = 'DONE';
+                $bill->pay_date    = $store_pay->pay_date;
+            }else{
+                $bill   = new Billmodel();
+                //$bill->store_pay_id = $key;
+                //$bill->out_trade_no = $store_pay->out_trade_no;
+                $bill->sequence_number  = sprintf("%s%06d", $dateString, $count);
+                $bill->store_id = $resident->store_id;
+                $bill->employee_id = $this->employee->id;
+                $bill->customer_id = $resident->customer_id;
+                $bill->uxid = $resident->uxid;
+                $bill->room_id = $resident->room_id;
+                $bill->money    = $orders->sum('money');
+                $bill->paid    = $orders->sum('paid');
+                $bill->type    = "INPUT";
+                $bill->pay_type    =  $payWay ? $payWay: 'JSAPI';
+                $bill->confirm_date = date('Y-m-d H:i:s',time());
+                $bill->status    = 'DONE';
+                $bill->pay_date    = date('Y-m-d H:i:s',time());
+            }
 
-            $order->pay_type            = $payWay ? : $order->pay_type;
-            $order->bill_id            = $bill->id;
-            $order->sequence_number     = sprintf("%s%06d", $dateString, $count);
-            $order->number              = $number;
-            $order->status              = $status;
-            $order->deal                = $deal;
-            $order->save();
+            $bill->save();
+
+            //更新订单状态
+            foreach ($orders as $order) {
+
+                //如果是水电或者物品租赁账单, 需要更新相应记录
+                $this->ordermodel->updateDeviceAndUtility(
+                    $order,
+                    Ordermodel::STATE_COMPLETED,
+                    Ordermodel::DEAL_DONE
+                );
+
+                $order->pay_type            = $payWay ? $payWay: $order->pay_type;
+                $order->sequence_number     = $bill->sequence_number;
+                $order->bill_id             = $bill->id;
+                //$order->number              = $number;
+                $order->status              = $status;
+                $order->deal                = $deal;
+                $order->save();
+            }
+
         }
-
         return $orders;
     }
     /**
@@ -410,7 +442,9 @@ class Order extends MY_Controller
         $this->load->model('couponmodel');
         $this->load->model('coupontypemodel');
         $this->load->model('roomunionmodel');
-        $this->load->model('Checkoutmodel');
+        $this->load->model('checkoutmodel');
+        $this->load->model('billmodel');
+        $this->load->model('storepaymodel');
         $resident = Residentmodel::where('room_id', $room_id)->find($resident_id);
         if (!$resident) {
             $this->api_res(1007);
