@@ -198,6 +198,7 @@ class AuthHook {
             'resident/resident/residentinfo',
             'resident/resident/updateresident',
             'resident/resident/contract',
+            'resident/resident/bill',
 
         );
 

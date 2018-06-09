@@ -104,6 +104,7 @@ class Resident extends MY_Controller
         $resident->card_three=$card_three;
 
         $customer->gender = $post['gender'];
+        $customer->save();
         if($resident->save())
         {
             $this->api_res(0);
@@ -129,6 +130,20 @@ class Resident extends MY_Controller
         $this->api_res(0,['resident'=>$resident]);
     }
 
+    /**
+     * 住户账单信息
+     */
+    public function bill()
+    {
+        $this->load->model('ordermodel');
+
+        $post = $this->input->post(null,true);
+        $resident_id = intval($post['id']);
+        $filed = ['money','type','status'];
+        $order = Ordermodel::where('resident_id',$resident_id)->get($filed)->toArray();
+        $this->api_res(0,$order);
+
+    }
 
     /**
      * @return mixed

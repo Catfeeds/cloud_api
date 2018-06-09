@@ -49,7 +49,7 @@ class Messagesnd extends MY_Controller
         }
         $title = $this->getNoticeType($type);
         if (!$title) $this->api_res(0, ['error' => '未找到通知标题']);
-        $this->api_res(0, $title);
+        $this->api_res(0, ['data' => $title]);
     }
 
     public function sendNotice()
