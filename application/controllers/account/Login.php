@@ -255,23 +255,31 @@ class Login extends MY_Controller
             }
             $i=0;
             foreach ($temps as $k2=>$temp) {
-                if ($temp['id'] == 37) break;
                 $res= privilegemodel::whereIn('id',$employee_all_privilege)->where('parent_id', $temp['id'])->get(['id', 'parent_id', 'name'])->toArray();
                 if ($res) {
                     $temps[$k2]['privige']='yes';
                     $temps[$k2]['list']=$res;
                     $i++;
                 } else {
-                    $temps[$k2]['privige']='no';
+                    if ($temp['id'] == 125) {
+                        $temps[$k2]['privige']='yes';
+                        $temps[$k2]['list']=['id' => 37, 'parent_id' => 125, 'name' => '浏览'];
+                    } else {
+                        $temps[$k2]['privige'] = 'no';
+                    }
                 }
             }
             if($i==0){
-                $privileges_one[$key]['privige']='no';
+                if ($key==0) {
+                    $privileges_one[$key]['privige']='yse';
+                    $privileges_one[$key]['list']=$temps;
+                } else {
+                    $privileges_one[$key]['privige'] = 'no';
+                }
             } else {
                 $privileges_one[$key]['privige']='yes';
                 $privileges_one[$key]['list']=$temps;
             }
-
         }
         $this->api_res(0,$privileges_one);
     }
