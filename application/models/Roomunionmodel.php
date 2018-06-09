@@ -49,7 +49,7 @@ class Roomunionmodel extends Basemodel{
     public function room_type(){
 
         return $this->belongsTo(Roomtypemodel::class,'room_type_id')
-                            ->select('id','room_number','hall_number','toilet_number');
+                            ->select('id','name','room_number','hall_number','toilet_number');
     }
 
     //房型展示
