@@ -190,6 +190,9 @@ class AuthHook {
             'contract/operation/loadcontract',
 
             'pricecontrol/pricecontrol/pricecontrol',
+            'pricecontrol/pricecontrol/rentprice',
+            'pricecontrol/pricecontrol/utilities',
+            'pricecontrol/pricecontrol/changeutility',
 
         );
 
