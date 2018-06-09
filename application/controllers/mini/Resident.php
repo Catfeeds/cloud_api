@@ -62,7 +62,7 @@ class Resident extends MY_Controller
             $this->api_res(1002,['error'=>$this->form_first_error($field)]);
             return;
         }
-        echo 1;exit;
+
         $this->load->model('residentmodel');
         $post   = $this->input->post(null,true);
         if(!$this->checkPhoneNumber($post['phone'])){
@@ -253,12 +253,12 @@ class Resident extends MY_Controller
             array(
                 'field' => 'real_rent_money',
                 'label' => '实际租金',
-                'rules' => 'trim|required|integer',
+                'rules' => 'trim|numeric|integer',
             ),
             array(
                 'field' => 'real_property_costs',
                 'label' => '实际物业费',
-                'rules' => 'trim|integer|required',
+                'rules' => 'trim|numeric|required',
             ),
             array(
                 'field' => 'first_pay_money',
