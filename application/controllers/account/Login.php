@@ -232,7 +232,6 @@ class Login extends MY_Controller
     /**
      *  权限控制
      */
-
     public function listmenu()
     {
         $this->load->model('positionmodel');
