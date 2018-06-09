@@ -57,14 +57,14 @@ class AuthHook {
             'mini/checkout/show',
             'mini/checkout/destroy',
 
-            'mini/activity/showactivity',
+            //'mini/activity/showactivity',
 
             'bill/meter/confirm',
             'bill/bill/listbill',
 
             'mini/order/listorder',
-            'mini/order/confirm',
-            'mini/order/pay',
+            //'mini/order/confirm',
+            //'mini/order/pay',
             //'store/store/liststore',
             //'store/store/addstoredot',
             //'store/store/addstoreunion',
