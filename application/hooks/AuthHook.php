@@ -41,7 +41,7 @@ class AuthHook {
             'account/login/login',
 
             //'mini/resident/checkroomunion',
-            'mini/resident/checkin',
+            //'mini/resident/checkin',
             'mini/resident/destory',
             //'mini/resident/showqrcode',
             'mini/resident/reservation',
