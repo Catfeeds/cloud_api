@@ -170,9 +170,15 @@ class Residentct extends MY_Controller
     /**
      * 员工个人中心
      */
-    public function displayCneter()
+    public function displayCenter()
     {
-
+        /*$post = $this->input->post(null, true);
+        $field = ['id, name, position_id, store_id', 'avatar'];
+        $this->load->model('employeemodel');
+        $employees = Employeemodel::with(['position' => function ($query) {
+            $query->select('id', 'name');
+        }])->where('bxid', CURRENT_ID)->get($field);
+        $this->load->model('storemodel');*/
     }
 
     /**

@@ -33,8 +33,8 @@ class Messagesnd extends MY_Controller
                 'name' => '活动通知'
             ],
             [
-                'field' => 'TS',
-                'SSGX' => '设施更新通知'
+                'field' => 'SSGX',
+                'name' => '设施更新通知'
             ]
         ];
         $this->api_res(0, ['type' => $field]);
