@@ -57,11 +57,123 @@ class Resident extends MY_Controller
         if (isset($post['id'])){
             $resident_id = intval($post['id']);
             $filed = ['id','name','customer_id','phone','card_type','card_number','card_one','card_two','card_three','alternative','alter_phone'];
-            $resident = Residentmodel::with('room')->with('customer_s')
-                    ->where('id',$resident_id)->get($filed)->toArray();
+            $resident = Residentmodel::with('customer_s')
+                ->where('id',$resident_id)->get($filed)
+                ->map(function ($s){
+                    $s->card_one = $this->fullAliossUrl($s->card_one);
+                    $s->card_two = $this->fullAliossUrl($s->card_two);
+                    $s->card_three = $this->fullAliossUrl($s->card_three);
+                    return $s;
+                })
+                ->toArray();
             $this->api_res(0, $resident);
         }else{
             $this->api_res(1002);
         }
+    }
+
+    /**
+     * 修改住户信息
+     */
+    public function updateResident()
+    {
+        $this->load->model('customermodel');
+        $post = $this->input->post(null,true);
+        $id = intval($post['id']);
+        $customer_id = intval($post['customer_id']);
+        if(!$this->validation())
+        {
+            $fieldarr   = ['name','gender','phone','card_type','card_number','card_one','card_two','card_three','alternative','alter_phone'];
+            $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
+            return false;
+        }
+        $resident   = Residentmodel::findOrFail($id);
+        $customer   = Customermodel::findOrFail($customer_id);
+        $resident->fill($post);
+
+        $card_one  = $this->splitAliossUrl($post['card_one']);
+        $card_one = json_encode($card_one);
+        $resident->card_one=$card_one;
+
+        $card_two  = $this->splitAliossUrl($post['card_two']);
+        $card_two = json_encode($card_two);
+        $resident->card_two=$card_two;
+
+        $card_three  = $this->splitAliossUrl($post['card_three']);
+        $card_three = json_encode($card_three);
+        $resident->card_three=$card_three;
+
+        $customer->gender = $post['gender'];
+        if($resident->save())
+        {
+            $this->api_res(0);
+        }else{
+            $this->api_res(1009);
+        }
+    }
+
+
+
+    /**
+     * @return mixed
+     * 表单验证
+     */
+    private function validation()
+    {
+        $this->load->library('form_validation');
+        $config = array(
+            array(
+                'field' => 'name',
+                'label' => '姓名',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'gender',
+                'label' => '性别',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'phone',
+                'label' => '联系电话',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'card_type',
+                'label' => '证件类型',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'card_number',
+                'label' => '证件号',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'card_one',
+                'label' => '证件正面',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'card_two',
+                'label' => '证件反面',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'card_three',
+                'label' => '手持证件',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'alternative',
+                'label' => '紧急联系人',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'alter_phone',
+                'label' => '紧急联系人电话',
+                'rules' => 'trim|required',
+            ),
+        );
+        $this->form_validation->set_rules($config)->set_error_delimiters('','');
+        return $this->form_validation->run();
     }
 }

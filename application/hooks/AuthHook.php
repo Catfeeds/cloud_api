@@ -196,6 +196,7 @@ class AuthHook {
 
             'resident/resident/showresident',
             'resident/resident/residentinfo',
+            'resident/resident/updateresident',
 
         );
 
