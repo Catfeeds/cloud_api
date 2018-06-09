@@ -19,7 +19,24 @@ class Messagesnd extends MY_Controller
 
     public function sendMsgType()
     {
-        $field = [ 'TS' => '停水通知', 'TD' => '停电通知', 'HD' => '活动通知', 'SSGX' => '设施更新通知'];
+        $field = [
+            [
+                'field' => 'TS',
+                'name' => '停水通知'
+            ],
+            [
+                'field' => 'TD',
+                'name' => '停电通知'
+            ],
+            [
+                'field' => 'HD',
+                'name' => '活动通知'
+            ],
+            [
+                'field' => 'TS',
+                'SSGX' => '设施更新通知'
+            ]
+        ];
         $this->api_res(0, ['type' => $field]);
     }
 
