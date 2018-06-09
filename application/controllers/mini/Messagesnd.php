@@ -96,8 +96,6 @@ class Messagesnd extends MY_Controller
                 return 'UXFAM4yAgFQ--rwIqIkpmltfz6n3nIQW7COgIwm32v8';
             case 'SSGX':
                 return 'UXFAM4yAgFQ--rwIqIkpmltfz6n3nIQW7COgIwm32v8';
-            case 'ZNJ':
-                return 'UXFAM4yAgFQ--rwIqIkpmltfz6n3nIQW7COgIwm32v8';
             default:
                 return null;
         }
@@ -141,15 +139,6 @@ class Messagesnd extends MY_Controller
                     'hremind' => '首段提醒',
                     'time'    => '设施更新时间',
                     'area'    => '设施更新区域',
-                    'fremind' => '末尾提醒',
-                    'preview' => '预览'
-                ];
-            case 'ZNJ':
-                return [
-                    'title'   => '标题',
-                    'hremind' => '首段提醒',
-                    'time'    => '累计天数',
-                    'area'    => '累计金额',
                     'fremind' => '末尾提醒',
                     'preview' => '预览'
                 ];
