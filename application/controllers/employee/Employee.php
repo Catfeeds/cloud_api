@@ -68,7 +68,7 @@ class Employee extends MY_Controller
         $post = $this->input->post(null, true);
         $page = intval(isset($post['page']) ? $post['page'] : 1);
         $offset = PAGINATE * ($page - 1);
-        $field = ['id', 'name', 'phone', 'position_id', 'store_names', 'hiredate', 'status'];
+        $field = ['id', 'name', 'phone', 'position_id', 'store_ids', 'hiredate', 'status'];
         //define('COMPANY_ID', 4); //测试用
         $where = isset($post['store_id']) ? ['store_id' => $post['store_id']] : [];
         if (isset($post['city']) && !empty($post['city'])) {
@@ -82,25 +82,26 @@ class Employee extends MY_Controller
                 $this->api_res(0, ['count' => $count, 'list' => []]);
                 return;
             }
-            $category = Employeemodel::with(['position' => function ($query) {
+            $employees = Employeemodel::with(['position' => function ($query) {
                 $query->select('id', 'name');
             }])->whereIn('store_ids', $store_ids)->where($where)
                 ->offset($offset)->limit(PAGINATE)->orderBy('status', 'asc')
                 ->orderBy('hiredate', 'asc')->get($field);
-            $this->api_res(0, ['count' => $count, 'list' => $category]);
-            return;
+        } else {
+            $count = ceil((Employeemodel::where('company_id', COMPANY_ID)->count()) / PAGINATE);
+            if ($page > $count) {
+                $this->api_res(0, ['count' => $count, 'list' => []]);
+                return;
+            }
+            $employees = Employeemodel::with(['position' => function ($query) {
+                $query->select('id', 'name');
+            }])->where('company_id', COMPANY_ID)->offset($offset)
+                ->limit(PAGINATE)->orderBy('status', 'asc')
+                ->orderBy('hiredate', 'asc')->get($field);
+            $this->load->model('storemodel');
         }
-        $count = ceil((Employeemodel::where('company_id', COMPANY_ID)->count()) / PAGINATE);
-        if ($page > $count) {
-            $this->api_res(0, ['count' => $count, 'list' => []]);
-            return;
-        }
-        $category = Employeemodel::with(['position' => function ($query) {
-            $query->select('id', 'name');
-        }])->where('company_id', COMPANY_ID)->offset($offset)
-            ->limit(PAGINATE)->orderBy('status', 'asc')
-            ->orderBy('hiredate', 'asc')->get($field);
-        $this->api_res(0, ['count' => $count, 'list' => $category]);
+        $employees = $this->getStoreNames($employees);
+        $this->api_res(0, ['count' => $count, 'list' => $employees]);
     }
 
     /**
@@ -108,7 +109,7 @@ class Employee extends MY_Controller
      */
     public function searchEmp()
     {
-        $field = ['name', 'phone', 'position_id', 'store_names', 'hiredate', 'status'];
+        $field = ['name', 'phone', 'position_id', 'store_ids', 'hiredate', 'status'];
         $this->load->model('positionmodel');
         $post   = $this->input->post(null,true);
         $name   = isset($post['name'])?$post['name']:null;
@@ -125,12 +126,13 @@ class Employee extends MY_Controller
         $store_ids = Storemodel::where('company_id', COMPANY_ID)->get(['id'])->map(function ($s) {
                 return $s->id;
             });
-        $category = Employeemodel::with(['position' => function ($query) {
+        $employees = Employeemodel::with(['position' => function ($query) {
             $query->select('id', 'name');
         }])->whereIn('store_ids', $store_ids)->where('name','like',"%$name%")
             ->offset($offset)->limit(PAGINATE)->orderBy('status', 'asc')
             ->orderBy('hiredate', 'asc')->get($field);
-        $this->api_res(0,['count'=>$count,'list'=>$category]);
+        $employees = $this->getStoreNames($employees);
+        $this->api_res(0,['count'=>$count,'list'=>$employees]);
     }
 
     /**
@@ -162,22 +164,38 @@ class Employee extends MY_Controller
                 $this->api_res(1009);
                 return false;
             }
+            $store_ids = $emloyee->store_ids;
+            $store_ids = explode(',', $store_ids);
+            $this->load->model('storemodel');
+            $store_names = Storemodel::whereIn('id', $store_ids)->get(['name'])->map(function ($s) {
+                return $s->name;
+            });
+            if (!$store_names) {
+                $store_name_tmp = null;
+            } else {
+                $name_tmp_string = '';
+                foreach ($store_names as $store_name) {
+                    $name_tmp_string .= $store_name . ',';
+                }
+                $name_tmp_string = rtrim($name_tmp_string, ',');
+                $store_name_tmp = $name_tmp_string;
+            }
 
             $this->load->model('positionmodel');
             $position = Positionmodel::find($emloyee->position_id);
             if (!$position) {
-                $name_tmp = null;
+                $position_name_tmp = null;
             } else {
-                $name_tmp = $position->name;
+                $position_name_tmp = $position->name;
             }
 
             $category = [
                 'name' => $emloyee->name,
                 'phone' => $emloyee->phone,
-                'position' => $name_tmp,
+                'position' => $position_name_tmp,
                 'status' => $emloyee->status,
                 'store_ids' => $emloyee->store_ids,
-                'store_names' => $emloyee->store_names,
+                'store_names' => $store_name_tmp,
             ];
         }
         $this->api_res(0, $category);
@@ -192,7 +210,7 @@ class Employee extends MY_Controller
         $config = $this->validationSubmitEmp();
         if(!$this->validationText($config))
         {
-            $fieldarr = ['name', 'phone', 'position', 'store_ids', 'store_names', 'hiredate'];
+            $fieldarr = ['name', 'phone', 'position', 'store_ids', 'hiredate'];
             $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
             return false;
         }
@@ -223,7 +241,6 @@ class Employee extends MY_Controller
         }
         $position_id = $position->id;
         $store_ids = $post['store_ids'];
-        $store_names = $post['store_names'];
         $hiredate = $post['hiredate'];
         $store_ids_arr = explode(',' ,$store_ids);
         $store_id = $store_ids_arr[0];
@@ -231,7 +248,6 @@ class Employee extends MY_Controller
         $employee               = new Employeemodel();
         $employee->company_id   = COMPANY_ID;
         $employee->store_ids    = $store_ids;
-        $employee->store_names  = $store_names;
         $employee->store_id     = $store_id;
         $employee->position_id  = $position_id;
         $employee->name         = $name;
@@ -254,12 +270,13 @@ class Employee extends MY_Controller
         $post = $this->input->post(null, true);
         $config = $this->validationSubmitEmp();
         array_pull($config, '2');
-        array_pull($config, '5');
+        array_pull($config, '3');
+        array_pull($config, '4');
         $status_val = ['field' => 'status', 'label' => '员工状态', 'rules' => 'trim|required|in_list[ENABLE,DISABLE]'];
-        $config = array_add($config, '5', $status_val);
+        $config = array_add($config, '3', $status_val);
         if(!$this->validationText($config))
         {
-            $fieldarr = ['name', 'phone', 'store_ids', 'store_names', 'status'];
+            $fieldarr = ['name', 'phone', 'status'];
             $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
             return false;
         }
@@ -298,12 +315,15 @@ class Employee extends MY_Controller
             $this->api_res(1009);
             return false;
         }
-        $position_id = $position->id;
-        $store_ids  = $post['store_ids'];
-        $store_names  = $post['store_names'];
-        $status = $post['status'];
+        $store_ids = isset($post['store_ids']) ? $post['store_ids'] : null;
+        if (!$store_ids) {
+            $this->api_res(1002, ['error' => '请输入负责门店']);
+            return false;
+        }
         $store_ids_arr = explode(',' ,$store_ids);
         $store_id = $store_ids_arr[0];
+        $position_id = $position->id;
+        $status = $post['status'];
 
         $employee = Employeemodel::find($id);
         if (!$employee) {
@@ -312,7 +332,6 @@ class Employee extends MY_Controller
         }
         $employee->position_id  = $position_id;
         $employee->store_ids    = $store_ids;
-        $employee->store_names  = $store_names;
         $employee->store_id     = $store_id;
         $employee->name         = $name;
         $employee->phone        = $phone;
@@ -457,11 +476,6 @@ class Employee extends MY_Controller
                 'rules' => 'trim|required',
             ),
             array(
-                'field' => 'store_names',
-                'label' => '门店名称',
-                'rules' => 'trim|required',
-            ),
-            array(
                 'field' => 'hiredate',
                 'label' => '入职时间',
                 'rules' => 'trim|required',
@@ -469,6 +483,27 @@ class Employee extends MY_Controller
         );
 
         return $config;
+    }
+
+    /**
+     * 获取store_names
+     */
+    public function getStoreNames($employees)
+    {
+        foreach ($employees as $employee) {
+            $store_ids = $employee->store_ids;
+            $store_ids = explode(',', $store_ids);
+            $store_names = Storemodel::whereIn('id', $store_ids)->get(['name'])->map(function ($s) {
+                return $s->name;
+            });
+            $name_tmp_string = '';
+            foreach ($store_names as $store_name) {
+                $name_tmp_string .= $store_name . ',';
+            }
+            $name_tmp_string = rtrim($name_tmp_string, ',');
+            $employee->store_names = $name_tmp_string;
+        }
+        return $employees;
     }
 
 }
