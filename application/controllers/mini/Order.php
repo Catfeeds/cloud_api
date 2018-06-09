@@ -136,7 +136,7 @@ class Order extends MY_Controller
             $this->load->model('utilitymodel');
 
             //更新订单订单到完成的状态
-            $orders     = $this->completeOrders($orders);
+            $orders     = $this->completeOrders($orders,null,$resident);
 
             //销券
             $this->load->model('couponmodel');
@@ -188,26 +188,42 @@ class Order extends MY_Controller
      * 目前的情况下, 如果订单中包含某些特定类型(水电, 物品等费用)订单, 需要同时处理掉
      * 其余订单的更新还需要补充
      */
-    private function completeOrders($orders, $payWay = null)
+    private function completeOrders($orders, $payWay = null,$resident)
     {
         $number     = $orders->first()->number;
-        $count      = $this->ordermodel->ordersConfirmedToday();
-        $status     = Ordermodel::STATE_COMPLETED;
-        $deal       = Ordermodel::DEAL_DONE;
+        $count      = $this->newordermodel->ordersConfirmedToday()+1;
+        $status     = Newordermodel::STATE_COMPLETED;
+        $deal       = Newordermodel::DEAL_DONE;
         $dateString = date('Ymd');
+        $this->load->model('billmodel');
+        $bill=New Billmodel();
+        $bill->sequence_number  = sprintf("%s%06d", $dateString, $count);
+        $bill->store_id = $resident->store_id;
+        $bill->room_id = $resident->room_id;
+        $bill->employee_id = $this->employee->id;
+        $bill->customer_id = $resident->customer_id;
+        $bill->uxid = $resident->uxid;
+        $bill->money    = $orders->sum('money');
+        $bill->paid    = $orders->sum('paid');
+        $bill->pay_type    = $payWay ?$payWay : ($orders->toArray())[0]['pay_type'];;
+        $bill->pay_date    = ($orders->toArray())[0]['pay_date'];
+        $bill->data    = ['orders'=>$orders];
+        $bill->save();
+        //$bill->pay_type            = $payWay ? : $order->pay_type;
 
         //更新订单状态
         foreach ($orders as $order) {
 
             //如果是水电或者物品租赁账单, 需要更新相应记录
-            $this->ordermodel->updateDeviceAndUtility(
+            $this->newordermodel->updateDeviceAndUtility(
                 $order,
-                Ordermodel::STATE_COMPLETED,
-                Ordermodel::DEAL_DONE
+                Newordermodel::STATE_COMPLETED,
+                Newordermodel::DEAL_DONE
             );
 
             $order->pay_type            = $payWay ? : $order->pay_type;
-            $order->sequence_number     = sprintf("%s%06d", $dateString, ++ $count);
+            $order->bill_id            = $bill->id;
+            $order->sequence_number     = sprintf("%s%06d", $dateString, $count);
             $order->number              = $number;
             $order->status              = $status;
             $order->deal                = $deal;
@@ -434,7 +450,7 @@ class Order extends MY_Controller
             //将优惠券与订单绑定, 同时更新优惠券的状态
             $this->couponmodel->bindOrdersAndCalcDiscount($resident, $orders, $coupons, true);
             //更新订单状态
-            $orders = $this->completeOrders($orders, $payWay);
+            $orders = $this->completeOrders($orders, $payWay,$resident);
             //房间, 住户, 优惠券以及其他订单表的状态
             $this->updateRoomAndResident($orders, $resident, $resident->roomunion);
 

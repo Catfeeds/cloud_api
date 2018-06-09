@@ -1,5 +1,6 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+use Illuminate\Database\Capsule\Manager as DB;
 /**
  * Author:      zjh<401967974@qq.com>
  * Date:        2018/6/6 0006
@@ -15,23 +16,9 @@ class copy extends MY_Controller
         //$this->customerUxid();
         //$this->residentUxid();
         //$this->contractUxid();
-
-        //$uxid   = CURRENT_ID;
-        /*$customer_id    = $this->user->customer_id;
-        $ids=Residentmodel::where('customer_id',$customer_id)->get(['id'])->map(function($resi){
-            return $resi->id;
-        })->toArray();
-
-        /*
-         /*$rooms=Roomunionmodel::whereIn('resident_id',$ids)->get();
-
-        $smart  = Smartdevicemodel::whereIn('room_id',$room_ids)
-
-        Roomunionmodel::where(['resident'=>function($query){
-
-        }])->get();*/
-
-
+        //$this->orderToNew();
+        //$this->orderToBill();
+        //$this->billToOrder();
 
 
     }
@@ -251,7 +238,192 @@ class copy extends MY_Controller
 
         $this->api_res(0);
 
+    }
 
+
+    /**
+     * 订单转入新的订单表
+     */
+    public function orderToNew()
+    {
+        $this->load->model('ordermodel');
+        $this->load->model('testordermodel');
+
+//        $numbers    = Ordermodel::groupBy('number')->where('sequence_number','>',0)->get(['number'])->map(function($a){
+//            return $a->number;
+//        });
+
+        //一次1000条number 大概6000条
+        $numbers    = Ordermodel::offset(5000)->limit(1000)->groupBy('created_at')->get(['created_at'])->map(function($q){
+            return $q->created_at;
+        });
+
+        try{
+            DB::beginTransaction();
+
+            foreach ($numbers as $number){
+
+
+                $pre_number = date('YmdHis',strtotime($number));
+                $orders = Ordermodel::where('created_at',$number)->get()->toArray();
+                $count  = count($orders);
+
+                for($i=0;$i<$count;$i++){
+                    $a=new Testordermodel();
+                    $to_number = sprintf('%010s',($i+1));
+                    $number=$pre_number.$to_number;
+                    $a->id=$orders[$i]['id'];
+                    $a->number  = $number;
+                    $a->old_number  = $orders[$i]['number'];
+                    $a->store_id  = $orders[$i]['store_id'];
+                    $a->room_type_id  = $orders[$i]['room_type_id'];
+                    $a->room_id  = $orders[$i]['room_id'];
+                    $a->employee_id  = $orders[$i]['employee_id'];
+                    $a->resident_id  = $orders[$i]['resident_id'];
+                    $a->customer_id  = $orders[$i]['customer_id'];
+                    $a->uxid  = $orders[$i]['customer_id'];
+                    $a->type  = $orders[$i]['type'];
+                    $a->year  = $orders[$i]['year'];
+                    $a->month  = $orders[$i]['month'];
+                    $a->money  = $orders[$i]['money'];
+                    $a->paid  = $orders[$i]['paid'];
+                    $a->status  = $orders[$i]['status'];
+                    $a->deal  = $orders[$i]['deal'];
+                    $a->pay_date  = $orders[$i]['pay_date'];
+                    $a->remark  = $orders[$i]['remark'];
+                    $a->created_at  = $orders[$i]['created_at'];
+                    $a->updated_at  = $orders[$i]['updated_at'];
+                    $a->deleted_at  = $orders[$i]['deleted_at'];
+                    $a->discount_money  = $orders[$i]['discount_money'];
+                    $a->pay_status  = $orders[$i]['pay_status'];
+                    $a->data  = $orders[$i]['data'];
+                    $a->save();
+
+                }
+            }
+
+            DB::commit();
+        }catch (Exception $e){
+            DB::rollBack();
+            throw  $e;
+        }
+
+
+        $this->api_res(0);
+
+    }
+
+    /**
+     * 订单转入新的流水表
+     */
+    public function orderToBill(){
+
+//        $this->load->model('ordermodel');
+//        $this->load->model('testbillmodel');
+//
+//       /* $bills  = Ordermodel::where('sequence_number','>',0)->groupBy(['updated_at'])
+//            ->get(['pay_date','number','sequence_number'])->groupBy('number');*/
+//
+////        $bills  = Ordermodel::where('sequence_number','>',0)->groupBy(['pay_date','number'])
+////            ->get(['pay_date','number']);
+//
+////
+//        $bills  = Ordermodel::whereIn('status',['CONFIRM','COMPLATE'])->groupBy(['new_at'=>function($query){
+//
+//            $query->new_at  = substr($query->updated_at,0,16);
+//        },'resident_id','pay_type'])->get()/*->map(function($query){
+//            //var_dump($query->toArray());exit;
+//            $a=$query->toArray();
+//            $at = $a['updated_at'];
+//
+//            $new_at = substr($at,0,16);
+//
+//            //echo $new_at;exit;
+//            $query->new_at  =$new_at;
+//            return $query;
+//        })*/;
+//            //->groupBy('updated_at','resident_id','pay_type');
+////        $bills  = $bills->groupBy([function($bill){
+////            return substr($bill['updated_at'],0,16);
+////        }]);
+//
+//        var_dump(count($bills));
+//
+//
+//
+//
+//        //var_dump($bills->toArray());exit;
+//
+//        //var_dump($bills->count());exit;
+//
+//        exit;
+//        try{
+//            DB::beginTransaction();;
+//
+//
+//        }catch (Exception $e){
+//            DB::rollBack();
+//            throw $e;
+//        }
+
+        $this->load->model('testbillmodel');
+
+        $bills  = Testbillmodel::all()->groupBy(function($item){
+            return substr($item['sequence_number'],0,10);
+        });
+
+        //var_dump($bills->toArray());exit;
+
+        $arr    = $bills->toArray();
+
+        foreach ($arr as $key=>$value){
+            $date   = date('Ymd',strtotime($key));
+            $count  = count($value);
+            for ($i=0;$i<$count;$i++){
+                $a= Testbillmodel::find($value[$i]['id']);
+                $new_number = $date.sprintf('%06s',$i+1);
+                $a->sequence_number = $new_number;
+                $time_at    =$a->updated_at;
+                $a->updated_at  = $time_at;
+                $a->save();
+            }
+
+        }
+        $this->api_res(0);
+
+
+    }
+
+    public function billToOrder(){
+
+        $this->load->model('testbillmodel');
+        $this->load->model('testordermodel');
+        $this->load->model('ordermodel');
+
+        $bills  = Testbillmodel::all()->toArray();
+
+        $orders = Testordermodel::all()->map(function($query){
+            $query->new_at  = substr($query->updated_at,0,16);
+            var_dump($query);exit;
+
+            return $query;
+        });
+
+        foreach ($bills as $bill){
+            //$old_at = $bill['updated_at_copy'];
+            //echo $old_at;exit;
+            //var_dump($bill);exit;
+            $bill_at    = substr($bill['updated_at_copy'],0,16);
+            $resident_id    = $bill['resident_id'];
+            //var_dump($bill_at);exit;
+
+
+        }
+
+        /*$orders = Ordermodel::all()->map(function($query){
+            $query->new_at  = substr($query->updated_at,0,16);
+            //var_dump($query->toArray());exit;
+        });*/
 
     }
 
