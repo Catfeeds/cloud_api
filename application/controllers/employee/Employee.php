@@ -116,16 +116,16 @@ class Employee extends MY_Controller
         $page   = intval(isset($post['page'])?$post['page']:1);
         $offset = PAGINATE * ($page-1);
         //define('COMPANY_ID', 4); //测试用
-        $count  = ceil((Employeemodel::where('company_id', COMPANY_ID)
+        $this->load->model('storemodel');
+        $store_ids = Storemodel::where('company_id', COMPANY_ID)->get(['id'])->map(function ($s) {
+                return $s->id;
+            });
+        $count  = ceil((Employeemodel::whereIn('store_ids', $store_ids)
                 ->where('name','like',"%$name%")->count())/PAGINATE);
         if($page > $count){
             $this->api_res(0,['count'=>$count,'list'=>[]]);
             return;
         }
-        $this->load->model('storemodel');
-        $store_ids = Storemodel::where('company_id', COMPANY_ID)->get(['id'])->map(function ($s) {
-                return $s->id;
-            });
         $employees = Employeemodel::with(['position' => function ($query) {
             $query->select('id', 'name');
         }])->whereIn('store_ids', $store_ids)->where('name','like',"%$name%")
