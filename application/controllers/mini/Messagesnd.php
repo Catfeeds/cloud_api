@@ -46,6 +46,7 @@ class Messagesnd extends MY_Controller
         $type = isset($post['type']) ? $post['type'] : null;
         if (!$type) {
             $this->api_res(1002, ['type' => '请输入通知类型']);
+            return;
         }
         $title = $this->getNoticeType($type);
         if (!$title) $this->api_res(0, ['error' => '未找到通知标题']);
@@ -122,43 +123,126 @@ class Messagesnd extends MY_Controller
     {
         switch ($type) {
             case 'TS':
-                return [
-                    'title'   => '停水通知',
-                    'hremind' => '首段提醒',
-                    'time'    => '停水时间',
-                    'area'    => '停水区域',
-                    'reason'  => '停水原因',
-                    'fremind' => '末尾提醒',
-                    'preview' => '预览'
-                ];
+                return
+                    array(
+                        array(
+                            'field' => 'title',
+                            'name'  => '停水通知',
+                        ),
+                        array(
+                            'field' => 'hremind',
+                            'name'  => '首段提醒',
+                        ),
+                        array(
+                            'field' => 'time',
+                            'name'  => '停水时间',
+                        ),
+                        array(
+                            'field' => 'area',
+                            'name'  => '停水区域',
+                        ),
+                        array(
+                            'field' => 'reason',
+                            'name'  => '停水原因',
+                        ),
+                        array(
+                            'field' => 'fremind',
+                            'name'  => '末尾提醒',
+                        ),
+                        array(
+                            'field' => 'preview',
+                            'name'  => '预览',
+                        )
+                    );
+
             case 'TD':
-                return [
-                    'title'   => '停电通知',
-                    'hremind' => '首段提醒',
-                    'time'    => '停电时间',
-                    'area'    => '停电区域',
-                    'reason'  => '停电原因',
-                    'fremind' => '末尾提醒',
-                    'preview' => '预览'
-                ];
+                return
+                    array(
+                        array(
+                            'field' => 'title',
+                            'name'  => '停电通知',
+                        ),
+                        array(
+                            'field' => 'hremind',
+                            'name'  => '首段提醒',
+                        ),
+                        array(
+                            'field' => 'time',
+                            'name'  => '停电时间',
+                        ),
+                        array(
+                            'field' => 'area',
+                            'name'  => '停电区域',
+                        ),
+                        array(
+                            'field' => 'reason',
+                            'name'  => '停电原因',
+                        ),
+                        array(
+                            'field' => 'fremind',
+                            'name'  => '末尾提醒',
+                        ),
+                        array(
+                            'field' => 'preview',
+                            'name'  => '预览',
+                        )
+                    );
             case 'HD':
-                return [
-                    'title'   => '标题',
-                    'hremind' => '首段提醒',
-                    'time'    => '活动时间',
-                    'area'    => '活动区域',
-                    'fremind' => '末尾提醒',
-                    'preview' => '预览'
-                ];
+                return
+                    array(
+                        array(
+                            'field' => 'title',
+                            'name'  => '标题',
+                        ),
+                        array(
+                            'field' => 'hremind',
+                            'name'  => '首段提醒',
+                        ),
+                        array(
+                            'field' => 'time',
+                            'name'  => '活动时间',
+                        ),
+                        array(
+                            'field' => 'area',
+                            'name'  => '活动区域',
+                        ),
+                        array(
+                            'field' => 'fremind',
+                            'name'  => '末尾提醒',
+                        ),
+                        array(
+                            'field' => 'preview',
+                            'name'  => '预览',
+                        )
+                    );
             case 'SSGX':
-                return [
-                    'title'   => '标题',
-                    'hremind' => '首段提醒',
-                    'time'    => '设施更新时间',
-                    'area'    => '设施更新区域',
-                    'fremind' => '末尾提醒',
-                    'preview' => '预览'
-                ];
+                return
+                    array(
+                        array(
+                            'field' => 'title',
+                            'name'  => '标题',
+                        ),
+                        array(
+                            'field' => 'hremind',
+                            'name'  => '首段提醒',
+                        ),
+                        array(
+                            'field' => 'time',
+                            'name'  => '设施更新时间',
+                        ),
+                        array(
+                            'field' => 'area',
+                            'name'  => '设施更新区域',
+                        ),
+                        array(
+                            'field' => 'fremind',
+                            'name'  => '末尾提醒',
+                        ),
+                        array(
+                            'field' => 'preview',
+                            'name'  => '预览',
+                        )
+                    );
             default:
                 return null;
         }
@@ -171,7 +255,7 @@ class Messagesnd extends MY_Controller
     {
         $config = array(
             array(
-                'id' => 'store_id',
+                'id'    => 'store_id',
                 'label' => '门店id',
                 'rules' => 'trim|required',
             ),
