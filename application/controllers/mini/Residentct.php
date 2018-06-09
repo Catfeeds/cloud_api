@@ -190,6 +190,15 @@ class Residentct extends MY_Controller
      */
     public function dataStatistics()
     {
+        /*$post = $this->input->post(null, true);
+        $this->load->model('employeemodel');
+        $store_ids = Employeemodel::getMyStoreids();
+
+        $count_cz = Residentmodel::whereIn('store_id', $store_ids)->where('status', 'RENT')->count();
+        $count = Residentmodel::whereIn('store_id', $store_ids)->count();
+        if ($count_cz != 0) {
+            $count_cz / $count
+        }*/
 
     }
 
