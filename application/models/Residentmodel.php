@@ -92,12 +92,21 @@ use Carbon\Carbon;
          'data' => 'array',
      ];
 
-     protected $hidden  = [];
+     protected $hidden  = ['created_at'];
 
      //住户的房间信息
      public function roomunion(){
 
          return $this->belongsTo(Roomunionmodel::class,'room_id');
+     }
+     public function room(){
+
+         return $this->belongsTo(Roomunionmodel::class,'room_id')->select('id','store_id','number');
+     }
+     public function customer_s(){
+
+         return $this->belongsTo(Customermodel::class,'customer_id')
+             ->select('id','gender');
      }
 
      //住户的订单

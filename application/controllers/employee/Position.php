@@ -164,7 +164,9 @@ class Position extends MY_Controller
         }
 
         $this->load->model('employeemodel');
-        $positions = Positionmodel::with('employee')->where('company_id', COMPANY_ID)
+        $positions = Positionmodel::with(['employee' => function ($query) {
+            $query->where('status', 'ENABLE');
+        }])->where('company_id', COMPANY_ID)
             ->offset($offset)->limit(PAGINATE)->orderBy('created_at', 'asc')
             ->get($filed)->map(function($a){
                 $a->count_z = $a->employee->count();
@@ -201,12 +203,6 @@ class Position extends MY_Controller
     {
         $filed = ['id', 'name', 'pc_privilege_ids', 'created_at'];
         $post   = $this->input->post(null,true);
-        $config = $this->validation();
-        if(!$this->validationText($config))
-        {
-            $this->api_res(1002,['error'=>$this->form_first_error(['name'])]);
-            return ;
-        }
         $name   = isset($post['name'])?$post['name']:null;
         $page   = intval(isset($post['page'])?$post['page']:1);
         $offset = PAGINATE * ($page-1);
@@ -217,8 +213,9 @@ class Position extends MY_Controller
             return;
         }
         $this->load->model('employeemodel');
-        $positions = Positionmodel::with('employee')
-            ->where('company_id', COMPANY_ID)
+        $positions = Positionmodel::with(['employee' => function ($query) {
+            $query->where('status', 'ENABLE');
+        }])->where('company_id', COMPANY_ID)
             ->where('name','like',"%$name%")
             ->offset($offset)->limit(PAGINATE)
             ->orderBy('id', 'desc')

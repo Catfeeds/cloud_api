@@ -229,4 +229,58 @@ class Login extends MY_Controller
         return $info;
     }
 
+    /**
+     *  权限控制
+     */
+    public function listmenu()
+    {
+        $this->load->model('positionmodel');
+        $this->load->model('privilegemodel');
+
+        $position_id = $this->employee->position_id;
+        $pc_privilege_ids_string = Positionmodel::where('id', $position_id)->first(['pc_privilege_ids']);
+        $employee_all_privilege = explode(',', $pc_privilege_ids_string);
+
+        $privileges_one = privilegemodel::where('parent_id', 0)->get(['id', 'parent_id', 'name'])->toArray();
+        if (!$privileges_one) {
+            $this->api_res(1009);
+            return;
+        }
+
+        foreach ($privileges_one as $key=>$privilege_two) {
+            $temps= privilegemodel::where('parent_id', $privilege_two['id'])->get(['id', 'parent_id', 'name'])->toArray();
+            if (!$temps) {
+                $this->api_res(1009);
+                return;
+            }
+            $i=0;
+            foreach ($temps as $k2=>$temp) {
+                $res= privilegemodel::whereIn('id',$employee_all_privilege)->where('parent_id', $temp['id'])->get(['id', 'parent_id', 'name'])->toArray();
+                if ($res) {
+                    $temps[$k2]['privige']='yes';
+                    $temps[$k2]['list']=$res;
+                    $i++;
+                } else {
+                    if ($temp['id'] == 125) {
+                        $temps[$k2]['privige']='yes';
+                        $temps[$k2]['list']=['id' => 37, 'parent_id' => 125, 'name' => '浏览'];
+                    } else {
+                        $temps[$k2]['privige'] = 'no';
+                    }
+                }
+            }
+            if($i==0){
+                if ($key==0) {
+                    $privileges_one[$key]['privige']='yse';
+                    $privileges_one[$key]['list']=$temps;
+                } else {
+                    $privileges_one[$key]['privige'] = 'no';
+                }
+            } else {
+                $privileges_one[$key]['privige']='yes';
+                $privileges_one[$key]['list']=$temps;
+            }
+        }
+        $this->api_res(0,$privileges_one);
+    }
 }

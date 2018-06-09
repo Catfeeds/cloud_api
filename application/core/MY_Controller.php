@@ -9,7 +9,10 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  */
 class MY_Controller extends CI_Controller {
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 6eef3d303cd27160a1e7523caae58226f092a4fe
     public function __construct()
     {
         parent::__construct();

@@ -16,7 +16,7 @@ class Residentct extends MY_Controller
     }
 
     /**
-     * 显示住户中心
+     * 员工列表
      */
     public function showCenter()
     {
@@ -141,9 +141,50 @@ class Residentct extends MY_Controller
     }
 
     /**
+     * 切换公寓
+     */
+    public function switchoverApartment()
+    {
+        $post = $this->input->post(null, true);
+        $this->load->model('employeemodel');
+        $store_ids = Employeemodel::getMyStoreids();
+
+        $current_page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
+        $pre_page = isset($post['pre_page']) ? intval($post['pre_page']) : 10;//当前页显示条数
+        $offset = $pre_page * ($current_page - 1);
+
+        $total = count($store_ids);
+        $total_pages = ceil($total / $pre_page);//总页数
+        if ($current_page > $total_pages) {
+            $this->api_res(0, ['total' => $total, 'pre_page' => $pre_page, 'current_page' => $current_page,
+                'total_pages' => $total_pages, 'data' => []]);
+            return;
+        }
+        $this->load->model('storemodel');
+        $store_names = Storemodel::whereIn('id', $store_ids)->take($pre_page)->skip($offset)
+            ->orderBy('id', 'asc')->get(['id', 'name']);
+        $this->api_res(0, ['total' => $total, 'pre_page' => $pre_page, 'current_page' => $current_page,
+            'total_pages' => $total_pages, 'data' => $store_names]);
+    }
+
+    /**
+     * 员工个人中心
+     */
+    public function displayCenter()
+    {
+        /*$post = $this->input->post(null, true);
+        $field = ['id, name, position_id, store_id', 'avatar'];
+        $this->load->model('employeemodel');
+        $employees = Employeemodel::with(['position' => function ($query) {
+            $query->select('id', 'name');
+        }])->where('bxid', CURRENT_ID)->get($field);
+        $this->load->model('storemodel');*/
+    }
+
+    /**
      * 数据统计
      */
-    public function DataStatistics()
+    public function dataStatistics()
     {
 
     }
