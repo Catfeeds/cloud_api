@@ -15,7 +15,7 @@ class Pricecontrol extends MY_Controller
     }
 
     /**
-     * 调价
+     * 调价列表
      */
     public function priceControl()
     {
@@ -27,7 +27,7 @@ class Pricecontrol extends MY_Controller
         $post  =$this->input->post(null,true);
         $page  = isset($post['page'])?intval($post['page']):1;
         $offset= PAGINATE * ($page - 1);
-        $filed = ['id','store_id','building_id','number','room_type_id','updated_at'];
+        $filed = ['id','store_id','building_id','number','room_type_id','rent_price','property_price','updated_at'];
         $where = [];
         if(!empty($post['store_id'])){$where['store_id'] = intval($post['store_id']);};
         if(!empty($post['building_id'])){$where['building_id'] = intval($post['building_id']);};
@@ -44,6 +44,14 @@ class Pricecontrol extends MY_Controller
 
             $this->api_res(0, ['list' => $price, 'count' => $count]);
         }
+
+    }
+
+    /**
+     *  调价修改
+     */
+    public function changePrice()
+    {
 
     }
 }
