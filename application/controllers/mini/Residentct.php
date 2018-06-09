@@ -16,7 +16,7 @@ class Residentct extends MY_Controller
     }
 
     /**
-     * 显示住户中心
+     * 员工列表
      */
     public function showCenter()
     {
@@ -165,6 +165,14 @@ class Residentct extends MY_Controller
             ->orderBy('id', 'asc')->get(['id', 'name']);
         $this->api_res(0, ['total' => $total, 'pre_page' => $pre_page, 'current_page' => $current_page,
             'total_pages' => $total_pages, 'data' => $store_names]);
+    }
+
+    /**
+     * 员工个人中心
+     */
+    public function displayCneter()
+    {
+
     }
 
     /**
