@@ -21,40 +21,24 @@ class Goodsorder extends MY_Controller
         $post   = $this->input->post(NULL,true);
         $page   = isset($post['page'])?intval($post['page']):1;
         $offset = PAGINATE*($page-1);
-
-        $filed  = ['id','number','customer_id','address_id','status','goods_money','pay_money'];
-
+        $filed  = ['id','number','uxid','address_id','status','goods_money','pay_money'];
         if(!empty($post['begin_time'])){$bt=$post['begin_time'];}else{$bt = date('Y-m-d H:i:s',0);};
         if(!empty($post['end_time'])){$et=$post['end_time'];}else{$et = date('Y-m-d H:i:s',time());};
-
-        if(!empty($post['number'])){
-            $number = $post['number'];
-            $count  = ceil(Goodsordermodel::where('number',$number) ->whereBetween('created_at',[$bt,$et])
+        $where = [];
+        if (isset($post['number'])){$where['number'] = trim($post['number']);}
+            $count  = ceil(Goodsordermodel::where($where) ->whereBetween('created_at',[$bt,$et])
                                                 ->count()/PAGINATE);
             if($page>$count||$page<1){
                 $this->api_res(0,['list'=>[]]);
                 return;
             }else {
                 $goods = Goodsordermodel::with('customer')->with('address')
-                                        ->where('number', $number)
+                                        ->where($where)
                                         ->whereBetween('created_at', [$bt, $et])
                                         ->take(PAGINATE)->skip($offset)
                                         ->orderBy('id', 'desc')
                                         ->get($filed)->toArray();
             }
-        }else{
-            $count  = ceil(Goodsordermodel::whereBetween('created_at',[$bt,$et])->count()/PAGINATE);
-            if($page>$count||$page<1){
-                $this->api_res(0,['list'=>[]]);
-                return;
-            }else {
-                $goods = Goodsordermodel::with('customer')->with('address')
-                                        ->whereBetween('created_at', [$bt, $et])
-                                        ->take(PAGINATE)->skip($offset)
-                                        ->orderBy('id', 'desc')
-                                        ->get($filed)->toArray();
-            }
-        }
         $this->api_res(0,['list'=>$goods,'count'=>$count]);
     }
 
@@ -69,7 +53,7 @@ class Goodsorder extends MY_Controller
         $this->load->model('shopaddressmodel');
         $post   = $this->input->post(NULL,true);
         $id     = $post['id'];
-        $filed  = ['id','number','customer_id','address_id','goods_quantity','status','goods_money','pay_money'];
+        $filed  = ['id','number','uxid','address_id','goods_quantity','status','goods_money','pay_money'];
         $order  = Goodsordermodel::with('customer')->with('address')
                                     ->where('id',$id)
                                     ->get($filed)->toArray();

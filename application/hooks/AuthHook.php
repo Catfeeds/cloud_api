@@ -149,6 +149,7 @@ class AuthHook {
             'smartdevice/smartdevice/test',
             'smartdevice/smartdevice/getallrecord',
             'smartdevice/readmeter/handle',
+            'smartdevice/crondreadmeter/readmeter',
 
             'common/city',
             'common/province',
@@ -228,12 +229,12 @@ class AuthHook {
                     $this->CI->employee = Employeemodel::where('bxid',CURRENT_ID)->first();
                 }
 
-                /*//操作记录测试
+                //操作记录测试
                 if (!$this->operationRecord($full_path)) {
                     header("Content-Type:application/json;charset=UTF-8");
                     echo json_encode(array('rescode' => 1012, 'resmsg' => '操作log出错', 'data' => []));
                     exit;
-                }*/
+                }
                 /*//权限匹配
                 if (!$this->privilegeMatch($directory, $class, $full_path)) {
                     header("Content-Type:application/json;charset=UTF-8");

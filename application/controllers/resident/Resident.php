@@ -37,7 +37,7 @@ class Resident extends MY_Controller
         }else {
             $resident = Residentmodel::with('room')->with('customer_s')->where($where)->take(PAGINATE)
                     ->skip($offset)->get($filed)->map(function ($s){
-                    $s->room->store_id = (Storemodel::where('id',$s->room->store_id)->get(['name']))[0]['name'];
+                    $s->room->store_name = (Storemodel::where('id',$s->room->store_id)->get(['name']))[0]['name'];
                     $s->createdat = date('Y-m-d',strtotime($s->created_at->toDateTimeString()));
                     return $s;
                 })->toArray();
@@ -61,6 +61,7 @@ class Resident extends MY_Controller
                 ->where('id',$resident_id)->get($filed)
                 ->map(function ($s){
                     $s->card_one = $this->fullAliossUrl($s->card_one);
+                    //var_dump($s->card_one);
                     $s->card_two = $this->fullAliossUrl($s->card_two);
                     $s->card_three = $this->fullAliossUrl($s->card_three);
                     return $s;
@@ -133,16 +134,73 @@ class Resident extends MY_Controller
      */
     public function bill()
     {
+        //账单表
         $this->load->model('ordermodel');
-
+        $this->load->model('testbillmodel');
         $post = $this->input->post(null,true);
         $resident_id = intval($post['id']);
-        $filed = ['money','type','status'];
-        $order = Ordermodel::where('resident_id',$resident_id)->get($filed)->groupBy('status')
-            /*->map(function ($s){
+        $filed = ['money','type'];
+        $order = Ordermodel::where('resident_id',$resident_id)->whereIn('status',['PENDING','AUDITED'])
+                ->get($filed)->toArray();
+        if(!empty($order)){
+            var_dump($order);
+        }
+        //流水表
+        $bill = Ordermodel::where('resident_id',$resident_id)->whereIn('status',['COMPLATE','CONFIRM'])
+                ->get($filed)->toArray();
+        $this->api_res(0,['order'=>$order,'bill'=>$bill]);
+        /*if (!empty($bill)){
+            if (isset($bill['ROOM'])){
+                $bill_room = $bill['ROOM'];
+                $room_money = 0.00;
+                foreach ($bill_room as $key =>$value ){
+                    $room_money += $bill_room[$key]['money'];
+                    //var_dump($room_money);
+                    $bill['room_money'] = $room_money;
+                }
+            }
 
-            })*/->toArray();
-        $this->api_res(0,$order);
+            if (isset($bill['ELECTRICITY'])){
+                $bill_room = $bill['ELECTRICITY'];
+                $device_money = 0.00;
+                foreach ($bill_room as $key =>$value ){
+                    $device_money  += $bill_room[$key]['money'];
+                    $bill['device_money'] = $device_money;
+                }
+            }
+
+            if (isset($bill['DEIVCE'])){
+                $bill_room = $bill['DEIVCE'];
+                $device_money = 0.00;
+                foreach ($bill_room as $key =>$value ){
+                    $device_money  += $bill_room[$key]['money'];
+                    $bill['room_money'] = $device_money;
+                }
+            }
+//            'ROOM','DEIVCE','UTILITY','REFUND','DEPOSIT_R',
+//            'DEPOSIT_O','MANAGEMENT','OTHER','RESERVE','CLEAN',
+//            'WATER','ELECTRICITY','COMPENSATION','REPAIR','HOT_WATER','OVERDUE'
+//            房间 设备  水电费 退房 预订 清洁费 水费 电费 赔偿费 维修费 热水水费 滞纳金
+            if (isset($bill['UTILITY'])){
+                $bill_room = $bill['UTILITY'];
+                $utility_money = 0.00;
+                foreach ($bill_room as $key =>$value ){
+                    $utility_money   += $bill_room[$key]['money'];
+                    var_dump($utility_money );
+                }
+            }
+
+            if (isset($bill['UTILITY'])){
+                $bill_room = $bill['UTILITY'];
+                $utility_money = 0.00;
+                foreach ($bill_room as $key =>$value ){
+                    $utility_money   += $bill_room[$key]['money'];
+                    var_dump($utility_money );
+                }
+            }
+
+
+        }*/
     }
 
     /**

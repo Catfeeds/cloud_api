@@ -1,29 +1,29 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 use GuzzleHttp\Client;
-require_once APPPATH.'/libraries/Cjoymeter.php';
+require_once 'Cjoymeter.php';
 /**
  * Author:      hfq<1326432154@qq.com>
  * Date:        2018/6/6
  * Time:        22:12
  * Describe:    读CJOY的表
  */
-class Readmeter extends MY_Controller
+class Readmeter //extends //MY_Controller
 {
     protected $store_id;
-
+    protected $CI;
     public $tries = 3;
 
-    public function __construct($id = 6)
+    public function __construct($id)
     {
-        parent::__construct();
+        //parent::__construct();
         $this->store_id = $id;
-
+        $this->CI = & get_instance();
     }
 
     public function handle()
     {
-        $this->load->model('smartdevicemodel');
+        $this->CI->load->model('smartdevicemodel');
         $devices = smartdevicemodel::join('boss_room_union', function ($join) {
             $join->on('boss_smart_device.room_id', '=', 'boss_room_union.id');
         })
@@ -71,7 +71,7 @@ class Readmeter extends MY_Controller
      */
     private function recordUtilityTransfer($device, $reading)
     {
-        $this->load->model('meterreadingtransfermodel');
+        $this->CI->load->model('meterreadingtransfermodel');
         $transfer   = Meterreadingtransfermodel::where([
             'room_id' => $device->room_id,
             'type'    => $device->type,
@@ -101,7 +101,7 @@ class Readmeter extends MY_Controller
      */
     private function recordMeterReading($device, $reading)
     {
-        $this->load->model('meterreadingmodel');
+        $this->CI->load->model('meterreadingmodel');
         $record = Meterreadingmodel::where([
             'type'      => $device->type,
             'room_id'   => $device->room_id,

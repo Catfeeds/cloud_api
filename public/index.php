@@ -303,6 +303,15 @@ switch (ENVIRONMENT)
 
 	define('VIEWPATH', $view_folder.DIRECTORY_SEPARATOR);
 
+
+	if ( ! function_exists('is_cli'))
+	{
+
+		function is_cli()
+		{
+			return (PHP_SAPI === 'cli' OR defined('STDIN'));
+		}
+	}
 /*
  * --------------------------------------------------------------------
  * LOAD THE BOOTSTRAP FILE
