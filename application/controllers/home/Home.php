@@ -37,7 +37,7 @@ class Home extends MY_Controller
         $result['month']['total']['server'] =30; //未处理
         $result['month']['total']['other'] =50; //未处理
 
-        $result['month']['resident']['all'] =100;
+        $result['month']['resident']['all'] =-11;
         $result['month']['resident']['server'] =30;
         $result['month']['resident']['other'] =50;
 
@@ -99,7 +99,13 @@ class Home extends MY_Controller
 
         $count_thz = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('begin_time', $date_d)->count();  //住户增
         $count_thj = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('end_time', $date_d)->count();  //住户减
-        $result['month']['resident']['all'] = $count_thz - $count_thj;
+        $count_yhzj = $count_thz - $count_thj;
+        if ($count_yhzj > 0) {
+            $count_yhzj = '+'.$count_yhzj;
+        } else if ($count_yhzj == 0) {
+            $count_yhzj = 0;
+        }
+        $result['month']['resident']['all'] = $count_yhzj;
         $result['month']['resident']['server'] = Contractmodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->count(); //新签数
         $result['month']['resident']['other'] = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('refund_time', $date_m)->count();  //退租
         //$count_yxz = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('end_time', $date_m)->where(strtotime('refund_time'), '>', strtotime('end_time'))->count();  //续租
