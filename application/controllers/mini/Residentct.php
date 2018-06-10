@@ -189,30 +189,165 @@ class Residentct extends MY_Controller
      */
     public function dataStatistics()
     {
-        /*$post = $this->input->post(null, true);
+        $post = $this->input->post(null, true);
+        $date = isset($post['date']) ? $post['date'] : null;//当前页数
+        if (!$date) {
+            $date_m = [date('Y-m', time()), date('Y-m-d H-i-s', time())];
+        } else {
+            if (strtotime($date) > time()) {
+                $this->api_res(1007, ['error' => '指定日期不正确']);
+                return;
+            } else if (strtotime($date) == strtotime(date('Y-m', time()))) {
+                $date_m = [date('Y-m', time()), date('Y-m-d H-i-s', time())];
+            } else {
+                $date_m = [$date, date('Y-m-t', strtotime($date))];
+            }
+        }
         $this->load->model('employeemodel');
         $store_ids = Employeemodel::getMyStoreids();
         $this->load->model('roomunionmodel');
-        $count_cz = Roomunionmodel::whereIn('store_id', $store_ids)->whereIn('begin_time', )->where('status', 'RENT')->count();
-        $count = Roomunionmodel::whereIn('store_id', $store_ids)->count();
-        if ($count != 0) {
-            if ($count_cz != 0) {
-                $percentage = round(($count_cz / $count), 2) * 100;
+        $count_yz = Roomunionmodel::whereIn('store_id', $store_ids)->whereBetween('begin_time', $date_m)->where('status', 'RENT')->count();
+        $count_z = Roomunionmodel::whereIn('store_id', $store_ids)->count();
+        $count_wcz = $count_z - $count_yz;
+        if ($count_z != 0) {
+            if ($count_yz != 0) {
+                $percentage = round(($count_yz / $count_z), 4) * 100;
                 $count_ybfb = $percentage.'%'; //百分比
             } else {
                 $count_ybfb = 0;
             }
+        } else {
+            $this->api_res(1007, ['error' => '没有负责的门店']);
+            return;
         }
         if ($count_ybfb != 0) {
-            $count_wcz = 100 - $percentage;
-            $count_wbfb = $count_wcz.'%';
+            $count_wcz_bfb = 100 - $percentage;
+            $count_wbfb = $count_wcz_bfb.'%';
         } else {
             $count_wbfb = '100'.'%';
         }
-
+        //获取来访方式信息
         $this->load->model('reserveordermodel');
-        Reserveordermodel::*/
+        $field = ['初始值', '58同城', '豆瓣','租房网',
+                    '嗨住', 'zuber', '中介', '路过',
+                    '老带新', '朋友介绍', '微信', '同行转介',
+                    '闲鱼', '蘑菇租房', '微博', '其它'
+                ];
+        foreach($field  as $key => $value) {
+            $count = Reserveordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)
+                    ->where('source', $key)->count();
+            $data['name'] = $value;
+            $data['count'] =  $count;
+            $datas[] = $data;
+        }
+        $count_lf = Reserveordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->count();
+        foreach($datas  as $key => $value) {
+            if ($count_lf != 0) {
+                if ($value['count'] != 0) {
+                    $count = $value['count'];
+                    $percentage = round(($count / $count_lf), 4) * 100;
+                    $datas[$key]['bfb'] = $percentage.'%'.",$count"; //百分比
+                } else {
+                    $datas[$key]['bfb'] = '0'.',0';
+                }
+            }
+        }
+        //入住
+        $visit = [
+            ['name' => '总房量', 'count' => $count_z, 'bfb' => null],
+            ['name' => '已出租', 'count' => $count_yz, 'bfb' => $count_ybfb . ",$count_yz"],
+            ['name' => '未出租', 'count' => $count_wcz, 'bfb' => $count_wbfb . ",$count_wcz"]
+        ];
 
+        //获取房型id
+        $rts = Roomunionmodel::whereIn('store_id', $store_ids)->groupBy('room_type_id')->get(['room_type_id'])->map(function ($t) {
+            return $t->room_type_id;
+        });
+        $this->load->model('roomtypemodel');
+        //获取房型名与房型特点
+        foreach ($rts as $rt) {
+            $rtnf = Roomtypemodel::where('id', $rt)->first(['name', 'feature']);
+            if (!$rtnf) {
+                $this->api_res(1007, ['error' => '没有查找到房型']);
+                return;
+            }
+            $rt_data['name'] = $rtnf->name;
+            $rt_data['feature'] = $rtnf->feature;
+            $rt_datas[] = $rt_data;
+        }
+        //获取总房量，空闲，已租，到期，出租率
+        foreach ($rts as $key => $rt) {
+            $count_fxzfl = Roomunionmodel::whereIn('store_id', $store_ids)->where('room_type_id', $rt)->count();
+            $count_fxyz = Roomunionmodel::whereIn('store_id', $store_ids)->where('room_type_id', $rt)->whereBetween('begin_time', $date_m)->where('status', 'RENT')->count();
+            $count_fxdq = Roomunionmodel::whereIn('store_id', $store_ids)->where('room_type_id', $rt)->whereBetween('end_time', $date_m)->where('status', 'RENT')->count();
+            $count_fxkx = $count_fxzfl - $count_fxyz;
+            $rt_datas[$key]['count_fxzfl'] = $count_fxzfl;
+            $rt_datas[$key]['count_fxkx'] = $count_fxkx;
+            $rt_datas[$key]['count_fxyz'] = $count_fxyz;
+            $rt_datas[$key]['count_fxdq'] = $count_fxdq;
+            if ($count_fxzfl != 0) {
+                if ($count_fxyz != 0) {
+                    $percentage = round(($count_fxyz / $count_fxzfl), 4) * 100;
+                    $count_fxbfb = $percentage.'%'; //百分比
+                } else {
+                    $count_fxbfb = 0;
+                }
+            } else {
+                $this->api_res(1007, ['error' => '房型不符']);
+                return;
+            }
+            $rt_datas[$key]['count_fxbfb'] = $count_fxbfb;
+        }
+        //房型合计
+        $hj_zfl = null;
+        $hj_kx  = null;
+        $hj_yz  = null;
+        $hj_dq  = null;
+        foreach($rt_datas as $key => $value) {
+            $hj_zfl += $value['count_fxzfl'];
+            $hj_kx  += $value['count_fxkx'];
+            $hj_yz  += $value['count_fxyz'];
+            $hj_dq  += $value['count_fxdq'];
+        }
+        if ($hj_yz != 0) {
+            $percentage = round(($hj_yz / $hj_zfl), 4) * 100;
+            $hj_bfb = $percentage.'%'; //百分比
+        } else {
+            $hj_bfb = 0;
+        }
+        $fx_hj = ['hj_zfl' => $hj_zfl, 'hj_kx' => $hj_kx, 'hj_yz' => $hj_yz, 'hj_dq' => $hj_dq, 'hj_bfb' => $hj_bfb];
+
+        //获取房型空闲状态信息
+        $date_k7 = [date('Y-m-d', time()), date('Y-m-d', strtotime('+1 week'))];
+        $date_k8 = [date('Y-m-d', strtotime('+8 days')), date('Y-m-d', strtotime('+30 days'))];
+        foreach ($rts as $key => $rt) {
+            $kx_datas[$key]['name'] = $rt_datas[$key]['name'];
+            $kx_datas[$key]['feature'] = $rt_datas[$key]['feature'];
+            $kx_datas[$key]['count_fxkx'] = $rt_datas[$key]['count_fxkx'];
+            $count_fxkx7 = Roomunionmodel::whereIn('store_id', $store_ids)->where('room_type_id', $rt)->whereBetween('begin_time', $date_k7)->where('status', 'BLANK')->count();
+            $kx_datas[$key]['count_fxkx7'] = $count_fxkx7;
+            $count_fxkx8 = Roomunionmodel::whereIn('store_id', $store_ids)->where('room_type_id', $rt)->whereBetween('begin_time', $date_k8)->where('status', 'BLANK')->count();
+            $kx_datas[$key]['count_fxkx8'] = $count_fxkx8;
+            $count_fxkx31 = $kx_datas[$key]['count_fxkx'] - $count_fxkx7 - $count_fxkx8;
+            $kx_datas[$key]['count_fxkx31'] = $count_fxkx31;
+        }
+        //房型空闲合计
+        $hj_fxkz = null;
+        $hj_fxkx7 = null;
+        $hj_fxkx8 = null;
+        $hj_fxkx31 = null;
+        foreach($kx_datas as $key => $value) {
+            $hj_fxkz += $value['count_fxkx'];
+            $hj_fxkx7  += $value['count_fxkx7'];
+            $hj_fxkx8  += $value['count_fxkx8'];
+            $hj_fxkx31  += $value['count_fxkx31'];
+        }
+        $fx_kzhj = ['hj_fxkz' => $hj_fxkz, 'hj_fxkx7' => $hj_fxkx7, 'hj_fxkx8' => $hj_fxkx8, 'hj_fxkx31' => $hj_fxkx31];
+
+        $this->api_res(0, ['visit' => $visit, 'data' => $datas,
+                                'fx_data' => $rt_datas, 'fx_hj' => $fx_hj,
+                                'fxkx_data' => $kx_datas, 'fxkx_hj' => $fx_kzhj]
+            );
     }
 
     /**
