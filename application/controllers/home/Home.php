@@ -27,25 +27,23 @@ class Home extends MY_Controller
         $result['day']['checkout'] =1;
         $result['day']['server'] =11;
         $result['day']['clean'] =11;
-        $result['day']['complaint'] =11;
-
+        $result['day']['complaint'] =11; //未处理
 
         $result['house']['all'] =100;
         $result['house']['use'] =30;
         $result['house']['free'] =50;
 
-
         $result['month']['total']['all'] =100;
-        $result['month']['total']['server'] =30;
-        $result['month']['total']['other'] =50;
+        $result['month']['total']['server'] =30; //未处理
+        $result['month']['total']['other'] =50; //未处理
 
         $result['month']['resident']['all'] =100;
         $result['month']['resident']['server'] =30;
         $result['month']['resident']['other'] =50;
 
-        $result['month']['keeprent']['all'] =100;
-        $result['month']['keeprent']['server'] =30;
-        $result['month']['keeprent']['other'] =50;
+        $result['month']['keeprent']['all'] =100;  //未处理
+        $result['month']['keeprent']['server'] =30; //未处理
+        $result['month']['keeprent']['other'] =50; //未处理
 
         $result['month']['free']['all'] =100;
         $result['month']['free']['server'] =30;
@@ -63,50 +61,62 @@ class Home extends MY_Controller
         $date_m = [date('Y-m',time()), date('Y-m-d H-i-s',time())];
 
         $store_ids = Employeemodel::getMyStoreids();
-        $count_yylf = Reserveordermodel::whereIn('store_id', $store_ids)->count(); //预约来访
-        $count_dsdd = Ordermodel::whereIn('store_id', $store_ids)->where('status', 'CONFIRM')->count(); //待收账单
-        $count_dsh = Ordermodel::whereIn('store_id', $store_ids)->where('status', 'GENERATE')->count(); //待审核
-        $count_wjf = Ordermodel::whereIn('store_id', $store_ids)->where('status', 'PENDING ')->count(); //未缴费账单
-        $count_yykf = Reserveordermodel::whereIn('store_id', $store_ids)
+        $result['home']['count_visit'] = Reserveordermodel::whereIn('store_id', $store_ids)->count(); //预约来访
+        $result['home']['count_order'] = Ordermodel::whereIn('store_id', $store_ids)->where('status', 'CONFIRM')->count(); //待收账单
+        $result['home']['count_confirm'] = Ordermodel::whereIn('store_id', $store_ids)->where('status', 'GENERATE')->count(); //待审核
+        $result['home']['count_bills'] = Ordermodel::whereIn('store_id', $store_ids)->where('status', 'PENDING ')->count(); //未缴费账单
+        $result['day']['view'] = Reserveordermodel::whereIn('store_id', $store_ids)
             ->whereBetween('created_at', $date_d)->get(['visit_time'])->count(); //预约看房数
         $this->load->model('contractmodel');
-        $count_xqzh = Contractmodel::whereIn('store_id', $store_ids)
+        $result['day']['sign'] = Contractmodel::whereIn('store_id', $store_ids)
             ->whereBetween('created_at', $date_d)->count(); //新签住户数
-        $money_rys = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)
+        $result['day']['recmoney'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)
             ->get(['money'])->sum('money'); //应收
-        $money_rss = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)
+        $result['day']['paymoney'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)
             ->get(['money'])->sum('money'); //实收
 
         $this->load->model('residentmodel');
-        $count_tz = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('refund_time', $date_d)->count();  //退租
-        $conut_wx = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)
+        $result['day']['checkout'] = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('refund_time', $date_d)->count();  //退租
+        $result['day']['server'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)
             ->where('type', 'REPAIR')->count(); //维修订单
-        $count_qj = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)
+        $result['day']['clean'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)
             ->where('type', 'CLEAN')->count(); //清洁订单
 
         $this->load->model('roomunionmodel');
-        $count_qb = Roomunionmodel::whereIn('store_id', $store_ids)->count(); //全部
-        $count_ycz = Roomunionmodel::whereIn('store_id', $store_ids)->whereIn('status', ['RENT', 'ARREARS'])->count(); //已出租
-        $count_kz = Roomunionmodel::whereIn('store_id', $store_ids)->where('status', 'BLANK')->count(); //空置
-        if ($count_qb != 0) {
-            if ($count_kz != 0) {
-                $percentage = round(($count_kz / $count_qb), 2) * 100;
-                $count_bfb = $percentage.'%'; //百分比
+        $result['house']['all'] = Roomunionmodel::whereIn('store_id', $store_ids)->count(); //全部
+        $result['house']['use'] = Roomunionmodel::whereIn('store_id', $store_ids)->whereIn('status', ['RENT', 'ARREARS'])->count(); //已出租
+        $result['house']['free'] = Roomunionmodel::whereIn('store_id', $store_ids)->where('status', 'BLANK')->count(); //空置
+        /*if ($result['house']['all'] != 0) {
+            if ($result['house']['free'] != 0) {
+                $percentage = round(($result['house']['free'] / $result['house']['all']), 2) * 100;
+                $count_bfb = $percentage; //百分比
             } else {
                 $count_bfb = 0;
             }
-        }
+        }*/
 
-        $money_ys = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->get(['money'])->sum('money'); //月报表实收
+        $result['month']['total']['all'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->get(['money'])->sum('money'); //月报表实收
 
         $count_thz = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('begin_time', $date_d)->count();  //住户增
         $count_thj = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('end_time', $date_d)->count();  //住户减
-        $count_zj = $count_thz - $count_thj;
-        $count_yxq = Contractmodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->count(); //新签数
-        $count_ytz = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('refund_time', $date_m)->count();  //退租
+        $result['month']['resident']['all'] = $count_thz - $count_thj;
+        $result['month']['resident']['server'] = Contractmodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->count(); //新签数
+        $result['month']['resident']['other'] = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('refund_time', $date_m)->count();  //退租
         //$count_yxz = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('end_time', $date_m)->where(strtotime('refund_time'), '>', strtotime('end_time'))->count();  //续租
-        $r = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('end_time', $date_m)->get(['refund_time'])->map(function ($t) {
+        /*$r = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('end_time', $date_m)->get(['refund_time'])->map(function ($t) {
             return $t->refund_time;
-        });
+        });*/
+
+        $result['month']['free']['server'] = Roomunionmodel::whereIn('store_id', $store_ids)->count(); //月可出租房间数
+        $result['month']['free']['other'] = Roomunionmodel::whereIn('store_id', $store_ids)->whereIn('updated_at', $date_m)->where('status', 'BLANK')->count(); //月空置数
+        if ($result['month']['free']['server'] != 0) {
+            if ($result['month']['free']['other'] != 0) {
+                $result['month']['free']['all'] = round(($result['month']['free']['other'] / $result['month']['free']['server']), 2) * 100; //百分比
+            } else {
+                $result['month']['free']['all'] = 0;
+            }
+        }
+
+        $this->api_res(0, $result);
     }
 }
