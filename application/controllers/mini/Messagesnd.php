@@ -148,10 +148,6 @@ class Messagesnd extends MY_Controller
                         array(
                             'field' => 'fremind',
                             'name'  => '末尾提醒',
-                        ),
-                        array(
-                            'field' => 'preview',
-                            'name'  => '预览',
                         )
                     );
 
@@ -181,10 +177,6 @@ class Messagesnd extends MY_Controller
                         array(
                             'field' => 'fremind',
                             'name'  => '末尾提醒',
-                        ),
-                        array(
-                            'field' => 'preview',
-                            'name'  => '预览',
                         )
                     );
             case 'HD':
@@ -209,10 +201,6 @@ class Messagesnd extends MY_Controller
                         array(
                             'field' => 'fremind',
                             'name'  => '末尾提醒',
-                        ),
-                        array(
-                            'field' => 'preview',
-                            'name'  => '预览',
                         )
                     );
             case 'SSGX':
@@ -237,10 +225,6 @@ class Messagesnd extends MY_Controller
                         array(
                             'field' => 'fremind',
                             'name'  => '末尾提醒',
-                        ),
-                        array(
-                            'field' => 'preview',
-                            'name'  => '预览',
                         )
                     );
             default:
