@@ -169,10 +169,6 @@ EOF;
             'meterNo'   => implode($number, ','),
         ]);
         $res = $res['data'];
-        //$result = [];
-        //$result['meter_no'] = $res['data']['meter_no'];
-        //$result['this_read']= $res['data']['this_read'];
-        //var_dump($res);
         return collect($res)->pluck('this_read','meter_no')->toArray();
     }
 
