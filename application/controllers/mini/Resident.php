@@ -55,13 +55,14 @@ class Resident extends MY_Controller
         $field  = [
             'room_id','begin_time','people_count','contract_time','discount_id','first_pay_money',
             'deposit_money','deposit_month','tmp_deposit','rent_type','pay_frequency',
-            'name','phone','card_type','card_number','card_one','card_two','card_three',
+            'name','phone','card_type','card_number','card_one','card_two','card_three','real_property_costs','real_rent_money',
             'name_two','phone_two','card_type_two','card_number_two','alter_phone','alternative','address'
         ];
         if(!$this->validationText($this->validateCheckIn())){
             $this->api_res(1002,['error'=>$this->form_first_error($field)]);
             return;
         }
+
         $this->load->model('residentmodel');
         $post   = $this->input->post(null,true);
         if(!$this->checkPhoneNumber($post['phone'])){
@@ -252,12 +253,12 @@ class Resident extends MY_Controller
             array(
                 'field' => 'real_rent_money',
                 'label' => '实际租金',
-                'rules' => 'trim|required|integer',
+                'rules' => 'trim|numeric|integer',
             ),
             array(
                 'field' => 'real_property_costs',
                 'label' => '实际物业费',
-                'rules' => 'trim|integer|required',
+                'rules' => 'trim|numeric|required',
             ),
             array(
                 'field' => 'first_pay_money',

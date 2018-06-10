@@ -9,9 +9,9 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class Operationrecordmodel extends Basemodel
 {
 
-    public function __construct(array $attributes = [])
+    public function __construct()
     {
-        parent::__construct($attributes);
+        parent::__construct();
     }
 
     protected $table    = 'operations';
