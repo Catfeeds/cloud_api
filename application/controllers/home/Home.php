@@ -15,6 +15,47 @@ class Home extends MY_Controller
 
     public function home()
     {
+        $result['home']['count_visit'] =88;
+        $result['home']['count_order'] =88;
+        $result['home']['count_confirm'] =88;
+        $result['home']['count_bills'] =88;
+
+        $result['day']['view'] =11;
+        $result['day']['sign'] =11;
+        $result['day']['recmoney'] =11;
+        $result['day']['paymoney'] =11;
+        $result['day']['checkout'] =1;
+        $result['day']['server'] =11;
+        $result['day']['clean'] =11;
+        $result['day']['complaint'] =11;
+
+
+        $result['house']['all'] =100;
+        $result['house']['use'] =30;
+        $result['house']['free'] =50;
+
+
+        $result['month']['total']['all'] =100;
+        $result['month']['total']['server'] =30;
+        $result['month']['total']['other'] =50;
+
+        $result['month']['resident']['all'] =100;
+        $result['month']['resident']['server'] =30;
+        $result['month']['resident']['other'] =50;
+
+        $result['month']['keeprent']['all'] =100;
+        $result['month']['keeprent']['server'] =30;
+        $result['month']['keeprent']['other'] =50;
+
+        $result['month']['free']['all'] =100;
+        $result['month']['free']['server'] =30;
+        $result['month']['free']['other'] =50;
+
+        $this->api_res(0, $result);
+    }
+
+    public function homeTest()
+    {
         $this->load->model('employeemodel');
         $this->load->model('reserveordermodel');
         $this->load->model('ordermodel');
@@ -67,28 +108,5 @@ class Home extends MY_Controller
         $r = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('end_time', $date_m)->get(['refund_time'])->map(function ($t) {
             return $t->refund_time;
         });
-        /*$count = [
-            'c_yylf' => $count_yylf,
-            'c_dsdd' => $count_dsdd,
-            'c_dsh'  => $count_dsh,
-            'c_wjf'  => $count_wjf,
-            'c_yykf' => $count_yykf,
-            'c_xqzh' => $count_xqzh,
-            'c_rys'  => $money_rys,
-            'c_rss'  => $money_rss,
-            'c_tz'   => $count_tz,
-            'c_wx'   => $conut_wx,
-            'c_qj'   => $count_qj,
-            'c_qb'   => $count_qb,
-            'c_ycz'  => $count_ycz,
-            'c_kz'   => $count_kz,
-            'c_bfb'  => $count_bfb,
-            'c_ys'   => $money_ys,
-            'c_zj'   => $count_zj,
-            'c_yxq'  => $count_yxq,
-            'c_ytz'  => $count_ytz,
-        ];
-        $this->api_res(0, $count);*/
-        $this->api_res(0, [$r]);
     }
 }
