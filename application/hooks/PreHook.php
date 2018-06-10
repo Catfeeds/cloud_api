@@ -22,11 +22,11 @@ class PreHook {
                 exit;
             }
              //对于非post请求进行拦截报错
-             else if(!IS_POST){
-                 header('HTTP/1.1 403 Forbidden');
-                 echo 'access denied';
-                 exit;
-             }
+//             else if(!IS_POST){
+//                 header('HTTP/1.1 403 Forbidden');
+//                 echo 'access denied';
+//                 exit;
+//             }
 
              // 对token参数进行校验
              //$token=$_SERVER['token'];
