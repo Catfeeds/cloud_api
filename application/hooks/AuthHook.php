@@ -37,6 +37,8 @@ class AuthHook {
             'demo/sheet/output',
 
             'bill/bill/generate',
+            //
+            'bill/bill/listbill',
 
             'account/login/login',
             'demo/test/test1',

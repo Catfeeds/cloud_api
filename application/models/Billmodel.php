@@ -9,4 +9,28 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class Billmodel extends Basemodel
 {
     protected $table    = 'test_bill';
+
+    public function roomunion()
+    {
+
+        return $this->belongsTo(Roomunionmodel::class,'room_id');
+    }
+
+    public function store()
+    {
+
+        return $this->belongsTo(Storemodel::class,'store_id');
+    }
+
+    public function resident()
+    {
+
+        return $this->belongsTo(Residentmodel::class,'resident_id');
+    }
+
+    public function employee()
+    {
+
+        return $this->belongsTo(Employeemodel::class,'employee_id');
+    }
 }
