@@ -64,6 +64,7 @@ class AuthHook {
 
             'bill/meter/confirm',
             'bill/bill/listbill',
+            'bill/order/listorder',
 
             'mini/order/listorder',
             //'mini/order/confirm',

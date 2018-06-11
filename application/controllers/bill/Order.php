@@ -24,22 +24,34 @@ class Order extends MY_Controller
     public function listOrder()
     {
         $input  = $this->input->post(null,true);
-
-        $store_id   = $input['store_id'];
-        $type   = $input['type'];
-        $pay_status   = $input['pay_status'];
-        $date   = $input['date'];
-        $search   = $input['search'];
+        $where  = [];
+        empty($input['store_id'])?:$where['store_id']=$input['store_id'];
+        empty($input['type'])?:$where['type']=$input['type'];
+        empty($input['status'])?:$where['status']=$input['status'];
+        empty($input['year'])?:$where['year']=$input['year'];
+        empty($input['month'])?:$where['month']=$input['month'];
+        $search = empty($input['search'])?'':$input['search'];
         $page   = isset($input['page'])?$input['page']:1;
         $offset = ($page-1)*PAGINATE;
-        $where  = [];
 
         $this->load->model('storemodel');
         $this->load->model('roomunionmodel');
         $this->load->model('residentmodel');
         $this->load->model('employeemodel');
 
-        $orders = Ordermodel::where($where)->get();
+        $orders = Ordermodel::with('store','roomunion','resident','employee')
+            ->where(function ($query) use ($search){
+                $query->orWhereHas('resident',function($query) use($search){
+                    $query->where('name','like',"%$search%");
+                })->orWhereHas('roomunion',function($query) use($search){
+                    $query->where('number','like',"%$search%");
+                })->orWhereHas('employee',function($query) use($search){
+                    $query->where('name','like',"%$search%");
+                });
+            })
+            ->where($where)
+            ->offset($offset)->limit(PAGINATE)
+            ->get()->toArray();
 
 
         $this->api_res(0,['orders'=>$orders]);
