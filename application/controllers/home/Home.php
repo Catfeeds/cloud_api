@@ -15,7 +15,8 @@ class Home extends MY_Controller
 
     public function home()
     {
-        $result['home']['count_visit'] =88;
+        //测试用
+        /*$result['home']['count_visit'] =88;
         $result['home']['count_order'] =88;
         $result['home']['count_confirm'] =88;
         $result['home']['count_bills'] =88;
@@ -27,15 +28,15 @@ class Home extends MY_Controller
         $result['day']['checkout'] =1;
         $result['day']['server'] =11;
         $result['day']['clean'] =11;
-        $result['day']['complaint'] =11; //未处理
+        $result['day']['complaint'] =11;
 
         $result['house']['all'] =100;
         $result['house']['use'] =30;
         $result['house']['free'] =50;
 
         $result['month']['total']['all'] =100;
-        $result['month']['total']['server'] =30; //未处理
-        $result['month']['total']['other'] =50; //未处理
+        $result['month']['total']['server'] =30;
+        $result['month']['total']['other'] =50;
 
         $result['month']['resident']['all'] =-11;
         $result['month']['resident']['server'] =30;
@@ -47,18 +48,13 @@ class Home extends MY_Controller
 
         $result['month']['free']['all'] =100;
         $result['month']['free']['server'] =30;
-        $result['month']['free']['other'] =50;
+        $result['month']['free']['other'] =50;*/
 
-        $this->api_res(0, $result);
-    }
-
-    public function homeTest()
-    {
         $this->load->model('employeemodel');
         $this->load->model('reserveordermodel');
         $this->load->model('ordermodel');
-        $date_d = [date('Y-m-d',time()), date('Y-m-d H-i-s',time())];
-        $date_m = [date('Y-m',time()), date('Y-m-d H-i-s',time())];
+        $date_d = [date('Y-m-d', time()), date('Y-m-d H-i-s', time())];
+        $date_m = [date('Y-m', time()), date('Y-m-d H-i-s', time())];
 
         $store_ids = Employeemodel::getMyStoreids();
         $result['home']['count_visit'] = Reserveordermodel::whereIn('store_id', $store_ids)->count(); //预约来访
@@ -81,6 +77,7 @@ class Home extends MY_Controller
             ->where('type', 'REPAIR')->count(); //维修订单
         $result['day']['clean'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)
             ->where('type', 'CLEAN')->count(); //清洁订单
+        $result['day']['complaint'] = 0; //投诉（数据库中没有投诉字段，暂时处理成0）
 
         $this->load->model('roomunionmodel');
         $result['house']['all'] = Roomunionmodel::whereIn('store_id', $store_ids)->count(); //全部
@@ -95,13 +92,15 @@ class Home extends MY_Controller
             }
         }*/
 
-        $result['month']['total']['all'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->get(['money'])->sum('money'); //月报表实收
+        $result['month']['total']['all'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->get(['paid'])->sum('paid'); //月报表实收
+        $result['month']['total']['server'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->where('type', 'ROOM')->get(['paid'])->sum('paid'); //月报表住宿服务费实收
+        $result['month']['total']['other'] = $result['month']['total']['all'] - $result['month']['total']['server']; //月报表其他服务费实收
 
         $count_thz = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('begin_time', $date_d)->count();  //住户增
         $count_thj = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('end_time', $date_d)->count();  //住户减
         $count_yhzj = $count_thz - $count_thj;
         if ($count_yhzj > 0) {
-            $count_yhzj = '+'.$count_yhzj;
+            $count_yhzj = '+' . $count_yhzj;
         } else if ($count_yhzj == 0) {
             $count_yhzj = 0;
         }
@@ -127,6 +126,8 @@ class Home extends MY_Controller
             } else {
                 $result['month']['keeprent']['all'] = 0; //续租率
             }
+        } else {
+            $result['month']['keeprent']['all'] = 0;
         }
 
         $result['month']['free']['server'] = Roomunionmodel::whereIn('store_id', $store_ids)->count(); //月可出租房间数
@@ -137,8 +138,11 @@ class Home extends MY_Controller
             } else {
                 $result['month']['free']['all'] = 0;
             }
+        } else {
+            $result['month']['free']['all'] = 0;
         }
 
         $this->api_res(0, $result);
     }
+
 }
