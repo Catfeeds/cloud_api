@@ -16,7 +16,7 @@ class Residentct extends MY_Controller
     }
 
     /**
-     * 员工列表
+     * 住户列表
      */
     public function showCenter()
     {
