@@ -23,6 +23,10 @@ class Residentct extends MY_Controller
         $post = $this->input->post(null, true);
         $this->load->model('employeemodel');
         $store_ids = Employeemodel::getMyStoreids();
+        if (!$store_ids) {
+            $this->api_res(1007, ['error' => '没有找到门店']);
+            return;
+        }
 
         $current_page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
         $pre_page = isset($post['pre_page']) ? intval($post['pre_page']) : 10;//当前页显示条数
@@ -56,6 +60,10 @@ class Residentct extends MY_Controller
         $post   = $this->input->post(null,true);
         $this->load->model('employeemodel');
         $store_ids = Employeemodel::getMyStoreids();
+        if (!$store_ids) {
+            $this->api_res(1007, ['error' => '没有找到门店']);
+            return;
+        }
 
         $field = ['id', 'name', 'room_id', 'customer_id','status'];
         $current_page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
@@ -148,6 +156,10 @@ class Residentct extends MY_Controller
         $post = $this->input->post(null, true);
         $this->load->model('employeemodel');
         $store_ids = Employeemodel::getMyStoreids();
+        if (!$store_ids) {
+            $this->api_res(1007, ['error' => '没有找到门店']);
+            return;
+        }
 
         $current_page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
         $pre_page = isset($post['pre_page']) ? intval($post['pre_page']) : 10;//当前页显示条数
@@ -185,6 +197,25 @@ class Residentct extends MY_Controller
     }
 
     /**
+     * 待办事项
+     */
+    public function WaitToDo()
+    {
+        $post = $this->input->post(null, true);
+        $this->load->model('employeemodel');
+        $store_ids = Employeemodel::getMyStoreids();
+        if (!$store_ids) {
+            $this->api_res(1007, ['error' => '没有找到门店']);
+            return;
+        }
+        $this->load->model('ordermodel');
+        $count_tf = Ordermodel::whereIn('store_id', $store_ids)->where('type', 'REFUND')->count();
+        //其中转租和通知的数量未处理，null用来占位
+        $data = ['count_refund' => $count_tf, 'count_sublease' => null, 'count_messagesnd' => null];
+        $this->api_res(0, $data);
+    }
+
+    /**
      * 数据统计
      */
     public function dataStatistics()
@@ -205,6 +236,10 @@ class Residentct extends MY_Controller
         }
         $this->load->model('employeemodel');
         $store_ids = Employeemodel::getMyStoreids();
+        if (!$store_ids) {
+            $this->api_res(1007, ['error' => '没有找到门店']);
+            return;
+        }
         $this->load->model('roomunionmodel');
         $count_yz = Roomunionmodel::whereIn('store_id', $store_ids)->whereBetween('begin_time', $date_m)->where('status', 'RENT')->count();
         $count_z = Roomunionmodel::whereIn('store_id', $store_ids)->count();

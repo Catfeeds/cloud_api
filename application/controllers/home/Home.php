@@ -41,9 +41,9 @@ class Home extends MY_Controller
         $result['month']['resident']['server'] =30;
         $result['month']['resident']['other'] =50;
 
-        $result['month']['keeprent']['all'] =100;  //未处理
-        $result['month']['keeprent']['server'] =30; //未处理
-        $result['month']['keeprent']['other'] =50; //未处理
+        $result['month']['keeprent']['all'] =100;
+        $result['month']['keeprent']['server'] =30;
+        $result['month']['keeprent']['other'] =50;
 
         $result['month']['free']['all'] =100;
         $result['month']['free']['server'] =30;
@@ -108,10 +108,26 @@ class Home extends MY_Controller
         $result['month']['resident']['all'] = $count_yhzj;
         $result['month']['resident']['server'] = Contractmodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->count(); //新签数
         $result['month']['resident']['other'] = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('refund_time', $date_m)->count();  //退租
-        //$count_yxz = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('end_time', $date_m)->where(strtotime('refund_time'), '>', strtotime('end_time'))->count();  //续租
-        /*$r = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('end_time', $date_m)->get(['refund_time'])->map(function ($t) {
-            return $t->refund_time;
-        });*/
+
+        $xzs = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->get(['data'])->map(function ($d) {
+            return $d->data;
+        });
+        $count_xz = 0;
+        foreach ($xzs as $xz) {
+            $is = array_has($xz, 'renewal');
+            if ($is) {
+                $count_xz++;
+            }
+        }
+        $result['month']['keeprent']['server'] = $count_xz; //续签数
+        $result['month']['keeprent']['other'] = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('end_time', $date_m)->count();//到期数
+        if ($result['month']['keeprent']['server'] != 0) {
+            if ($result['month']['keeprent']['other'] != 0) {
+                $result['month']['keeprent']['all'] = round(($result['month']['keeprent']['other'] / $result['month']['keeprent']['server']), 2) * 100; //百分比
+            } else {
+                $result['month']['keeprent']['all'] = 0; //续租率
+            }
+        }
 
         $result['month']['free']['server'] = Roomunionmodel::whereIn('store_id', $store_ids)->count(); //月可出租房间数
         $result['month']['free']['other'] = Roomunionmodel::whereIn('store_id', $store_ids)->whereIn('updated_at', $date_m)->where('status', 'BLANK')->count(); //月空置数
