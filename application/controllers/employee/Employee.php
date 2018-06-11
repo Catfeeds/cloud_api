@@ -395,21 +395,16 @@ class Employee extends MY_Controller
             $this->api_res(1006);
             return false;
         }
-        //$access_token   = $user['access_token'];
-        //$refresh_token  = $user['refresh_token'];
         $openid         = $user['openid'];
         $unionid        = $user['unionid'];
 
-        $isOpenidEqual = Employeemodel::where('company_id',COMPANY_ID)->where('openid', $openid)->first();
-        if ($isOpenidEqual) {
+        $where = ['openid' => $openid, 'unionid' => $unionid];
+        $isWxidEqual = Employeemodel::where('company_id',COMPANY_ID)->where($where)->first();
+        if ($isWxidEqual) {
             $this->api_res(1017);
             return false;
         }
-        $isUnionidEqual = Employeemodel::where('company_id',COMPANY_ID)->where('unionid', $unionid)->first();
-        if ($isUnionidEqual) {
-            $this->api_res(1017);
-            return false;
-        }
+
         $employee = Employeemodel::find($post['id']);
         $employee->openid = $openid;
         $employee->unionid = $unionid;
@@ -418,7 +413,6 @@ class Employee extends MY_Controller
         } else {
             $this->api_res(1009);
         }
-
     }
 
     /**
