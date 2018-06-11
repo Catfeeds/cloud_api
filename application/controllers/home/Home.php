@@ -66,10 +66,8 @@ class Home extends MY_Controller
         $this->load->model('contractmodel');
         $result['day']['sign'] = Contractmodel::whereIn('store_id', $store_ids)
             ->whereBetween('created_at', $date_d)->count(); //新签住户数
-        $result['day']['recmoney'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)
-            ->get(['money'])->sum('money'); //应收
-        $result['day']['paymoney'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)
-            ->get(['money'])->sum('money'); //实收
+        $result['day']['recmoney'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)->sum('money'); //应收
+        $result['day']['paymoney'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)->sum('paid'); //实收
 
         $this->load->model('residentmodel');
         $result['day']['checkout'] = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('refund_time', $date_d)->count();  //退租
@@ -92,8 +90,8 @@ class Home extends MY_Controller
             }
         }*/
 
-        $result['month']['total']['all'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->get(['paid'])->sum('paid'); //月报表实收
-        $result['month']['total']['server'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->where('type', 'ROOM')->get(['paid'])->sum('paid'); //月报表住宿服务费实收
+        $result['month']['total']['all'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->sum('paid'); //月报表实收
+        $result['month']['total']['server'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->where('type', 'ROOM')->sum('paid'); //月报表住宿服务费实收
         $result['month']['total']['other'] = $result['month']['total']['all'] - $result['month']['total']['server']; //月报表其他服务费实收
 
         $count_thz = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('begin_time', $date_d)->count();  //住户增
