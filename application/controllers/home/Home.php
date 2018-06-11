@@ -120,9 +120,9 @@ class Home extends MY_Controller
         }
         $result['month']['keeprent']['server'] = $count_xz; //续签数
         $result['month']['keeprent']['other'] = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('end_time', $date_m)->count();//到期数
-        if ($result['month']['keeprent']['server'] != 0) {
-            if ($result['month']['keeprent']['other'] != 0) {
-                $result['month']['keeprent']['all'] = round(($result['month']['keeprent']['other'] / $result['month']['keeprent']['server']), 2) * 100; //百分比
+        if ($result['month']['keeprent']['other'] != 0) {
+            if ($result['month']['keeprent']['server'] != 0) {
+                $result['month']['keeprent']['all'] = round(($result['month']['keeprent']['server'] / $result['month']['keeprent']['other']), 2) * 100; //百分比
             } else {
                 $result['month']['keeprent']['all'] = 0; //续租率
             }
