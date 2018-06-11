@@ -19,11 +19,33 @@ class Order extends MY_Controller
 
 
     /**
-     * BOSS端订单
+     * BOSS端订单列表
      */
     public function listOrder()
     {
-        $this->load->model('ordermodel');
+        $input  = $this->input->post(null,true);
+
+        $store_id   = $input['store_id'];
+        $type   = $input['type'];
+        $pay_status   = $input['pay_status'];
+        $date   = $input['date'];
+        $search   = $input['search'];
+        $page   = isset($input['page'])?$input['page']:1;
+        $offset = ($page-1)*PAGINATE;
+        $where  = [];
+
+        $this->load->model('storemodel');
+        $this->load->model('roomunionmodel');
+        $this->load->model('residentmodel');
+        $this->load->model('employeemodel');
+
+        $orders = Ordermodel::where($where)->get();
+
+
+        $this->api_res(0,['orders'=>$orders]);
+
+
+
 
     }
 
@@ -87,7 +109,6 @@ class Order extends MY_Controller
             ->setCellValue('M3', '缴费方式')
             ->setCellValue('N3', '备注');
     }
-
 
 
 

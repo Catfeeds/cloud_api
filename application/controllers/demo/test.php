@@ -12,9 +12,9 @@ class test extends MY_Controller
     public function test1(){
 
         $this->load->model('activitymodel');
-        $acs=Activitymodel::all();
+        $acs=Activitymodel::get();
         $acs->each(function($q){
-            $q->update(['description'=>2]);
+            $q->update(['description'=>555]);
             //$q->save();
         });
         var_dump($acs->toArray());

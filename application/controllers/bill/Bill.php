@@ -52,8 +52,9 @@ class Bill extends MY_Controller
             })->offset($offset)->limit(PAGINATE)->get()->map(function($query){
 //                $query->pay_date    = date('Y-m-d',strtotime($query->pay_date));
                 return $query;
-            });;
-        $this->api_res(0,['bills'=>$bills]);
+            });
+        $total_page = ceil(($bills->count())/PAGINATE);
+        $this->api_res(0,['bills'=>$bills,'total_page'=>$total_page]);
     }
 
 
