@@ -92,7 +92,7 @@ class Home extends MY_Controller
 
         $result['month']['total']['all'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->sum('paid'); //月报表实收
         $result['month']['total']['server'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->where('type', 'ROOM')->sum('paid'); //月报表住宿服务费实收
-        $result['month']['total']['other'] = $result['month']['total']['all'] - $result['month']['total']['server']; //月报表其他服务费实收
+        $result['month']['total']['other'] = strval(floatval($result['month']['total']['all']) - floatval($result['month']['total']['server'])); //月报表其他服务费实收
 
         $count_thz = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('begin_time', $date_d)->count();  //住户增
         $count_thj = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('end_time', $date_d)->count();  //住户减
