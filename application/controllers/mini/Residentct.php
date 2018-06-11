@@ -221,17 +221,17 @@ class Residentct extends MY_Controller
     public function dataStatistics()
     {
         $post = $this->input->post(null, true);
-        $date = isset($post['date']) ? $post['date'] : null;//当前页数
-        if (!$date) {
-            $date_m = [date('Y-m', time()), date('Y-m-d H-i-s', time())];
+        $date = isset($post['date']) ? $post['date'] : null;
+        if (!$date) { //为指定日期时默认为当前月
+            $date_m = [date('Y-m', time()), date('Y-m-d H-i-s', time())]; //当前月至现在
         } else {
-            if (strtotime($date) > time()) {
+            if (strtotime($date) > time()) {  //指定月超过现在时间
                 $this->api_res(1007, ['error' => '指定日期不正确']);
                 return;
-            } else if (strtotime($date) == strtotime(date('Y-m', time()))) {
+            } else if (strtotime($date) == strtotime(date('Y-m', time()))) { //指定月是现在月
                 $date_m = [date('Y-m', time()), date('Y-m-d H-i-s', time())];
             } else {
-                $date_m = [$date, date('Y-m-t', strtotime($date))];
+                $date_m = [$date, date('Y-m-t', strtotime($date))]; //指定月为过去某月
             }
         }
         $this->load->model('employeemodel');
