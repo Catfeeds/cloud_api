@@ -257,10 +257,10 @@ class Employee extends MY_Controller
         $employee->status       = 'ENABLE';
 
         if ($employee->save()) {
-            $employee->bxid  = $employee->id;
-            $employee = Employeemodel::find($employee->id);
-            if ($employee->save()) {
-                $this->api_res(0, ['id' => $employee->id]);
+            $employee_b = Employeemodel::find($employee->id);
+            $employee_b->bxid  = $employee->id;
+            if ($employee_b->save()) {
+                $this->api_res(0, ['id' => $employee_b->id]);
             } else {
                 $this->api_res(1009);
             }
