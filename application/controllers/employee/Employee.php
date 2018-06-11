@@ -257,10 +257,10 @@ class Employee extends MY_Controller
         $employee->status       = 'ENABLE';
 
         if ($employee->save()) {
-            $employee->bxid  = $employee->id;
-            $employee = Employeemodel::find($employee->id);
-            if ($employee->save()) {
-                $this->api_res(0, ['id' => $employee->id]);
+            $employee_b = Employeemodel::find($employee->id);
+            $employee_b->bxid  = $employee->id;
+            if ($employee_b->save()) {
+                $this->api_res(0, ['id' => $employee_b->id]);
             } else {
                 $this->api_res(1009);
             }
@@ -395,10 +395,15 @@ class Employee extends MY_Controller
             $this->api_res(1006);
             return false;
         }
-        //$access_token   = $user['access_token'];
-        //$refresh_token  = $user['refresh_token'];
         $openid         = $user['openid'];
         $unionid        = $user['unionid'];
+
+        /*$where = ['openid' => $openid, 'unionid' => $unionid];
+        $isWxidEqual = Employeemodel::where('company_id',COMPANY_ID)->where($where)->first();
+        if ($isWxidEqual) {
+            $this->api_res(1017);
+            return false;
+        }*/
 
         $employee = Employeemodel::find($post['id']);
         $employee->openid = $openid;
@@ -408,7 +413,6 @@ class Employee extends MY_Controller
         } else {
             $this->api_res(1009);
         }
-
     }
 
     /**

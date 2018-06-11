@@ -16,7 +16,7 @@ class Residentct extends MY_Controller
     }
 
     /**
-     * 员工列表
+     * 住户列表
      */
     public function showCenter()
     {
@@ -216,23 +216,16 @@ class Residentct extends MY_Controller
     }
 
     /**
-     * 数据统计
+     * 入住率数据统计
      */
-    public function dataStatistics()
+    public function dataCheckIn()
     {
         $post = $this->input->post(null, true);
         $date = isset($post['date']) ? $post['date'] : null;
-        if (!$date) { //为指定日期时默认为当前月
-            $date_m = [date('Y-m', time()), date('Y-m-d H-i-s', time())]; //当前月至现在
-        } else {
-            if (strtotime($date) > time()) {  //指定月超过现在时间
-                $this->api_res(1007, ['error' => '指定日期不正确']);
-                return;
-            } else if (strtotime($date) == strtotime(date('Y-m', time()))) { //指定月是现在月
-                $date_m = [date('Y-m', time()), date('Y-m-d H-i-s', time())];
-            } else {
-                $date_m = [$date, date('Y-m-t', strtotime($date))]; //指定月为过去某月
-            }
+        $date_m = $this->getDate($date);
+        if (!$date_m) {
+            $this->api_res(1007, ['error' => '指定日期不正确']);
+            return;
         }
         $this->load->model('employeemodel');
         $store_ids = Employeemodel::getMyStoreids();
@@ -261,16 +254,43 @@ class Residentct extends MY_Controller
         } else {
             $count_wbfb = '100'.'%';
         }
+        //入住
+        $checkin = [
+            ['name' => '总房量', 'count' => $count_z, 'bfb' => null],
+            ['name' => '已出租', 'count' => $count_yz, 'bfb' => $count_ybfb . ",$count_yz"],
+            ['name' => '未出租', 'count' => $count_wcz, 'bfb' => $count_wbfb . ",$count_wcz"]
+        ];
+        $this->api_res(0, $checkin);
+    }
+
+    /**
+     * 访问途径数据统计
+     */
+    public function dataVisit()
+    {
+        $post = $this->input->post(null, true);
+        $date = isset($post['date']) ? $post['date'] : null;
+        $date_m = $this->getDate($date);
+        if (!$date_m) {
+            $this->api_res(1007, ['error' => '指定日期不正确']);
+            return;
+        }
+        $this->load->model('employeemodel');
+        $store_ids = Employeemodel::getMyStoreids();
+        if (!$store_ids) {
+            $this->api_res(1007, ['error' => '没有找到门店']);
+            return;
+        }
         //获取来访方式信息
         $this->load->model('reserveordermodel');
         $field = ['初始值', '58同城', '豆瓣','租房网',
-                    '嗨住', 'zuber', '中介', '路过',
-                    '老带新', '朋友介绍', '微信', '同行转介',
-                    '闲鱼', '蘑菇租房', '微博', '其它'
-                ];
+            '嗨住', 'zuber', '中介', '路过',
+            '老带新', '朋友介绍', '微信', '同行转介',
+            '闲鱼', '蘑菇租房', '微博', '其它'
+        ];
         foreach($field  as $key => $value) {
             $count = Reserveordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)
-                    ->where('source', $key)->count();
+                ->where('source', $key)->count();
             $data['name'] = $value;
             $data['count'] =  $count;
             $datas[] = $data;
@@ -287,14 +307,101 @@ class Residentct extends MY_Controller
                 }
             }
         }
-        //入住
-        $visit = [
-            ['name' => '总房量', 'count' => $count_z, 'bfb' => null],
-            ['name' => '已出租', 'count' => $count_yz, 'bfb' => $count_ybfb . ",$count_yz"],
-            ['name' => '未出租', 'count' => $count_wcz, 'bfb' => $count_wbfb . ",$count_wcz"]
-        ];
+        $this->api_res(0, $datas);
+    }
 
+    /**
+     * 房型数据统计
+     */
+    public function dataApartment()
+    {
+        $post = $this->input->post(null, true);
+        $date = isset($post['date']) ? $post['date'] : null;
+        $date_m = $this->getDate($date);
+        if (!$date_m) {
+            $this->api_res(1007, ['error' => '指定日期不正确']);
+            return;
+        }
+        $data = $this->getApartmentInfo($date_m);
+        //房型合计
+        $hj_zfl = null;
+        $hj_kx  = null;
+        $hj_yz  = null;
+        $hj_dq  = null;
+        foreach($data[1] as $key => $value) {
+            $hj_zfl += $value['count_fxzfl'];
+            $hj_kx  += $value['count_fxkx'];
+            $hj_yz  += $value['count_fxyz'];
+            $hj_dq  += $value['count_fxdq'];
+        }
+        if ($hj_yz != 0) {
+            $percentage = round(($hj_yz / $hj_zfl), 4) * 100;
+            $hj_bfb = $percentage.'%'; //百分比
+        } else {
+            $hj_bfb = 0;
+        }
+        $fx_hj = ['hj_zfl' => $hj_zfl, 'hj_kx' => $hj_kx, 'hj_yz' => $hj_yz, 'hj_dq' => $hj_dq, 'hj_bfb' => $hj_bfb];
+
+        $this->api_res(0, ['fx_data' => $data[1], 'fx_hj' => $fx_hj]);
+    }
+
+    /**
+     * 空闲数据统计
+     */
+    public function datafree()
+    {
+        $post = $this->input->post(null, true);
+        $date = isset($post['date']) ? $post['date'] : null;
+        $date_m = $this->getDate($date);
+        if (!$date_m) {
+            $this->api_res(1007, ['error' => '指定日期不正确']);
+            return;
+        }
+        $data = $this->getApartmentInfo($date_m);
+
+        //获取房型空闲状态信息
+        $date_k7 = [date('Y-m-d', time()), date('Y-m-d', strtotime('+1 week'))];
+        $date_k8 = [date('Y-m-d', strtotime('+8 days')), date('Y-m-d', strtotime('+30 days'))];
+        foreach ($data[0] as $key => $rt) {
+            $kx_datas[$key]['name'] = $data[1][$key]['name'];
+            $kx_datas[$key]['feature'] = $data[1][$key]['feature'];
+            $kx_datas[$key]['count_fxkx'] = $data[1][$key]['count_fxkx'];
+            $count_fxkx7 = Roomunionmodel::whereIn('store_id', $data[2])->where('room_type_id', $rt)->whereBetween('begin_time', $date_k7)->where('status', 'BLANK')->count();
+            $kx_datas[$key]['count_fxkx7'] = $count_fxkx7;
+            $count_fxkx8 = Roomunionmodel::whereIn('store_id', $data[2])->where('room_type_id', $rt)->whereBetween('begin_time', $date_k8)->where('status', 'BLANK')->count();
+            $kx_datas[$key]['count_fxkx8'] = $count_fxkx8;
+            $count_fxkx31 = $kx_datas[$key]['count_fxkx'] - $count_fxkx7 - $count_fxkx8;
+            $kx_datas[$key]['count_fxkx31'] = $count_fxkx31;
+        }
+        //房型空闲合计
+        $hj_fxkz = null;
+        $hj_fxkx7 = null;
+        $hj_fxkx8 = null;
+        $hj_fxkx31 = null;
+        foreach($kx_datas as $key => $value) {
+            $hj_fxkz += $value['count_fxkx'];
+            $hj_fxkx7  += $value['count_fxkx7'];
+            $hj_fxkx8  += $value['count_fxkx8'];
+            $hj_fxkx31  += $value['count_fxkx31'];
+        }
+        $fx_kzhj = ['hj_fxkz' => $hj_fxkz, 'hj_fxkx7' => $hj_fxkx7, 'hj_fxkx8' => $hj_fxkx8, 'hj_fxkx31' => $hj_fxkx31];
+
+        $this->api_res(0, ['fxkx_data' => $kx_datas, 'fxkx_hj' => $fx_kzhj]);
+    }
+
+    /**
+     * 获取房型信息
+     */
+    public function getApartmentInfo($date_m)
+    {
+        $this->load->model('employeemodel');
+        $store_ids = Employeemodel::getMyStoreids();
+        if (!$store_ids) {
+            $this->api_res(1007, ['error' => '没有找到门店']);
+            return;
+        }
         //获取房型id
+        $this->load->model('roomunionmodel');
         $rts = Roomunionmodel::whereIn('store_id', $store_ids)->groupBy('room_type_id')->get(['room_type_id'])->map(function ($t) {
             return $t->room_type_id;
         });
@@ -310,7 +417,6 @@ class Residentct extends MY_Controller
             $rt_data['feature'] = $rtnf->feature;
             $rt_datas[] = $rt_data;
         }
-        //获取总房量，空闲，已租，到期，出租率
         foreach ($rts as $key => $rt) {
             $count_fxzfl = Roomunionmodel::whereIn('store_id', $store_ids)->where('room_type_id', $rt)->count();
             $count_fxyz = Roomunionmodel::whereIn('store_id', $store_ids)->where('room_type_id', $rt)->whereBetween('begin_time', $date_m)->where('status', 'RENT')->count();
@@ -333,56 +439,26 @@ class Residentct extends MY_Controller
             }
             $rt_datas[$key]['count_fxbfb'] = $count_fxbfb;
         }
-        //房型合计
-        $hj_zfl = null;
-        $hj_kx  = null;
-        $hj_yz  = null;
-        $hj_dq  = null;
-        foreach($rt_datas as $key => $value) {
-            $hj_zfl += $value['count_fxzfl'];
-            $hj_kx  += $value['count_fxkx'];
-            $hj_yz  += $value['count_fxyz'];
-            $hj_dq  += $value['count_fxdq'];
-        }
-        if ($hj_yz != 0) {
-            $percentage = round(($hj_yz / $hj_zfl), 4) * 100;
-            $hj_bfb = $percentage.'%'; //百分比
+        return [$rts, $rt_datas, $store_ids];
+    }
+
+    /**
+     * 获取date
+     */
+    public function getDate($date)
+    {
+        if (!$date) { //为指定日期时默认为当前月
+            $date_m = [date('Y-m', time()), date('Y-m-d H-i-s', time())]; //当前月至现在
         } else {
-            $hj_bfb = 0;
+            if (strtotime($date) > time()) {  //指定月超过现在时间
+                return null;
+            } else if (strtotime($date) == strtotime(date('Y-m', time()))) { //指定月是现在月
+                $date_m = [date('Y-m', time()), date('Y-m-d H-i-s', time())];
+            } else {
+                $date_m = [$date, date('Y-m-t', strtotime($date))]; //指定月为过去某月
+            }
         }
-        $fx_hj = ['hj_zfl' => $hj_zfl, 'hj_kx' => $hj_kx, 'hj_yz' => $hj_yz, 'hj_dq' => $hj_dq, 'hj_bfb' => $hj_bfb];
-
-        //获取房型空闲状态信息
-        $date_k7 = [date('Y-m-d', time()), date('Y-m-d', strtotime('+1 week'))];
-        $date_k8 = [date('Y-m-d', strtotime('+8 days')), date('Y-m-d', strtotime('+30 days'))];
-        foreach ($rts as $key => $rt) {
-            $kx_datas[$key]['name'] = $rt_datas[$key]['name'];
-            $kx_datas[$key]['feature'] = $rt_datas[$key]['feature'];
-            $kx_datas[$key]['count_fxkx'] = $rt_datas[$key]['count_fxkx'];
-            $count_fxkx7 = Roomunionmodel::whereIn('store_id', $store_ids)->where('room_type_id', $rt)->whereBetween('begin_time', $date_k7)->where('status', 'BLANK')->count();
-            $kx_datas[$key]['count_fxkx7'] = $count_fxkx7;
-            $count_fxkx8 = Roomunionmodel::whereIn('store_id', $store_ids)->where('room_type_id', $rt)->whereBetween('begin_time', $date_k8)->where('status', 'BLANK')->count();
-            $kx_datas[$key]['count_fxkx8'] = $count_fxkx8;
-            $count_fxkx31 = $kx_datas[$key]['count_fxkx'] - $count_fxkx7 - $count_fxkx8;
-            $kx_datas[$key]['count_fxkx31'] = $count_fxkx31;
-        }
-        //房型空闲合计
-        $hj_fxkz = null;
-        $hj_fxkx7 = null;
-        $hj_fxkx8 = null;
-        $hj_fxkx31 = null;
-        foreach($kx_datas as $key => $value) {
-            $hj_fxkz += $value['count_fxkx'];
-            $hj_fxkx7  += $value['count_fxkx7'];
-            $hj_fxkx8  += $value['count_fxkx8'];
-            $hj_fxkx31  += $value['count_fxkx31'];
-        }
-        $fx_kzhj = ['hj_fxkz' => $hj_fxkz, 'hj_fxkx7' => $hj_fxkx7, 'hj_fxkx8' => $hj_fxkx8, 'hj_fxkx31' => $hj_fxkx31];
-
-        $this->api_res(0, ['visit' => $visit, 'data' => $datas,
-                                'fx_data' => $rt_datas, 'fx_hj' => $fx_hj,
-                                'fxkx_data' => $kx_datas, 'fxkx_hj' => $fx_kzhj]
-            );
+        return $date_m;
     }
 
     /**
