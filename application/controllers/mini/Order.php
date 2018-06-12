@@ -49,7 +49,7 @@ class Order extends MY_Controller
     /**
      * [根据所选的订单获取能使用的优惠券]
      */
-    public function getAvailableCoupons(Request $request, ResidentRepo $residentRepo, CouponRepo $couponRepo)
+    public function getAvailableCoupons()
     {
 
         $input  = $this->input->post(null,true);
