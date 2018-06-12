@@ -11,11 +11,13 @@ class copy extends MY_Controller
 {
 
     public function run(){
-       // $this->copy_contract_template();
-       // $this->templateToUnionRoom();
-        //$this->customerUxid();
-        //$this->residentUxid();
-        //$this->contractUxid();
+        //$this->transferImages();
+        //$this->copy_contract_template();
+//       $this->templateToUnionRoom();
+//        $this->customerUxid();
+//        $this->residentUxid();
+//        $this->contractUxid();
+//        $this->updateResidentStoreId();
         //$this->orderToNew();
         //$this->orderToBill();
         //$this->billToOrder();
@@ -84,7 +86,7 @@ class copy extends MY_Controller
         $this->load->model('roomunionmodel');
         $this->load->model('roomtypemodel');
         $roomtypes  = Roomtypemodel::all();
-
+        DB::beginTransaction();
         foreach ($roomtypes as $roomtype){
             $roomtype_id    = $roomtype->id;
             $fdd_tpl_id = $roomtype->fdd_tpl_id;
@@ -129,7 +131,7 @@ class copy extends MY_Controller
                         $template->rent_type    = $key;
                     }
 
-                    $template->fdd_tpl_path = $item['path'];
+                    $template->contract_tpl_path = $item['path'];
                     $template->url = $item['url'];
                     $template->save();
 
@@ -137,7 +139,7 @@ class copy extends MY_Controller
 
             }
         }
-
+        DB::commit();
         $this->api_res(0);
         //var_dump($roomtypes);
 
@@ -226,20 +228,47 @@ class copy extends MY_Controller
         $contracts = Contractmodel::all();
 
         foreach ($contracts as $contract){
+
             $resident   = Residentmodel::find($contract->resident_id);
+
             if(empty($resident)){
                 continue;
             }
-            $contract->uxid = $contract->resident->uxid;
-            $contract->customer_id = $contract->resident->customer_id;
+            $contract->uxid = $resident->uxid;
+            $contract->customer_id = $resident->customer_id;
             $contract->save();
 
+//            var_dump($contract->toArray());exit;
         }
+
+
 
         $this->api_res(0);
 
     }
 
+    /**
+     * 更新resident 表里的 store_id
+     */
+
+    public function updateResidentStoreId(){
+
+        $this->load->model('roomunionmodel');
+        $this->load->model('residentmodel');
+
+        $residents  = Residentmodel::all();
+        foreach ($residents as $resident){
+            if($resident->roomunion){
+                $resident->store_id = $resident->roomunion->store_id;
+                $resident->save();
+            }
+
+            //var_dump($resident->roomunion->store_id);exit;
+
+        }
+        echo 'ok';
+
+    }
 
     /**
      * 订单转入新的订单表
