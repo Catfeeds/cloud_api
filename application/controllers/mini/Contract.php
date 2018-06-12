@@ -12,8 +12,37 @@ class Contract extends MY_Controller{
         log_message('error','FDD合同签署回调成功');
     }
 
-    public function unSignContract()
+    /**
+     * 未归档的合同包括 住户未生成和住户未签署以及住户签署员工未签署
+     */
+    public function listUnSign()
     {
+        $this->input->post(null,true);
+        $page   = (int)(isset($input['page'])?$input['page']:1);
+        $per_page   = isset($input['per_page'])?$input['per_page']:PAGINATE;
+        $offset = ($page-1)*PAGINATE;
+        $where=[];
+        isset($input['room_number'])?$where['number']=$input['room_number']:null;
 
+        $this->load->model('residentmodel');
+        $this->load->model('roomunionmodel');
+        $this->load->model('contractmodel');
+
+        $rooms  = Roomunionmodel::whereHas('resident',function($query){
+            $query->whereHas('contract',function ($que){
+                $que->where('status','!=',Contractmodel::STATUS_ARCHIVED);
+            })->orDoesntHave('contract')
+            ;
+        })
+            ->where('resident_id','>',0)
+            ->orderBy('updated_at','ASC')
+            ->offset($offset)
+            ->limit($per_page)
+            ->get();
+            //->orderBy('resident.created_at')
+            //->groupBy('resident.contract.status');
+            $this->api_res(0,['data'=>$rooms]);
     }
+
+
 }

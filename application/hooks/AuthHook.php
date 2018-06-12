@@ -168,6 +168,8 @@ class AuthHook {
             'mini/reserve/room_type',
             'mini/reserve/reservestatus',
 
+            'mini/contract/listunsign',
+
             'mini/visitrecord/visit',
             'mini/login/gettoken',
             'mini/login/handleloginstatus',

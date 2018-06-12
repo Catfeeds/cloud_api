@@ -99,6 +99,8 @@ use Carbon\Carbon;
 
          return $this->belongsTo(Roomunionmodel::class,'room_id');
      }
+
+
      public function room(){
 
          return $this->belongsTo(Roomunionmodel::class,'room_id')->select('id','store_id','number');
