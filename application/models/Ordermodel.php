@@ -285,7 +285,7 @@ class Ordermodel extends Basemodel{
             ->orderBy('room_id', 'ASC')
             ->orderBy('updated_at', 'DESC')
             ->get()
-            ->groupBy('room_id')->groupBy('store_pay_id');
+            ->groupBy('room_id');
 
 
         $pagination     = [
