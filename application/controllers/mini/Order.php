@@ -55,7 +55,7 @@ class Order extends MY_Controller
         if(isset($input['room_number'])){
             $room   = Roomunionmodel::where([
                 'store_id'=>$store_id,
-                'number'=>$input['number']
+                'number'=>$input['room_number']
             ])->first();
             $where['room_id']  = $room->id;
         }
