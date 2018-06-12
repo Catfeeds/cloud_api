@@ -39,6 +39,22 @@ class Order extends MY_Controller
         $this->load->model('residentmodel');
         $this->load->model('employeemodel');
 
+        $count  = ceil((Ordermodel::with('store','roomunion','resident','employee')
+                ->where(function ($query) use ($search){
+                    $query->orWhereHas('resident',function($query) use($search){
+                        $query->where('name','like',"%$search%");
+                    })->orWhereHas('roomunion',function($query) use($search){
+                        $query->where('number','like',"%$search%");
+                    })->orWhereHas('employee',function($query) use($search){
+                        $query->where('name','like',"%$search%");
+                    });
+                })->count())/PAGINATE);
+
+        if($count<$page){
+            $this->api_res(0,[]);
+            return;
+        }
+
         $orders = Ordermodel::with('store','roomunion','resident','employee')
             ->where(function ($query) use ($search){
                 $query->orWhereHas('resident',function($query) use($search){
@@ -54,7 +70,7 @@ class Order extends MY_Controller
             ->get()->toArray();
 
 
-        $this->api_res(0,['orders'=>$orders]);
+        $this->api_res(0,['orders'=>$orders,'total_page'=>$count]);
 
 
 
