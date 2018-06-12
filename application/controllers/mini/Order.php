@@ -60,6 +60,7 @@ class Order extends MY_Controller
         $input  = $this->input->post(null,true);
         $resident_id    = $input['resident_id'];
         $order_ids      = $input['order_ids'];
+        log_message('error','TYPE'.gettype($order_ids));
         $orderIds   = $this->getRequestIds( $order_ids);
         $this->load->model('residentmodel');
         $this->load->model('ordermodel');
