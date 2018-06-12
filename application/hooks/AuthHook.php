@@ -168,7 +168,7 @@ class AuthHook {
             'mini/reserve/room_type',
             'mini/reserve/reservestatus',
 
-            'mini/contract/listunsign',
+//            'mini/contract/listunsign',
 
             'mini/visitrecord/visit',
             'mini/login/gettoken',
@@ -209,8 +209,13 @@ class AuthHook {
             'resident/resident/contract',
             'resident/resident/bill',
 
-        );
 
+
+        );
+//        if(ENVIRONMENT !=='production')
+//        {
+//
+//        }
 
         $directory = $this->CI->router->fetch_directory();
         $class = $this->CI->router->fetch_class();

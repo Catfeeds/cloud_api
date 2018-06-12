@@ -22,6 +22,7 @@ class Contract extends MY_Controller{
         $per_page   = isset($input['per_page'])?$input['per_page']:PAGINATE;
         $offset = ($page-1)*PAGINATE;
         $where=[];
+        $where['store_id']=$this->employee->store_id;
         isset($input['room_number'])?$where['number']=$input['room_number']:null;
 
         $this->load->model('residentmodel');
@@ -35,6 +36,7 @@ class Contract extends MY_Controller{
             ;
         })
             ->where('resident_id','>',0)
+            ->where($where)
             ->orderBy('updated_at','ASC')
             ->offset($offset)
             ->limit($per_page)
