@@ -537,6 +537,7 @@ class Order extends MY_Controller
             return;
         }
         $couponIds = $this->getRequestIds($coupon_ids);
+        log_message('error',json_encode($couponIds));
         $coupons = $this->unusedCouponsOfSpecifiedResident($resident, $couponIds);
         if (!$coupons) {
             $this->api_res(10019);
