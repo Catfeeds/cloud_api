@@ -49,7 +49,7 @@ class AuthHook {
             //'mini/resident/showqrcode',
 //            'mini/resident/reservation',
             'mini/resident/getresident',
-            'mini/resident/listresident',
+//            'mini/resident/listresident',
             'mini/resident/unconfirm',
             'mini/resident/bookingtocheckin',
             'mini/resident/renew',
