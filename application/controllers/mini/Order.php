@@ -381,15 +381,15 @@ class Order extends MY_Controller
     {
         $ids    = explode(',',$ids);
 
-        if (!is_array($ids)) {
-            throw new \Exception('请检查参数: ids的参数类型应该为数组');
-        }
-
-        foreach ($ids as $id) {
-            if (!is_numeric($id)) {
-                throw new \Exception('请检查参数: id应该为整型');
-            }
-        }
+//        if (!is_array($ids)) {
+//            throw new \Exception('请检查参数: ids的参数类型应该为数组');
+//        }
+//
+//        foreach ($ids as $id) {
+//            if (!is_numeric($id)) {
+//                throw new \Exception('请检查参数: id应该为整型');
+//            }
+//        }
 
         return $ids;
     }
