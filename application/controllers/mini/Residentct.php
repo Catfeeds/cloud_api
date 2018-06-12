@@ -260,7 +260,7 @@ class Residentct extends MY_Controller
             ['name' => '已出租', 'count' => $count_yz, 'bfb' => $count_ybfb . ",$count_yz"],
             ['name' => '未出租', 'count' => $count_wcz, 'bfb' => $count_wbfb . ",$count_wcz"]
         ];
-        $this->api_res(0, $checkin);
+        $this->api_res(0, json_encode($checkin));
     }
 
     /**
