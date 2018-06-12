@@ -50,7 +50,7 @@ class AuthHook {
 //            'mini/resident/reservation',
             'mini/resident/getresident',
 //            'mini/resident/listresident',
-//            'mini/resident/unconfirm',
+            'mini/resident/unconfirm',
 //            'mini/resident/bookingtocheckin',
             'mini/resident/renew',
             'mini/checkout/listcheckout',
@@ -210,28 +210,28 @@ class AuthHook {
         );
 
 
-        $directory  = $this->CI->router->fetch_directory();
-        $class      = $this->CI->router->fetch_class();
-        $method     = $this->CI->router->fetch_method();
-        $full_path  = strtolower($directory.$class.'/'.$method);
+        $directory = $this->CI->router->fetch_directory();
+        $class = $this->CI->router->fetch_class();
+        $method = $this->CI->router->fetch_method();
+        $full_path = strtolower($directory . $class . '/' . $method);
         // var_dump( $full_path );
-        if(!in_array($full_path,$authArr)) {
+        if (!in_array($full_path, $authArr)) {
             try {
-                $token   = $this->CI->input->get_request_header('token');
+                $token = $this->CI->input->get_request_header('token');
                 $decoded = $this->CI->m_jwt->decodeJwtToken($token);
-                $d_bxid   = $decoded->bxid;
-                $d_company_id   = $decoded->company_id;
-                define('CURRENT_ID',$d_bxid);
-                define('COMPANY_ID',$d_company_id);
+                $d_bxid = $decoded->bxid;
+                $d_company_id = $decoded->company_id;
+                define('CURRENT_ID', $d_bxid);
+                define('COMPANY_ID', $d_company_id);
 
-                $pre    = substr(CURRENT_ID,0,2);
-                if($pre == SUPERPRE){
+                $pre = substr(CURRENT_ID, 0, 2);
+                if ($pre == SUPERPRE) {
                     //super 拥有所有的权限
                     $this->CI->position = 'SUPER';
-                }else{
+                } else {
                     $this->CI->position = 'EMPLOYEE';
                     $this->CI->load->model('employeemodel');
-                    $this->CI->employee = Employeemodel::where('bxid',CURRENT_ID)->first();
+                    $this->CI->employee = Employeemodel::where('bxid', CURRENT_ID)->first();
                 }
 
                 //操作记录测试

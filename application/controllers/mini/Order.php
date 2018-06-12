@@ -110,6 +110,9 @@ class Order extends MY_Controller
                 'store_id'=>$store_id,
                 'number'=>$input['room_number']
             ])->first();
+            if(empty($room)){
+                $this->api_res(0,['data'=>[]]);
+            }
             $where['room_id']  = $room->id;
         }
 
