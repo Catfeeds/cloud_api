@@ -55,16 +55,12 @@ class Login extends MY_Controller
     public function authority(){
         $this->load->model('storemodel');
         //获取门店列表
-//        $store_ids['id']= explode(',',$this->employee->store_ids);
-//        if (empty($store_ids)||!isset($store_ids)){
-//            $this->api_res(1018);
-//            return;
-//        }
-
-    var_dump("aa");
-        $city   = $this->input->post('city',true);
+        $store_ids['id']= explode(',',$this->employee->store_ids);
+        if (empty($store_ids)||!isset($store_ids)){
+            $this->api_res(1018);
+            return;
+        }
         $where  = ['company_id'=>COMPANY_ID];
-        $city?$where['city']=$city:null;
 
         $data['store'] = Storemodel::where($where)->whereIn($store_ids)->get(['id','name','province','city','district']);
 
