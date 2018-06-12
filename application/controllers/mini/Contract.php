@@ -17,7 +17,7 @@ class Contract extends MY_Controller{
      */
     public function listUnSign()
     {
-        $this->input->post(null,true);
+        $input  = $this->input->post(null,true);
         $page   = (int)(isset($input['page'])?$input['page']:1);
         $per_page   = isset($input['per_page'])?$input['per_page']:PAGINATE;
         $offset = ($page-1)*PAGINATE;
