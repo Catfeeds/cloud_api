@@ -112,6 +112,7 @@ class Order extends MY_Controller
             ])->first();
             if(empty($room)){
                 $this->api_res(0,['data'=>[]]);
+                return;
             }
             $where['room_id']  = $room->id;
         }
