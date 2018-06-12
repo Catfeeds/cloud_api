@@ -514,4 +514,19 @@ class Residentct extends MY_Controller
         }
     }
 
+
+    public function changeCurrentStore()
+    {
+        $input  = $this->input->post(null,true);
+        $store_id   = $input['store_id'];
+        $store_ids  = Employeemodel::getMyStoreids();
+        if(!in_array($store_id,$store_ids)){
+            $this->api_res(10019);
+            return;
+        }
+        $this->employee->store_id   = $store_id;
+        $this->employee->save();
+        $this->api_res(0);
+    }
+
 }
