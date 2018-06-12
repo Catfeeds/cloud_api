@@ -34,8 +34,8 @@ class Order extends MY_Controller
         }
         $input=$this->input->post(null,true);
 
-//        $store_id   = $this->employee->store_id;
-        $store_id   = 1;
+        $store_id   = $this->employee->store_id;
+//        $store_id   = 1;
         $page   = isset($input['page'])?intval(strip_tags(trim($input['page']))):1;
         $per_page   = isset($input['per_page'])?intval(strip_tags(trim($input['per_page']))):PAGINATE;
         $where  = ['store_id'=>$store_id];
