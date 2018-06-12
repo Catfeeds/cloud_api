@@ -295,6 +295,7 @@ class Ordermodel extends Basemodel{
         ];
         $pagination['total_pages']  = (int)ceil($pagination['total'] / $pagination['per_page']);
 
+
         $orders     = $orders->forPage($page, $perPage)
             ->map(function ($items) {
                 $order  = $items->first();

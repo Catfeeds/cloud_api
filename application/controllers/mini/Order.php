@@ -15,6 +15,40 @@ class Order extends MY_Controller
         parent::__construct();
     }
 
+
+    /**
+     * 检索某个房间下的订单, 用于支付时显示
+     */
+    public function showByRoom()
+    {
+
+        $input  = $this->input->post(null,true);
+        $room_id    = $input['room_id'];
+        $resident_id    = $input['resident_id'];
+        $this->load->model('roomunionmodel');
+        $this->load->model('ordermodel');
+        $this->load->model('residentmodel');
+
+        $room   = Roomunionmodel::where('resident_id',$resident_id)->find($room_id);
+
+        if(empty($room))
+        {
+            $this->api_res(1007);
+            return;
+        }
+
+        $resident   = $room->resident;
+
+        $orders = $resident->orders()->where('status',Ordermodel::STATE_PENDING)->get();
+
+        $totalMoney = $orders->sum('money');
+
+
+
+        $this->api_res(0,['totalMoney'=>$totalMoney,'orders'=>$orders,'resident'=>$resident,'room'=>$room]);
+    }
+
+
     /**
      * 订单列表
      * 根据不同的query返回不同的值
