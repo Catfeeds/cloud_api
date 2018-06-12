@@ -43,8 +43,6 @@ class Order extends MY_Controller
 
         $totalMoney = $orders->sum('money');
 
-
-
         $this->api_res(0,['totalMoney'=>$totalMoney,'orders'=>$orders,'resident'=>$resident,'room'=>$room]);
     }
 
