@@ -22,14 +22,17 @@ class Contract extends MY_Controller{
         $per_page   = isset($input['per_page'])?$input['per_page']:PAGINATE;
         $offset = ($page-1)*PAGINATE;
         $where=[];
-        $where['store_id']=$this->employee->store_id;
+//        $where['store_id']=$this->employee->store_id;
         isset($input['room_number'])?$where['number']=$input['room_number']:null;
 
         $this->load->model('residentmodel');
         $this->load->model('roomunionmodel');
         $this->load->model('contractmodel');
 
-        $rooms  = Roomunionmodel::whereHas('resident',function($query){
+        $rooms  = Roomunionmodel::with(['resident'=>function($query){
+            $query->with(['contract']);
+        }])
+            ->whereHas('resident',function($query){
             $query->whereHas('contract',function ($que){
                 $que->where('status','!=',Contractmodel::STATUS_ARCHIVED);
             })->orDoesntHave('contract')
@@ -41,8 +44,8 @@ class Contract extends MY_Controller{
             ->offset($offset)
             ->limit($per_page)
             ->get();
-            //->orderBy('resident.created_at')
-            //->groupBy('resident.contract.status');
+//            ->orderBy('resident.created_at')
+
             $this->api_res(0,['data'=>$rooms]);
     }
 
