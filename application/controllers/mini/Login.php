@@ -53,6 +53,7 @@ class Login extends MY_Controller
     }
 
     public function authority(){
+        $this->load->model('storemodel');
         //获取门店列表
         $store_ids['id']= explode(',',$this->employee->store_ids);
         if (empty($store_ids)||!isset($store_ids)){
