@@ -46,6 +46,27 @@ class Order extends MY_Controller
         $this->api_res(0,['totalMoney'=>$totalMoney,'orders'=>$orders,'resident'=>$resident,'room'=>$room]);
     }
 
+    /**
+     * [根据所选的订单获取能使用的优惠券]
+     */
+    public function getAvailableCoupons(Request $request, ResidentRepo $residentRepo, CouponRepo $couponRepo)
+    {
+
+        $input  = $this->input->post(null,true);
+        $resident_id    = $input['resident_id'];
+        $order_ids      = $input['order_ids'];
+        $orderIds   = $this->getRequestIds( $order_ids);
+        $this->load->model('residentmodel');
+        $this->load->model('ordermodel');
+        $this->load->model('couponmodel');
+        $resident= Residentmodel::find($resident_id);
+        $orders     = $this->undealOrdersOfSpecifiedResident($resident, $orderIds);
+
+        $coupons    = $this->couponmodel->queryByOrders($resident,$orders);
+
+        $this->api_res(0,['coupons'=>$coupons]);
+    }
+
 
     /**
      * 订单列表
@@ -200,14 +221,14 @@ class Order extends MY_Controller
      *
      * @return [OrderCollection]           [Order集合]
      */
-    private function undealOrdersOfSpecifiedResident($resident, $request, $confirm = false)
+    private function undealOrdersOfSpecifiedResident($resident, $order_ids, $confirm = false)
     {
         $status     = Ordermodel::STATE_PENDING;
 
         if ($confirm) {
             $status     = Ordermodel::STATE_CONFIRM;
         }
-        $orderIds   = $request;
+        $orderIds   = $order_ids;
         $orders     = $resident->orders()
             ->whereIn('id', $orderIds)
             ->where('status', $status)

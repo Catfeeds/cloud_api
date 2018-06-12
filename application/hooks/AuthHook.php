@@ -66,6 +66,7 @@ class AuthHook {
             'bill/bill/listbill',
             'bill/order/listorder',
 
+            'mini/order/getavailablecoupons',
 //            'mini/order/listorder',
 //            'mini/order/showbyroom',
             //'mini/order/confirm',
