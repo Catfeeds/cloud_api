@@ -11,4 +11,9 @@ class Contract extends MY_Controller{
     public function notify(){
         log_message('error','FDD合同签署回调成功');
     }
+
+    public function unSignContract()
+    {
+
+    }
 }

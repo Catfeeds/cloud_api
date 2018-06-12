@@ -47,7 +47,7 @@ class AuthHook {
             //'mini/resident/checkin',
             'mini/resident/destory',
             //'mini/resident/showqrcode',
-            'mini/resident/reservation',
+//            'mini/resident/reservation',
             'mini/resident/getresident',
             'mini/resident/listresident',
             'mini/resident/unconfirm',
