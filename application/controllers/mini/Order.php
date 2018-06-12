@@ -379,6 +379,7 @@ class Order extends MY_Controller
      */
     private function getRequestIds($ids)
     {
+        $ids    = explode(',',$ids);
 
         if (!is_array($ids)) {
             throw new \Exception('请检查参数: ids的参数类型应该为数组');
