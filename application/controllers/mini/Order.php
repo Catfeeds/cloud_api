@@ -17,7 +17,7 @@ class Order extends MY_Controller
 
 
     /**
-     * 检索某个房间下的订单, 用于支付时显示
+     * 检索某个房间下的订单, 用于未交费支付时显示
      */
     public function showByRoom()
     {
@@ -25,6 +25,7 @@ class Order extends MY_Controller
         $input  = $this->input->post(null,true);
         $room_id    = $input['room_id'];
         $resident_id    = $input['resident_id'];
+        $status     = $input['status'];
         $this->load->model('roomunionmodel');
         $this->load->model('ordermodel');
         $this->load->model('residentmodel');
@@ -39,12 +40,16 @@ class Order extends MY_Controller
 
         $resident   = $room->resident;
 
-        $orders = $resident->orders()->where('status',Ordermodel::STATE_PENDING)->get();
+        $orders = $resident->orders()->where('status',$status)->get();
 
         $totalMoney = $orders->sum('money');
 
         $this->api_res(0,['totalMoney'=>$totalMoney,'orders'=>$orders,'resident'=>$resident,'room'=>$room]);
     }
+
+    /**
+     * 微信缴费订单确认页面
+     */
 
     /**
      * [根据所选的订单获取能使用的优惠券]
