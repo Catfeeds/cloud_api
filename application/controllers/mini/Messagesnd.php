@@ -278,11 +278,11 @@ class Messagesnd extends MY_Controller
                 'label' => '末尾提醒',
                 'rules' => 'trim|required',
             ),
-            array(
-                'field' => 'preview',
-                'label' => '预览',
-                'rules' => 'trim|required',
-            ),
+//            array(
+//                'field' => 'preview',
+//                'label' => '预览',
+//                'rules' => 'trim|required',
+//            ),
         );
         return $config;
     }
