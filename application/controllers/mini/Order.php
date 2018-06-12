@@ -59,6 +59,7 @@ class Order extends MY_Controller
             ])->first();
             $where['room_id']  = $room->id;
         }
+
         $data   = $this->ordermodel->ordersOfRooms($where,$page,$per_page);
 
         $this->api_res(0,['data'=>$data]);
