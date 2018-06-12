@@ -111,10 +111,12 @@ class Store extends MY_Controller
         $where  = ['company_id'=>COMPANY_ID];
         $city?$where['city']=$city:null;
         $store_ids['id']= explode(',',$this->employee->store_ids);
+
         if (empty($store_ids)||!isset($store_ids)){
             $this->api_res(1018);
             return;
         }
+
         $store  = Storemodel::where($where)->whereIn($store_ids)->get(['id','name','province','city','district']);
         $this->api_res(0,['stores'=>$store]);
     }
