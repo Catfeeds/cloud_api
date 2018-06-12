@@ -64,7 +64,7 @@ class Login extends MY_Controller
 
         $data['store'] = Storemodel::where($where)->whereIn($store_ids)->get(['id','name','province','city','district']);
 
-        $this->api_res(0,['stores'=>$data]);
+        $this->api_res(0,$data);
 
 
 
