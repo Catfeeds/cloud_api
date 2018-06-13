@@ -280,7 +280,9 @@ class Ordermodel extends Basemodel{
 
         $query  = $query->where($where);
 
-        $orders     = $query->whereNotIn('status', [Ordermodel::STATE_AUDITED, Ordermodel::STATE_GENERATED])
+        $orders     = $query
+            ->with('resident')->whereHas('resident')
+            ->whereNotIn('status', [Ordermodel::STATE_AUDITED, Ordermodel::STATE_GENERATED])
             ->orderBy('status', 'ASC')
             ->orderBy('room_id', 'ASC')
             ->orderBy('updated_at', 'DESC')
@@ -302,8 +304,8 @@ class Ordermodel extends Basemodel{
                 log_message('error','RESIDENT_ID'.$order->resident_id);
                 return [
                     'room'  => [
-                        'id'        => $order->roomunion->id,
-                        'number'    => $order->roomunion->number,
+                        'id'        => $order->resident->roomunion->id,
+                        'number'    => $order->resident->roomunion->number,
                     ],
                     'orders'    => [
                         'status'        => $order->status,
