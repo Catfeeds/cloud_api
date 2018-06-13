@@ -53,7 +53,7 @@ class Server extends MY_Controller
             return;
         };
 
-        $server = Serviceordermodel::with('roomType')->find($id)->toArray();
+        $server = Serviceordermodel::with('roomunion','customer')->find($id)->toArray();
         $this->api_res(0,$server);
     }
 
