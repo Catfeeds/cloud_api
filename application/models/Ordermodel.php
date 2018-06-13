@@ -300,7 +300,6 @@ class Ordermodel extends Basemodel{
             ->map(function ($items) {
                 $order  = $items->first();
                 log_message('error','RESIDENT_ID'.$order->resident_id);
-
                 return [
                     'room'  => [
                         'id'        => $order->roomunion->id,
