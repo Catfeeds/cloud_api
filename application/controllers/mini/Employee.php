@@ -40,8 +40,7 @@ class Employee extends MY_Controller
         $current_page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
         $pre_page = isset($post['pre_page']) ? intval($post['pre_page']) : 10;//当前页显示条数
         $offset = $pre_page * ($current_page - 1);
-        $total = Employeemodel::where('company_id', COMPANY_ID)
-            ->where('status', 'ENABLE')->count();
+        $total = Employeemodel::where('status', 'ENABLE')->count();
         $total_pages = ceil($total / $pre_page);//总页数
         if ($current_page > $total_pages) {
             $this->api_res(0, ['total' => $total, 'pre_page' => $pre_page, 'current_page' => $current_page,
@@ -49,10 +48,7 @@ class Employee extends MY_Controller
             return;
         }
         $this->load->model('positionmodel');
-        $category = Employeemodel::with(['position' => function ($query) {
-            $query->select('id', 'name');
-        }])->where('company_id', COMPANY_ID)
-            ->where('status', 'ENABLE')->take($pre_page)->skip($offset)
+        $category = Employeemodel::with('position')->where('status', 'ENABLE')->take($pre_page)->skip($offset)
             ->orderBy('id', 'desc')->get($field)->toArray();
         $this->api_res(0, ['total' => $total, 'pre_page' => $pre_page, 'current_page' => $current_page,
                                 'total_pages' => $total_pages, 'data' => $category]);
