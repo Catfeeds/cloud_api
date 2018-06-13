@@ -11,14 +11,14 @@ class copy extends MY_Controller
 {
 
     public function run(){
-        //$this->transferImages();
+//        $this->transferImages();
         //$this->copy_contract_template();
 //       $this->templateToUnionRoom();
 //        $this->customerUxid();
 //        $this->residentUxid();
 //        $this->contractUxid();
 //        $this->updateResidentStoreId();
-        //$this->orderToNew();
+//        $this->orderToNew();
         //$this->orderToBill();
         //$this->billToOrder();
 
@@ -36,9 +36,12 @@ class copy extends MY_Controller
         $this->load->model('storemodel');
         $this->load->model('roomtypemodel');
 
-        //$images = Imagesmodel::get(['id','apartment_id','room_type_id','url'])->where('apartment_id',0)->where('room_type_id',0)->groupBy('apartment_id');
-        //$images = Imagesmodel::get(['id','apartment_id','room_type_id','url'])->where('apartment_id','>',0)->where('room_type_id',0)->groupBy('apartment_id');
+//        $bimages = Imagesmodel::get(['id','apartment_id','room_type_id','url'])->where('apartment_id',0)->where('room_type_id',0)->groupBy('apartment_id');
+//        $images = Imagesmodel::get(['id','apartment_id','room_type_id','url'])->where('apartment_id','>',0)->where('room_type_id',0)->groupBy('apartment_id');
         $images = Imagesmodel::get(['id','apartment_id','room_type_id','url'])->where('apartment_id',0)->where('room_type_id','>',0)->groupBy('room_type_id');
+
+
+
 
         $array  = [];
 
@@ -50,9 +53,11 @@ class copy extends MY_Controller
 
         }
 
+
 //        foreach ($array as $key=>$value){
 //            $store=Storemodel::find($key);
 //            $store->images  = $value;
+//            //var_dump(($value));exit;
 //            $store->save();
 //        }
 
@@ -64,7 +69,8 @@ class copy extends MY_Controller
                 log_message('error',"no room_type $key");
                 continue;
             }
-            $roomtype->images  = $value;
+            $roomtype->images  = json_encode($value);
+//            var_dump($value);exit;
             $roomtype->save();
         }
 

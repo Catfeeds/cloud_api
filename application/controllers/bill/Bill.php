@@ -57,6 +57,24 @@ class Bill extends MY_Controller
         $this->api_res(0,['bills'=>$bills,'total_page'=>$total_page]);
     }
 
+    /**
+     * 查看流水下的账单信息
+     */
+    public function showOrdersByBill()
+    {
+        $this->load->model('billmodel');
+        $this->load->model('ordermodel');
+        $input  = $this->input->post(null,true);
+        $bill_id    = $input['bill_id'];
+        $bill   = Billmodel::find($bill_id);
+        if(empty($bill))
+        {
+            $this->api_res(1007);
+            return;
+        }
+        $orders = 1;
+
+    }
 
 
 
