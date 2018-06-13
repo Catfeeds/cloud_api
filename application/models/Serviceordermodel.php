@@ -19,4 +19,13 @@ class Serviceordermodel extends Basemodel
     {
         return $this->belongsTo(Servicetypemodel::class,'service_type_id')->select('id','name');
     }
+
+    public function roomunion()
+    {
+        return $this->belongsTo(Roomunionmodel::class,'room_id');
+    }
+    public function customer()
+    {
+        return $this->belongsTo(Customermodel::class,'customer_id');
+    }
 }
