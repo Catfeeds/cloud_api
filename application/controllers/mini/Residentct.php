@@ -13,6 +13,12 @@ class Residentct extends MY_Controller
     {
         parent::__construct();
         $this->load->model('residentmodel');
+        $this->load->model('employeemodel');
+        $this->load->model('Contractmodel');
+        $this->load->model('roomunionmodel');
+        $this->load->model('customermodel');
+        $this->load->model('smartdevicemodel');
+        $this->load->model('storemodel');
     }
 
     /**
@@ -21,7 +27,6 @@ class Residentct extends MY_Controller
     public function showCenter()
     {
         $post = $this->input->post(null, true);
-        $this->load->model('employeemodel');
         $store_ids = Employeemodel::getMyStoreids();
         if (!$store_ids) {
             $this->api_res(1007, ['error' => '没有找到门店']);
@@ -29,11 +34,9 @@ class Residentct extends MY_Controller
         }
 
         $current_page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
-        $pre_page = isset($post['pre_page']) ? intval($post['pre_page']) : 10;//当前页显示条数
+        $pre_page = isset($post['pre_page']) ? intval($post['pre_page']) : 15;//当前页显示条数
         $offset = $pre_page * ($current_page - 1);
         $field = ['id', 'name', 'room_id', 'customer_id','status'];
-        $this->load->model('roomunionmodel');
-        $this->load->model('customermodel');
 
         $total = Residentmodel::whereIn('store_id', $store_ids)->count();
         $total_pages = ceil($total / $pre_page);//总页数
@@ -42,11 +45,7 @@ class Residentct extends MY_Controller
                 'total_pages' => $total_pages, 'data' => []]);
             return;
         }
-        $category = Residentmodel::with(['roomunion' => function ($query) {
-            $query->select('id', 'number');
-        }])->with(['customer' => function ($query) {
-            $query->select('id', 'avatar');
-        }])->whereIn('store_id', $store_ids)->take($pre_page)->skip($offset)
+        $category = Residentmodel::with('roomunion','customer','contract')->whereIn('store_id', $store_ids)->take($pre_page)->skip($offset)
             ->orderBy('id', 'desc')->get($field)->toArray();
         $this->api_res(0, ['total' => $total, 'pre_page' => $pre_page, 'current_page' => $current_page,
             'total_pages' => $total_pages, 'data' => $category]);
@@ -58,7 +57,6 @@ class Residentct extends MY_Controller
     public function searchResident()
     {
         $post   = $this->input->post(null,true);
-        $this->load->model('employeemodel');
         $store_ids = Employeemodel::getMyStoreids();
         if (!$store_ids) {
             $this->api_res(1007, ['error' => '没有找到门店']);
@@ -70,7 +68,6 @@ class Residentct extends MY_Controller
         $pre_page = isset($post['pre_page']) ? intval($post['pre_page']) : 10;//当前页显示条数
         $offset = $pre_page * ($current_page - 1);
 
-        $this->load->model('roomunionmodel');
         $number = isset($post['number'])?$post['number']:null;
         if (!$number) {
             $this->api_res(1009,['error'=>'未指定房间号']);
@@ -91,7 +88,6 @@ class Residentct extends MY_Controller
         if (!$room_ids) {
             $this->api_res(1009);
         }
-        $this->load->model('customermodel');
         $category = Residentmodel::with(['roomunion' => function ($query) {
             $query->select('id', 'number');
         }])->with(['customer' => function ($query) {
@@ -109,41 +105,8 @@ class Residentct extends MY_Controller
     {
         $post = $this->input->post(null, true);
         $id   = isset($post['id'])?$post['id']:null;
-        $filed_one = ['name', 'phone', 'room_id', 'card_type', 'card_number', 'card_one', 'card_two', 'card_three',
-                  'alternative', 'alter_phone', 'people_count', 'address', 'real_rent_money',
-                  'real_property_costs', 'deposit_money', 'status', 'begin_time', 'end_time'];
-        $filed_two = ['name', 'phone', 'room_id', 'card_type', 'card_number', 'name_two', 'phone_two',
-            'card_type_two', 'card_number_two', 'card_one', 'card_two', 'card_three',
-            'alternative', 'alter_phone', 'people_count', 'address', 'real_rent_money',
-            'real_property_costs', 'deposit_money', 'status', 'begin_time', 'end_time'];
 
-        $resident = Residentmodel::where('id', $id)->first(['people_count']);
-        if (!$resident) {
-            $this->api_res(1009, ['error' => '住户信息不符']);
-            return;
-        }
-
-        if ($resident->people_count > 1) {
-            $resident = Residentmodel::where('id', $id)->first($filed_two);
-        } else {
-            $resident = Residentmodel::where('id', $id)->first($filed_one);
-        }
-        $this->load->model('roomunionmodel');
-        $room_id = $resident->room_id;
-        $room = Roomunionmodel::where('id', $room_id)->first(['number']);
-        if (!$room) {
-            $this->api_res(1009, ['error' => '住户房间号不符']);
-            return;
-        }
-        $resident->number = $room->number;
-        $this->load->model('smartdevicemodel');
-        $devicetype = Smartdevicemodel::where('room_id', $room_id)->first(['type']);
-        if (!$devicetype) {
-            $this->api_res(1009, ['error' => '住户房间号不符']);
-            return;
-        }
-        $resident->type = $this->getDeviceType($devicetype->type);
-        $resident->status = $this->getRoomStatus($resident->status);
+        $resident = Residentmodel::with('customer','contract','roomunion')->find($id)->toArray();
 
         $this->api_res(0, $resident);
     }
@@ -154,7 +117,6 @@ class Residentct extends MY_Controller
     public function switchoverApartment()
     {
         $post = $this->input->post(null, true);
-        $this->load->model('employeemodel');
         $store_ids = Employeemodel::getMyStoreids();
         if (!$store_ids) {
             $this->api_res(1007, ['error' => '没有找到门店']);
@@ -185,12 +147,9 @@ class Residentct extends MY_Controller
     public function displayCenter()
     {
         $field = ['id', 'name', 'position_id', 'store_id', 'avatar'];
-        $this->load->model('employeemodel');
-        $this->load->model('positionmodel');
         $employee = Employeemodel::with(['position' => function ($query) {
             $query->select('id', 'name');
         }])->where('bxid', CURRENT_ID)->first($field);
-        $this->load->model('storemodel');
         $store = Storemodel::where('id', $employee->store_id)->first(['name']);
         $employee->store_name = $store->name;
         $this->api_res(0, ['data' => $employee]);
