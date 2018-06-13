@@ -138,6 +138,7 @@ class Roomtype extends MY_Controller
         $this->load->model('storemodel');
         $room_type_id   = isset($post['room_type_id'])?$post['room_type_id']:null;
         $room_type  = Roomtypemodel::with('store')->select($field)->findOrFail($room_type_id);
+        $room_type->description    = strip_tags(htmlspecialchars_decode($room_type->description));
         $room_type->images  = $this->fullAliossUrl(json_decode($room_type->images,true),true);
         $this->api_res(0,['room_type'=>$room_type]);
     }
