@@ -26,14 +26,12 @@ class Reserve extends MY_Controller
         $offset = $page_count * ($page - 1);
         $filed = ['id', 'room_type_id', 'name', 'phone', 'time', 'remark'];
 
-        $store_id   = $this->employee->store_id;
-
-        $count_total = ceil(Reserveordermodel::where(['store_id'=>$store_id])->whereIn('status', ['WAIT', 'BEGIN'])->count());//总条数
+        $count_total = ceil(Reserveordermodel::whereIn('status', ['WAIT', 'BEGIN'])->count());//总条数
         $count = ceil($count_total / $page_count);//总页数
         if ($page > $count) {
             return;
         }
-        $reserve = Reserveordermodel::with('roomtype')->where(['store_id'=>$store_id])->whereIn('status', ['WAIT', 'BEGIN'])
+        $reserve = Reserveordermodel::with('roomtype')->whereIn('status', ['WAIT', 'BEGIN'])
                                     ->take($page_count)->skip($offset)
                                     ->orderBy('id', 'desc')->get($filed)->toArray();
         $this->api_res(0, ['list' => $reserve, 'page' => $page, 'count_total' => $count_total, 'count' => $count]);
