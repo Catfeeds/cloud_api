@@ -288,6 +288,7 @@ class Order extends MY_Controller
                 $bill->confirm_date    = date('Y-m-d H:i:s',time());
                 $bill->status    = 'DONE';
                 $bill->pay_date    = $store_pay->pay_date;
+                $bill->data    = $orders->toArray();
             }else{
                 $bill   = new Billmodel();
                 //$bill->store_pay_id = $key;
@@ -306,6 +307,7 @@ class Order extends MY_Controller
                 $bill->confirm_date = date('Y-m-d H:i:s',time());
                 $bill->status    = 'DONE';
                 $bill->pay_date    = date('Y-m-d H:i:s',time());
+                $bill->data    = $orders->toArray();
             }
 
             $bill->save();
