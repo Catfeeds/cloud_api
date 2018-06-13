@@ -25,7 +25,7 @@ class Server extends MY_Controller
         $page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
         $page_count = isset($post['page_count']) ? intval($post['page_count']) : 4;//当前页显示条数
         $offset = $page_count * ($page - 1);
-        $filed = ['id', 'room_type_id', 'type','name', 'phone', 'time', 'remark'];
+        $filed = ['id', 'type','name', 'phone', 'time', 'remark'];
 
         $store_id   = $this->employee->store_id;
 
