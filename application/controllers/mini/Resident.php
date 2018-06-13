@@ -835,7 +835,8 @@ class Resident extends MY_Controller
             $resident->store_id     = $this->employee->store_id;
             $a  = $resident->save();
             //更新房间状态
-            $room->Occupie();
+            $this->occupiedByResident($room, $resident);
+           // $room->Occupie();
             //生成订单
             $order->number      = $order->getOrderNumber();
             $order->resident_id = $resident->id;
