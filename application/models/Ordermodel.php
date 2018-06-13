@@ -299,6 +299,7 @@ class Ordermodel extends Basemodel{
         $orders     = $orders->forPage($page, $perPage)
             ->map(function ($items) {
                 $order  = $items->first();
+                log_message('error','RESIDENT_ID'.$order->resident_id);
 
                 return [
                     'room'  => [

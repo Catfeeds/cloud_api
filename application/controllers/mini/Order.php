@@ -60,8 +60,8 @@ class Order extends MY_Controller
         $input  = $this->input->post(null,true);
         $resident_id    = $input['resident_id'];
         $order_ids      = $input['order_ids'];
-        log_message('error','TYPE'.gettype($order_ids));
-        log_message('error','TYPE'.$order_ids);
+//        log_message('error','TYPE'.gettype($order_ids));
+//        log_message('error','TYPE'.$order_ids);
         $orderIds   = $this->getRequestIds( $order_ids);
         $this->load->model('residentmodel');
         $this->load->model('ordermodel');
@@ -544,7 +544,7 @@ class Order extends MY_Controller
 
         if(!empty($coupon_ids)){
             $couponIds = $this->getRequestIds($coupon_ids);
-            log_message('error',count($couponIds).json_encode($couponIds));
+//            log_message('error',count($couponIds).json_encode($couponIds));
             $coupons = $this->unusedCouponsOfSpecifiedResident($resident, $couponIds);
             if (!$coupons) {
             $this->api_res(10019);
