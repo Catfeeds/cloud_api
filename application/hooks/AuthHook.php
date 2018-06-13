@@ -39,6 +39,7 @@ class AuthHook {
             'bill/bill/generate',
             //
             'bill/bill/listbill',
+            'bill/bill/showOrdersByBill',
 
             'account/login/login',
             'demo/test/test1',

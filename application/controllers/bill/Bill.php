@@ -65,6 +65,7 @@ class Bill extends MY_Controller
     {
         $input  = $this->input->post(null,true);
         $bill_id    = $input['bill_id'];
+        $bill_id    = 10233;
         $bill   = Billmodel::find($bill_id);
         if(empty($bill))
         {
