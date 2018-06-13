@@ -32,8 +32,8 @@ class Order extends MY_Controller
 
 //        $room   = Roomunionmodel::where('resident_id',$resident_id)->find($room_id);
         log_message('error','SHOW-ROOM-'.$room_id.'-resident-'.$resident_id);
-//        $room   = Roomunionmodel::where('store_id',$this->employee->store_id)->find($room_id);
-        $room   = Roomunionmodel::find($room_id);
+        $room   = Roomunionmodel::where('store_id',$this->employee->store_id)->find($room_id);
+        //$room   = Roomunionmodel::find($room_id);
 
         if(empty($room))
         {
