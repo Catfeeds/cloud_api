@@ -106,7 +106,7 @@ class Residentct extends MY_Controller
         $post = $this->input->post(null, true);
         $id   = isset($post['id'])?$post['id']:null;
 
-        $resident = Residentmodel::with('customer','contract','roomunion','smartdevice')->find($id)->toArray();
+        $resident = Residentmodel::with('customer','contract','roomunion')->find($id)->toArray();
 
         $this->api_res(0, $resident);
     }
