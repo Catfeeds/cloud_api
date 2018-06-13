@@ -256,11 +256,11 @@ class Residentct extends MY_Controller
         }
         //入住
         $checkin = [
-            ['name' => '总房量', 'count' => $count_z, 'bfb' => null],
-            ['name' => '已出租', 'count' => $count_yz, 'bfb' => $count_ybfb . ",$count_yz"],
-            ['name' => '未出租', 'count' => $count_wcz, 'bfb' => $count_wbfb . ",$count_wcz"]
+            'totalRent'=>['name' => '总房量', 'count' => $count_z, 'bfb' => null],
+            'hasRent'=>['name' => '已出租', 'count' => $count_yz, 'bfb' => $count_ybfb . ",$count_yz"],
+            'notRent'=>['name' => '未出租', 'count' => $count_wcz, 'bfb' => $count_wbfb . ",$count_wcz"]
         ];
-        $this->api_res(0, json_encode($checkin));
+        $this->api_res(0, $checkin);
     }
 
     /**
