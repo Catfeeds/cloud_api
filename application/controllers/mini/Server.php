@@ -6,18 +6,19 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Time:        17:08
  * Describe:    预约看房
  */
-class Reserve extends MY_Controller
+class Server extends MY_Controller
 {
     public function __construct()
     {
         parent::__construct();
-        $this->load->model('reserveordermodel');
+        $this->load->model('serviceordermodel');
+        $this->load->model('employeemodel');
     }
 
     /**
-     * 预约订单列表
+     * 服务订单列表
      */
-    public function listReserve()
+    public function listService()
     {
         $this->load->model('roomtypemodel');
         $post = $this->input->post(NULL, true);
@@ -26,12 +27,12 @@ class Reserve extends MY_Controller
         $offset = $page_count * ($page - 1);
         $filed = ['id', 'room_type_id', 'name', 'phone', 'time', 'remark'];
 
-        $count_total = ceil(Reserveordermodel::whereIn('status', ['WAIT', 'BEGIN'])->count());//总条数
+        $count_total = ceil(Serviceordermodel::whereIn('status', ['WAIT', 'BEGIN'])->count());//总条数
         $count = ceil($count_total / $page_count);//总页数
         if ($page > $count) {
             return;
         }
-        $reserve = Reserveordermodel::with('roomtype')->whereIn('status', ['WAIT', 'BEGIN'])
+        $reserve = Serviceordermodel::with('roomtype')->whereIn('status', ['WAIT', 'BEGIN'])
                                     ->take($page_count)->skip($offset)
                                     ->orderBy('id', 'desc')->get($filed)->toArray();
         $this->api_res(0, ['list' => $reserve, 'page' => $page, 'count_total' => $count_total, 'count' => $count]);
