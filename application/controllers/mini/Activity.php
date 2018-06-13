@@ -23,7 +23,8 @@ class Activity extends MY_Controller
         $this->load->model('storemodel');
         $this->load->model('activitymodel');
         $this->load->model('coupontypemodel');
-        $activities = $this->employee->store->activities;
+        //$activities = $this->employee->store->activities;
+        $activities = Storemodel::find(1)->activities;
         //var_dump($activities->toArray());exit;
         if ($type AND in_array($type, $this->activitymodel->getAllTypes())) {
             $activities     = $activities->where('type', $type);

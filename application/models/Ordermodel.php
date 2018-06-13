@@ -280,7 +280,9 @@ class Ordermodel extends Basemodel{
 
         $query  = $query->where($where);
 
-        $orders     = $query->whereNotIn('status', [Ordermodel::STATE_AUDITED, Ordermodel::STATE_GENERATED])
+        $orders     = $query
+            ->with('resident')->whereHas('resident')
+            ->whereNotIn('status', [Ordermodel::STATE_AUDITED, Ordermodel::STATE_GENERATED])
             ->orderBy('status', 'ASC')
             ->orderBy('room_id', 'ASC')
             ->orderBy('updated_at', 'DESC')
