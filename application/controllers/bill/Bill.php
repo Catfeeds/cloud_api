@@ -63,9 +63,8 @@ class Bill extends MY_Controller
      */
     public function showBill()
     {
-//        $input  = $this->input->post(null,true);
-//        $bill_id    = $input['bill_id'];
-        $bill_id    = 10233;
+        $input  = $this->input->post(null,true);
+        $bill_id    = $input['bill_id'];
         $bill   = Billmodel::find($bill_id);
         if(empty($bill))
         {
@@ -95,7 +94,7 @@ class Bill extends MY_Controller
 
         if($bill->type=='output'){
             //获取收入表
-            $data['income']='';
+            $data['income']=array();
             //优惠信息列表
             $data['outpay']=Billmodel::where('sequence_number',$sequence)->get()->toArray();
             //        获取money
@@ -106,7 +105,7 @@ class Bill extends MY_Controller
             //获取收入表
             $data['income']=Billmodel::where('sequence_number',$sequence)->get()->toArray();
             //优惠信息列表
-            $data['outpay']='';
+            $data['outpay']=array();
             //        获取money
             $data['sum']=$bill->money;
         }
