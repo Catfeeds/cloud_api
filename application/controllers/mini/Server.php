@@ -29,12 +29,12 @@ class Server extends MY_Controller
 
         $store_id   = $this->employee->store_id;
 
-        $count_total = ceil(Serviceordermodel::where(['store_id'=>$store_id])->count());//总条数
+        $count_total = ceil(Serviceordermodel::where('store_id',$store_id)->count());//总条数
         $count = ceil($count_total / $page_count);//总页数
         if ($page > $count) {
             return;
         }
-        $server = Serviceordermodel::where(['store_id'=>$store_id])
+        $server = Serviceordermodel::where('store_id',$store_id)
                                     ->orderBy('id', 'desc')->get($filed)->toArray();
         $this->api_res(0, ['list' => $server, 'page' => $page, 'count_total' => $count_total, 'count' => $count]);
     }
