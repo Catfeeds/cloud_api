@@ -61,7 +61,7 @@ class Bill extends MY_Controller
     /**
      * 查看流水下的账单信息
      */
-    public function showOrdersByBill()
+    public function showBill()
     {
         $input  = $this->input->post(null,true);
         $bill_id    = $input['bill_id'];
