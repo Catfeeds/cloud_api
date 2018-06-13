@@ -35,4 +35,12 @@ class Billmodel extends Basemodel
 
         return $this->belongsTo(Employeemodel::class,'employee_id');
     }
+
+    /**
+     * 检索当日确定的账单的数量
+     */
+    public function ordersConfirmedToday()
+    {
+        return Ordermodel::count();
+    }
 }

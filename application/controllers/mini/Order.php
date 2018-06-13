@@ -30,7 +30,8 @@ class Order extends MY_Controller
         $this->load->model('ordermodel');
         $this->load->model('residentmodel');
 
-        $room   = Roomunionmodel::where('resident_id',$resident_id)->find($room_id);
+//        $room   = Roomunionmodel::where('resident_id',$resident_id)->find($room_id);
+        $room   = Roomunionmodel::where('store_id',$this->employee->store_id)->find($room_id);
 
         if(empty($room))
         {
@@ -260,7 +261,7 @@ class Order extends MY_Controller
     private function completeOrders($orders, $payWay = null,$resident)
     {
         //$number     = $orders->first()->number;
-        $count      = $this->ordermodel->ordersConfirmedToday()+1;
+        $count      = $this->billmodel->ordersConfirmedToday()+1;
         $status     = Ordermodel::STATE_COMPLETED;
         $deal       = Ordermodel::DEAL_DONE;
         $dateString = date('Ymd');

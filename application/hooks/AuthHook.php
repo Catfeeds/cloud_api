@@ -60,7 +60,7 @@ class AuthHook {
 //            'mini/checkout/show',
 //            'mini/checkout/destroy',
 
-            //'mini/activity/showactivity',
+            'mini/activity/showactivity',
 
             'bill/meter/confirm',
             'bill/bill/listbill',

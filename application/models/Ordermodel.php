@@ -304,8 +304,8 @@ class Ordermodel extends Basemodel{
                 log_message('error','RESIDENT_ID'.$order->resident_id);
                 return [
                     'room'  => [
-                        'id'        => $order->resident->roomunion->id,
-                        'number'    => $order->resident->roomunion->number,
+                        'id'        => $order->roomunion->id,
+                        'number'    => $order->roomunion->number,
                     ],
                     'orders'    => [
                         'status'        => $order->status,
