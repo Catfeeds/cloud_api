@@ -11,6 +11,7 @@ class Room extends MY_Controller
     public function __construct()
     {
         parent::__construct();
+        $this->load->model('employeemodel');
         $this->load->model('roomunionmodel');
     }
 
@@ -81,8 +82,8 @@ class Room extends MY_Controller
      */
     public function countRoom()
     {
-        $post = $this->input->post(null,true);
-        if ($post['store_id']){
+//        $post = $this->input->post(null,true);
+//        if ($post['store_id']){
             $store_id = $this->employee->store_id;
             $room = Roomunionmodel::where('store_id',$store_id)->get(['id','status'])->toArray();
             $count = [];
@@ -104,9 +105,9 @@ class Room extends MY_Controller
             }
             $this->api_res(0,$count);
 
-        }else{
-            $this->api_res(1002);
-        }
+//        }else{
+//            $this->api_res(1002);
+//        }
     }
 
     /**
