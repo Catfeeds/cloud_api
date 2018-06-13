@@ -398,16 +398,11 @@ class Employee extends MY_Controller
         $openid         = $user['openid'];
         $unionid        = $user['unionid'];
 
-        /*$where = ['openid' => $openid, 'unionid' => $unionid];
-        $isWxidEqual = Employeemodel::where('company_id',COMPANY_ID)->where($where)->first();
-        if ($isWxidEqual) {
-            $this->api_res(1017);
-            return false;
-        }*/
 
         $employee = Employeemodel::find($post['id']);
         $employee->openid = $openid;
         $employee->unionid = $unionid;
+
         if ($employee->save()) {
             $this->api_res(0);
         } else {

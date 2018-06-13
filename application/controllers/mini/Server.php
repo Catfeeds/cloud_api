@@ -59,6 +59,11 @@ class Server extends MY_Controller
 
     //创建一个订单
     public function create(){
+        $post = $this->input->post(NULL, true);
+//        'id'            => $data['room_id'],
+//
+//        'apartment_id'  => $data['apartment_id'],
+
         try {
             $data                  = $request->all();
             $data['apartment_id']  = $this->authUser->apartment_id;
