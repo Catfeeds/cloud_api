@@ -12,6 +12,7 @@ class Reserve extends MY_Controller
     {
         parent::__construct();
         $this->load->model('reserveordermodel');
+        $this->load->model('employeemodel');
     }
 
     /**

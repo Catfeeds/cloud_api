@@ -162,11 +162,11 @@ class AuthHook {
 
             'sellcontrol/sellcontrol/details',
 
-            'mini/reserve/listreserve',
-            'mini/reserve/addreserve',
-            'mini/reserve/reserveinfo',
-            'mini/reserve/room_type',
-            'mini/reserve/reservestatus',
+//            'mini/reserve/listreserve',
+//            'mini/reserve/addreserve',
+//            'mini/reserve/reserveinfo',
+//            'mini/reserve/room_type',
+//            'mini/reserve/reservestatus',
 
             'mini/contract/listunsign',
 
