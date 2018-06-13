@@ -10,6 +10,8 @@ class Billmodel extends Basemodel
 {
     protected $table    = 'test_bill';
 
+    protected $casts    = ['data'=>'array'];
+
     public function roomunion()
     {
 

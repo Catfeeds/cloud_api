@@ -276,6 +276,7 @@ class Order extends MY_Controller
                 $bill->sequence_number  = sprintf("%s%06d", $dateString, $count);
                 $bill->out_trade_no = $store_pay->out_trade_no;
                 $bill->store_id     = $resident->store_id;
+                $bill->resident_id = $resident->id;
                 $bill->employee_id = $this->employee->id;
                 $bill->customer_id = $resident->customer_id;
                 $bill->uxid = $resident->uxid;
@@ -294,6 +295,7 @@ class Order extends MY_Controller
                 $bill->sequence_number  = sprintf("%s%06d", $dateString, $count);
                 $bill->store_id = $resident->store_id;
                 $bill->employee_id = $this->employee->id;
+                $bill->resident_id = $resident->id;
                 $bill->customer_id = $resident->customer_id;
                 $bill->uxid = $resident->uxid;
                 $bill->room_id = $resident->room_id;
