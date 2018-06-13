@@ -18,30 +18,29 @@ class Server extends MY_Controller
     /**
      * 服务订单列表
      */
-    public function listService()
+    public function listServer()
     {
         $this->load->model('roomtypemodel');
         $post = $this->input->post(NULL, true);
         $page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
         $page_count = isset($post['page_count']) ? intval($post['page_count']) : 4;//当前页显示条数
         $offset = $page_count * ($page - 1);
-        $filed = ['id', 'room_type_id', 'name', 'phone', 'time', 'remark'];
+        $filed = ['id', 'room_type_id', 'type','name', 'phone', 'time', 'remark'];
 
         $count_total = ceil(Serviceordermodel::whereIn('status', ['WAIT', 'BEGIN'])->count());//总条数
         $count = ceil($count_total / $page_count);//总页数
         if ($page > $count) {
             return;
         }
-        $reserve = Serviceordermodel::with('roomtype')->whereIn('status', ['WAIT', 'BEGIN'])
-                                    ->take($page_count)->skip($offset)
+        $reserve = Serviceordermodel::with('roomtype')->take($page_count)->skip($offset)
                                     ->orderBy('id', 'desc')->get($filed)->toArray();
         $this->api_res(0, ['list' => $reserve, 'page' => $page, 'count_total' => $count_total, 'count' => $count]);
     }
 
     /**
-     * 查看看房信息
+     *  查看服务订单
      */
-    public function reserveInfo()
+    public function serverInfo()
     {
         $this->load->model("roomtypemodel");
         $post = $this->input->post(null,true);
@@ -58,9 +57,9 @@ class Server extends MY_Controller
     }
 
     /**
-     *  确认预约或者取消预约
+     *  确认服务订单
      */
-    public function reserveStatus()
+    public function serverStatus()
     {
         $post = $this->input->post(null,true);
         $id = isset($post['id'])?intval($post['id']):null;
