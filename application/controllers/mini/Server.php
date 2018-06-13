@@ -20,7 +20,9 @@ class Server extends MY_Controller
      */
     public function listServer()
     {
-        $this->load->model('roomtypemodel');
+        $this->load->model('roomunionmodel');
+        $this->load->model('customermodel');
+
         $post = $this->input->post(NULL, true);
         $page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
         $page_count = isset($post['page_count']) ? intval($post['page_count']) : 4;//当前页显示条数
