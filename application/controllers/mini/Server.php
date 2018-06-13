@@ -59,36 +59,35 @@ class Server extends MY_Controller
 
     //创建一个订单
     public function create(){
+
         $post = $this->input->post(NULL, true);
 
-        $id=$post['room_id'];
-        $store_id   = $this->employee->store_id;
 
+//      $room_id=$post['room_id'];
+        $room_id  =  152;
 
-        try {
-            $data                  = $request->all();
-            $data['apartment_id']  = $this->authUser->apartment_id;
+//        $store_id   = $this->employee->store_id;
 
-            $room   = $roomRepo->findWhere([
-                'id'            => $data['room_id'],
-                'apartment_id'  => $data['apartment_id'],
-            ])->first();
+        $server = Roomunionmodel::where('id',$room_id)->get();
+        if(empty($server)){
 
-            if (0 == $room->resident_id) {
-                throw new \Exception('检索不到该房间的住户信息, 请核实!');
-            }
+            $this->api_res(10101);
+            return;
 
-            $data['customer_id']    = $room->resident->customer_id;
-            $data['employee_id']    = $this->authUser->id;
-
-            //这里可能还要向用户推送模板消息
-            $record  = $this->repository->addItem($data);
-
-        } catch (\Exception $e) {
-            return $this->respError($e->getMessage());
         }
 
-        return $this->respSuccess($record, new ServiceTransformer(), '添加成功');
+        //获取post信息
+
+        $post=array();
+
+
+
+
+
+
+
+
+//        return $this->respSuccess($record, new ServiceTransformer(), '添加成功');
 
 
     }

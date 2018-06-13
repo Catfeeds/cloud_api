@@ -174,6 +174,10 @@ class AuthHook {
             'mini/login/gettoken',
             'mini/login/handleloginstatus',
             'mini/personalcenter/center',
+
+            'mini/home/lists',
+
+            'mini/server/create',
 //            'mini/room/listroom',
 //            'mini/room/detailsroom',
 //            'mini/room/building',
