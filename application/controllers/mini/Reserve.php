@@ -25,8 +25,7 @@ class Reserve extends MY_Controller
         $page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
         $page_count = isset($post['page_count']) ? intval($post['page_count']) : 4;//当前页显示条数
         $offset = $page_count * ($page - 1);
-        $filed = ['id', 'room_type_id', 'name', 'phone', 'time', 'remark'];
-
+        $filed = ['id', 'room_type_id', 'name', 'phone', 'visit_time', 'remark'];
         $store_id   = $this->employee->store_id;
 
         $count_total = ceil(Reserveordermodel::where(['store_id'=>$store_id])->whereIn('status', ['WAIT', 'BEGIN'])->count());//总条数
