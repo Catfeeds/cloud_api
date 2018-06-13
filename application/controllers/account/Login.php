@@ -98,6 +98,7 @@ class Login extends MY_Controller
             //判断用户的身份
             $position   = $user->base_position;
             $bxid       = $user->bxid;
+            $name       = $user->name;
             if('SUPER'==$position){
                 //S_100001
                 $bxid   = SUPERPRE.$bxid;
@@ -119,7 +120,7 @@ class Login extends MY_Controller
             }
             $token  = $this->m_jwt->generateJwtToken($bxid,$company_id);
             $privilege  = json_decode($this->m_redis->getCompanyInfo($company_id))->privilege;
-            $this->api_res(0,['bxid'=>$bxid,'token'=>$token,'privilege'=>$privilege]);
+            $this->api_res(0,['bxid'=>$bxid,'token'=>$token,'privilege'=>$privilege,'name'=>$name]);
         }
         else
         {
@@ -172,6 +173,7 @@ class Login extends MY_Controller
             //判断用户的身份
             $position   = $user->base_position;
             $bxid       = $user->bxid;
+            $name       = $user->name;
             if('SUPER'==$position){
                 //S_100001
                 $bxid   = SUPERPRE.$bxid;
@@ -193,7 +195,7 @@ class Login extends MY_Controller
             }
             $token  = $this->m_jwt->generateJwtToken($bxid,$company_id);
             $privilege  = json_decode($this->m_redis->getCompanyInfo($company_id))->privilege;
-            $this->api_res(0,['bxid'=>$bxid,'token'=>$token,'privilege'=>$privilege]);
+            $this->api_res(0,['bxid'=>$bxid,'token'=>$token,'privilege'=>$privilege,'name'=>$name]);
         }
         else
         {
@@ -282,5 +284,12 @@ class Login extends MY_Controller
             }
         }
         $this->api_res(0,$privileges_one);
+    }
+
+    /**
+     * 获取当前登陆员工
+     */
+    public  function getCurrentInfo(){
+        $this->api_res(0,['employee'=>$this->emlpoyee]);
     }
 }
