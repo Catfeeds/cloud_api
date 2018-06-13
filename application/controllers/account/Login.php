@@ -287,7 +287,7 @@ class Login extends MY_Controller
     }
 
     /**
-     * 获取当前登陆员工
+     * 获取当前登陆员工信息
      */
     public  function getCurrentInfo(){
         $this->api_res(0,['employee'=>$this->emlpoyee]);
