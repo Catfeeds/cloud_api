@@ -13,6 +13,8 @@ class Server extends MY_Controller
         parent::__construct();
         $this->load->model('serviceordermodel');
         $this->load->model('employeemodel');
+        $this->load->model('roomunionmodel');
+        $this->load->model('customermodel');
     }
 
     /**
@@ -20,8 +22,6 @@ class Server extends MY_Controller
      */
     public function listServer()
     {
-        $this->load->model('roomunionmodel');
-        $this->load->model('customermodel');
 
         $post = $this->input->post(NULL, true);
         $page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
