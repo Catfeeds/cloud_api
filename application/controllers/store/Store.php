@@ -147,6 +147,7 @@ class Store extends MY_Controller
             'counsel_phone','counsel_time','images','describe'
         ];
         $store  = Storemodel::where($where)->select($field)->find($store_id);
+        $store->describe    = htmlspecialchars_decode($store->describe);
         $store->images  = $this->fullAliossUrl(json_decode($store->images,true),true);
         $this->api_res(0,['store'=>$store]);
     }
