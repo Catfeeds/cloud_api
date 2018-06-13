@@ -14,6 +14,8 @@ class Bill extends MY_Controller
     public function __construct()
     {
         parent::__construct();
+        $this->load->model('billmodel');
+        $this->load->model('ordermodel');
     }
 
 
@@ -30,7 +32,6 @@ class Bill extends MY_Controller
         $end_date   = empty($input['end_date'])?'2030-12-12':$input['end_date'];
         $search     = empty($input['search'])?'':$input['search'];
         $offset = ($page-1)*PAGINATE;
-        $this->load->model('billmodel');
         $this->load->model('roomunionmodel');
         $this->load->model('storemodel');
         $this->load->model('residentmodel');
@@ -62,8 +63,6 @@ class Bill extends MY_Controller
      */
     public function showOrdersByBill()
     {
-        $this->load->model('billmodel');
-        $this->load->model('ordermodel');
         $input  = $this->input->post(null,true);
         $bill_id    = $input['bill_id'];
         $bill   = Billmodel::find($bill_id);
@@ -72,7 +71,47 @@ class Bill extends MY_Controller
             $this->api_res(1007);
             return;
         }
-        $orders = 1;
+        $sequence=$bill->sequence_number;
+
+        /*
+         * ROOM
+         * DEIVCE
+         * UTILITY
+         * REFUND
+         * DEPOSIT_R
+         * DEPOSIT_O
+         * MANAGEMENT
+         * OTHER
+         * RESERVE
+         * CLEAN
+         * WATER
+         * ELECTRICITY
+         * COMPENSATION
+         * REPAIR
+         * HOT_WATER
+         * OVERDUE
+         * */
+
+        if($bill->type=='output'){
+            //获取收入表
+            $data['income']='';
+            //优惠信息列表
+            $data['outpay']=Billmodel::where('sequence_number',$sequence)->get()->toArray();
+            //        获取money
+            $data['sum']=$bill->money;
+
+        }else{
+
+            //获取收入表
+            $data['income']=Billmodel::where('sequence_number',$sequence)->get()->toArray();
+            //优惠信息列表
+            $data['outpay']='';
+            //        获取money
+            $data['sum']=$bill->money;
+        }
+
+
+        $this->api_res(0,$data);
 
     }
 

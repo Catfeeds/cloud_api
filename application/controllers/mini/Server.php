@@ -68,26 +68,6 @@ class Server extends MY_Controller
 
 //        $store_id   = $this->employee->store_id;
 
-        $server = Roomunionmodel::where('id',$room_id)->get();
-        if(empty($server)){
-
-            $this->api_res(10101);
-            return;
-
-        }
-
-        //获取post信息
-
-        $post=array();
-
-
-
-
-
-
-
-
-//        return $this->respSuccess($record, new ServiceTransformer(), '添加成功');
 
 
     }
@@ -95,121 +75,51 @@ class Server extends MY_Controller
 
     //更新订单
     public function update(){
-        try {
-            $record = $this->repository->findWhere([
-                'id'            => $id,
-                'apartment_id'  => $this->authUser->apartment_id,
-            ])->first();
-
-            $input  = $request->all();
-
-            if (!empty($input['remark'])) {
-                $record->remark     = $input['remark'];
-            }
-
-            switch ($input['action']) {
+        $post = $this->input->post(NULL, true);
+        switch ($post['action']) {
                 case 'CONFIRM'  :
-                    $record     = $this->confirm($record, $input, $orderRepo);
+                    $record     = $this->confirm();
                     break;
                 case 'PAY'      :
-                    $record     = $this->payAndServe($record, $input, $orderRepo);
+                    $record     = $this->payAndServe();
                     break;
                 case 'SERVING'  :
-                    $record     = $this->serve($record, $orderRepo);
+                    $record     = $this->serve();
                     break;
                 case 'COMPLETE' :
-                    $record     = $this->complete($record);
+                    $record     = $this->complete();
                     break;
                 case 'CANCEL'   :
-                    $record     = $this->cancel($record, $orderRepo);
-                    break;
-                default:
-                    throw new \Exception('无法识别的操作!');
+                    $record     = $this->cancel();
                     break;
             }
 
-        } catch (\Exception $e) {
-            return $this->respError($e->getMessage());
-        }
-
-        return $this->respSuccess($record, new ServiceTransformer(), '更新成功!');
+        $this->api_res(0,$record);
 
     }
 
     /**
      * 将记录改为服务中的状态
      */
-    private function serve($record, OrderRepo $orderRepo)
+    private function serve($record)
     {
-        if ($this->repository->status_paid != $record->status) {
-            throw new \Exception('当前状态不能进行此操作!');
-        }
-
-        //记录流水
-        if ($record->money > 0) {
-            $orderRepo->newServiceOne($record);
-        }
-
-        $record->status     = $this->repository->status_serving;
-        $record->save();
-
         return $record;
     }
 
     //确认订单
-    private function confirm($record, $input, $orderRepo)
+    private function confirm($record)
     {
-        if ($this->repository->status_submitted != $record->status) {
-            throw new \Exception('订单当前状态不允许该操作!');
-        }
 
-        if (0 < $input['money']) {
-            $record->money      = $input['money'];
-            $record->status     = $this->repository->status_pending;
-        } else {
-            $record->money      = 0;
-            $record->status     = $this->repository->status_serving;
-        }
 
-        $record->save();
 
-        return $record;
     }
 
     /**
      * 取消服务
      */
-    private function cancel($record, $orderRepo)
+    private function cancel($record)
     {
-        if (!in_array($record->status, [
-            $this->repository->status_pending,
-            $this->repository->status_submitted,
-            $this->repository->status_serving,
-        ])) {
-            throw new \Exception('当前状态不允许该操作!');
-        }
 
-
-        if ($this->repository->status_serving AND 0 < $record->money) {
-            throw new \Exception('用户已经支付, 无法取消');
-        }
-
-        //删除对应的订单
-        if (0 < $record->money) {
-            $order  = $orderRepo->findWhere([
-                'other_id'  => $record->id,
-                'type'      => $record->type,
-            ])->first();
-
-            if (count($order)) {
-                $order->delete();
-            }
-        }
-
-        $record->status     = $this->repository->status_canceled;
-        $record->save();
-
-        return $record;
     }
 
     /**
@@ -217,14 +127,8 @@ class Server extends MY_Controller
      */
     private function complete($record)
     {
-        if ($this->repository->status_serving != $record->status) {
-            throw new \Exception('只有服务中的订单才能进行此操作!');
-        }
 
-        $record->status     = $this->repository->status_completed;
-        $record->save();
 
-        return $record;
     }
 
 
