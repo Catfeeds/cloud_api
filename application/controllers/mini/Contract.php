@@ -43,7 +43,7 @@ class Contract extends MY_Controller{
 //            ->limit($per_page)
 //            ->get()
 //            ->orderBy('resident.created_at');
-        $rooms  = Residentmodel::donthave('contract')
+        $rooms  = Residentmodel::doesntHave('contract')
                     ->where($where)
                     ->orderBy('updated_at','ASC')
                     ->offset($offset)
