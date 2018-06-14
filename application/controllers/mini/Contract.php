@@ -49,7 +49,7 @@ class Contract extends MY_Controller{
                 ->orderBy('updated_at','ASC')
                 ->offset($offset)
                 ->limit($per_page)
-                ->get();
+                ->get()->toArray();
                 var_dump($rooms);
 
         $total_page = ceil(($rooms->count())/PAGINATE);
