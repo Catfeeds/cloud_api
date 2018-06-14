@@ -234,8 +234,8 @@ class Residentct extends MY_Controller
             $this->api_res(1007, ['error' => '指定日期不正确']);
             return;
         }
-        $this->load->model('employeemodel');
-        $store_ids = Employeemodel::getMyStoreids();
+        $store_ids[0]   = $this->employee->store_id;
+//        $store_ids = Employeemodel::getMyStoreids();
         if (!$store_ids) {
             $this->api_res(1007, ['error' => '没有找到门店']);
             return;
@@ -353,8 +353,7 @@ class Residentct extends MY_Controller
      */
     public function getApartmentInfo($date_m)
     {
-        $this->load->model('employeemodel');
-        $store_ids = Employeemodel::getMyStoreids();
+        $store_ids[0]   = $this->employee->store_id;
         if (!$store_ids) {
             $this->api_res(1007, ['error' => '没有找到门店']);
             return;
