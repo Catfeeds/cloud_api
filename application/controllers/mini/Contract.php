@@ -34,7 +34,7 @@ class Contract extends MY_Controller{
         }])
             ->whereHas('resident',function($query){
                 $query->whereHas('contract',function ($que){
-              $que->whereNotIn('status',[Contractmodel::STATUS_ARCHIVED,Contractmodel::STATUS_SIGNING]);
+              $que->whereIn('status',[Contractmodel::GENERATED]);
                 })->orDoesntHave('contract')
                 ;
             })
