@@ -46,6 +46,7 @@ class Resident extends MY_Controller
 
 
         if($status=='RENT'){
+            $this->load->model('residentmodel');
             $data['resident']=Residentmodel::find($room->resdent_id);
         }
 
