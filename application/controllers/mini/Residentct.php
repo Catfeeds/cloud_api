@@ -187,7 +187,6 @@ class Residentct extends MY_Controller
             $this->api_res(1007, ['error' => '指定日期不正确']);
             return;
         }
-        $this->load->model('employeemodel');
         $store_ids[0]   = $this->employee->store_id;
 
         if (!$store_ids) {
@@ -195,8 +194,8 @@ class Residentct extends MY_Controller
             return;
         }
         $this->load->model('roomunionmodel');
-        $count_yz = Roomunionmodel::whereIn('store_id', $store_ids)->whereBetween('begin_time', $date_m)->where('status', 'RENT')->count();
-        $count_z = Roomunionmodel::whereIn('store_id', $store_ids)->count();
+        $count_yz = Roomunionmodel::where('store_id', $store_ids[0])->whereBetween('begin_time', $date_m)->where('status', 'RENT')->count();
+        $count_z = Roomunionmodel::where('store_id', $store_ids[0])->count();
         $count_wcz = $count_z - $count_yz;
         if ($count_z != 0) {
             if ($count_yz != 0) {
