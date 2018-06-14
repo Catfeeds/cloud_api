@@ -51,7 +51,6 @@ class Contract extends MY_Controller{
                     })
                     ->where($where)
                     ->orderBy('updated_at','ASC')
-                    ->groupBy('resident_id')
                     ->offset($offset)
                     ->limit($per_page)
                     ->get();
