@@ -96,14 +96,14 @@ class Bill extends MY_Controller
             //获取收入表
             $data['income']=array();
             //优惠信息列表
-            $data['outpay']=Billmodel::where('sequence_number',$sequence)->get()->toArray();
+            $data['outpay']=Ordermodel::where('sequence_number',$sequence)->get()->toArray();
             //        获取money
             $data['sum']=$bill->money;
 
         }else{
 
             //获取收入表
-            $data['income']=Billmodel::where('sequence_number',$sequence)->get()->toArray();
+            $data['income']=Ordermodel::where('sequence_number',$sequence)->get()->toArray();
             //优惠信息列表
             $data['outpay']=array();
             //        获取money
