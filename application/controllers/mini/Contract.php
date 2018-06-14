@@ -45,8 +45,8 @@ class Contract extends MY_Controller{
             ->limit($per_page)
             ->get();
 //            ->orderBy('resident.created_at')
-
-            $this->api_res(0,['data'=>$rooms]);
+            $total_page = ceil(($rooms->count())/PAGINATE);
+            $this->api_res(0,['data'=>$rooms,'total_page'=>$total_page]);
     }
 
 

@@ -554,6 +554,7 @@ class Order extends MY_Controller
         //检查优惠券的有效性
         $coupons->map(function ($coupon) use ($idsAvailable) {
             if (!in_array($coupon->id, $idsAvailable)) {
+
                 throw new \Exception('有不可用的优惠券, 请检查后重试!');
             }
         });
