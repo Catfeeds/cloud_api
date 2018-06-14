@@ -38,14 +38,14 @@ class Residentct extends MY_Controller
         $offset = $pre_page * ($current_page - 1);
         $field = ['id', 'name', 'room_id', 'customer_id','status'];
 
-        $total = Residentmodel::whereIn('store_id', $store_ids)->count();
+        $total = Residentmodel::where('status','NORMAL')->whereIn('store_id', $store_ids)->count();
         $total_pages = ceil($total / $pre_page);//总页数
         if ($current_page > $total_pages) {
             $this->api_res(0, ['total' => $total, 'pre_page' => $pre_page, 'current_page' => $current_page,
                 'total_pages' => $total_pages, 'data' => []]);
             return;
         }
-        $category = Residentmodel::with('roomunion','customer','contract')->whereIn('store_id', $store_ids)->take($pre_page)->skip($offset)
+        $category = Residentmodel::with('roomunion','customer','contract')->where('status','NORMAL')->whereIn('store_id', $store_ids)->take($pre_page)->skip($offset)
             ->orderBy('id', 'desc')->get($field)->toArray();
         $this->api_res(0, ['total' => $total, 'pre_page' => $pre_page, 'current_page' => $current_page,
             'total_pages' => $total_pages, 'data' => $category]);
