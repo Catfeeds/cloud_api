@@ -121,9 +121,12 @@ class Bill extends MY_Controller
 
         foreach($orders as $order){
             $bill->money               =    $bill->money+$order->paid;
+            if($order->pay_type=='REFUND'){
+                $bill->type                =    'OUTPUT';
+            }else{
+                $bill->type                =    'INPUT';
+            }
         }
-        $bill->money               =    $orders[0]->uxid;
-        $bill->type                =    $orders[0]->uxid;
         $bill->pay_type            =    $orders[0]->pay_type;
         $bill->confirm             =    '';
         $bill->pay_date            =    date('Y-m-d H:i:s',time());
