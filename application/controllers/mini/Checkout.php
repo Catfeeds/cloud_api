@@ -527,7 +527,7 @@ class Checkout extends MY_Controller
 
         isset($data['checkout_orders']) ? $orderIds = $data['checkout_orders'] : $orderIds = array();
 
-
+        foreach ($bills as $type => $money) {
                 if (0 < $money) {
                     $order  = $this->ordermodel->addCheckOutOrderByType(
                         $resident,
@@ -542,7 +542,7 @@ class Checkout extends MY_Controller
                 } else {
                     $orderIds[$type]    = 0;
                 }
-
+        }
 
         $data['checkout_orders']    = $orderIds;
         $data['checkout_money']     = $bills;
