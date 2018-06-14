@@ -21,9 +21,8 @@ class Contract extends MY_Controller{
         $page   = (int)(isset($input['page'])?$input['page']:1);
         $per_page   = isset($input['per_page'])?$input['per_page']:PAGINATE;
         $offset = ($page-1)*PAGINATE;
-//        $where=[];
         $where['store_id']=$this->employee->store_id;
-        isset($input['room_number'])?$where['number']=$input['room_number']:null;
+//        isset($input['room_number'])?$where['number']=$input['room_number']:null;
 
         $this->load->model('residentmodel');
         $this->load->model('roomunionmodel');
