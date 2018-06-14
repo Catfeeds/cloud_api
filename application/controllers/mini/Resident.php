@@ -30,6 +30,7 @@ class Resident extends MY_Controller
         $status    = $this->input->post('status',true);
         $where      = ['store_id'=>$store_id,'number'=>$room_number];
         $this->load->model('roomunionmodel');
+
         if(!$room=Roomunionmodel::where($where)->first()){
             $this->api_res(1007);
             return;
@@ -39,10 +40,12 @@ class Resident extends MY_Controller
             $this->api_res(10010);
             return;
         }
+
         $this->api_res(0,[
             'room_id'=>$room_id,
             'rent_price'=>$room->rent_price,
             'property_price'=>$room->property_price,
+            'resident_id'=>$room->resident_id
         ]);
     }
 

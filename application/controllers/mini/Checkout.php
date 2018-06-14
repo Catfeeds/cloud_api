@@ -24,8 +24,7 @@ class Checkout extends MY_Controller
     public function listCheckout()
     {
         $input  = $this->input->post(null,true);
-        $store_id   = $this->employee->store_id;
-        $where  = ['store_id'=>$store_id];
+        $where['store_id']  = $this->employee->store_id;
         $this->load->model('checkoutmodel');
         $this->load->model('roomunionmodel');
         $this->load->model('storemodel');
