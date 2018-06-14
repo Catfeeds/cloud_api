@@ -38,6 +38,7 @@ class Contract extends MY_Controller{
         foreach ($rooms as $room){
 
             var_dump($room);
+        }
         $this->api_res(0,[$data,'total_page'=>$total_page]);
     }
 
