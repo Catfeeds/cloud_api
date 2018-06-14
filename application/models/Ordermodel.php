@@ -247,7 +247,6 @@ class Ordermodel extends Basemodel{
             ->whereDate('updated_at', '=', date('Y-m-d'))
             ->count();
     }
-    //$sequence_number   = sprintf("%s%06d", date('Ymd'), $this->ordermodel->ordersConfirmedToday()+1);
 
 
     /**
@@ -283,6 +282,7 @@ class Ordermodel extends Basemodel{
         $orders     = $query
             ->with('resident')->whereHas('resident')
             ->whereNotIn('status', [Ordermodel::STATE_AUDITED, Ordermodel::STATE_GENERATED])
+            ->groupBy('resident_id')
             ->orderBy('status', 'ASC')
             ->orderBy('room_id', 'ASC')
             ->orderBy('updated_at', 'DESC')
