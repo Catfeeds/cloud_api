@@ -188,6 +188,8 @@ class Residentct extends MY_Controller
         }
         $this->load->model('employeemodel');
         $store_ids = Employeemodel::getMyStoreids();
+        $store_ids[0]   = $this->employee->store_id;
+
         if (!$store_ids) {
             $this->api_res(1007, ['error' => '没有找到门店']);
             return;
