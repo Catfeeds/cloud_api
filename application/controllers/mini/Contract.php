@@ -38,6 +38,7 @@ class Contract extends MY_Controller{
 //        })
 //            ->where('resident_id','>',0)
             ->where('status','NOT_PAY')
+            ->groupBy('resident_id')
             ->orderBy('updated_at','ASC')
             ->offset($offset)
             ->limit($per_page)
