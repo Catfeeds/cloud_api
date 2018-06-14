@@ -43,11 +43,12 @@ class Resident extends MY_Controller
         $data["room_id"]=$room_id;
         $data['rent_price']=$room->rent_price;
         $data['property_price']=$room->property_price;
+        $data['property_price']=$room->resdent_id;
 
 
         if($status=='RENT'){
             $this->load->model('residentmodel');
-            $data['resident']=Residentmodel::find($room->resdent_id);
+            $data['resident']=Residentmodel::find('id',$room->resdent_id);
         }
 
         $this->api_res(0,$data);
