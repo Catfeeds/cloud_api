@@ -27,7 +27,8 @@ class Residentct extends MY_Controller
     public function showCenter()
     {
         $post = $this->input->post(null, true);
-        $store_ids = Employeemodel::getMyStoreids();
+//        $store_ids = Employeemodel::getMyStoreids();
+        $store_ids[0]   = $this->employee->store_id;
         if (!$store_ids) {
             $this->api_res(1007, ['error' => '没有找到门店']);
             return;
@@ -57,7 +58,7 @@ class Residentct extends MY_Controller
     public function searchResident()
     {
         $post   = $this->input->post(null,true);
-        $store_ids = Employeemodel::getMyStoreids();
+        $store_ids[0]   = $this->employee->store_id;
         if (!$store_ids) {
             $this->api_res(1007, ['error' => '没有找到门店']);
             return;
@@ -187,7 +188,6 @@ class Residentct extends MY_Controller
             return;
         }
         $this->load->model('employeemodel');
-        $store_ids = Employeemodel::getMyStoreids();
         $store_ids[0]   = $this->employee->store_id;
 
         if (!$store_ids) {
