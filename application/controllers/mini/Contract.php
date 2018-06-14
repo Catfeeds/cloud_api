@@ -29,11 +29,15 @@ class Contract extends MY_Controller{
         $this->load->model('roomunionmodel');
         $this->load->model('contractmodel');
 
-        $rooms  = Roomunionmodel::with(['resident'=>function($query){
-            $query->with(['contract']);
-        }])
-//
-            ->where($where)
+        $rooms  = Residentmodel::with('contract','roomunion')
+//            ->whereHas('resident',function($query){
+//            $query->whereHas('contract',function ($que){
+//                $que->where('status','!=',Contractmodel::STATUS_ARCHIVED);
+//            })->orDoesntHave('contract')
+//            ;
+//        })
+//            ->where('resident_id','>',0)
+            ->where('status','NOT_PAY')
             ->orderBy('updated_at','ASC')
             ->offset($offset)
             ->limit($per_page)
