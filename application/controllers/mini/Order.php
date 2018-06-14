@@ -262,58 +262,17 @@ class Order extends MY_Controller
      */
     private function completeOrders($orders, $payWay = null,$resident)
     {
-        //$number     = $orders->first()->number;
-        $count      = $this->billmodel->ordersConfirmedToday()+1;
+
         $status     = Ordermodel::STATE_COMPLETED;
         $deal       = Ordermodel::DEAL_DONE;
-        $dateString = date('Ymd');
 
-        $groups = $orders->groupBy('store_pay_id');
+        $this->createBill($orders);
+
+
+       $groups = $orders->groupBy('store_pay_id');
 
         foreach ($groups as $key=>$orders)
         {
-            if(!empty($key)){
-                $store_pay  = Storepaymodel::find($key);
-                $bill       = new Billmodel();
-                $bill->store_pay_id = $key;
-                $bill->sequence_number  = sprintf("%s%06d", $dateString, $count);
-                $bill->out_trade_no = $store_pay->out_trade_no;
-                $bill->store_id     = $resident->store_id;
-                $bill->resident_id = $resident->id;
-                $bill->employee_id = $this->employee->id;
-                $bill->customer_id = $resident->customer_id;
-                $bill->uxid = $resident->uxid;
-                $bill->room_id = $resident->room_id;
-                $bill->money    = $orders->sum('money');
-                $bill->paid    = $orders->sum('paid');
-                $bill->type    = "INPUT";
-                $bill->pay_type    = 'JSAPI';
-                $bill->confirm_date    = date('Y-m-d H:i:s',time());
-                $bill->status    = 'DONE';
-                $bill->pay_date    = $store_pay->pay_date;
-                $bill->data    = $orders->toArray();
-            }else{
-                $bill   = new Billmodel();
-                //$bill->store_pay_id = $key;
-                //$bill->out_trade_no = $store_pay->out_trade_no;
-                $bill->sequence_number  = sprintf("%s%06d", $dateString, $count);
-                $bill->store_id = $resident->store_id;
-                $bill->employee_id = $this->employee->id;
-                $bill->resident_id = $resident->id;
-                $bill->customer_id = $resident->customer_id;
-                $bill->uxid = $resident->uxid;
-                $bill->room_id = $resident->room_id;
-                $bill->money    = $orders->sum('money');
-                $bill->paid    = $orders->sum('paid');
-                $bill->type    = "INPUT";
-                $bill->pay_type    =  $payWay ? $payWay: 'JSAPI';
-                $bill->confirm_date = date('Y-m-d H:i:s',time());
-                $bill->status    = 'DONE';
-                $bill->pay_date    = date('Y-m-d H:i:s',time());
-                $bill->data    = $orders->toArray();
-            }
-
-            $bill->save();
 
             //更新订单状态
             foreach ($orders as $order) {
@@ -326,8 +285,8 @@ class Order extends MY_Controller
                 );
 
                 $order->pay_type            = $payWay ? $payWay: $order->pay_type;
-                $order->sequence_number     = $bill->sequence_number;
-                $order->bill_id             = $bill->id;
+//                $order->sequence_number     = $bill->sequence_number;
+//                $order->bill_id             = $bill->id;
                 //$order->number              = $number;
                 $order->status              = $status;
                 $order->deal                = $deal;
@@ -606,8 +565,57 @@ class Order extends MY_Controller
         return true;
     }
 
+    /**
+     *
+     * 创建生成流水账单
+     * 根据流水账单来记录用户的每次支付记录
+     *
+     */
 
+    private function createBill($orders)
+    {
 
+        $this->load->model('billmodel');
+        $bill       = new Billmodel();
+        $bill->id     =    '';
+        $count      = $this->billmodel->ordersConfirmedToday()+1;
+        $dateString = date('Ymd');
+        $bill->sequence_number     =   sprintf("%s%06d", $dateString, $count);
+
+        $bill->store_id            =    $orders[0]->store_id;
+        $bill->employee_id         =    $orders[0]->employee_id;
+        $bill->resident_id         =    $orders[0]->resident_id;
+        $bill->customer_id         =    $orders[0]->customer_id;
+        $bill->uxid                =    $orders[0]->uxid;
+        $bill->room_id             =    $orders[0]->room_id;
+        $orderIds=array();
+        foreach($orders as $order){
+            log_message('error',$order->id.'||biLLTEST');
+            $orderIds[]=$order->id;
+            $bill->money               =    $bill->money+$order->paid;
+            if($order->pay_type=='REFUND'){
+                $bill->type                =    'OUTPUT';
+            }else{
+                $bill->type                =    'INPUT';
+            }
+        }
+        $bill->pay_type            =    $orders[0]->pay_type;
+        $bill->confirm             =    '';
+        $bill->pay_date            =    date('Y-m-d H:i:s',time());
+        $bill->data                =    '';
+        $bill->confirm_date        =    date('Y-m-d H:i:s',time());
+
+        //如果是微信支付
+        $bill->out_trade_no='';
+        $bill->store_pay_id='';
+
+//        var_dump($orderIds);
+        $res=$bill->save();
+        if(isset($res)){
+            Ordermodel::whereIn('id', $orderIds)->update(['sequence_number' => $bill->sequence_number]);
+        }
+        return $res;
+    }
 
 
 
