@@ -47,7 +47,7 @@ class Resident extends MY_Controller
 
         if($status=='RENT'){
             $this->load->model('residentmodel');
-            $data['resident']=Residentmodel::WHERE('room_id',$room->resdent_id)->orderBy('end_time','DESC')->get();
+            $data['resident']=Residentmodel::WHERE('room_id',$room->resdent_id)->orderBy('end_time','DESC')->first();
         }
 
         $this->api_res(0,$data);
