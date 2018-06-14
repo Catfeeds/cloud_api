@@ -43,9 +43,10 @@ class Contract extends MY_Controller{
 //            ->limit($per_page)
 //            ->get()
 //            ->orderBy('resident.created_at');
-        $rooms  = Residentmodel::with('roomunionmodel')
+                $rooms  = roomunionmodel::with[('resident'=>function($query){
+                    $query->where('status',['NOT_PAY','PRE_RESERVE','PRE_CHECKIN']);
+                     }])
                     ->where($where)
-                    ->whereIn('status',['NOT_PAY','PRE_RESERVE','PRE_CHECKIN'])
                     ->orderBy('updated_at','ASC')
                     ->offset($offset)
                     ->limit($per_page)
