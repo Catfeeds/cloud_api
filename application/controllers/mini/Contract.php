@@ -52,7 +52,7 @@ class Contract extends MY_Controller{
                 ->get();
         var_dump($rooms->toArray());
         $total_page = ceil(($rooms->count())/PAGINATE);
-        $data=$rooms->toArray();
+        $data=$rooms->toArray()[0];
 
         $this->api_res(0,[$data,'total_page'=>$total_page]);
     }
