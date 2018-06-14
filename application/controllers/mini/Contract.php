@@ -44,7 +44,7 @@ class Contract extends MY_Controller{
 //            ->get()
 //            ->orderBy('resident.created_at');
                 $rooms  = Roomunionmodel::with(['resident'=>function($query){
-                    $query->where('status',['NOT_PAY','PRE_RESERVE','PRE_CHECKIN']);
+                    $query->whereIn('status',['NOT_PAY','PRE_RESERVE']);
                      }])
                     ->where($where)
                     ->orderBy('updated_at','ASC')
