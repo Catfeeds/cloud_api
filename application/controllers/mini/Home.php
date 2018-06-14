@@ -34,7 +34,7 @@ class Home extends MY_Controller
 
     $data['tipsnum']['order']=Ordermodel::where([
         'store_id'=>$store_id
-        ])->whereIn('status',['PENDING'])->count();
+        ])->where('status','PENDING')->count();
     //缴费订单确认
     $data['tipsnum']['sureorder']=Ordermodel::where([
          'store_id'=>$store_id
