@@ -102,20 +102,39 @@ class Bill extends MY_Controller
     }
 
 
-    public function test(){
-//        $bill->id='';
-//        $this->load->model('billmodel');
-//        Ordermodel::where([
-//            'store_id'=>$store_id
-//        ])->count();
-//
-//        //
-//        map(function($query){
-//            $query->date=date("Y-m-d",timetostr($query->yourdate);
-//            return $query;
-//        }
+    public function test($orders){
+        $orders=Ordermodel::where('room_id',34)->get();
+        $bill->id     =    '';
+        $count      = $this->billmodel->ordersConfirmedToday()+1;
+        $dateString = date('Ymd');
+        $bill->sequence_number     =   sprintf("%s%06d", $dateString, $count);
 
-        echo "aa";
+        $bill->store_id            =    $orders[0]->store_id;
+        $bill->employee_id         =    $orders[0]->employee_id;
+        $bill->resident_id         =    $orders[0]->resident_id;
+        $bill->customer_id         =    $orders[0]->customer_id;
+        $bill->uxid                =    $orders[0]->uxid;
+        $bill->room_id             =    $orders[0]->room_id;
+
+        foreach($orders as $order){
+            $bill->money               =    $bill->money+$order->paid;
+        }
+        $bill->money               =    $orders[0]->uxid;
+        $bill->type                =    $orders[0]->uxid;
+        $bill->pay_type            =    $orders[0]->pay_type;
+        $bill->confirm             =    '';
+        $bill->pay_date            =    date('Y-m-d H:i:s',time());
+        $bill->data                =    '';
+        $bill->confirm_date = date('Y-m-d H:i:s',time());
+
+        //如果是微信支付
+        $bill->out_trade_no='';
+        $bill->store_pay_id='';
+
+        $this->api_res(0,$bill);
+
+
+
 
     }
 

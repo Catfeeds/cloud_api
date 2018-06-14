@@ -41,6 +41,6 @@ class Billmodel extends Basemodel
      */
     public function ordersConfirmedToday()
     {
-        return Ordermodel::count();
+        return Billmodel::count();
     }
 }

@@ -30,6 +30,7 @@ class Order extends MY_Controller
         $this->load->model('ordermodel');
         $this->load->model('residentmodel');
 
+//        $room   = Roomunionmodel::where('resident_id',$resident_id)->find($room_id);
         log_message('error','SHOW-ROOM-'.$room_id.'-resident-'.$resident_id);
         $room   = Roomunionmodel::where('store_id',$this->employee->store_id)->find($room_id);
         //$room   = Roomunionmodel::find($room_id);
@@ -97,7 +98,7 @@ class Order extends MY_Controller
         $input=$this->input->post(null,true);
 
         $store_id   = $this->employee->store_id;
-
+//        $store_id   = 1;
         $page   = isset($input['page'])?intval(strip_tags(trim($input['page']))):1;
         $per_page   = isset($input['per_page'])?intval(strip_tags(trim($input['per_page']))):PAGINATE;
         $where  = ['store_id'=>$store_id];
@@ -172,6 +173,7 @@ class Order extends MY_Controller
         $input  = $this->input->post(null,true);
         $resident_id    = $input['resident_id'];
         $room_id        = $input['room_id'];
+        //$store_pay_id   = $input[];
         $order_ids      = $input['order_ids'];
 
         $this->load->model('residentmodel');
