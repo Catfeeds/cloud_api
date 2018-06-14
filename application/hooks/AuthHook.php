@@ -24,34 +24,37 @@ class AuthHook {
         //格式2 类/方法
         //注意，所有url统一用小写，不要大写
         $authArr = array(
-
-            'demo/copy/transferimages',
-            'demo/copy/run',
-
-            'common/imageupload',
-            'common/fileupload',
-
-            'bill/order/download',
-
-            'demo/sheet/index',
-            'demo/sheet/output',
-
-            'bill/bill/generate',
-            //
-            'bill/bill/listbill',
-            'bill/bill/showbill',
-
+           'mini/login/gettoken',
+            'mini/login/handleloginstatus',
             'account/login/login',
-            'demo/test/test1',
+
+//            'demo/copy/transferimages',
+//            'demo/copy/run',
+//
+//            'common/imageupload',
+//            'common/fileupload',
+//
+//            'bill/order/download',
+//
+//            'demo/sheet/index',
+//            'demo/sheet/output',
+//
+//            'bill/bill/generate',
+//            //
+//            'bill/bill/listbill',
+//            'bill/bill/showbill',
+
+//            'account/login/login',
+//            'demo/test/test1',
 
             //'mini/resident/checkroomunion',
             //'mini/resident/checkin',
-            'mini/resident/destory',
+//            'mini/resident/destory',
             //'mini/resident/showqrcode',
 //            'mini/resident/reservation',
-            'mini/resident/getresident',
+//            'mini/resident/getresident',
 //            'mini/resident/listresident',
-            'mini/resident/unconfirm',
+//            'mini/resident/unconfirm',
 //            'mini/resident/bookingtocheckin',
 //            'mini/resident/renew',
 //            'mini/checkout/listcheckout',
@@ -61,13 +64,13 @@ class AuthHook {
 //            'mini/checkout/show',
 //            'mini/checkout/destroy',
 
-            'mini/activity/showactivity',
-
-            'bill/meter/confirm',
-            'bill/bill/listbill',
-            'bill/order/listorder',
-
-            'mini/order/getavailablecoupons',
+//            'mini/activity/showactivity',
+//
+//            'bill/meter/confirm',
+//            'bill/bill/listbill',
+//            'bill/order/listorder',
+//
+//            'mini/order/getavailablecoupons',
 //            'mini/order/listorder',
 //            'mini/order/showbyroom',
             //'mini/order/confirm',
@@ -82,86 +85,86 @@ class AuthHook {
             //'store/store/getstore',
             //'store/store/updatestore',
             //'store/store/searchstore',
-            'store/store/seachbymulti',
-            'store/roomtype/listroomtype',
-            'store/roomtype/addroomtype',
-            'store/roomtype/deleteroomtype',
-            'store/roomtype/searchroomtype',
-            'store/roomtype/getroomtype',
-            'store/roomtype/updateroomtype',
-            'store/roomtype/destroyroomtype',
-            'store/template/listtemplate',
-            'store/template/deletetemplate',
-            'store/template/addtemplate',
-            'store/template/searchtemplate',
-            'store/template/destroytemplate',
-            'store/template/gettemplate',
-            'store/template/updatetemplate',
-            'store/template/showtemplate',
-
-            'store/roomdot/adddot',
-            'store/roomunion/addunion',
-            'store/roomunion/listunion',
-            'store/roomunion/showbuilding',
-            'store/roomunion/submitunion',
-            'store/roomunion/destory',
-            'store/roomdot/listdot',
-            'store/roomunion/getunion',
-            'store/roomdot/getdot',
-            'store/roomdot/destroy',
-            'store/roomunion/batchupdateunion',
-            'store/roomdot/batchupdatedot',
-
-            'store/community/addcommunity',
-            'store/community/listcommunity',
-            'store/community/searchcommunity',
-            'store/community/updatecommunity',
-            'store/community/getcommunity',
-            'store/community/deletecommunity',
-            'store/community/destroycommunity',
-            'store/community/showcommunity',
-
-            'store/room/adddot',
-            'store/room/addunion',
-
-            'service/servicetype/listservicetype',
-            'service/servicetype/addservicetype',
-            'service/servicetype/imageupload',
-            'service/servicetype/updateservicetype',
-
-            'service/serviceorder/listserviceorder',
-            'service/serviceorder/getservicetype',
-            'service/serviceorder/getdetail',
-
-            'service/reserveorder/listreserveorder',
-
-            'shop/goodscategory/goodscategory',
-            'shop/goodscategory/addcategory',
-            'shop/goodscategory/updatecategory',
-            'shop/goodscategory/deletecategory',
-
-            'shop/goods/listgoods',
-            'shop/goods/getcategory',
-            'shop/goods/addgoods',
-            'shop/goods/updategoods',
-            'shop/goods/updateonsale',
-            'shop/goods/deletegoods',
-
-            'shop/goodsorder/listgoodsorder',
-            'shop/goodsorder/detail',
-
-            'smartdevice/smartdevice/listsmartdevice',
-            'smartdevice/smartdevice/record',
-            'smartdevice/smartdevice/test',
-            'smartdevice/smartdevice/getallrecord',
-            'smartdevice/readmeter/handle',
-            'smartdevice/crondreadmeter/readmeter',
-
-            'common/city',
-            'common/province',
-            'common/district',
-
-            'sellcontrol/sellcontrol/details',
+//            'store/store/seachbymulti',
+//            'store/roomtype/listroomtype',
+//            'store/roomtype/addroomtype',
+//            'store/roomtype/deleteroomtype',
+//            'store/roomtype/searchroomtype',
+//            'store/roomtype/getroomtype',
+//            'store/roomtype/updateroomtype',
+//            'store/roomtype/destroyroomtype',
+//            'store/template/listtemplate',
+//            'store/template/deletetemplate',
+//            'store/template/addtemplate',
+//            'store/template/searchtemplate',
+//            'store/template/destroytemplate',
+//            'store/template/gettemplate',
+//            'store/template/updatetemplate',
+//            'store/template/showtemplate',
+//
+//            'store/roomdot/adddot',
+//            'store/roomunion/addunion',
+//            'store/roomunion/listunion',
+//            'store/roomunion/showbuilding',
+//            'store/roomunion/submitunion',
+//            'store/roomunion/destory',
+//            'store/roomdot/listdot',
+//            'store/roomunion/getunion',
+//            'store/roomdot/getdot',
+//            'store/roomdot/destroy',
+//            'store/roomunion/batchupdateunion',
+//            'store/roomdot/batchupdatedot',
+//
+//            'store/community/addcommunity',
+//            'store/community/listcommunity',
+//            'store/community/searchcommunity',
+//            'store/community/updatecommunity',
+//            'store/community/getcommunity',
+//            'store/community/deletecommunity',
+//            'store/community/destroycommunity',
+//            'store/community/showcommunity',
+//
+//            'store/room/adddot',
+//            'store/room/addunion',
+//
+//            'service/servicetype/listservicetype',
+//            'service/servicetype/addservicetype',
+//            'service/servicetype/imageupload',
+//            'service/servicetype/updateservicetype',
+//
+//            'service/serviceorder/listserviceorder',
+//            'service/serviceorder/getservicetype',
+//            'service/serviceorder/getdetail',
+//
+//            'service/reserveorder/listreserveorder',
+//
+//            'shop/goodscategory/goodscategory',
+//            'shop/goodscategory/addcategory',
+//            'shop/goodscategory/updatecategory',
+//            'shop/goodscategory/deletecategory',
+//
+//            'shop/goods/listgoods',
+//            'shop/goods/getcategory',
+//            'shop/goods/addgoods',
+//            'shop/goods/updategoods',
+//            'shop/goods/updateonsale',
+//            'shop/goods/deletegoods',
+//
+//            'shop/goodsorder/listgoodsorder',
+//            'shop/goodsorder/detail',
+//
+//            'smartdevice/smartdevice/listsmartdevice',
+//            'smartdevice/smartdevice/record',
+//            'smartdevice/smartdevice/test',
+//            'smartdevice/smartdevice/getallrecord',
+//            'smartdevice/readmeter/handle',
+//            'smartdevice/crondreadmeter/readmeter',
+//
+//            'common/city',
+//            'common/province',
+//            'common/district',
+//
+//            'sellcontrol/sellcontrol/details',
 
 //            'mini/reserve/listreserve',
 //            'mini/reserve/addreserve',
@@ -169,50 +172,50 @@ class AuthHook {
 //            'mini/reserve/room_type',
 //            'mini/reserve/reservestatus',
 
-            'mini/contract/listunsign',
-
-            'mini/visitrecord/visit',
-            'mini/login/gettoken',
-            'mini/login/handleloginstatus',
-            'mini/personalcenter/center',
+//            'mini/contract/listunsign',
+//
+//            'mini/visitrecord/visit',
+//            'mini/login/gettoken',
+//            'mini/login/handleloginstatus',
+//            'mini/personalcenter/center',
 
 //            'mini/home/lists',
 
-            'mini/server/create',
+//            'mini/server/create',
 //            'mini/room/listroom',
 //            'mini/room/detailsroom',
 //            'mini/room/building',
 //            'mini/room/countroom',
-
-            'contract/operation/operatlist',
-            'contract/operation/operationfind',
-            'contract/operation/booking',
-            'contract/operation/book',
-            'contract/resident/resident',
-            'contract/contract/showcontract',
-
-
-            'activity/activity/listactivity',
-
-            'coupon/coupon/listcoupon',
-            'coupon/coupon/addcoupon',
-            'coupon/coupon/updatecoupon',
-            'coupon/coupon/sendcoupon',
-            'coupon/coupon/resident',
-
-            'contract/operation/pdflook',
-            'contract/operation/loadcontract',
-
-            'pricecontrol/pricecontrol/pricecontrol',
-            'pricecontrol/pricecontrol/rentprice',
-            'pricecontrol/pricecontrol/utilities',
-            'pricecontrol/pricecontrol/changeutility',
-
-            'resident/resident/showresident',
-            'resident/resident/residentinfo',
-            'resident/resident/updateresident',
-            'resident/resident/contract',
-            'resident/resident/bill',
+//
+//            'contract/operation/operatlist',
+//            'contract/operation/operationfind',
+//            'contract/operation/booking',
+//            'contract/operation/book',
+//            'contract/resident/resident',
+//            'contract/contract/showcontract',
+//
+//
+//            'activity/activity/listactivity',
+//
+//            'coupon/coupon/listcoupon',
+//            'coupon/coupon/addcoupon',
+//            'coupon/coupon/updatecoupon',
+//            'coupon/coupon/sendcoupon',
+//            'coupon/coupon/resident',
+//
+//            'contract/operation/pdflook',
+//            'contract/operation/loadcontract',
+//
+//            'pricecontrol/pricecontrol/pricecontrol',
+//            'pricecontrol/pricecontrol/rentprice',
+//            'pricecontrol/pricecontrol/utilities',
+//            'pricecontrol/pricecontrol/changeutility',
+//
+//            'resident/resident/showresident',
+//            'resident/resident/residentinfo',
+//            'resident/resident/updateresident',
+//            'resident/resident/contract',
+//            'resident/resident/bill',
 
 
 
