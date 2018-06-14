@@ -34,11 +34,11 @@ class Home extends MY_Controller
 
     $data['tipsnum']['order']=Ordermodel::where([
         'store_id'=>$store_id
-        ])->whereIn('status',['PENDING'])->groupBy('resident_id')->count();
+        ])->whereIn('status',['PENDING'])->count();
     //缴费订单确认
     $data['tipsnum']['sureorder']=Ordermodel::where([
          'store_id'=>$store_id
-     ])->whereIn('status',['CONFIRM'])->groupBy('resident_id')->count();
+     ])->whereIn('status',['CONFIRM'])->count();
 
      //办理入住未完成
     $data['tipsnum']['noorder']= Residentmodel::where([
