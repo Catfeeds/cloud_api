@@ -39,11 +39,10 @@ class Contract extends MY_Controller{
             ->where('resident_id','>',0)
             ->where($where)
             ->orderBy('updated_at','ASC')
-            ->groupBy('resident_id')
             ->offset($offset)
             ->limit($per_page)
-            ->get();
-            ->orderBy('resident.created_at')
+            ->get()
+            ->orderBy('resident.created_at');
             $total_page = ceil(($rooms->count())/PAGINATE);
             $this->api_res(0,['data'=>$rooms,'total_page'=>$total_page]);
     }
