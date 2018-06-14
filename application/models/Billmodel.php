@@ -41,6 +41,7 @@ class Billmodel extends Basemodel
      */
     public function ordersConfirmedToday()
     {
-        return Billmodel::count();
+        return Billmodel::whereDate('updated_at', '=', date('Y-m-d'))
+            ->count();
     }
 }
