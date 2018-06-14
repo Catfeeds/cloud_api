@@ -50,9 +50,8 @@ class Contract extends MY_Controller{
                 ->offset($offset)
                 ->limit($per_page)
                 ->get();
-        var_dump($rooms->toArray());
         $total_page = ceil(($rooms->count())/PAGINATE);
-        $data=$rooms->toArray()[0];
+        $data=$rooms->toArray();
 
         $this->api_res(0,[$data,'total_page'=>$total_page]);
     }
