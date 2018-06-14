@@ -26,7 +26,11 @@ class Home extends MY_Controller
 
         //获取首页提示信息
         //未缴费订单
-    $store_id=$this->employee->store_id;
+        $store_id   = empty($this->employee->store_id)?'':$this->employee->store_id;
+        if(empty($store_id)){
+            $this->api_res(1006);
+        }
+
 
     $data['tipsnum']['order']=Ordermodel::where([
         'store_id'=>$store_id

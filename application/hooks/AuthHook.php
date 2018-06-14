@@ -176,7 +176,7 @@ class AuthHook {
             'mini/login/handleloginstatus',
             'mini/personalcenter/center',
 
-            'mini/home/lists',
+//            'mini/home/lists',
 
             'mini/server/create',
 //            'mini/room/listroom',
