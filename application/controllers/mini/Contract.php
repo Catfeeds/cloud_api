@@ -49,13 +49,12 @@ class Contract extends MY_Controller{
                 ->orderBy('updated_at','ASC')
                 ->offset($offset)
                 ->limit($per_page)
-                ->get()->toArray();
-//                var_dump($rooms);
+                ->get();
 
         $total_page = ceil(($rooms->count())/PAGINATE);
 
 
-        $this->api_res(0,['data'=>$rooms,'total_page'=>$total_page]);
+        $this->api_res(0,['data'=>$rooms->toArray(),'total_page'=>$total_page]);
     }
 
 
