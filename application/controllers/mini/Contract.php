@@ -32,13 +32,7 @@ class Contract extends MY_Controller{
         $rooms  = Roomunionmodel::with(['resident'=>function($query){
             $query->with(['contract']);
         }])
-            ->whereHas('resident',function($query){
-            $query->whereHas('contract',function ($que){
-                $que->where('status','!=',Contractmodel::STATUS_ARCHIVED);
-            })->orDoesntHave('contract')
-            ;
-        })
-            ->where('resident_id','>',0)
+//
             ->where($where)
             ->orderBy('updated_at','ASC')
             ->offset($offset)
