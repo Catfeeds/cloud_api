@@ -27,6 +27,7 @@ class AuthHook {
            'mini/login/gettoken',
             'mini/login/handleloginstatus',
             'account/login/login',
+            'bill/bill/test',
 
 //            'demo/copy/transferimages',
 //            'demo/copy/run',
@@ -216,8 +217,6 @@ class AuthHook {
 //            'resident/resident/updateresident',
 //            'resident/resident/contract',
 //            'resident/resident/bill',
-
-
 
         );
 //        if(ENVIRONMENT !=='production')

@@ -92,29 +92,32 @@ class Bill extends MY_Controller
          * OVERDUE
          * */
 
-        if($bill->type=='output'){
-            //获取收入表
-            $data['income']=array();
-            //优惠信息列表
-            $data['outpay']=Ordermodel::where('sequence_number',$sequence)->get()->toArray();
-            //        获取money
-            $data['sum']=$bill->money;
-
-        }else{
-
-            //获取收入表
-            $data['income']=Ordermodel::where('sequence_number',$sequence)->get()->toArray();
-            //优惠信息列表
-            $data['outpay']=array();
-            //        获取money
-            $data['sum']=$bill->money;
-        }
+        $data['lists']=Ordermodel::where('sequence_number',$sequence)->get()->toArray();
+        //        获取money
+        $data['sum']=$bill->money;
 
 
         $this->api_res(0,$data);
 
     }
 
+
+    public function test(){
+//        $bill->id='';
+//        $this->load->model('billmodel');
+//        Ordermodel::where([
+//            'store_id'=>$store_id
+//        ])->count();
+//
+//        //
+//        map(function($query){
+//            $query->date=date("Y-m-d",timetostr($query->yourdate);
+//            return $query;
+//        }
+
+        echo "aa";
+
+    }
 
 
 }
