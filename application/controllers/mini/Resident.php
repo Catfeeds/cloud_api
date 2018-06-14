@@ -43,12 +43,11 @@ class Resident extends MY_Controller
         $data["room_id"]=$room_id;
         $data['rent_price']=$room->rent_price;
         $data['property_price']=$room->property_price;
-        $data['resdent_id']=$room->resdent_id;
 
 
         if($status=='RENT'){
             $this->load->model('residentmodel');
-            $data['resident']=Residentmodel::find('id',$room->resdent_id);
+            $data['resident']=Residentmodel::WHERE('room_id',$room->resdent_id)->orderBy('oover_time','DESC')->get();
         }
 
         $this->api_res(0,$data);
