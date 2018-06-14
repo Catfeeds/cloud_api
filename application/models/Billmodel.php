@@ -8,7 +8,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  */
 class Billmodel extends Basemodel
 {
-    protected $table    = 'test_bill';
+    protected $table    = 'boss_bill';
 
     protected $casts    = ['data'=>'array'];
 
