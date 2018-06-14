@@ -29,21 +29,21 @@ class Contract extends MY_Controller{
         $this->load->model('roomunionmodel');
         $this->load->model('contractmodel');
 
-//        $rooms  = Roomunionmodel::with(['resident'=>function($query){
-//            $query->with(['contract']);
-//        }])->whereHas('resident',function($query){
-//                $query->whereHas('contract',function ($que){
-//                    $que->where('status',Contractmodel::STATUS_GENERATED);
-//                })->orDoesntHave('contract');
-//            })
-//            ->where('resident_id','>',0)
-//            ->where($where)
-//            ->orderBy('updated_at','ASC')
-//            ->groupBy('resident_id')
-//            ->offset($offset)
-//            ->limit($per_page)
-//            ->get();
-//            ->orderBy('resident.created_at')
+        $rooms  = Roomunionmodel::with(['resident'=>function($query){
+            $query->with(['contract']);
+        }])->whereHas('resident',function($query){
+                $query->whereHas('contract',function ($que){
+                    $que->where('status',Contractmodel::STATUS_GENERATED);
+                })->orDoesnotHave('contract');
+            })
+            ->where('resident_id','>',0)
+            ->where($where)
+            ->orderBy('updated_at','ASC')
+            ->groupBy('resident_id')
+            ->offset($offset)
+            ->limit($per_page)
+            ->get();
+            ->orderBy('resident.created_at')
             $total_page = ceil(($rooms->count())/PAGINATE);
             $this->api_res(0,['data'=>$rooms,'total_page'=>$total_page]);
     }
