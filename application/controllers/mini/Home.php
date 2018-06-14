@@ -41,7 +41,9 @@ class Home extends MY_Controller
      ])->whereIn('status',['CONFIRM'])->groupBy('resident_id')->count();
 
      //办理入住未完成
-    $data['tipsnum']['noorder']= Residentmodel::where('status','NOT_PAY')->count();
+    $data['tipsnum']['noorder']= Residentmodel::where([
+        'store_id'=>$store_id
+    ])->whereIn('status',['NOT_PAY'])->count();
 
      //合同签约
 

@@ -30,8 +30,6 @@ class Order extends MY_Controller
         $this->load->model('ordermodel');
         $this->load->model('residentmodel');
 
-//        $room   = Roomunionmodel::where('resident_id',$resident_id)->find($room_id);
-        log_message('error','SHOW-ROOM-'.$room_id.'-resident-'.$resident_id);
         $room   = Roomunionmodel::where('store_id',$this->employee->store_id)->find($room_id);
         //$room   = Roomunionmodel::find($room_id);
 
@@ -97,11 +95,11 @@ class Order extends MY_Controller
         }
         $input=$this->input->post(null,true);
 
-        $store_id   = $this->employee->store_id;
+
+        $where['store_id']= $this->employee->store_id;
 //        $store_id   = 1;
         $page   = isset($input['page'])?intval(strip_tags(trim($input['page']))):1;
         $per_page   = isset($input['per_page'])?intval(strip_tags(trim($input['per_page']))):PAGINATE;
-        $where  = ['store_id'=>$store_id];
         if(isset($input['status'])){
             $where['status']    = $input['status'];
         }
@@ -117,7 +115,7 @@ class Order extends MY_Controller
 
         if(isset($input['room_number'])){
             $room   = Roomunionmodel::where([
-                'store_id'=>$store_id,
+                'store_id'=>$this->employee->store_id,
                 'number'=>$input['room_number']
             ])->first();
             if(empty($room)){
