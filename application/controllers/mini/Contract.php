@@ -33,11 +33,11 @@ class Contract extends MY_Controller{
             $query->with(['contract']);
         }])
             ->whereHas('resident',function($query){
-            $query->whereHas('contract',function ($que){
-//                $que->where('status','!=',Contractmodel::STATUS_ARCHIVED);
-            })->orDoesntHave('contract')
-            ;
-        })
+                $query->whereHas('contract',function ($que){
+              $que->whereNotIn('status',[Contractmodel::STATUS_ARCHIVED,Contractmodel::STATUS_SIGNING]);
+                })->orDoesntHave('contract')
+                ;
+            })
             ->where('resident_id','>',0)
             ->where($where)
             ->orderBy('updated_at','ASC')
