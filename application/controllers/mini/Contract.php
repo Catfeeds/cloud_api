@@ -21,8 +21,8 @@ class Contract extends MY_Controller{
         $page   = (int)(isset($input['page'])?$input['page']:1);
         $per_page   = isset($input['per_page'])?$input['per_page']:PAGINATE;
         $offset = ($page-1)*PAGINATE;
-        $where=[];
-//        $where['store_id']=$this->employee->store_id;
+//        $where=[];
+        $where['store_id']=$this->employee->store_id;
         isset($input['room_number'])?$where['number']=$input['room_number']:null;
 
         $this->load->model('residentmodel');
@@ -49,6 +49,7 @@ class Contract extends MY_Controller{
                     ->whereHas('resident',function($query){
                         $query->doesntHave('contract');
                     })
+
                     ->where('resident_id','>',0)
                     ->where($where)
                     ->orderBy('updated_at','ASC')
