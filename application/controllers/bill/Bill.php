@@ -102,45 +102,15 @@ class Bill extends MY_Controller
     }
 
 
-    public function test($orders){
+    public function test(){
 
-        $bill       = new Billmodel();
-        $bill->id     =    '';
-        $count      = $this->billmodel->ordersConfirmedToday()+1;
-        $dateString = date('Ymd');
-        $bill->sequence_number     =   sprintf("%s%06d", $dateString, $count);
+        $this->load->model('residentmodel');
 
-        $bill->store_id            =    $orders[0]->store_id;
-        $bill->employee_id         =    $orders[0]->employee_id;
-        $bill->resident_id         =    $orders[0]->resident_id;
-        $bill->customer_id         =    $orders[0]->customer_id;
-        $bill->uxid                =    $orders[0]->uxid;
-        $bill->room_id             =    $orders[0]->room_id;
-        $orderIds=array();
-        foreach($orders as $order){
-            $orderIds[]=$order->id;
-            $bill->money               =    $bill->money+$order->paid;
-            if($order->pay_type=='REFUND'){
-                $bill->type                =    'OUTPUT';
-            }else{
-                $bill->type                =    'INPUT';
-            }
-        }
-        $bill->pay_type            =    $orders[0]->pay_type;
-        $bill->confirm             =    '';
-        $bill->pay_date            =    date('Y-m-d H:i:s',time());
-        $bill->data                =    '';
-        $bill->confirm_date        =    date('Y-m-d H:i:s',time());
+        $one=Residentmodel::find(16);
+//        $data['res']=$one->begin_time;
+        echo substr($one['begin_time'],0,7);
 
-        //如果是微信支付
-        $bill->out_trade_no='';
-        $bill->store_pay_id='';
-
-//        var_dump($orderIds);
-        $res=$bill->save();
-        if(isset($res)){
-            Ordermodel::whereIn('id', $orderIds)->update(['sequence_number' => $bill->sequence_number]);
-        }
+        $this->api_res(0,$one);
 
     }
 

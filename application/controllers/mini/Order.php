@@ -580,6 +580,9 @@ class Order extends MY_Controller
         $bill->id     =    '';
         $count      = $this->billmodel->ordersConfirmedToday()+1;
         $dateString = date('Ymd');
+        $this->load->model('residentmodel');
+
+
         $bill->sequence_number     =   sprintf("%s%06d", $dateString, $count);
 
         $bill->store_id            =    $orders[0]->store_id;
@@ -589,8 +592,10 @@ class Order extends MY_Controller
         $bill->uxid                =    $orders[0]->uxid;
         $bill->room_id             =    $orders[0]->room_id;
         $orderIds=array();
+
+        $change_resident=fasle;
         foreach($orders as $order){
-            log_message('error',$order->id.'||biLLTEST');
+
             $orderIds[]=$order->id;
             $bill->money               =    $bill->money+$order->paid;
             if($order->pay_type=='REFUND'){
@@ -598,7 +603,19 @@ class Order extends MY_Controller
             }else{
                 $bill->type                =    'INPUT';
             }
+            if($order->pay_type=='ROOM'){
+                $change_resident=true;
+            }
         }
+        if($change_resident){
+            $Resident=Residentmodel::find($orders[0]->resident_id);
+            $Resident_time=substr($Resident['begin_time'],0,7);
+            if($Resident_time==substr($orders[0]->pay_type,0,7)){
+                Residentmodel::where('id', $orders[0]->resident_id)->update(['status' => 'NORMAL']);
+            }
+
+        }
+
         $bill->pay_type            =    $orders[0]->pay_type;
         $bill->confirm             =    '';
         $bill->pay_date            =    date('Y-m-d H:i:s',time());
@@ -609,14 +626,12 @@ class Order extends MY_Controller
         $bill->out_trade_no='';
         $bill->store_pay_id='';
 
-//        var_dump($orderIds);
         $res=$bill->save();
         if(isset($res)){
             Ordermodel::whereIn('id', $orderIds)->update(['sequence_number' => $bill->sequence_number]);
         }
         return $res;
     }
-
 
 
 
