@@ -138,9 +138,9 @@ class Bill extends MY_Controller
         $bill->out_trade_no='';
         $bill->store_pay_id='';
 
-        var_dump($orderIds);
+//        var_dump($orderIds);
 
-        $this->api_res(0,$bill);
+        $this->api_res(0,$orderIds);
 
 
 
