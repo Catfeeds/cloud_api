@@ -118,8 +118,9 @@ class Bill extends MY_Controller
         $bill->customer_id         =    $orders[0]->customer_id;
         $bill->uxid                =    $orders[0]->uxid;
         $bill->room_id             =    $orders[0]->room_id;
-
+        $orderIds=array();
         foreach($orders as $order){
+            $orderIds[]=$order->id;
             $bill->money               =    $bill->money+$order->paid;
             if($order->pay_type=='REFUND'){
                 $bill->type                =    'OUTPUT';
@@ -136,6 +137,8 @@ class Bill extends MY_Controller
         //如果是微信支付
         $bill->out_trade_no='';
         $bill->store_pay_id='';
+
+        var_dump($orderIds);
 
         $this->api_res(0,$bill);
 
