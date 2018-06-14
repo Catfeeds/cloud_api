@@ -43,7 +43,7 @@ class Contract extends MY_Controller{
 //            ->limit($per_page)
 //            ->get()
 //            ->orderBy('resident.created_at');
-                $rooms  = roomunionmodel::with[('resident'=>function($query){
+                $rooms  = Roomunionmodel::with(['resident'=>function($query){
                     $query->where('status',['NOT_PAY','PRE_RESERVE','PRE_CHECKIN']);
                      }])
                     ->where($where)
