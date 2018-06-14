@@ -49,8 +49,6 @@ class Contract extends MY_Controller{
                     ->whereHas('resident',function($query){
                         $query->doesntHave('contract');
                     })
-
-                    ->where('resident_id','>',0)
                     ->where($where)
                     ->orderBy('updated_at','ASC')
                     ->groupBy('resident_id')
