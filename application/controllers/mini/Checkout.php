@@ -14,6 +14,11 @@ class Checkout extends MY_Controller
     public function __construct()
     {
         parent::__construct();
+        $this->load->model('checkoutmodel');
+        $this->load->model('residentmodel');
+        $this->load->model('ordermodel');
+        $this->load->model('roomunionmodel');
+        $this->load->model('storemodel');
 
     }
 
@@ -25,10 +30,6 @@ class Checkout extends MY_Controller
     {
         $input  = $this->input->post(null,true);
         $where['store_id']  = $this->employee->store_id;
-        $this->load->model('checkoutmodel');
-        $this->load->model('roomunionmodel');
-        $this->load->model('storemodel');
-        $this->load->model('residentmodel');
         if(isset($input['status'])){
             $status = [$input['status']];
         }else{
@@ -55,10 +56,6 @@ class Checkout extends MY_Controller
             $this->api_res(1002,['error'=>$this->form_first_error($field)]);
             return;
         }
-        $this->load->model('checkoutmodel');
-        $this->load->model('residentmodel');
-        $this->load->model('ordermodel');
-        $this->load->model('roomunionmodel');
         //正常退房 不能押金抵扣，如果押金抵扣了，就一定是违约退房
         if(!$this->checkCheckOutType($input)){
             $this->api_res(10025);
