@@ -37,7 +37,7 @@ class Contract extends MY_Controller{
         $total_page = ceil(($rooms->count())/PAGINATE);
         $i=0;
         foreach ($rooms as $room){
-            var_dump($room->toArray());
+//            var_dump($room->toArray());
             $data[$i]=$room->toArray();
             $i++;
         }
