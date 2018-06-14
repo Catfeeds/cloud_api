@@ -139,8 +139,13 @@ class Bill extends MY_Controller
         $bill->store_pay_id='';
 
 //        var_dump($orderIds);
+        $res=$bill->save();
+        if(isset($res)){
+            Ordermodel::whereIn('id', $orderIds)->update(['sequence_number' => $bill->sequence_number]);
+        }
 
-        $this->api_res(0,$orderIds);
+
+        $this->api_res(0,$res);
 
 
 
