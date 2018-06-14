@@ -94,8 +94,6 @@ class Order extends MY_Controller
             return;
         }
         $input=$this->input->post(null,true);
-
-
         $where['store_id']= $this->employee->store_id;
 //        $store_id   = 1;
         $page   = isset($input['page'])?intval(strip_tags(trim($input['page']))):1;
