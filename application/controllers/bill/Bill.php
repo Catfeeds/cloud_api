@@ -102,11 +102,9 @@ class Bill extends MY_Controller
     }
 
 
-    public function test(){
-        $orders=Ordermodel::where('room_id',34)->get();
+    public function test($orders){
 
         $bill       = new Billmodel();
-
         $bill->id     =    '';
         $count      = $this->billmodel->ordersConfirmedToday()+1;
         $dateString = date('Ymd');
@@ -143,12 +141,6 @@ class Bill extends MY_Controller
         if(isset($res)){
             Ordermodel::whereIn('id', $orderIds)->update(['sequence_number' => $bill->sequence_number]);
         }
-
-
-        $this->api_res(0,$res);
-
-
-
 
     }
 
