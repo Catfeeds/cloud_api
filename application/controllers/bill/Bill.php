@@ -102,8 +102,11 @@ class Bill extends MY_Controller
     }
 
 
-    public function test($orders){
+    public function test(){
         $orders=Ordermodel::where('room_id',34)->get();
+
+        $bill       = new Billmodel();
+
         $bill->id     =    '';
         $count      = $this->billmodel->ordersConfirmedToday()+1;
         $dateString = date('Ymd');
@@ -125,7 +128,7 @@ class Bill extends MY_Controller
         $bill->confirm             =    '';
         $bill->pay_date            =    date('Y-m-d H:i:s',time());
         $bill->data                =    '';
-        $bill->confirm_date = date('Y-m-d H:i:s',time());
+        $bill->confirm_date        =    date('Y-m-d H:i:s',time());
 
         //如果是微信支付
         $bill->out_trade_no='';
