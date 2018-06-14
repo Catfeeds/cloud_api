@@ -36,7 +36,7 @@ class Contract extends MY_Controller{
         ->get();
         $total_page = ceil(($rooms->count())/PAGINATE);
 
-            $data['resident']= $room->toArray();
+            $data['resident']= $rooms->toArray();
             $data['total_page']=>$total_page;
 
         $data['resident']
