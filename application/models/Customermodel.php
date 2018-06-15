@@ -10,7 +10,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Customermodel extends Basemodel{
 
-    protected $table    = 'web_customer';
+    protected $table    = 'boss_customer';
 
     protected $hidden   = [];
 }
