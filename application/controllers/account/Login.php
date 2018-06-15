@@ -196,7 +196,7 @@ class Login extends MY_Controller
                 $company_id=1;
             }
             $token  = $this->m_jwt->generateJwtToken($bxid,$company_id);
-//            $privilege  = json_decode($this->m_redis->getCompanyInfo($company_id))->privilege;
+            $privilege  = json_decode($this->m_redis->getCompanyInfo($company_id))->privilege;
             $this->api_res(0,['bxid'=>$bxid,'token'=>$token,'privilege'=>$privilege,'name'=>$name]);
         }
         else
