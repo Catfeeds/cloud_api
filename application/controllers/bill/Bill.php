@@ -41,7 +41,7 @@ class Bill extends MY_Controller
             ->offset($offset)->limit(PAGINATE)
             ->where($where)
             ->whereBetween('pay_date',[$start_date,$end_date])
-            ->orderBy('id','desc')
+            ->orderBy('sequence_number','desc')
             ->where(function($query) use ($search){
                 $query->orWhereHas('resident',function($query) use($search){
                     $query->where('name','like',"%$search%");
