@@ -606,7 +606,6 @@ class Order extends MY_Controller
             if($Resident_time==substr($orders[0]->pay_type,0,7)){
                 Residentmodel::where('id', $orders[0]->resident_id)->update(['status' => 'NORMAL']);
             }
-
         }
 
         $bill->pay_type            =    $orders[0]->pay_type;
