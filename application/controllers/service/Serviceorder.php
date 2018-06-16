@@ -28,8 +28,8 @@ class Serviceorder extends MY_Controller
         $offset     = PAGINATE*($page-1);
 
         if(!empty($post['store_id'])){$where['store_id']=intval($post['store_id']);}
-        if(!empty($post['service_id'])){$where['service_type_id']=intval($post['service_id']);}
-        if(!empty($post['service_id'])){$where['service_type_id']=intval($post['service_id']);}
+        if(!empty($post['service_id'])){$where['service_id']=intval($post['service_id']);}
+        if(!empty($post['service_id'])){$where['service_id']=intval($post['service_id']);}
         if(!empty($post['begin_time'])){$bt=$post['begin_time'];}else{$bt = date('Y-m-d H:i:s',0);};
         if(!empty($post['end_time'])){$et=$post['end_time'];}else{$et = date('Y-m-d H:i:s',time());};
 
