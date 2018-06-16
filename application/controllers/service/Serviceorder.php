@@ -23,7 +23,7 @@ class Serviceorder extends MY_Controller
         $this->load->model('servicetypemodel');
         $post       = $this->input->post(NULL,true);
         $where      = [];
-        $filed      = ['id','sequence_number','store_id','room_id','estimate_money','pay_money','service_type_id','status','deal'];
+        $filed      = ['id','sequence_number','store_id','room_id','estimate_money','pay_money','service_id','status','deal'];
         $page       = isset($post['page'])?intval($post['page']):1;
         $offset     = PAGINATE*($page-1);
 
