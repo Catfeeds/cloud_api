@@ -14,7 +14,7 @@ class Operationrecordmodel extends Basemodel
         parent::__construct();
     }
 
-    protected $table    = 'operations';
+    protected $table    = 'boss_operations';
 
     protected $hidden   = ['created_at', 'updated_at'];
 }
