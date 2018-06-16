@@ -7,6 +7,6 @@
  */
 class Provincemodel extends Basemodel
 {
-    protected $table = 'province';
+    protected $table = 'public_province';
     protected $hidden = ['created_at','updated_at','deleted_at'];
 }

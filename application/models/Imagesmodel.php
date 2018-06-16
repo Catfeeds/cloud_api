@@ -8,5 +8,5 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  */
 class Imagesmodel extends Basemodel{
 
-    protected $table='images';
+    protected $table='boss_images';
 }

@@ -7,6 +7,6 @@
  */
 class Districtmodel extends Basemodel
 {
-    protected $table = 'district';
+    protected $table = 'public_district';
     protected $hidden = ['created_at', 'updated_at', 'deleted_at'];
 }

@@ -37,7 +37,7 @@ use Carbon\Carbon;
      const RENTTYPE_LONG     = 'LONG';
 
 
-     protected $table   = 'web_resident';
+     protected $table   = 'boss_resident';
 
      protected $fillable    = [
          'store_id',

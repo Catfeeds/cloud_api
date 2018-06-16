@@ -7,7 +7,7 @@
  */
 class Citymodel extends Basemodel
 {
-    protected $table = 'city';
+    protected $table = 'public_city';
     protected $hidden = ['created_at', 'updated_at', 'deleted_at'];
 
 
