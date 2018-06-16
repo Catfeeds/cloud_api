@@ -27,7 +27,7 @@ class Bill extends MY_Controller
         $input  = $this->input->post(null,true);
         $page   = isset($input['page'])?$input['page']:1;
         $where  = [];
-        $store_id   = empty($input['store_id'])?:$where['store_id']=$input['store_id'];
+        empty($input['store_id'])?:$where['store_id']=$input['store_id'];
         $start_date = empty($input['start_date'])?'1970-01-01':$input['start_date'];
         $end_date   = empty($input['end_date'])?'2030-12-12':$input['end_date'];
         $search     = empty($input['search'])?'':$input['search'];
@@ -54,7 +54,21 @@ class Bill extends MY_Controller
 //                $query->pay_date    = date('Y-m-d',strtotime($query->pay_date));
                 return $query;
             });
-        $total_page = ceil(($bills->count())/PAGINATE);
+
+        $billnumber  = Billmodel::with(['roomunion','store','resident','employee'])
+            ->where($where)
+            ->whereBetween('pay_date',[$start_date,$end_date])
+            ->where(function($query) use ($search){
+                $query->orWhereHas('resident',function($query) use($search){
+                    $query->where('name','like',"%$search%");
+                })->orWhereHas('employee',function($query) use ($search){
+                    $query->where('name','like',"%$search%");
+                })->orWhereHas('roomunion',function($query) use ($search){
+                    $query->where('number','like',"%$search%");
+                });
+            })->get()->count();
+
+        $total_page = ceil($billnumber/PAGINATE);
         $this->api_res(0,['bills'=>$bills,'total_page'=>$total_page]);
     }
 
