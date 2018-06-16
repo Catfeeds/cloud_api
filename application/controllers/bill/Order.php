@@ -66,7 +66,7 @@ class Order extends MY_Controller
                 });
             })
             ->where($where)
-            ->orderBy('updated_at')->offset($offset)->limit(PAGINATE)
+            ->orderBy('created_at')->offset($offset)->limit(PAGINATE)
             ->get()->toArray();
 
 
