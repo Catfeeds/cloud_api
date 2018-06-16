@@ -281,9 +281,6 @@ class Order extends MY_Controller
                 );
 
                 $order->pay_type            = $payWay ? $payWay: $order->pay_type;
-//                $order->sequence_number     = $bill->sequence_number;
-//                $order->bill_id             = $bill->id;
-                //$order->number              = $number;
                 $order->status              = $status;
                 $order->deal                = $deal;
                 $order->save();
@@ -594,11 +591,11 @@ class Order extends MY_Controller
 
             $orderIds[]=$order->id;
             $bill->money               =    $bill->money+$order->paid;
-            if($order->pay_type=='REFUND'){
-                $bill->type                =    'OUTPUT';
-            }else{
-                $bill->type                =    'INPUT';
-            }
+//            if($order->pay_type=='REFUND'){
+//                $bill->type                =    'OUTPUT';
+//            }else{
+//                $bill->type                =    'INPUT';
+//            }
             if($order->pay_type=='ROOM'){
                 $change_resident=true;
             }
