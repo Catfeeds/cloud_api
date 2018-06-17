@@ -25,7 +25,7 @@ class Room extends MY_Controller
         $where      = [];
         if(!empty($post['building_id'])){$where['building_id'] = intval($post['building_id']);};
         if(!empty($post['status'])){$where['status'] = $post['status'];};
-        $where['store_id']  = 1;//$this->employee->store_id;
+        $where['store_id']  = $this->employee->store_id;
         $filed      = ['id','layer','status','number','room_type_id'];
         $this->load->model('roomtypemodel');
         $room = Roomunionmodel::with('room_type')->with('order')->where($where)->orderBy('number','ASC')->get($filed)->groupBy('layer')
