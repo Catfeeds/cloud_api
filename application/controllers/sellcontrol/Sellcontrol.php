@@ -19,6 +19,7 @@ class Sellcontrol extends MY_Controller
     {
         $this->load->model('roomtypemodel');
         $this->load->model('residentmodel');
+        $this->load->model('ordermodel');
         $post = $this->input->post(null,true);
         $where      = [];
         if(!empty($post['building_id'])){$where['building_id'] = intval($post['building_id']);};

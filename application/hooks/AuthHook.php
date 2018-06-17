@@ -183,7 +183,7 @@ class AuthHook {
 //            'mini/home/lists',
 
 //            'mini/server/create',
-//            'mini/room/listroom',
+            'mini/room/listroom',
 //            'mini/room/detailsroom',
 //            'mini/room/building',
 //            'mini/room/countroom',
@@ -217,6 +217,8 @@ class AuthHook {
 //            'resident/resident/updateresident',
 //            'resident/resident/contract',
 //            'resident/resident/bill',
+              'sellcontrol/sellcontrol/details',
+
 
         );
 //        if(ENVIRONMENT !=='production')

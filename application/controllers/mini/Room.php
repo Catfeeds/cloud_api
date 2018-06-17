@@ -20,6 +20,7 @@ class Room extends MY_Controller
      */
     public function listRoom()
     {
+        $this->load->model('ordermodel');
         $post       = $this->input->post(null,true);
         $where      = [];
         if(!empty($post['building_id'])){$where['building_id'] = intval($post['building_id']);};
@@ -27,10 +28,10 @@ class Room extends MY_Controller
         $where['store_id']  = $this->employee->store_id;
         $filed      = ['id','layer','status','number','room_type_id'];
         $this->load->model('roomtypemodel');
-        $room = Roomunionmodel::with('room_type')->where($where)->orderBy('number','ASC')->get($filed)->groupBy('layer')
+        $room = Roomunionmodel::with('room_type')->with('order')->where($where)->orderBy('number','ASC')->get($filed)->groupBy('layer')
                 ->map(function ($room){
                     $roominfo = $room->toArray();
-                    $roominfo['count_total']    = count($room);;
+                    $roominfo['count_total']    = count($room);
                     $roominfo['count_rent']     = 0;
                     $roominfo['count_blank']    = 0;
                     $roominfo['count_arrears']  = 0;
@@ -43,7 +44,7 @@ class Room extends MY_Controller
                         if ($status == 'BLANK'){
                             $roominfo['count_blank']    += 1;
                         }
-                        if ($status == 'ARREARS'){
+                        if (!empty($roominfo[$i]['order'])){
                             $roominfo['count_arrears']  += 1;
                         }
                         if ($status == 'REPAIR'){
@@ -60,20 +61,6 @@ class Room extends MY_Controller
                 })
             ->toArray();
         $this->api_res(0,['list'=>$room]);
-        /* $room = Roomunionmodel::where($where)->get($filed)->groupBy('layer')
-                ->map(function($room){
-                    $status = $room->groupBy('status')->toArray();
-                    $status = array_keys($status);
-                    foreach($status as $statuss){
-                        if ($statuss == 'ARREARS'){
-                            $room['count_arrears'] = $room->groupBy('status')['ARREARS']->count();
-                        }
-                        if ($statuss == 'BLANK'){
-                            $room['count_blank']   = $room->groupBy('status')['BLANK']->count();
-                        }
-                    }
-                    return $room;
-                })->toArray();*/
     }
 
     /**
