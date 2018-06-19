@@ -34,7 +34,8 @@ class Checkout extends MY_Controller
             $status = [$input['status']];
         }else{
             //$status = $this->allStatus();
-            $status = array_diff($this->allStatus(),[Checkoutmodel::STATUS_COMPLETED]);
+//            $status = array_diff($this->allStatus(),[Checkoutmodel::STATUS_COMPLETED]);
+            $status = array_diff($this->allStatus(),'');
         }
         $list   = Checkoutmodel::with(['roomunion','store','resident'])->where($where)->whereIn('status',$status)->get();
         if(isset($input['room_number'])){
@@ -185,57 +186,57 @@ class Checkout extends MY_Controller
     /**
      * 店长或者运营经理的审核
      */
-//    public function approve()
-//    {
-//        $field  = ['remark','operator_role','checkout_id'];
-//        if(!$this->validationText($this->validateApprove())){
-//            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
-//            return;
-//        }
-//        $input  = $this->input->post(null,true);
-//        $role   = $input['operator_role'];
-//        $id   = $input['checkout_id'];
-//        $remark = isset($input['remark'])?$input['remark']:'无';
-//
-//        if ('PRINCIPAL' == $role AND !$this->isPrincipal()) {
-//            $this->api_res(1011);
-//            return;
-//        } elseif (!$this->isManager() AND !$this->isPrincipal()) {
-//            $this->api_res(1011);
-//            return;
-//        }
-//
-//        $this->load->model('checkoutmodel');
-//        $record     = Checkoutmodel::find($id);
-//        if(!$record){
-//            $this->api_res(1007);
-//            return;
-//        }
-//
-//        if ('MANAGER' == $role) {
-//            if (Checkoutmodel::STATUS_BY_MANAGER != $record->status) {
-//                $this->api_res(10027);
-//                return;
-//            }
-//            $record->status             = Checkoutmodel::STATUS_MANAGER_APPROVED;
-//            $record->manager_remark     = $remark;
-//        }
-//
-//        if ('PRINCIPAL' == $role) {
-//            if (Checkoutmodel::STATUS_MANAGER_APPROVED != $record->status) {
-//                $this->api_res(10027);
-//                return;
-//            }
-//            $record->status             = Checkoutmodel::STATUS_PRINCIPAL_APPROVED;
-//            $record->principal_remark   = $remark;
-//        }
-//
-//        if($record->save()){
-//            $this->api_res(0,['checkout_id'=>$record->id]);
-//        }else{
-//            $this->api_res(1009);
-//        }
-//    }
+    public function approve()
+    {
+        $field  = ['remark','operator_role','checkout_id'];
+        if(!$this->validationText($this->validateApprove())){
+            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+            return;
+        }
+        $input  = $this->input->post(null,true);
+        $role   = $input['operator_role'];
+        $id   = $input['checkout_id'];
+        $remark = isset($input['remark'])?$input['remark']:'无';
+
+        if ('PRINCIPAL' == $role AND !$this->isPrincipal()) {
+            $this->api_res(1011);
+            return;
+        } elseif (!$this->isManager() AND !$this->isPrincipal()) {
+            $this->api_res(1011);
+            return;
+        }
+
+        $this->load->model('checkoutmodel');
+        $record     = Checkoutmodel::find($id);
+        if(!$record){
+            $this->api_res(1007);
+            return;
+        }
+
+        if ('MANAGER' == $role) {
+            if (Checkoutmodel::STATUS_BY_MANAGER != $record->status) {
+                $this->api_res(10027);
+                return;
+            }
+            $record->status             = Checkoutmodel::STATUS_MANAGER_APPROVED;
+            $record->manager_remark     = $remark;
+        }
+
+        if ('PRINCIPAL' == $role) {
+            if (Checkoutmodel::STATUS_MANAGER_APPROVED != $record->status) {
+                $this->api_res(10027);
+                return;
+            }
+            $record->status             = Checkoutmodel::STATUS_PRINCIPAL_APPROVED;
+            $record->principal_remark   = $remark;
+        }
+
+        if($record->save()){
+            $this->api_res(0,['checkout_id'=>$record->id]);
+        }else{
+            $this->api_res(1009);
+        }
+    }
 
 
     /**
@@ -266,7 +267,7 @@ class Checkout extends MY_Controller
             Checkoutmodel::STATUS_PENDING,
         ])){
             $orderIds   = isset($data['checkout_orders']) ? $data['checkout_orders'] : [];
-            $debt       = $resident->orders()->where('status', '')->sum('money');
+            $debt       = $resident->orders()->where('status', Ordermodel::STATE_PENDING)->sum('money');
             $bills      = $resident->orders()
                 ->whereIn('id', $orderIds)
                 ->get()
