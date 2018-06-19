@@ -261,13 +261,13 @@ class Roomunion extends MY_Controller
         $this->load->model('roomtypemodel');
         $this->load->model('contracttemplatemodel');
         $room   = Roomunionmodel::with('store')
-            ->with('roomtype',function($query){
-                $query->description = htmlspecialchars_decode($query->description);
-            })
+            ->with('roomtype')
             ->with('long_template')
             ->with('short_template')
             ->with('reserve_template')
             ->select($field)->find($room_id);
+        $room->roomtype->description    = strip_tags(htmlspecialchars_decode($room->roomtype->description));
+
         if(!$room){
             $this->api_res(1007);
         }else{
