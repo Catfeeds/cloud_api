@@ -360,6 +360,7 @@ class Order extends MY_Controller
      */
     private function updateRoomAndResident($orders, $resident, $room)
     {
+        log_message('error','TEST3');
         //检索住户是否仍有未缴费的账单, 如果仍有需缴费的账单, 则不更新
         $ordersUnpaid   = $this->ordermodel->ordersUnpaidOfResident($resident->id);
 
@@ -398,7 +399,7 @@ class Order extends MY_Controller
         if ($roomToUpdate) {
             $room->update(['status' => $roomNewStatus]);
         }
-
+        log_message('error',2);
         //换房等逻辑, 这里需要修改
         if ($residentToUpdate) {
             if (isset($resident->data['change_room'])) {
@@ -407,6 +408,7 @@ class Order extends MY_Controller
             } elseif (isset($resident->data['renewal'])) {
                 //do something to handle renew stuff
             } else {
+                log_message('error',1);
                 $resident->update(['status' => $residentNewStatus]);
             }
         }
