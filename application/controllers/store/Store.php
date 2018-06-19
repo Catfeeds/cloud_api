@@ -187,6 +187,8 @@ class Store extends MY_Controller
         }
         $post    = $this->input->post(null,true);
         $update->fill($post);
+        $update->describe   = htmlspecialchars($post['describe']);
+        log_message('error',$post['describe']);
         $update->images = $images;
         if($update->save()){
             $this->api_res(0,['store_id'=>$update->id]);
@@ -224,6 +226,7 @@ class Store extends MY_Controller
         }
         $insert  = new Storemodel();
         $insert->fill($post);
+        $insert->describe   = htmlspecialchars($post['describe']);
         $insert->company_id = COMPANY_ID;
         $insert->images=$images;
         if($insert->save()){
