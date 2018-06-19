@@ -164,6 +164,8 @@ class Store extends MY_Controller
             $this->api_res(1005);
             return;
         }
+        $this->api_res(0,['des'=>$this->input->post('describe')]);
+        return;
         $field  = [
             'rent_type','status','name','theme','province','city','district','address', 'contact_user',
             'counsel_phone','counsel_time','images','describe'
