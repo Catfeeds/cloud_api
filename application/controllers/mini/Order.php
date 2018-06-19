@@ -398,7 +398,7 @@ class Order extends MY_Controller
         if ($roomToUpdate) {
             $room->update(['status' => $roomNewStatus]);
         }
-
+        log_message('error',2);
         //换房等逻辑, 这里需要修改
         if ($residentToUpdate) {
             if (isset($resident->data['change_room'])) {
@@ -407,6 +407,7 @@ class Order extends MY_Controller
             } elseif (isset($resident->data['renewal'])) {
                 //do something to handle renew stuff
             } else {
+                log_message('error',1);
                 $resident->update(['status' => $residentNewStatus]);
             }
         }
