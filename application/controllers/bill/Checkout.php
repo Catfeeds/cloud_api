@@ -14,36 +14,30 @@ class Checkout extends MY_Controller
         parent::__construct();
         $this->load->model('checkoutmodel');
         $this->load->model('storemodel');
+        $this->load->model('residentmodel');
+        $this->load->model('employeemodel');
     }
 
     //退房账单列表
     public function list(){
-        $post   = $this->input->post(null,true);
-        $page   = intval(isset($post['page'])?$post['page']:1);
-        $offset = PAGINATE*($page-1);
-        $field  = ['id','store_id'];
+        $input  = $this->input->post(null,true);
+        $page   = isset($input['page'])?$input['page']:1;
+        $where  = [];
+        empty($input['store_id'])?:$where['store_id']=$input['store_id'];
+        $start_date = empty($input['start_date'])?'1970-01-01':$input['start_date'];
+        $end_date   = empty($input['end_date'])?'2030-12-12':$input['end_date'];
+        $search     = empty($input['search'])?'':$input['search'];
+        $offset = ($page-1)*PAGINATE;
 
-        $where  = isset($post['store_id'])?['store_id'=>$post['store_id']]:[];
-        if(isset($post['city'])&&!empty($post['city'])){
-            $store_ids  = Checkoutmodel::where('city',$post['city'])->get(['id'])->map(function($s){
-                return $s['id'];
-            });
-            $count  = ceil((Checkoutmodel::with('store')->whereIn('store_id',$store_ids)->where($where)->count())/PAGINATE);
-            if($page>$count){
-                $this->api_res(0,['count'=>$count,'list'=>[]]);
-                return;
-            }
-            $roomtypes = Checkoutmodel::with('store')->whereIn('store_id',$store_ids)->where($where)->offset($offset)->limit(PAGINATE)->orderBy('id','desc')->get($field);
-            $this->api_res(0,['count'=>$count,'list'=>$roomtypes]);
-            return;
-        }
-        $count  = ceil((Checkoutmodel::with('store')->where($where)->count())/PAGINATE);
-        if($page>$count){
-            $this->api_res(0,['count'=>$count,'list'=>[]]);
-            return;
-        }
-        $roomtypes = Checkoutmodel::with('store')->where($where)->offset($offset)->limit(PAGINATE)->orderBy('id','desc')->get($field);
-        $this->api_res(0,['count'=>$count,'list'=>$roomtypes]);
+        $checkout  = Checkoutmodel::with(['roomunion','store','resident','employee'])
+            ->offset($offset)->limit(PAGINATE)
+            ->where($where)
+            ->orderBy('updated_at','desc')
+            ->offset($offset)->limit(PAGINATE)->get();
+        var_dump($checkout);
+
+
+
 
     }
 
