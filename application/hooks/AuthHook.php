@@ -29,6 +29,7 @@ class AuthHook {
             'account/login/login',
             'bill/bill/test',
             'bill/checkout/list',
+            'bill/checkout/show',
 
 //            'demo/copy/transferimages',
 //            'demo/copy/run',

@@ -51,8 +51,7 @@ class Checkout extends MY_Controller
     //显示一笔退款交易
     public function show(){
         $input  = $this->input->post(null,true);
-        $id    = $input['id'];
-        $id=1;
+        empty($input['id'])?$id=1:$id=$input['id'];
         $checkout   = Checkoutmodel::find($id);
         if(empty($checkout))
         {
@@ -61,7 +60,7 @@ class Checkout extends MY_Controller
         }
 
 
-        $data['orders']=Ordermodel::where('resident_id',$checkout->resident_id)->where('status','PENDING')->get()->toArray();
+        $data['orders']=Ordermodel::where('resident_id',$checkout->resident_id)->where('sequence_number','')->get()->toArray();
         //        获取money
 
 

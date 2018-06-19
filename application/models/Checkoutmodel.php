@@ -13,7 +13,7 @@ class Checkoutmodel extends Basemodel
     protected $fillable = [
         'room_id',
         'resident_id',
-        'apartment_id',
+        'store_id',
         'employee_id',
         'pay_or_not',
         'type',
