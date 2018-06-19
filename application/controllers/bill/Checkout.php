@@ -21,18 +21,31 @@ class Checkout extends MY_Controller
     //退房账单列表
     public function list(){
         $input  = $this->input->post(null,true);
-        $page   = isset($input['page'])?$input['page']:1;
         $where  = [];
-        empty($input['store_id'])?$where['store_id']=1:$where['store_id']=$input['store_id'];
-
+        empty($input['store_id'])?:$where['store_id']=$input['store_id'];
+        $search = empty($input['search'])?'':$input['search'];
+        $page   = isset($input['page'])?$input['page']:1;
         $offset = ($page-1)*PAGINATE;
 
-        $checkout  = Checkoutmodel::with(['roomunion','store','resident','employee'])
-            ->offset($offset)->limit(PAGINATE)
-            ->where($where)
-            ->orderBy('updated_at','desc')
-            ->offset($offset)->limit(PAGINATE)->get();
-        var_dump($checkout);
+        $this->load->model('storemodel');
+        $this->load->model('roomunionmodel');
+        $this->load->model('residentmodel');
+        $this->load->model('employeemodel');
+
+        $count  = ceil((Checkoutmodel::with('store','roomunion','resident','employee')
+                ->where($where)->count())/PAGINATE);
+
+        if($count<$page){
+            $this->api_res(0,[]);
+            return;
+        }
+
+        $orders = Checkoutmodel::with('store','roomunion','resident','employee')
+            ->where($where)->get()->toArray();
+
+        $this->api_res(0,['orders'=>$orders,'total_page'=>$count]);
+
+
 
 
 
