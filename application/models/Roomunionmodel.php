@@ -182,13 +182,20 @@ class Roomunionmodel extends Basemodel{
                         ->map(function ($s){
                             $s = $s->toArray();
                             global $arrears_count;
-                            $s['count']= 0;
+//                            $s['count']= 0;
+//                            foreach ($s as $key=>$value){
+//                                if (!empty($s[$key]['order'])){
+//                                    $s['count'] += 1;
+//                                }
+//                            }
+//                            $arrears_count += $s['count'];
+                            $count=0;
                             foreach ($s as $key=>$value){
                                 if (!empty($s[$key]['order'])){
-                                    $s['count'] += 1;
+                                    $count += 1;
                                 }
                             }
-                            $arrears_count += $s['count'];
+                            $arrears_count += $count;
                             return [$s,'arrears_count'=>$arrears_count];
                         })->toArray();
 
