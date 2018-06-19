@@ -61,7 +61,7 @@ class Checkout extends MY_Controller
         }
 
 
-        $data['orders']=Ordermodel::where('resident_id',$checkout->resident_id)->where('status','PENDING')->get()->toArray();
+        $data['orders']=Ordermodel::where('resident_id',$checkout->resident_id)->where('sequence_number','')->get()->toArray();
         //        获取money
 
 
