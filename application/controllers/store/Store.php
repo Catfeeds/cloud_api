@@ -164,8 +164,7 @@ class Store extends MY_Controller
             $this->api_res(1005);
             return;
         }
-        $this->api_res(0,['des'=>$this->input->post('describe')]);
-        return;
+//        $this->api_res(0,['des'=>$this->input->post('describe')]);
         $field  = [
             'rent_type','status','name','theme','province','city','district','address', 'contact_user',
             'counsel_phone','counsel_time','images','describe'
@@ -190,7 +189,7 @@ class Store extends MY_Controller
         }
         $post    = $this->input->post(null,true);
         $update->fill($post);
-        $update->describe   = htmlspecialchars($post['describe']);
+        $update->describe   = htmlspecialchars($this->input->post('describe'));
         log_message('error',$post['describe']);
         $update->images = $images;
         if($update->save()){
