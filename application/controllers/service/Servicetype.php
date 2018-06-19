@@ -57,7 +57,8 @@ class Servicetype extends MY_Controller
         $service                = new Servicetypemodel();
         $service->name          = $post['name'];
         $service->feature       = $post['feature'];
-        $service->description   = $post['description'];
+//        $service->description   = $post['description'];
+        $service->description   = $this->input->post('description');
         $service->image_url     = substr(trim($post['image_url']),strlen(config_item('cdn_path')));
 
         if($service->save())
@@ -85,7 +86,8 @@ class Servicetype extends MY_Controller
             $service                = Servicetypemodel::where('id',$id)->first();
             $service->name          = $post['name'];
             $service->feature       = $post['feature'];
-            $service->description   = $post['description'];
+//            $service->description   = $post['description'];
+            $service->description   = $this->input->post('description');
             $service->image_url     = substr(trim($post['image_url']),strlen(config_item('cdn_path')));
 
             if($service->save())
