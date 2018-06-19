@@ -143,10 +143,13 @@ class Roomtype extends MY_Controller
 //        $room_type->images  = $this->fullAliossUrl(json_decode($room_type->images,true),true);
         $room_type->images  = $this->fullAliossUrl($room_type->images,true);
         $this->api_res(0,['room_type'=>$room_type]);
+
+
     }
 
     /**
      * 编辑房型信息
+     *
      */
     public function updateRoomType(){
         $post   = $this->input->post(null,true);
