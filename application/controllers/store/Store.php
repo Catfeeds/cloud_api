@@ -228,7 +228,7 @@ class Store extends MY_Controller
         }
         $insert  = new Storemodel();
         $insert->fill($post);
-        $insert->describe   = htmlspecialchars($post['describe']);
+        $insert->describe   = htmlspecialchars($this->input->post('describe'));
         $insert->company_id = COMPANY_ID;
         $insert->images=$images;
         if($insert->save()){
