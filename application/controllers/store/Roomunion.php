@@ -266,7 +266,8 @@ class Roomunion extends MY_Controller
             ->with('short_template')
             ->with('reserve_template')
             ->select($field)->find($room_id);
-        $room->roomtype->description    = htmlspecialchars_decode($room->roomtype->describtion);
+        $room->roomtype->description    = htmlspecialchars_decode($room->roomtype->description);
+
         if(!$room){
             $this->api_res(1007);
         }else{
