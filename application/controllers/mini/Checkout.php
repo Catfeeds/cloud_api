@@ -85,7 +85,14 @@ class Checkout extends MY_Controller
             $checkout->type         = $input['type'];
             $checkout->other_deposit_deduction  = $input['other_deposit_deduction'];
             $checkout->status       = Checkoutmodel::STATUS_UNPAID;
+            $checkout->bank         = $input['bank'];
+            $checkout->account     = $input['account'];
+            $checkout->bank_card_number     = $input['bank_card_number'];
+            $checkout->employee_remark     = $input['employee_remark'];
+            $checkout->bank_card_img     = $input['bank_card_img'];
             $checkout->store_id     = $store_id;
+
+
             $checkout->time         = Carbon::now();
             $checkout->save();
 
@@ -102,25 +109,6 @@ class Checkout extends MY_Controller
             );
 
             DB::commit();
-
-            $record     = Checkoutmodel::find($checkout->id);
-            foreach (['bank', 'account', 'bank_card_number', 'employee_remark'] as $key) {
-
-                if(isset($input[$key])){
-                    $data[$key] = $input[$key];
-                }
-            }
-
-            if(isset($input['bank_card_img'])) {
-                $record->bank_card_img  = $this->splitAliossUrl($input['bank_card_img']);
-            }
-
-            if (isset($data)) {
-                $record->fill($data);
-
-                $record->save();
-            }
-
 
             $this->api_res(0,['checkout_id'=>$checkout->id]);
 
