@@ -43,14 +43,37 @@ class Checkout extends MY_Controller
         $orders = Checkoutmodel::with('store','roomunion','resident','employee')
             ->where($where)->get()->toArray();
 
-        $this->api_res(0,['orders'=>$orders,'total_page'=>$count]);
+        $this->api_res(0,['list'=>$orders,'total_page'=>$count]);
 
+
+    }
+
+    //显示一笔退款交易
+    public function show(){
+        $input  = $this->input->post(null,true);
+        $id    = $input['id'];
+        $id=1;
+        $checkout   = Checkoutmodel::find($id);
+        if(empty($checkout))
+        {
+            $this->api_res(1007);
+            return;
+        }
+
+
+        $data['orders']=Ordermodel::where('resident_id',$checkout->resident_id)->where('status','PENDING')->get()->toArray();
+        //        获取money
+
+
+
+        $this->api_res(0,$data);
 
 
 
 
 
     }
+
 
     //退房账单更新
     public function update(){
