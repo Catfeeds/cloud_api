@@ -23,10 +23,8 @@ class Checkout extends MY_Controller
         $input  = $this->input->post(null,true);
         $page   = isset($input['page'])?$input['page']:1;
         $where  = [];
-        empty($input['store_id'])?:$where['store_id']=$input['store_id'];
-        $start_date = empty($input['start_date'])?'1970-01-01':$input['start_date'];
-        $end_date   = empty($input['end_date'])?'2030-12-12':$input['end_date'];
-        $search     = empty($input['search'])?'':$input['search'];
+        empty($input['store_id'])?$where['store_id']=1:$where['store_id']=$input['store_id'];
+
         $offset = ($page-1)*PAGINATE;
 
         $checkout  = Checkoutmodel::with(['roomunion','store','resident','employee'])
