@@ -22,7 +22,7 @@ class Checkout extends MY_Controller
     //退房账单列表
     public function list(){
         $input  = $this->input->post(null,true);
-        $where['store_id']  = $this->employee->store_id;
+//        $where['store_id']  = $this->employee->store_id;
         if(isset($input['status'])){
             $status = [$input['status']];
         }else{
