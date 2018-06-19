@@ -106,6 +106,25 @@ class Checkout extends MY_Controller
 
             DB::commit();
 
+            $record     = Checkoutmodel::find($checkout->id);
+            foreach (['bank', 'account', 'bank_card_number', 'employee_remark'] as $key) {
+
+                if(isset($input[$key])){
+                    $data[$key] = $input[$key];
+                }
+            }
+
+            if(isset($input['bank_card_img'])) {
+                $record->bank_card_img  = $this->splitAliossUrl($input['bank_card_img']);
+            }
+
+            if (isset($data)) {
+                $record->fill($data);
+
+                $record->save();
+            }
+
+
             $this->api_res(0,['checkout_id'=>$checkout->id]);
 
         }catch (Exception $e){
@@ -248,7 +267,6 @@ class Checkout extends MY_Controller
     {
         $input  = $this->input->post(null,true);
         $id = $input['checkout_id'];
-        $store_id   = $this->employee->store_id;
         $this->load->model('checkoutmodel');
         $this->load->model('residentmodel');
         $this->load->model('ordermodel');
@@ -395,32 +413,32 @@ class Checkout extends MY_Controller
     /**
      * 处理退房时的明细
      */
-    private function handleCheckOutBills($record)
-    {
-        $data   = $record->data;
-
-        if (empty($data['checkout_orders'])) return true;
-
-        $orders     = Ordermodel::whereIn('id', $data['checkout_orders'])->get()->toArray();
-
-        if (0 == count($orders)) return true;
-
-        $bills  = $this->ordermodel->orderMoneyCheckOutInit();
-
-        foreach ($bills as $type => $money) {
-            if ($order = $orders->where('type', $type)->first()) {
-                $bills[$type]   = $order->paid;
-            } else {
-                $bills[$type]   = 0;
-            }
-        }
-        $data['checkout_money'] = $bills;
-
-        $record->data = $data;
-        $record->save();
-
-        return $record;
-    }
+//    private function handleCheckOutBills($record)
+//    {
+//        $data   = $record->data;
+//
+//        if (empty($data['checkout_orders'])) return true;
+//
+//        $orders     = Ordermodel::whereIn('id', $data['checkout_orders'])->get()->toArray();
+//
+//        if (0 == count($orders)) return true;
+//
+//        $bills  = $this->ordermodel->orderMoneyCheckOutInit();
+//
+//        foreach ($bills as $type => $money) {
+//            if ($order = $orders->where('type', $type)->first()) {
+//                $bills[$type]   = $order->paid;
+//            } else {
+//                $bills[$type]   = 0;
+//            }
+//        }
+//        $data['checkout_money'] = $bills;
+//
+//        $record->data = $data;
+//        $record->save();
+//
+//        return $record;
+//    }
 
     /**
      * 记录提交审核的时候提交的数据
