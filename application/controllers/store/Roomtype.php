@@ -68,7 +68,6 @@ class Roomtype extends MY_Controller
         $roomtype   = new Roomtypemodel();
         $roomtype->fill($post);
         $images  = $this->splitAliossUrl($post['images'],true);
-        log_message('error',json_encode($images));
 //        $images  = json_encode($images);
         $images  = ($images);
         $roomtype->images=$images;
