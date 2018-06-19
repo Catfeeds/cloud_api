@@ -101,9 +101,6 @@ class Checkout extends MY_Controller
                 $resident->roomunion
             );
 
-            $this->handleRentAndManagement($resident, $checkout);
-            $this->setRecordStatus($resident, $checkout);
-
             DB::commit();
 
             $record     = Checkoutmodel::find($checkout->id);
@@ -138,124 +135,6 @@ class Checkout extends MY_Controller
     /**
      * 提交给店长审核
      */
-//    public function submitForApproval()
-//    {
-//        $field  = [
-//            'checkout_id','account','bank','bank_card_number','bank_card_img','employee_remark'
-//        ];
-//
-//        if(!$this->validationText($this->validateSubmitForApproval())){
-//            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
-//            return;
-//        }
-//        $input  = $this->input->post(null,true);
-//        $store_id   = $this->employee->store_id;
-//        $where  = ['store_id'=>$store_id];
-//        $this->load->model('checkoutmodel');
-//        $this->load->model('residentmodel');
-//        $this->load->model('roomunionmodel');
-//        $this->load->model('ordermodel');
-//        $record = Checkoutmodel::where($where)->find($input['checkout_id']);
-//        if(!$record){
-//            $this->api_res(1007);
-//            return;
-//        }
-//        //判断状态
-//        if (!in_array($record->status, [Checkoutmodel::STATUS_UNPAID,Checkoutmodel::STATUS_PENDING])) {
-//            $this->api_res(10027);
-//            return;
-//        }
-//
-//        $resident   = $record->resident;
-//        $room       = $record->roomunion;
-//        try{
-//            DB::beginTransaction();
-//            $this->storeRefundAccountAndRemark($record, $input);
-//
-//            //处理退房时的账单, 并确定退房时的各种款项, 包括欠费等等
-//            if(false === $this->handleCheckOutDebt($record, $resident, $room)){
-//                return;
-//            }
-//
-//            //处理退房明细
-//            $this->handleCheckOutBills($record);
-//
-//            //更新住户状态
-//            $resident->status       = $record->type;
-//            $resident->refund_time  = $record->time;
-//            $resident->save();
-//
-//            //重置原房间状态
-//            $resident->roomunion->update(
-//                [
-//                    'status'        => Roomunionmodel::STATE_BLANK,
-//                    'people_count'  => 0,
-//                    'resident_id'   => 0,
-//                ]
-//            );
-//
-//            DB::commit();
-//        }catch (Exception $e){
-//           DB::rollBack();
-//           throw $e;
-//        }
-//        $this->api_res(0,['checkout_id'=>$record->id]);
-//    }
-
-    /**
-     * 店长或者运营经理的审核
-     */
-//    public function approve()
-//    {
-//        $field  = ['remark','operator_role','checkout_id'];
-//        if(!$this->validationText($this->validateApprove())){
-//            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
-//            return;
-//        }
-//        $input  = $this->input->post(null,true);
-//        $role   = $input['operator_role'];
-//        $id   = $input['checkout_id'];
-//        $remark = isset($input['remark'])?$input['remark']:'无';
-//
-//        if ('PRINCIPAL' == $role AND !$this->isPrincipal()) {
-//            $this->api_res(1011);
-//            return;
-//        } elseif (!$this->isManager() AND !$this->isPrincipal()) {
-//            $this->api_res(1011);
-//            return;
-//        }
-//
-//        $this->load->model('checkoutmodel');
-//        $record     = Checkoutmodel::find($id);
-//        if(!$record){
-//            $this->api_res(1007);
-//            return;
-//        }
-//
-//        if ('MANAGER' == $role) {
-//            if (Checkoutmodel::STATUS_BY_MANAGER != $record->status) {
-//                $this->api_res(10027);
-//                return;
-//            }
-//            $record->status             = Checkoutmodel::STATUS_MANAGER_APPROVED;
-//            $record->manager_remark     = $remark;
-//        }
-//
-//        if ('PRINCIPAL' == $role) {
-//            if (Checkoutmodel::STATUS_MANAGER_APPROVED != $record->status) {
-//                $this->api_res(10027);
-//                return;
-//            }
-//            $record->status             = Checkoutmodel::STATUS_PRINCIPAL_APPROVED;
-//            $record->principal_remark   = $remark;
-//        }
-//
-//        if($record->save()){
-//            $this->api_res(0,['checkout_id'=>$record->id]);
-//        }else{
-//            $this->api_res(1009);
-//        }
-//    }
 
 
     /**
@@ -265,99 +144,8 @@ class Checkout extends MY_Controller
      */
     public function show()
     {
-//        $input  = $this->input->post(null,true);
-//        $id = $input['checkout_id'];
-//        $this->load->model('checkoutmodel');
-//        $this->load->model('residentmodel');
-//        $this->load->model('ordermodel');
-//        $this->load->model('roomunionmodel');
-//        $record = Checkoutmodel::find($id);
-//        if(!$record){
-//            $this->api_res(1007);
-//            return;
-//        }
-//        $resident   = $record->resident;
-//        $data   = $record->data;
-//
-//        if(in_array($record->status, [
-//            Checkoutmodel::STATUS_APPLIED,
-//            Checkoutmodel::STATUS_UNPAID,
-//            Checkoutmodel::STATUS_PENDING,
-//        ])){
-//            $orderIds   = isset($data['checkout_orders']) ? $data['checkout_orders'] : [];
-//            $debt       = $resident->orders()->where('status', Ordermodel::STATE_PENDING)->sum('money');
-//            $bills      = $resident->orders()
-//                ->whereIn('id', $orderIds)
-//                ->get()
-//                ->groupBy('type')
-//                ->map(function ($items) {
-//                    return $items->sum('money');
-//                })
-//                ->union($this->ordermodel->orderMoneyCheckOutInit());
-//
-//            if (Checkoutmodel::TYPE_NORMAL == $record->type) {
-//                $depositTrans   = 0;
-//                $deduction      = 0;
-//                $refund         = $resident->deposit_money + $resident->tmp_deposit - $record->other_deposit_deduction;
-//            } elseif ($record->pay_or_not) {
-//                $depositTrans   = $resident->deposit_money + $resident->tmp_deposit - $record->other_deposit_deduction;
-//                $deduction      = 0;
-//                $refund         = $resident->tmp_deposit - $record->other_deposit_deduction;
-//            } else {
-//                $depositTrans   = $resident->deposit_money - $debt;
-//                $deduction      = $debt;
-//                $refund         = 0;
-//            }
-//
-//        }else{
-//
-//            $bills          = isset($data['checkout_money']) ? $data['checkout_money'] : $this->ordermodel->orderMoneyCheckOutInit();
-//            $debt           = $record->debt;
-//            $refund         = $record->refund;
-//            $depositTrans   = $record->deposit_trans;
-//            $deduction      = $record->rent_deposit_deduction;
-//        }
-//
-//        $data       = array(
-//            'room'      => [
-//                'id'        => $resident->roomunion->id,
-//                'number'    => $resident->roomunion->number,
-//            ],
-//            'resident'  => [
-//                'name'                  => $resident->name,
-//                'card_one_url'          => $this->fullAliossUrl($resident->card_one),
-//                'card_two_url'          => $this->fullAliossUrl($resident->card_two),
-//                'card_three_url'        => $this->fullAliossUrl($resident->card_three),
-//                'begin_time'            => $resident->begin_time->format('Y-m-d'),
-//                'end_time'              => $resident->end_time->format('Y-m-d'),
-//                'deposit_money_rent'    => $resident->deposit_money,
-//                'deposit_money_other'   => $resident->tmp_deposit,
-//                'rent_type'             => $resident->rent_type,
-//                'rent_price'            => $resident->real_rent_money,
-//                'management_price'      => $resident->real_property_costs,
-//                'phone'                 => $resident->phone,
-//                'card_number'           => $resident->card_number,
-//            ],
-//            'time'                      => $record->time->format('Y-m-d'),
-//            'type'                      => $record->type,
-//            'pay_or_not'                => $record->pay_or_not,
-//            'debt'                      => $debt,
-//            'rent_deposit_deduction'    => (int)$deduction,
-//            'other_deposit_deduction'   => (int)$record->other_deposit_deduction,
-//            'refund'                    => $refund,
-//            'bills'                     => $bills,
-//            'deposit_trans'             => $depositTrans,
-//            'account'                   => $record->account,
-//            'bank'                      => $record->bank,
-//            'bank_card_number'          => $record->bank_card_number,
-//            'employee_remark'           => $record->employee_remark,
-//            'manager_remark'            => $record->manager_remark,
-//            'principal_remark'          => $record->principal_remark,
-//            'accountant_remark'         => $record->accountant_remark,
-//            'status'                    => $record->status,
-//        );
 
-//        $this->api_res(0,['data'=>$data]);
+
         $input  = $this->input->post(null,true);
         empty($input['checkout_id'])?$id=21:$id=$input['checkout_id'];
         $checkout   = Checkoutmodel::find($id);
@@ -369,7 +157,6 @@ class Checkout extends MY_Controller
 
         $data['checkout']=$checkout->toArray();
         $data['orders']=Ordermodel::where('resident_id',$checkout->resident_id)->where('sequence_number','')->get()->toArray();
-
 
         $this->api_res(0,$data);
 
@@ -428,32 +215,7 @@ class Checkout extends MY_Controller
     /**
      * 处理退房时的明细
      */
-//    private function handleCheckOutBills($record)
-//    {
-//        $data   = $record->data;
-//
-//        if (empty($data['checkout_orders'])) return true;
-//
-//        $orders     = Ordermodel::whereIn('id', $data['checkout_orders'])->get()->toArray();
-//
-//        if (0 == count($orders)) return true;
-//
-//        $bills  = $this->ordermodel->orderMoneyCheckOutInit();
-//
-//        foreach ($bills as $type => $money) {
-//            if ($order = $orders->where('type', $type)->first()) {
-//                $bills[$type]   = $order->paid;
-//            } else {
-//                $bills[$type]   = 0;
-//            }
-//        }
-//        $data['checkout_money'] = $bills;
-//
-//        $record->data = $data;
-//        $record->save();
-//
-//        return $record;
-//    }
+
 
     /**
      * 记录提交审核的时候提交的数据
@@ -576,86 +338,8 @@ class Checkout extends MY_Controller
         return true;
     }
 
-    /**
-     * 处理退房时需要缴纳的房租和物业
-     */
-    private function handleRentAndManagement($resident, $record)
-    {
-        $checkoutData   = $record->data;
 
-        //计算应缴和实缴
-        $shouldPay  = $this->calcCheckoutMoney($resident, $record->time, $record->type);
 
-        //搜索本月及之后的房租和物业订单, 并计算已支付金额
-        $orders         = $this->ordermodel->rentAndPropertyForThisMonthAndLater($resident->id, $record->time);
-        $moneyPaid      = $this->rentAndManagementPaid($orders);
-
-        $ordersPending  = $orders->where('status', Ordermodel::STATE_PENDING);
-        $ordersTemp     = $ordersPending->where('year', $record->time->year)->where('month', $record->time->month);
-
-        $orderIds   = [];
-        if ($shouldPay['rent'] > $moneyPaid['ROOM']) {
-            $order       = $ordersTemp->where('type', Ordermodel::PAYTYPE_ROOM)->first();
-            if (count($order)) {
-                $orderIds[]     = $order->id;
-                $order->number  = $this->ordermodel->getOrderNumber();
-                $order->money   = $shouldPay['rent'] - $moneyPaid['ROOM'];
-                $order->paid    = $shouldPay['rent'] - $moneyPaid['ROOM'];
-                $order->save();
-            } else {
-                $order  = $this->ordermodel->addCheckOutOrderByType(
-                    $resident,
-                    $resident->roomunion,
-                    $this->ordermodel->getOrderNumber(),
-                    $this->employee->id,
-                    Ordermodel::PAYTYPE_ROOM,
-                    $shouldPay['rent'] - $moneyPaid['ROOM'],
-                    $record->time
-                );
-            }
-            $checkoutData['checkout_money']['room']     = $shouldPay['rent'] - $moneyPaid['ROOM'];
-            $checkoutData['checkout_orders']['room']    = $order->id;
-        } else {
-            $checkoutData['checkout_money']['room']     = 0;
-            $checkoutData['checkout_orders']['room']    = 0;
-        }
-
-        if ($shouldPay['property'] > $moneyPaid['MANAGEMENT']) {
-            $order       = $ordersTemp->where('type', Ordermodel::PAYTYPE_MANAGEMENT)->first();
-            if (count($order)) {
-                $orderIds[]     = $order->id;
-                $order->number  = $this->ordermodel->getOrderNumber();
-                $order->money   = $shouldPay['property'] - $moneyPaid['MANAGEMENT'];
-                $order->paid    = $shouldPay['property'] - $moneyPaid['MANAGEMENT'];
-                $order->save();
-            } else {
-                $order  = $this->ordermodel->addCheckOutOrderByType(
-                    $resident,
-                    $resident->roomunion,
-//                    $this->ordermodel->getOrderNumber(),
-                    $this->employee->id,
-                    Ordermodel::PAYTYPE_MANAGEMENT,
-                    $shouldPay['property'] - $moneyPaid['MANAGEMENT'],
-                    $record->time
-                );
-            }
-            $checkoutData['checkout_money']['management']     = $shouldPay['property'] - $moneyPaid['MANAGEMENT'];
-            $checkoutData['checkout_orders']['management']    = $order->id;
-        } else {
-            $checkoutData['checkout_money']['management']     = 0;
-            $checkoutData['checkout_orders']['management']    = 0;
-        }
-
-        //删除多余的订单
-        $ordersPending->whereNotIn('id', $orderIds)->map(function ($order) use ($orderIds) {
-            in_array($order->id, $orderIds) ? : $order->delete();
-        });
-
-        $record->data   = $checkoutData;
-        $record->save();
-
-        return true;
-    }
 
     /**
      * 判断账单的截止日期
