@@ -135,7 +135,7 @@ class Checkout extends MY_Controller
 
 
         $input  = $this->input->post(null,true);
-        empty($input['checkout_id'])?:$id=$input['checkId'];
+        empty($input['checkId'])?:$id=$input['checkId'];
         $checkout   = Checkoutmodel::find($id);
         if(empty($checkout))
         {
