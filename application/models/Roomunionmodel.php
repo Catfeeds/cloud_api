@@ -188,7 +188,16 @@ class Roomunionmodel extends Basemodel{
 //                                    $s['count'] += 1;
 //                                }
 //                            }
-                            $arrears_count += $s['count'];
+//                            $arrears_count += $s['count'];
+
+                            $count= 0;
+                            foreach ($s as $key=>$value){
+                                if (!empty($s[$key]['order'])){
+                                    $count += 1;
+                                }
+                            }
+                            $arrears_count += $count;
+
                             return [$s,'arrears_count'=>$arrears_count];
                         })->toArray();
 
