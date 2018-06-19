@@ -200,9 +200,11 @@ class Roomunionmodel extends Basemodel{
         $this->reserve_count  = Roomunionmodel::where($where)->where('status','RESERVE')->whereBetween('updated_at',$time)->get($filed)->count();
         $this->rent_count     = Roomunionmodel::where($where)->where('status','RENT')->whereBetween('updated_at',$time)->get($filed)->count();
         foreach ($this->details as $key=>$value){
+
             if(isset(($this->details)[$key]['arrears_count'])){
                 $arrears_count = ($this->details)[$key]['arrears_count'];
             }
+
         }
         $this->arrears_count  = $arrears_count;
         return $this;
