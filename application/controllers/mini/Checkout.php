@@ -145,6 +145,7 @@ class Checkout extends MY_Controller
 
         $data['checkout']=$checkout->toArray();
         $data['resident']=Residentmodel::find($checkout->resident_id)->toArray();
+        $data['rooms']=Roomunionmodel::find($checkout->room_id)->toArray();
         $data['orders']=Ordermodel::where('resident_id',$checkout->resident_id)->where('sequence_number','')->get()->toArray();
 
         $this->api_res(0,$data);
