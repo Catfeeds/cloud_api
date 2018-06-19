@@ -205,57 +205,57 @@ class Checkout extends MY_Controller
     /**
      * 店长或者运营经理的审核
      */
-    public function approve()
-    {
-        $field  = ['remark','operator_role','checkout_id'];
-        if(!$this->validationText($this->validateApprove())){
-            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
-            return;
-        }
-        $input  = $this->input->post(null,true);
-        $role   = $input['operator_role'];
-        $id   = $input['checkout_id'];
-        $remark = isset($input['remark'])?$input['remark']:'无';
-
-        if ('PRINCIPAL' == $role AND !$this->isPrincipal()) {
-            $this->api_res(1011);
-            return;
-        } elseif (!$this->isManager() AND !$this->isPrincipal()) {
-            $this->api_res(1011);
-            return;
-        }
-
-        $this->load->model('checkoutmodel');
-        $record     = Checkoutmodel::find($id);
-        if(!$record){
-            $this->api_res(1007);
-            return;
-        }
-
-        if ('MANAGER' == $role) {
-            if (Checkoutmodel::STATUS_BY_MANAGER != $record->status) {
-                $this->api_res(10027);
-                return;
-            }
-            $record->status             = Checkoutmodel::STATUS_MANAGER_APPROVED;
-            $record->manager_remark     = $remark;
-        }
-
-        if ('PRINCIPAL' == $role) {
-            if (Checkoutmodel::STATUS_MANAGER_APPROVED != $record->status) {
-                $this->api_res(10027);
-                return;
-            }
-            $record->status             = Checkoutmodel::STATUS_PRINCIPAL_APPROVED;
-            $record->principal_remark   = $remark;
-        }
-
-        if($record->save()){
-            $this->api_res(0,['checkout_id'=>$record->id]);
-        }else{
-            $this->api_res(1009);
-        }
-    }
+//    public function approve()
+//    {
+//        $field  = ['remark','operator_role','checkout_id'];
+//        if(!$this->validationText($this->validateApprove())){
+//            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+//            return;
+//        }
+//        $input  = $this->input->post(null,true);
+//        $role   = $input['operator_role'];
+//        $id   = $input['checkout_id'];
+//        $remark = isset($input['remark'])?$input['remark']:'无';
+//
+//        if ('PRINCIPAL' == $role AND !$this->isPrincipal()) {
+//            $this->api_res(1011);
+//            return;
+//        } elseif (!$this->isManager() AND !$this->isPrincipal()) {
+//            $this->api_res(1011);
+//            return;
+//        }
+//
+//        $this->load->model('checkoutmodel');
+//        $record     = Checkoutmodel::find($id);
+//        if(!$record){
+//            $this->api_res(1007);
+//            return;
+//        }
+//
+//        if ('MANAGER' == $role) {
+//            if (Checkoutmodel::STATUS_BY_MANAGER != $record->status) {
+//                $this->api_res(10027);
+//                return;
+//            }
+//            $record->status             = Checkoutmodel::STATUS_MANAGER_APPROVED;
+//            $record->manager_remark     = $remark;
+//        }
+//
+//        if ('PRINCIPAL' == $role) {
+//            if (Checkoutmodel::STATUS_MANAGER_APPROVED != $record->status) {
+//                $this->api_res(10027);
+//                return;
+//            }
+//            $record->status             = Checkoutmodel::STATUS_PRINCIPAL_APPROVED;
+//            $record->principal_remark   = $remark;
+//        }
+//
+//        if($record->save()){
+//            $this->api_res(0,['checkout_id'=>$record->id]);
+//        }else{
+//            $this->api_res(1009);
+//        }
+//    }
 
 
     /**
@@ -265,99 +265,114 @@ class Checkout extends MY_Controller
      */
     public function show()
     {
+//        $input  = $this->input->post(null,true);
+//        $id = $input['checkout_id'];
+//        $this->load->model('checkoutmodel');
+//        $this->load->model('residentmodel');
+//        $this->load->model('ordermodel');
+//        $this->load->model('roomunionmodel');
+//        $record = Checkoutmodel::find($id);
+//        if(!$record){
+//            $this->api_res(1007);
+//            return;
+//        }
+//        $resident   = $record->resident;
+//        $data   = $record->data;
+//
+//        if(in_array($record->status, [
+//            Checkoutmodel::STATUS_APPLIED,
+//            Checkoutmodel::STATUS_UNPAID,
+//            Checkoutmodel::STATUS_PENDING,
+//        ])){
+//            $orderIds   = isset($data['checkout_orders']) ? $data['checkout_orders'] : [];
+//            $debt       = $resident->orders()->where('status', Ordermodel::STATE_PENDING)->sum('money');
+//            $bills      = $resident->orders()
+//                ->whereIn('id', $orderIds)
+//                ->get()
+//                ->groupBy('type')
+//                ->map(function ($items) {
+//                    return $items->sum('money');
+//                })
+//                ->union($this->ordermodel->orderMoneyCheckOutInit());
+//
+//            if (Checkoutmodel::TYPE_NORMAL == $record->type) {
+//                $depositTrans   = 0;
+//                $deduction      = 0;
+//                $refund         = $resident->deposit_money + $resident->tmp_deposit - $record->other_deposit_deduction;
+//            } elseif ($record->pay_or_not) {
+//                $depositTrans   = $resident->deposit_money + $resident->tmp_deposit - $record->other_deposit_deduction;
+//                $deduction      = 0;
+//                $refund         = $resident->tmp_deposit - $record->other_deposit_deduction;
+//            } else {
+//                $depositTrans   = $resident->deposit_money - $debt;
+//                $deduction      = $debt;
+//                $refund         = 0;
+//            }
+//
+//        }else{
+//
+//            $bills          = isset($data['checkout_money']) ? $data['checkout_money'] : $this->ordermodel->orderMoneyCheckOutInit();
+//            $debt           = $record->debt;
+//            $refund         = $record->refund;
+//            $depositTrans   = $record->deposit_trans;
+//            $deduction      = $record->rent_deposit_deduction;
+//        }
+//
+//        $data       = array(
+//            'room'      => [
+//                'id'        => $resident->roomunion->id,
+//                'number'    => $resident->roomunion->number,
+//            ],
+//            'resident'  => [
+//                'name'                  => $resident->name,
+//                'card_one_url'          => $this->fullAliossUrl($resident->card_one),
+//                'card_two_url'          => $this->fullAliossUrl($resident->card_two),
+//                'card_three_url'        => $this->fullAliossUrl($resident->card_three),
+//                'begin_time'            => $resident->begin_time->format('Y-m-d'),
+//                'end_time'              => $resident->end_time->format('Y-m-d'),
+//                'deposit_money_rent'    => $resident->deposit_money,
+//                'deposit_money_other'   => $resident->tmp_deposit,
+//                'rent_type'             => $resident->rent_type,
+//                'rent_price'            => $resident->real_rent_money,
+//                'management_price'      => $resident->real_property_costs,
+//                'phone'                 => $resident->phone,
+//                'card_number'           => $resident->card_number,
+//            ],
+//            'time'                      => $record->time->format('Y-m-d'),
+//            'type'                      => $record->type,
+//            'pay_or_not'                => $record->pay_or_not,
+//            'debt'                      => $debt,
+//            'rent_deposit_deduction'    => (int)$deduction,
+//            'other_deposit_deduction'   => (int)$record->other_deposit_deduction,
+//            'refund'                    => $refund,
+//            'bills'                     => $bills,
+//            'deposit_trans'             => $depositTrans,
+//            'account'                   => $record->account,
+//            'bank'                      => $record->bank,
+//            'bank_card_number'          => $record->bank_card_number,
+//            'employee_remark'           => $record->employee_remark,
+//            'manager_remark'            => $record->manager_remark,
+//            'principal_remark'          => $record->principal_remark,
+//            'accountant_remark'         => $record->accountant_remark,
+//            'status'                    => $record->status,
+//        );
+
+//        $this->api_res(0,['data'=>$data]);
         $input  = $this->input->post(null,true);
-        $id = $input['checkout_id'];
-        $this->load->model('checkoutmodel');
-        $this->load->model('residentmodel');
-        $this->load->model('ordermodel');
-        $this->load->model('roomunionmodel');
-        $record = Checkoutmodel::find($id);
-        if(!$record){
+        empty($input['checkout_id'])?$id=21:$id=$input['checkout_id'];
+        $checkout   = Checkoutmodel::find($id);
+        if(empty($checkout))
+        {
             $this->api_res(1007);
             return;
         }
-        $resident   = $record->resident;
-        $data   = $record->data;
 
-        if(in_array($record->status, [
-            Checkoutmodel::STATUS_APPLIED,
-            Checkoutmodel::STATUS_UNPAID,
-            Checkoutmodel::STATUS_PENDING,
-        ])){
-            $orderIds   = isset($data['checkout_orders']) ? $data['checkout_orders'] : [];
-            $debt       = $resident->orders()->where('status', Ordermodel::STATE_PENDING)->sum('money');
-            $bills      = $resident->orders()
-                ->whereIn('id', $orderIds)
-                ->get()
-                ->groupBy('type')
-                ->map(function ($items) {
-                    return $items->sum('money');
-                })
-                ->union($this->ordermodel->orderMoneyCheckOutInit());
+        $data['checkout']=$checkout->toArray();
+        $data['orders']=Ordermodel::where('resident_id',$checkout->resident_id)->where('sequence_number','')->get()->toArray();
 
-            if (Checkoutmodel::TYPE_NORMAL == $record->type) {
-                $depositTrans   = 0;
-                $deduction      = 0;
-                $refund         = $resident->deposit_money + $resident->tmp_deposit - $record->other_deposit_deduction;
-            } elseif ($record->pay_or_not) {
-                $depositTrans   = $resident->deposit_money + $resident->tmp_deposit - $record->other_deposit_deduction;
-                $deduction      = 0;
-                $refund         = $resident->tmp_deposit - $record->other_deposit_deduction;
-            } else {
-                $depositTrans   = $resident->deposit_money - $debt;
-                $deduction      = $debt;
-                $refund         = 0;
-            }
 
-        }else{
+        $this->api_res(0,$data);
 
-            $bills          = isset($data['checkout_money']) ? $data['checkout_money'] : $this->ordermodel->orderMoneyCheckOutInit();
-            $debt           = $record->debt;
-            $refund         = $record->refund;
-            $depositTrans   = $record->deposit_trans;
-            $deduction      = $record->rent_deposit_deduction;
-        }
-
-        $data       = array(
-            'room'      => [
-                'id'        => $resident->roomunion->id,
-                'number'    => $resident->roomunion->number,
-            ],
-            'resident'  => [
-                'name'                  => $resident->name,
-                'card_one_url'          => $this->fullAliossUrl($resident->card_one),
-                'card_two_url'          => $this->fullAliossUrl($resident->card_two),
-                'card_three_url'        => $this->fullAliossUrl($resident->card_three),
-                'begin_time'            => $resident->begin_time->format('Y-m-d'),
-                'end_time'              => $resident->end_time->format('Y-m-d'),
-                'deposit_money_rent'    => $resident->deposit_money,
-                'deposit_money_other'   => $resident->tmp_deposit,
-                'rent_type'             => $resident->rent_type,
-                'rent_price'            => $resident->real_rent_money,
-                'management_price'      => $resident->real_property_costs,
-                'phone'                 => $resident->phone,
-                'card_number'           => $resident->card_number,
-            ],
-            'time'                      => $record->time->format('Y-m-d'),
-            'type'                      => $record->type,
-            'pay_or_not'                => $record->pay_or_not,
-            'debt'                      => $debt,
-            'rent_deposit_deduction'    => (int)$deduction,
-            'other_deposit_deduction'   => (int)$record->other_deposit_deduction,
-            'refund'                    => $refund,
-            'bills'                     => $bills,
-            'deposit_trans'             => $depositTrans,
-            'account'                   => $record->account,
-            'bank'                      => $record->bank,
-            'bank_card_number'          => $record->bank_card_number,
-            'employee_remark'           => $record->employee_remark,
-            'manager_remark'            => $record->manager_remark,
-            'principal_remark'          => $record->principal_remark,
-            'accountant_remark'         => $record->accountant_remark,
-            'status'                    => $record->status,
-        );
-
-        $this->api_res(0,['data'=>$data]);
     }
 
     /**
