@@ -233,8 +233,8 @@ class Ordermodel extends Basemodel{
      */
     public function getOrderNumber()
     {
-        return date('YmdHis').mt_rand(1000000000, intval(9999999999));
-        //return date('YmdHis').mt_rand(1000000000, 9999999999);
+//        return date('YmdHis').mt_rand(1000000000, intval(9999999999));
+        return date('YmdHis').mt_rand(1000000000, 9999999999);
     }
 
     /**
@@ -427,7 +427,34 @@ class Ordermodel extends Basemodel{
     /**
      * 添加退房时的订单
      */
-    public function addCheckOutOrderByType($resident, $room, $number, $employeeId, $type, $money, Carbon $time)
+    public function addCheckOutOrderByType($resident, $room, $employeeId, $type, $money, Carbon $time)
+    {
+        $order  = new Ordermodel();
+        $data   =[
+            'number'        => $this->getOrderNumber(),
+            'resident_id'   => $resident->id,
+            'room_id'       => $room->id,
+            'store_id'      => $room->store_id,
+            'room_type_id'  => $room->room_type_id,
+            'customer_id'   => $resident->customer_id,
+            'uxid'          => $resident->uxid,
+            'employee_id'   => $employeeId,
+            'type'          => strtoupper($type),
+            'money'         => $money,
+            'paid'          => $money,
+            'status'        => Ordermodel::STATE_PENDING,
+            'year'          => $time->year,
+            'month'         => $time->month,
+        ];
+        $order->fill($data);
+        $order->save();
+        return $order;
+    }
+
+    /**
+     * 添加退房时的订单
+     */
+    public function addCheckOutOrderByType_copy($resident, $room, $number, $employeeId, $type, $money, Carbon $time)
     {
         $order  = new Ordermodel();
         $data   =[
@@ -450,6 +477,7 @@ class Ordermodel extends Basemodel{
         $order->save();
         return $order;
     }
+
 
     /**
      * 获取指定住户在指定月份即之后的账单

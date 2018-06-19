@@ -48,7 +48,7 @@ class Checkout extends MY_Controller
      */
     public function store()
     {
-        $field  = ['room_id','resident_id','type','water','electricity',
+        $field  = ['room_id','resident_id','pay_or_not','type','water','electricity',
             'clean','compensation','other_deposit_deduction'];
         $input  = $this->input->post(null,true);
         $store_id   = $this->employee->store_id;
@@ -57,17 +57,17 @@ class Checkout extends MY_Controller
             return;
         }
         //正常退房 不能押金抵扣，如果押金抵扣了，就一定是违约退房
-//        if(!$this->checkCheckOutType($input)){
-//            $this->api_res(10025);
-//            return;
-//        }
+        if(!$this->checkCheckOutType($input)){
+            $this->api_res(10025);
+            return;
+        }
 
         //检查是否已经存在该住户的退房记录
         $record = Checkoutmodel::where(['resident_id' => $input['resident_id']])->count();
         if($record>0){
-            $this->api_res(10026);
-            return;
-        }
+               $this->api_res(10026);
+               return;
+           }
 
         $resident    = Residentmodel::where('store_id',$store_id)->find($input['resident_id']);
         if(!$resident){
@@ -86,12 +86,17 @@ class Checkout extends MY_Controller
             $checkout->resident_id  = $input['resident_id'];
             $checkout->room_id      = $input['room_id'];
             $checkout->employee_id  = $this->employee->id;
+            $checkout->pay_or_not   = $input['pay_or_not'];
             $checkout->type         = $input['type'];
             $checkout->other_deposit_deduction  = $input['other_deposit_deduction'];
             $checkout->status       = Checkoutmodel::STATUS_UNPAID;
             $checkout->store_id     = $store_id;
             $checkout->time         = Carbon::now();
+//            $checkout->data         = ['checkout_orders'=>['water'=>3]];
+            //{"water":2,"checkout_orders":{"water":3149,"clean":3150,"electricity":3151,"compensation":3152},"checkout_money":{"water":"1","clean":"2","electricity":"1","compensation":"3"}}
             $checkout->save();
+
+            $number     = $this->ordermodel->getOrderNumber();
 
             $bills['water']      = $input['water'];
             $bills['clean']      = $input['clean'];
@@ -102,10 +107,11 @@ class Checkout extends MY_Controller
                 $checkout,
                 $bills,
                 $resident,
-                $resident->roomunion
+                $resident->roomunion,
+                $number
             );
 
-            $this->handleRentAndManagement($resident, $checkout);
+            $this->handleRentAndManagement($resident, $checkout, $number);
             $this->setRecordStatus($resident, $checkout);
 
             DB::commit();
@@ -118,7 +124,6 @@ class Checkout extends MY_Controller
             throw $e;
         }
     }
-
 
     /**
      * 提交给店长审核
@@ -516,7 +521,7 @@ class Checkout extends MY_Controller
      * 水电, 清理, 赔偿可以直接操作, 房租和物业费需要计算后处理
      * 房租和水电的计算, 计算本月之后需要缴纳的以及实际缴纳的, 然后做差
      */
-    private function createOrUpdateCheckOutOrders($record, $bills, $resident, $room)
+    private function createOrUpdateCheckOutOrders($record, $bills, $resident, $room, $number)
     {
         $data   = $record->data;
 
@@ -527,7 +532,7 @@ class Checkout extends MY_Controller
                     $order  = $this->ordermodel->addCheckOutOrderByType(
                         $resident,
                         $room,
-//                        $number,
+                        $number,
                         $this->employee->id,
                         $type,
                         $money,
@@ -550,7 +555,7 @@ class Checkout extends MY_Controller
     /**
      * 处理退房时需要缴纳的房租和物业
      */
-    private function handleRentAndManagement($resident, $record)
+    private function handleRentAndManagement($resident, $record, $number)
     {
         $checkoutData   = $record->data;
 
@@ -569,7 +574,7 @@ class Checkout extends MY_Controller
             $order       = $ordersTemp->where('type', Ordermodel::PAYTYPE_ROOM)->first();
             if (count($order)) {
                 $orderIds[]     = $order->id;
-                $order->number  = $this->ordermodel->getOrderNumber();
+                $order->number  = $number;
                 $order->money   = $shouldPay['rent'] - $moneyPaid['ROOM'];
                 $order->paid    = $shouldPay['rent'] - $moneyPaid['ROOM'];
                 $order->save();
@@ -577,7 +582,7 @@ class Checkout extends MY_Controller
                 $order  = $this->ordermodel->addCheckOutOrderByType(
                     $resident,
                     $resident->roomunion,
-                    $this->ordermodel->getOrderNumber(),
+                    $number,
                     $this->employee->id,
                     Ordermodel::PAYTYPE_ROOM,
                     $shouldPay['rent'] - $moneyPaid['ROOM'],
@@ -595,7 +600,7 @@ class Checkout extends MY_Controller
             $order       = $ordersTemp->where('type', Ordermodel::PAYTYPE_MANAGEMENT)->first();
             if (count($order)) {
                 $orderIds[]     = $order->id;
-                $order->number  = $this->ordermodel->getOrderNumber();
+                $order->number  = $number;
                 $order->money   = $shouldPay['property'] - $moneyPaid['MANAGEMENT'];
                 $order->paid    = $shouldPay['property'] - $moneyPaid['MANAGEMENT'];
                 $order->save();
@@ -603,7 +608,7 @@ class Checkout extends MY_Controller
                 $order  = $this->ordermodel->addCheckOutOrderByType(
                     $resident,
                     $resident->roomunion,
-//                    $this->ordermodel->getOrderNumber(),
+                    $number,
                     $this->employee->id,
                     Ordermodel::PAYTYPE_MANAGEMENT,
                     $shouldPay['property'] - $moneyPaid['MANAGEMENT'],
@@ -795,11 +800,11 @@ class Checkout extends MY_Controller
                 'label' => '住户id',
                 'rules' => 'required|trim|numeric',
             ),
-//            array(
-//                'field' => 'pay_or_not',
-//                'label' => '是否支付欠款',
-//                'rules' => 'required|trim|in_list[0,1]',
-//            ),
+            array(
+                'field' => 'pay_or_not',
+                'label' => '是否支付欠款',
+                'rules' => 'required|trim|in_list[0,1]',
+            ),
             array(
                 'field' => 'type',
                 'label' => '退房类型',
@@ -825,11 +830,11 @@ class Checkout extends MY_Controller
                 'label' => '物品赔偿费',
                 'rules' => 'required|trim|numeric',
             ),
-//            array(
-//                'field' => 'other_deposit_deduction',
-//                'label' => '其他押金抵扣金额',
-//                'rules' => 'required|trim|numeric',
-//            ),
+            array(
+                'field' => 'other_deposit_deduction',
+                'label' => '其他押金抵扣金额',
+                'rules' => 'required|trim|numeric',
+            ),
         );
     }
 
