@@ -16,6 +16,7 @@ class Checkout extends MY_Controller
         $this->load->model('storemodel');
         $this->load->model('residentmodel');
         $this->load->model('employeemodel');
+        $this->load->model('Ordermodel');
     }
 
     //退房账单列表
@@ -26,11 +27,6 @@ class Checkout extends MY_Controller
         $search = empty($input['search'])?'':$input['search'];
         $page   = isset($input['page'])?$input['page']:1;
         $offset = ($page-1)*PAGINATE;
-
-        $this->load->model('storemodel');
-        $this->load->model('roomunionmodel');
-        $this->load->model('residentmodel');
-        $this->load->model('employeemodel');
 
         $count  = ceil((Checkoutmodel::with('store','roomunion','resident','employee')
                 ->where($where)->count())/PAGINATE);
