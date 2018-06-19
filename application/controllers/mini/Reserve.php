@@ -30,9 +30,9 @@ class Reserve extends MY_Controller
 
         $count_total = ceil(Reserveordermodel::where(['store_id'=>$store_id])->whereIn('status', ['WAIT', 'BEGIN'])->count());//总条数
         $count = ceil($count_total / $page_count);//总页数
-        if ($page > $count) {
-            return;
-        }
+//        if ($page > $count) {
+//            return;
+//        }
         $reserve = Reserveordermodel::with('roomtype')->where(['store_id'=>$store_id])->whereIn('status', ['WAIT', 'BEGIN'])
                                     ->take($page_count)->skip($offset)
                                     ->orderBy('id', 'desc')->get($filed)->toArray();
