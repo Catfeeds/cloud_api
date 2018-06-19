@@ -28,6 +28,7 @@ class AuthHook {
             'mini/login/handleloginstatus',
             'account/login/login',
             'bill/bill/test',
+            'bill/checkout/list',
 
 //            'demo/copy/transferimages',
 //            'demo/copy/run',
