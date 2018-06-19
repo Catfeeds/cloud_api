@@ -35,7 +35,7 @@ class Checkout extends MY_Controller
         }else{
             //$status = $this->allStatus();
 //            $status = array_diff($this->allStatus(),[Checkoutmodel::STATUS_COMPLETED]);
-            $status = array_diff($this->allStatus(),'');
+            $status = array_diff($this->allStatus(),[Checkoutmodel::STATUS_COMPLETED,Checkoutmodel::STATUS_COMPLETED]);
         }
         $list   = Checkoutmodel::with(['roomunion','store','resident'])->where($where)->whereIn('status',$status)->get();
         if(isset($input['room_number'])){
