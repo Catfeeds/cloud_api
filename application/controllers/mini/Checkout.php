@@ -56,11 +56,6 @@ class Checkout extends MY_Controller
             $this->api_res(1002,['error'=>$this->form_first_error($field)]);
             return;
         }
-        //正常退房 不能押金抵扣，如果押金抵扣了，就一定是违约退房
-//        if(!$this->checkCheckOutType($input)){
-//            $this->api_res(10025);
-//            return;
-//        }
 
         //检查是否已经存在该住户的退房记录
         $record = Checkoutmodel::where(['resident_id' => $input['resident_id']])->count();
@@ -123,124 +118,124 @@ class Checkout extends MY_Controller
     /**
      * 提交给店长审核
      */
-    public function submitForApproval()
-    {
-        $field  = [
-            'checkout_id','account','bank','bank_card_number','bank_card_img','employee_remark'
-        ];
-
-        if(!$this->validationText($this->validateSubmitForApproval())){
-            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
-            return;
-        }
-        $input  = $this->input->post(null,true);
-        $store_id   = $this->employee->store_id;
-        $where  = ['store_id'=>$store_id];
-        $this->load->model('checkoutmodel');
-        $this->load->model('residentmodel');
-        $this->load->model('roomunionmodel');
-        $this->load->model('ordermodel');
-        $record = Checkoutmodel::where($where)->find($input['checkout_id']);
-        if(!$record){
-            $this->api_res(1007);
-            return;
-        }
-        //判断状态
-        if (!in_array($record->status, [Checkoutmodel::STATUS_UNPAID,Checkoutmodel::STATUS_PENDING])) {
-            $this->api_res(10027);
-            return;
-        }
-
-        $resident   = $record->resident;
-        $room       = $record->roomunion;
-        try{
-            DB::beginTransaction();
-            $this->storeRefundAccountAndRemark($record, $input);
-
-            //处理退房时的账单, 并确定退房时的各种款项, 包括欠费等等
-            if(false === $this->handleCheckOutDebt($record, $resident, $room)){
-                return;
-            }
-
-            //处理退房明细
-            $this->handleCheckOutBills($record);
-
-            //更新住户状态
-            $resident->status       = $record->type;
-            $resident->refund_time  = $record->time;
-            $resident->save();
-
-            //重置原房间状态
-            $resident->roomunion->update(
-                [
-                    'status'        => Roomunionmodel::STATE_BLANK,
-                    'people_count'  => 0,
-                    'resident_id'   => 0,
-                ]
-            );
-
-            DB::commit();
-        }catch (Exception $e){
-           DB::rollBack();
-           throw $e;
-        }
-        $this->api_res(0,['checkout_id'=>$record->id]);
-    }
+//    public function submitForApproval()
+//    {
+//        $field  = [
+//            'checkout_id','account','bank','bank_card_number','bank_card_img','employee_remark'
+//        ];
+//
+//        if(!$this->validationText($this->validateSubmitForApproval())){
+//            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+//            return;
+//        }
+//        $input  = $this->input->post(null,true);
+//        $store_id   = $this->employee->store_id;
+//        $where  = ['store_id'=>$store_id];
+//        $this->load->model('checkoutmodel');
+//        $this->load->model('residentmodel');
+//        $this->load->model('roomunionmodel');
+//        $this->load->model('ordermodel');
+//        $record = Checkoutmodel::where($where)->find($input['checkout_id']);
+//        if(!$record){
+//            $this->api_res(1007);
+//            return;
+//        }
+//        //判断状态
+//        if (!in_array($record->status, [Checkoutmodel::STATUS_UNPAID,Checkoutmodel::STATUS_PENDING])) {
+//            $this->api_res(10027);
+//            return;
+//        }
+//
+//        $resident   = $record->resident;
+//        $room       = $record->roomunion;
+//        try{
+//            DB::beginTransaction();
+//            $this->storeRefundAccountAndRemark($record, $input);
+//
+//            //处理退房时的账单, 并确定退房时的各种款项, 包括欠费等等
+//            if(false === $this->handleCheckOutDebt($record, $resident, $room)){
+//                return;
+//            }
+//
+//            //处理退房明细
+//            $this->handleCheckOutBills($record);
+//
+//            //更新住户状态
+//            $resident->status       = $record->type;
+//            $resident->refund_time  = $record->time;
+//            $resident->save();
+//
+//            //重置原房间状态
+//            $resident->roomunion->update(
+//                [
+//                    'status'        => Roomunionmodel::STATE_BLANK,
+//                    'people_count'  => 0,
+//                    'resident_id'   => 0,
+//                ]
+//            );
+//
+//            DB::commit();
+//        }catch (Exception $e){
+//           DB::rollBack();
+//           throw $e;
+//        }
+//        $this->api_res(0,['checkout_id'=>$record->id]);
+//    }
 
     /**
      * 店长或者运营经理的审核
      */
-    public function approve()
-    {
-        $field  = ['remark','operator_role','checkout_id'];
-        if(!$this->validationText($this->validateApprove())){
-            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
-            return;
-        }
-        $input  = $this->input->post(null,true);
-        $role   = $input['operator_role'];
-        $id   = $input['checkout_id'];
-        $remark = isset($input['remark'])?$input['remark']:'无';
-
-        if ('PRINCIPAL' == $role AND !$this->isPrincipal()) {
-            $this->api_res(1011);
-            return;
-        } elseif (!$this->isManager() AND !$this->isPrincipal()) {
-            $this->api_res(1011);
-            return;
-        }
-
-        $this->load->model('checkoutmodel');
-        $record     = Checkoutmodel::find($id);
-        if(!$record){
-            $this->api_res(1007);
-            return;
-        }
-
-        if ('MANAGER' == $role) {
-            if (Checkoutmodel::STATUS_BY_MANAGER != $record->status) {
-                $this->api_res(10027);
-                return;
-            }
-            $record->status             = Checkoutmodel::STATUS_MANAGER_APPROVED;
-            $record->manager_remark     = $remark;
-        }
-
-        if ('PRINCIPAL' == $role) {
-            if (Checkoutmodel::STATUS_MANAGER_APPROVED != $record->status) {
-                $this->api_res(10027);
-                return;
-            }
-            $record->status             = Checkoutmodel::STATUS_PRINCIPAL_APPROVED;
-            $record->principal_remark   = $remark;
-        }
-
-        if($record->save()){
-            $this->api_res(0,['checkout_id'=>$record->id]);
-        }else{
-            $this->api_res(1009);
-        }
-    }
+//    public function approve()
+//    {
+//        $field  = ['remark','operator_role','checkout_id'];
+//        if(!$this->validationText($this->validateApprove())){
+//            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+//            return;
+//        }
+//        $input  = $this->input->post(null,true);
+//        $role   = $input['operator_role'];
+//        $id   = $input['checkout_id'];
+//        $remark = isset($input['remark'])?$input['remark']:'无';
+//
+//        if ('PRINCIPAL' == $role AND !$this->isPrincipal()) {
+//            $this->api_res(1011);
+//            return;
+//        } elseif (!$this->isManager() AND !$this->isPrincipal()) {
+//            $this->api_res(1011);
+//            return;
+//        }
+//
+//        $this->load->model('checkoutmodel');
+//        $record     = Checkoutmodel::find($id);
+//        if(!$record){
+//            $this->api_res(1007);
+//            return;
+//        }
+//
+//        if ('MANAGER' == $role) {
+//            if (Checkoutmodel::STATUS_BY_MANAGER != $record->status) {
+//                $this->api_res(10027);
+//                return;
+//            }
+//            $record->status             = Checkoutmodel::STATUS_MANAGER_APPROVED;
+//            $record->manager_remark     = $remark;
+//        }
+//
+//        if ('PRINCIPAL' == $role) {
+//            if (Checkoutmodel::STATUS_MANAGER_APPROVED != $record->status) {
+//                $this->api_res(10027);
+//                return;
+//            }
+//            $record->status             = Checkoutmodel::STATUS_PRINCIPAL_APPROVED;
+//            $record->principal_remark   = $remark;
+//        }
+//
+//        if($record->save()){
+//            $this->api_res(0,['checkout_id'=>$record->id]);
+//        }else{
+//            $this->api_res(1009);
+//        }
+//    }
 
 
     /**
@@ -271,7 +266,7 @@ class Checkout extends MY_Controller
             Checkoutmodel::STATUS_PENDING,
         ])){
             $orderIds   = isset($data['checkout_orders']) ? $data['checkout_orders'] : [];
-            $debt       = $resident->orders()->where('status', Ordermodel::STATE_PENDING)->sum('money');
+            $debt       = $resident->orders()->where('status', '')->sum('money');
             $bills      = $resident->orders()
                 ->whereIn('id', $orderIds)
                 ->get()
