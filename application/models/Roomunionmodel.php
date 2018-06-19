@@ -176,6 +176,7 @@ class Roomunionmodel extends Basemodel{
      */
     public function room_details($where,$filed,$time){
         $arrears_count = 0;
+        //$arrears = [];
         $this->details = Roomunionmodel::with('room_type')->with('resident')->with('order')
                         ->where($where)->whereBetween('updated_at',$time)
                         ->get($filed)->groupBy('layer')
@@ -194,12 +195,15 @@ class Roomunionmodel extends Basemodel{
                             foreach ($s as $key=>$value){
                                 if (!empty($s[$key]['order'])){
                                     $count += 1;
+//                                    $arrears[]  = $s;
                                 }
+
                             }
                             $arrears_count += $count;
 
-                            return [$s,'arrears_count'=>$arrears_count];
+                            return [$s,'arrears_count'=>$arrears_count,$arrears];
                         })->toArray();
+        var_dump($this->details);exit;
 
         //var_dump($this->details);
         if (!empty($where['status'])){unset($where['status']);}
@@ -216,7 +220,13 @@ class Roomunionmodel extends Basemodel{
 
         }
         $this->arrears_count  = $arrears_count;
-        return $this;
+//        return $this;
+
+
+        if(isset($where['status'])&&$where['status']='ARREARS'){
+            $arrears_count = 0;
+
+        }
     }
 
     /**

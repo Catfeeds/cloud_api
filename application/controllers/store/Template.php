@@ -21,13 +21,18 @@ class Template extends MY_Controller
         $post   = $this->input->post(null,true);
         $page   = intval(isset($post['page'])?$post['page']:1);
         $offset = PAGINATE*($page-1);
-        $field  = ['id','name','rent_type'];
+        $field  = ['id','name','url','rent_type'];
         $count  = ceil(Contracttemplatemodel::count()/PAGINATE);
         if($page>$count){
             $this->api_res(0,['count'=>$count,'list'=>[]]);
             return;
         }
-        $templates = Contracttemplatemodel::offset($offset)->limit(PAGINATE)->orderBy('id','desc')->get($field)->toArray();
+        $templates = Contracttemplatemodel::offset($offset)->limit(PAGINATE)->orderBy('id','desc')->get($field)
+            ->map(function($result){
+                $result->url    = $this->fullAliossUrl($result->url);
+                return $result;
+            })
+            ->toArray();
         $this->api_res(0,['count'=>$count,'list'=>$templates]);
     }
 

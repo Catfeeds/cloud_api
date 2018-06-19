@@ -112,7 +112,7 @@ class AuthHook {
 //            'store/roomunion/submitunion',
 //            'store/roomunion/destory',
 //            'store/roomdot/listdot',
-            'store/roomunion/getunion',
+//            'store/roomunion/getunion',
 //            'store/roomdot/getdot',
 //            'store/roomdot/destroy',
 //            'store/roomunion/batchupdateunion',
@@ -167,7 +167,7 @@ class AuthHook {
 //            'common/province',
 //            'common/district',
 //
-//            'sellcontrol/sellcontrol/details',
+            'sellcontrol/sellcontrol/details',
 
 //            'mini/reserve/listreserve',
 //            'mini/reserve/addreserve',
