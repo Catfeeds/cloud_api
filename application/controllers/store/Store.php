@@ -148,6 +148,7 @@ class Store extends MY_Controller
         ];
         $store  = Storemodel::where($where)->select($field)->find($store_id);
 //        $store->describe    = strip_tags(htmlspecialchars_decode($store->describe));
+        $store->describe    = (htmlspecialchars_decode($store->describe));
         $store->images  = $this->fullAliossUrl(json_decode($store->images,true),true);
         $this->api_res(0,['store'=>$store]);
     }
