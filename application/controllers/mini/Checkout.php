@@ -263,7 +263,7 @@ class Checkout extends MY_Controller
                         $this->employee->id,
                         $type,
                         $money,
-                        time()
+                        Carbon::now()
                     );
                     $orderIds[$type]    = $order->id;
                 } else {
