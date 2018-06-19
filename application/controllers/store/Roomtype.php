@@ -67,6 +67,7 @@ class Roomtype extends MY_Controller
         }
         $roomtype   = new Roomtypemodel();
         $roomtype->fill($post);
+        $roomtype->description  = htmlspecialchars($this->input->post('description'));
         $images  = $this->splitAliossUrl($post['images'],true);
 //        $images  = json_encode($images);
         $images  = ($images);
@@ -139,7 +140,7 @@ class Roomtype extends MY_Controller
         $this->load->model('storemodel');
         $room_type_id   = isset($post['room_type_id'])?$post['room_type_id']:null;
         $room_type  = Roomtypemodel::with('store')->select($field)->findOrFail($room_type_id);
-        $room_type->description    = strip_tags(htmlspecialchars_decode($room_type->description));
+        $room_type->description    = (htmlspecialchars_decode($room_type->description));
 //        $room_type->images  = $this->fullAliossUrl(json_decode($room_type->images,true),true);
         $room_type->images  = $this->fullAliossUrl($room_type->images,true);
         $this->api_res(0,['room_type'=>$room_type]);
@@ -166,6 +167,7 @@ class Roomtype extends MY_Controller
         }
         $roomtype  = Roomtypemodel::findOrFail($room_type_id);
         $roomtype->fill($post);
+        $roomtype->description  = htmlspecialchars($this->input->post('description'));
         $images  = $this->splitAliossUrl($post['images'],true);
 //        $images = json_encode($images);
 //        log_message('error',json_encode($images));
