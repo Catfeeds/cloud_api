@@ -35,7 +35,7 @@ class Resident extends MY_Controller
             $this->api_res(0,['list'=>[]]);
             return;
         }else {
-            $resident = Residentmodel::with('room')->with('customer_s')->where($where)->orders('created_at','DESC')->take(PAGINATE)
+            $resident = Residentmodel::with('room')->with('customer_s')->where($where)->orders('created_at','ASC')->take(PAGINATE)
                     ->skip($offset)->get($filed)->map(function ($s){
                     $s->room->store_name = (Storemodel::where('id',$s->room->store_id)->get(['name']))[0]['name'];
                     $s->createdat = date('Y-m-d',strtotime($s->created_at->toDateTimeString()));
