@@ -43,7 +43,7 @@ class Checkout extends MY_Controller
     //显示一笔退款交易
     public function show(){
         $input  = $this->input->post(null,true);
-        empty($input['id'])?$id=1:$id=$input['id'];
+        empty($input['id'])?$id=21:$id=$input['id'];
         $checkout   = Checkoutmodel::find($id);
         if(empty($checkout))
         {
