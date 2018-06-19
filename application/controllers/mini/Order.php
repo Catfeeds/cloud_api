@@ -360,6 +360,7 @@ class Order extends MY_Controller
      */
     private function updateRoomAndResident($orders, $resident, $room)
     {
+        log_message('error','TEST3');
         //检索住户是否仍有未缴费的账单, 如果仍有需缴费的账单, 则不更新
         $ordersUnpaid   = $this->ordermodel->ordersUnpaidOfResident($resident->id);
 
