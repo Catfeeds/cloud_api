@@ -37,6 +37,9 @@ class Contract extends MY_Controller{
         $total_page = ceil(($rooms->count())/PAGINATE);
 
         $data['data']= $rooms->toArray();
+        $data['per_page']   = $per_page;
+        $data['current_page']   = $page;
+        $data['total']  = $rooms->count();
         $data['total_page']=$total_page;
 
          $this->api_res(0,$data);

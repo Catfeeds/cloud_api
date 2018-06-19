@@ -11,7 +11,7 @@ class copy extends MY_Controller
 {
 
     public function run(){
-//        $this->transferImages();
+        $this->transferImages();
         //$this->copy_contract_template();
 //       $this->templateToUnionRoom();
 //        $this->customerUxid();
@@ -69,7 +69,7 @@ class copy extends MY_Controller
                 log_message('error',"no room_type $key");
                 continue;
             }
-            $roomtype->images  = json_encode($value);
+            $roomtype->images  = $value;
 //            var_dump($value);exit;
             $roomtype->save();
         }
