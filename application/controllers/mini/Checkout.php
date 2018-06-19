@@ -243,65 +243,6 @@ class Checkout extends MY_Controller
     }
 
     /**
-     * 店员提交审核时退款金额, 抵扣费用的计算
-     */
-    private function handleCheckOutDebt($record, $resident, $room)
-    {
-        //查询出所有的未缴费订单
-        $orders     = $resident->orders()->where('status', Ordermodel::STATE_PENDING)->get();
-        $debt       = $orders->sum('money');
-
-        if ($debt > 0) {
-            if ($record->pay_or_not OR Checkoutmodel::TYPE_NORMAL == $record->type) {
-                $this->api_res(10028);
-                return false;
-            } elseif ($resident->deposit_money < $debt) {
-                $this->api_res(10029);
-                return false;
-            }
-        }
-
-        //需要添加一笔订单, 记录其他押金的抵扣
-        if (0 < $record->other_deposit_deduction) {
-
-            $order  = $this->ordermodel->addCheckOutOrderByType(
-                $resident,
-                $room,
-                count($orders) ? $orders->first()->number : $this->ordermodel->getOrderNumber(),
-                $this->employee->id,
-                Ordermodel::PAYTYPE_OTHER,
-                $record->other_deposit_deduction,
-                $record->time
-            );
-
-            $orders->push($order);
-        }
-
-        if (count($orders)) {
-            $this->ordermodel->payByDeposit($orders->pluck('id')->toArray());
-        }
-
-        //根据是否是违约退房计算退还金额
-        if (Checkoutmodel::TYPE_NORMAL == $record->type) {
-            $refund         = $resident->deposit_money + $resident->tmp_deposit - $record->other_deposit_deduction;
-            $depositTrans   = 0;
-        } else {
-            $refund         = $resident->tmp_deposit - $record->other_deposit_deduction;
-            $depositTrans   = $resident->deposit_money - $debt;
-        }
-
-        $record->debt                   = $debt;
-        $record->deposit_trans          = $depositTrans;
-        $record->refund                 = $refund;
-        $record->rent_deposit_deduction = $debt;
-        $record->status                 = Checkoutmodel::STATUS_BY_MANAGER;
-        $record->save();
-
-        return $record;
-    }
-
-
-    /**
      * 创建或更新退房时的账单, 包括水费, 电费, 垃圾清理费, 物品赔偿费以及需补交的房租和物业费
      * 有则更新, 无则创建
      * 水电, 清理, 赔偿可以直接操作, 房租和物业费需要计算后处理
@@ -322,7 +263,7 @@ class Checkout extends MY_Controller
                         $this->employee->id,
                         $type,
                         $money,
-                        $record->time
+                        time()
                     );
                     $orderIds[$type]    = $order->id;
                 } else {
