@@ -68,7 +68,8 @@ class Roomtype extends MY_Controller
         $roomtype   = new Roomtypemodel();
         $roomtype->fill($post);
         $images  = $this->splitAliossUrl($post['images'],true);
-        $images  = json_encode($images);
+//        $images  = json_encode($images);
+        $images  = ($images);
         $roomtype->images=$images;
         if($roomtype->save())
         {
@@ -163,7 +164,8 @@ class Roomtype extends MY_Controller
         $roomtype  = Roomtypemodel::findOrFail($room_type_id);
         $roomtype->fill($post);
         $images  = $this->splitAliossUrl($post['images'],true);
-        $images = json_encode($images);
+//        $images = json_encode($images);
+        $images = ($images);
         $roomtype->images=$images;
         if($roomtype->save())
         {
