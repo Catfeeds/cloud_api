@@ -34,7 +34,8 @@ class Checkout extends MY_Controller
             $status = [$input['status']];
         }else{
             //$status = $this->allStatus();
-            $status = array_diff($this->allStatus(),[Checkoutmodel::STATUS_COMPLETED]);
+//            $status = array_diff($this->allStatus(),[Checkoutmodel::STATUS_COMPLETED]);
+            $status = array_diff($this->allStatus(),[Checkoutmodel::STATUS_COMPLETED,Checkoutmodel::STATUS_COMPLETED]);
         }
         $list   = Checkoutmodel::with(['roomunion','store','resident'])->where($where)->whereIn('status',$status)->get();
         if(isset($input['room_number'])){
@@ -56,11 +57,6 @@ class Checkout extends MY_Controller
             $this->api_res(1002,['error'=>$this->form_first_error($field)]);
             return;
         }
-        //正常退房 不能押金抵扣，如果押金抵扣了，就一定是违约退房
-//        if(!$this->checkCheckOutType($input)){
-//            $this->api_res(10025);
-//            return;
-//        }
 
         //检查是否已经存在该住户的退房记录
         $record = Checkoutmodel::where(['resident_id' => $input['resident_id']])->count();
@@ -123,69 +119,69 @@ class Checkout extends MY_Controller
     /**
      * 提交给店长审核
      */
-    public function submitForApproval()
-    {
-        $field  = [
-            'checkout_id','account','bank','bank_card_number','bank_card_img','employee_remark'
-        ];
-
-        if(!$this->validationText($this->validateSubmitForApproval())){
-            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
-            return;
-        }
-        $input  = $this->input->post(null,true);
-        $store_id   = $this->employee->store_id;
-        $where  = ['store_id'=>$store_id];
-        $this->load->model('checkoutmodel');
-        $this->load->model('residentmodel');
-        $this->load->model('roomunionmodel');
-        $this->load->model('ordermodel');
-        $record = Checkoutmodel::where($where)->find($input['checkout_id']);
-        if(!$record){
-            $this->api_res(1007);
-            return;
-        }
-        //判断状态
-        if (!in_array($record->status, [Checkoutmodel::STATUS_UNPAID,Checkoutmodel::STATUS_PENDING])) {
-            $this->api_res(10027);
-            return;
-        }
-
-        $resident   = $record->resident;
-        $room       = $record->roomunion;
-        try{
-            DB::beginTransaction();
-            $this->storeRefundAccountAndRemark($record, $input);
-
-            //处理退房时的账单, 并确定退房时的各种款项, 包括欠费等等
-            if(false === $this->handleCheckOutDebt($record, $resident, $room)){
-                return;
-            }
-
-            //处理退房明细
-            $this->handleCheckOutBills($record);
-
-            //更新住户状态
-            $resident->status       = $record->type;
-            $resident->refund_time  = $record->time;
-            $resident->save();
-
-            //重置原房间状态
-            $resident->roomunion->update(
-                [
-                    'status'        => Roomunionmodel::STATE_BLANK,
-                    'people_count'  => 0,
-                    'resident_id'   => 0,
-                ]
-            );
-
-            DB::commit();
-        }catch (Exception $e){
-           DB::rollBack();
-           throw $e;
-        }
-        $this->api_res(0,['checkout_id'=>$record->id]);
-    }
+//    public function submitForApproval()
+//    {
+//        $field  = [
+//            'checkout_id','account','bank','bank_card_number','bank_card_img','employee_remark'
+//        ];
+//
+//        if(!$this->validationText($this->validateSubmitForApproval())){
+//            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+//            return;
+//        }
+//        $input  = $this->input->post(null,true);
+//        $store_id   = $this->employee->store_id;
+//        $where  = ['store_id'=>$store_id];
+//        $this->load->model('checkoutmodel');
+//        $this->load->model('residentmodel');
+//        $this->load->model('roomunionmodel');
+//        $this->load->model('ordermodel');
+//        $record = Checkoutmodel::where($where)->find($input['checkout_id']);
+//        if(!$record){
+//            $this->api_res(1007);
+//            return;
+//        }
+//        //判断状态
+//        if (!in_array($record->status, [Checkoutmodel::STATUS_UNPAID,Checkoutmodel::STATUS_PENDING])) {
+//            $this->api_res(10027);
+//            return;
+//        }
+//
+//        $resident   = $record->resident;
+//        $room       = $record->roomunion;
+//        try{
+//            DB::beginTransaction();
+//            $this->storeRefundAccountAndRemark($record, $input);
+//
+//            //处理退房时的账单, 并确定退房时的各种款项, 包括欠费等等
+//            if(false === $this->handleCheckOutDebt($record, $resident, $room)){
+//                return;
+//            }
+//
+//            //处理退房明细
+//            $this->handleCheckOutBills($record);
+//
+//            //更新住户状态
+//            $resident->status       = $record->type;
+//            $resident->refund_time  = $record->time;
+//            $resident->save();
+//
+//            //重置原房间状态
+//            $resident->roomunion->update(
+//                [
+//                    'status'        => Roomunionmodel::STATE_BLANK,
+//                    'people_count'  => 0,
+//                    'resident_id'   => 0,
+//                ]
+//            );
+//
+//            DB::commit();
+//        }catch (Exception $e){
+//           DB::rollBack();
+//           throw $e;
+//        }
+//        $this->api_res(0,['checkout_id'=>$record->id]);
+//    }
 
     /**
      * 店长或者运营经理的审核
