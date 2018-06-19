@@ -104,9 +104,9 @@ class Goods extends MY_Controller
         $goods->shop_price      = trim($post['shop_price']);//商品价格
         $goods->quantity        = trim($post['quantity']);  //商品数量
         $goods->sale_num        = trim($post['sale_num']);  //已经卖出数量
-//        $goods->description     = trim($post['description']);//描述
-        $goods->description     = $this->input->post('description');//描述
-        $goods->detail          = trim($post['detail']);     //商品详情
+        $goods->description     = trim($post['description']);//描述
+        $goods->detail          = $this->input->post('detail');
+//        $goods->detail          = trim($post['detail']);     //商品详情
         $goods->original_link   = trim($post['original_link']);//商品原始链接
         $goods->on_sale         = trim($post['on_sale']);     //是否上架
         $goods->goods_thumb     = $goods_thumb; //商品缩略图
@@ -155,9 +155,9 @@ class Goods extends MY_Controller
         $goods->shop_price      = trim($post['shop_price']);//商品价格
         $goods->quantity        = trim($post['quantity']);  //商品数量
         $goods->sale_num        = trim($post['sale_num']);  //已经卖出数量
-//        $goods->description     = trim($post['description']);//描述
-        $goods->description     = $this->input->post('description');//描述
-        $goods->detail          = trim($post['detail']);     //商品详情
+        $goods->description     = trim($post['description']);//描述
+        $goods->detail          = $this->input->post('detail');
+//        $goods->detail          = trim($post['detail']);     //商品详情
         $goods->original_link   = trim($post['original_link']);//商品原始链接
         $goods->on_sale         = trim($post['on_sale']);     //是否上架
         $goods->goods_thumb     = $goods_thumb; //商品缩略图
