@@ -16,6 +16,7 @@ class Checkout extends MY_Controller
         $this->load->model('storemodel');
         $this->load->model('residentmodel');
         $this->load->model('employeemodel');
+        $this->load->model('Roomunionmodel');
         $this->load->model('Ordermodel');
     }
 
