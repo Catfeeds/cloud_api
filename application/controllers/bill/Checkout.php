@@ -16,6 +16,7 @@ class Checkout extends MY_Controller
         $this->load->model('storemodel');
         $this->load->model('residentmodel');
         $this->load->model('employeemodel');
+        $this->load->model('Roomunionmodel');
         $this->load->model('Ordermodel');
     }
 
@@ -30,7 +31,7 @@ class Checkout extends MY_Controller
             $status = array_diff($this->allStatus(),[Checkoutmodel::STATUS_COMPLETED]);
 //            $status = array_diff($this->allStatus(),[Checkoutmodel::STATUS_COMPLETED,Checkoutmodel::STATUS_COMPLETED]);
         }
-        $list   = Checkoutmodel::with(['roomunion','store','resident'])->where($where)->whereIn('status',$status)->get();
+        $list   = Checkoutmodel::with(['roomunion','store','resident'])->whereIn('status',$status)->get();
         if(isset($input['room_number'])){
             $list   = $list->where('roomunion.number',$input['room_number']);
         }
@@ -42,7 +43,7 @@ class Checkout extends MY_Controller
     //显示一笔退款交易
     public function show(){
         $input  = $this->input->post(null,true);
-        empty($input['id'])?$id=1:$id=$input['id'];
+        empty($input['id'])?$id=21:$id=$input['id'];
         $checkout   = Checkoutmodel::find($id);
         if(empty($checkout))
         {
@@ -50,10 +51,8 @@ class Checkout extends MY_Controller
             return;
         }
 
-
+        $data['checkout']=$checkout->toArray();
         $data['orders']=Ordermodel::where('resident_id',$checkout->resident_id)->where('sequence_number','')->get()->toArray();
-        //        获取money
-
 
 
         $this->api_res(0,$data);
