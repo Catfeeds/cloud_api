@@ -47,7 +47,12 @@ class Checkout extends MY_Controller
     //显示一笔退款交易
     public function show(){
         $input  = $this->input->post(null,true);
-        empty($input['id'])?$id=21:$id=$input['id'];
+        empty($input['id'])?$id='':$id=$input['id'];
+        if(empty($id))
+        {
+            $this->api_res(1007);
+            return;
+        }
         $checkout   = Checkoutmodel::find($id);
         if(empty($checkout))
         {
@@ -56,6 +61,8 @@ class Checkout extends MY_Controller
         }
 
         $data['checkout']=$checkout->toArray();
+        $data['resident']=Residentmodel::find($checkout->resident_id)->toArray();
+        $data['room']=Roomunionmodel::find($checkout->room_id)->toArray();
         $data['orders']=Ordermodel::where('resident_id',$checkout->resident_id)->where('sequence_number','')->get()->toArray();
 
         $this->api_res(0,$data);
