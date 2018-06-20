@@ -25,7 +25,7 @@ class M_jwt
             $token = array(
                 "iss" => config_item('jwt_iss'),
 //                "exp" => config_item('jwt_exp'),
-                "exp" => time()+60,
+                "exp" => (time()+5),
                 "nbf" => config_item('jwt_nbf'),
                 "bxid" => $bxid,  //自添加字段，
                 "company_id"    =>$company_id

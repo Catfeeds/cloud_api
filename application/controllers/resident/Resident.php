@@ -232,17 +232,31 @@ class Resident extends MY_Controller
             ->where('status',Ordermodel::STATE_PENDING)
             ->orderBy('year','ASC')
             ->orderBy('month','ASC')
-            ->get();
+            ->get()
+            ->map(function($order){
+                $order->date    = $order->year.'-'.$order->month;
+                return $order;
+            });
 
         $paid    = $resident->orders()
             ->whereIn('status',[Ordermodel::STATE_CONFIRM,Ordermodel::STATE_COMPLETED])
             ->orderBy('year','ASC')
             ->orderBy('month','ASC')
-            ->get();
+            ->get()
+            ->map(function($order){
+                $order->date    = $order->year.'-'.$order->month;
+                return $order;
+            })
+        ;
 
         $unpaid_money   = $unpaid->sum('money');
         $paid_money     = $paid->sum('money');
         $discount_money     = $paid->sum('discount_money');
+
+        $unpaid   = $unpaid->groupBy('date')->map(function($a){
+
+        });
+        $paid   = $paid->groupBy('date');
 
         $this->api_res(0,['unpaid'=>$unpaid,'paid'=>$paid,'unpaid_money'=>$unpaid_money,'paid_money'=>$paid_money,'discount_money'=>$discount_money]);
 
