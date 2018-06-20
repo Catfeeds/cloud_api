@@ -159,19 +159,27 @@ class Coupon extends MY_Controller
     {
         $this->load->model('residentmodel');
         $this->load->model('roomunionmodel');
+        $this->load->model('storemodel');
         $post = $this->input->post(null,true);
         $page = isset($post['page'])?intval($post['page']):1;
-        $filed = ['room_id','name','phone','card_number','created_at','status'];
+        $where=[];
+        isset($post['store_id'])?$where['store_id']=$post['store_id']:null;
+
+        $filed = ['id','room_id','name','phone','card_number','created_at','status'];
         $offset = PAGINATE * ($page - 1);
         $count = ceil((Residentmodel::get($filed)->count())/PAGINATE);
         if ($count<$page||$page<0){
             $this->api_res(0,[]);
             return;
         }
-        $resident   = Residentmodel::with('roomunion')
+
+        $resident   = Residentmodel::with(['roomunion'=>function($query) use ($where){
+            $query->with('store')->where($where);
+        }])
             ->whereHas('roomunion')
             ->offset($offset)
             ->limit(PAGINATE)
+            ->orderBy('created_at')
             ->get($filed);
 
         $this->api_res(0,['total_page'=>$count,'list'=>$resident]);
