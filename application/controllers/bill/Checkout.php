@@ -23,6 +23,8 @@ class Checkout extends MY_Controller
     //退房账单列表
     public function list(){
         $input  = $this->input->post(null,true);
+        $page   = isset($input['page'])?$input['page']:1;
+        $where  = [];
         empty($input['store_id'])?$where['store_id']='':$where['store_id']=$input['store_id'];
         if(isset($input['status'])){
             $status = [$input['status']];
@@ -31,13 +33,15 @@ class Checkout extends MY_Controller
             $status = array_diff($this->allStatus(),[Checkoutmodel::STATUS_COMPLETED]);
 //            $status = array_diff($this->allStatus(),[Checkoutmodel::STATUS_COMPLETED,Checkoutmodel::STATUS_COMPLETED]);
         }
-        $list   = Checkoutmodel::with(['roomunion','store','resident'])->whereIn('status',$status)->get();
+        $offset = ($page-1)*PAGINATE;
+        $list   = Checkoutmodel::with(['roomunion','store','resident'])->offset($offset)->limit(PAGINATE)->get();
         if(isset($input['room_number'])){
             $list   = $list->where('roomunion.number',$input['room_number']);
         }
-        $this->api_res(0,['checkouts'=>$list]);
+        $allnumber=Checkoutmodel::with(['roomunion','store','resident'])->count();
 
-
+        $total_page = ceil($allnumber/PAGINATE);
+        $this->api_res(0,['checkouts'=>$list,'total_page'=>$total_page]);
     }
 
     //显示一笔退款交易

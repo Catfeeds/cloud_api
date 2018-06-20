@@ -123,7 +123,6 @@ class Bill extends MY_Controller
         $this->load->model('ordermodel');
         $post = $this->input->post(null,true);
         $where      = [];
-        $post['store_id']=1;
         if(!empty($post['building_id'])){$where['building_id'] = intval($post['building_id']);};
         if(!empty($post['status'])){$where['status'] = trim($post['status']);};
         if(!empty($post['store_id'])){$where['store_id'] = intval($post['store_id']);}

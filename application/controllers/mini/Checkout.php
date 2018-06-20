@@ -212,30 +212,7 @@ class Checkout extends MY_Controller
      */
 
 
-    /**
-     * 记录提交审核的时候提交的数据
-     */
-    private function storeRefundAccountAndRemark($record,$input)
-    {
-        foreach (['bank', 'account', 'bank_card_number', 'employee_remark'] as $key) {
 
-            if(isset($input[$key])){
-                $data[$key] = $input[$key];
-            }
-        }
-
-        if(isset($input['bank_card_img'])) {
-            $record->bank_card_img  = $this->splitAliossUrl($input['bank_card_img']);
-        }
-
-        if (isset($data)) {
-            $record->fill($data);
-
-            $record->save();
-        }
-
-        return $record;
-    }
 
     /**
      * 创建或更新退房时的账单, 包括水费, 电费, 垃圾清理费, 物品赔偿费以及需补交的房租和物业费
