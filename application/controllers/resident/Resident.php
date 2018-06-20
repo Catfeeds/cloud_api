@@ -204,6 +204,54 @@ class Resident extends MY_Controller
     }
 
     /**
+     * 获取用户账单信息(按账单周期分组)
+     */
+    public function getResidentOrder()
+    {
+
+        $this->load->model('ordermodel');
+        $resident_id    = $this->input->post('resident_id',true);
+        $resident   = Residentmodel::findOrFail($resident_id);
+//        $orders = $resident->orders()
+//            ->orderBy('year','ASC')
+//            ->orderBy('month','ASC')
+//            ->get()
+//            ->map(function($order){
+//            $order->date    = $order->year.'-'.$order->month;
+//            return $order;
+//        })->groupBy('date')
+//            ->map(function($group){
+//                $group->count   = $group->sum('money');
+//                return $group;
+//            })
+//            ->toArray();
+//
+//        $this->api_res(0,$orders);
+        //未支付的列表
+        $unpaid    = $resident->orders()
+            ->where('status',Ordermodel::STATE_PENDING)
+            ->orderBy('year','ASC')
+            ->orderBy('month','ASC')
+            ->get();
+
+        $paid    = $resident->orders()
+            ->whereIn('status',[Ordermodel::STATE_CONFIRM,Ordermodel::STATE_COMPLETED])
+            ->orderBy('year','ASC')
+            ->orderBy('month','ASC')
+            ->get();
+
+        $unpaid_money   = $unpaid->sum('money');
+        $paid_money     = $paid->sum('money');
+        $discount_money     = $paid->sum('discount_money');
+
+        $this->api_res(0,['unpaid'=>$unpaid,'paid'=>$paid,'unpaid_money'=>$unpaid_money,'paid_money'=>$paid_money,'discount_money'=>$discount_money]);
+
+    }
+
+
+
+
+    /**
      * @return mixed
      * 表单验证
      */
