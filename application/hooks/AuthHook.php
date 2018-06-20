@@ -156,7 +156,7 @@ class AuthHook {
 //            'shop/goodsorder/listgoodsorder',
 //            'shop/goodsorder/detail',
 //
-            'smartdevice/smartdevice/listsmartdevice',
+//            'smartdevice/smartdevice/listsmartdevice',
 //            'smartdevice/smartdevice/record',
 //            'smartdevice/smartdevice/test',
 //            'smartdevice/smartdevice/getallrecord',
