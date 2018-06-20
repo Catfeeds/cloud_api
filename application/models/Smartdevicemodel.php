@@ -14,7 +14,7 @@ class Smartdevicemodel extends Basemodel{
     protected $hidden   = ['created_at','updated_at','deleted_at'];
 
     public function room(){
-        return $this->belongsTo(Roomdotmodel::class,'room_id')->select('id','number');
+        return $this->belongsTo(Roomunionmodel::class,'room_id')->select('id','layer','number','store_id','building_name');
     }
 
     public function store(){

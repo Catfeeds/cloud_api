@@ -59,7 +59,7 @@ class Smartdevice extends MY_Controller
             }else{
                 $device = Smartdevicemodel::where($condition)->with(['room'=>function($query){
                     $query->with('store');
-                }])->with('store')
+                }])
                                             ->take(PAGINATE)->skip($offset)
                                             ->orderBy('id','desc')->get($filed)->toArray();
             }
@@ -72,7 +72,7 @@ class Smartdevice extends MY_Controller
             }else {
                 $device = Smartdevicemodel::with(['room'=>function($query){
                     $query->with('store');
-                }])->with('store')
+                }])
                                             ->take(PAGINATE)->skip($offset)
                                             ->orderBy('id', 'desc')->get($filed)->toArray();
             }
