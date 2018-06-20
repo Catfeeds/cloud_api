@@ -34,7 +34,7 @@ class Checkout extends MY_Controller
 //            $status = array_diff($this->allStatus(),[Checkoutmodel::STATUS_COMPLETED,Checkoutmodel::STATUS_COMPLETED]);
         }
         $offset = ($page-1)*PAGINATE;
-        $list   = Checkoutmodel::with(['roomunion','store','resident'])->offset($offset)->limit(1)->get();
+        $list   = Checkoutmodel::with(['roomunion','store','resident'])->offset($offset)->limit(PAGINATE)->get();
         if(isset($input['room_number'])){
             $list   = $list->where('roomunion.number',$input['room_number']);
         }
@@ -63,7 +63,9 @@ class Checkout extends MY_Controller
         $data['checkout']=$checkout->toArray();
         $data['resident']=Residentmodel::find($checkout->resident_id)->toArray();
         $data['room']=Roomunionmodel::find($checkout->room_id)->toArray();
-        $data['orders']=Ordermodel::where('resident_id',$checkout->resident_id)->where('sequence_number','')->get()->toArray();
+        $orders =   Ordermodel::where('resident_id',$checkout->resident_id)->where('sequence_number','')->get();
+        $data['orders'] =   $orders->toArray();
+        $data['countmoney'] = $orders->sum('money');
 
         $this->api_res(0,$data);
 
@@ -73,20 +75,36 @@ class Checkout extends MY_Controller
     //退房账单更新
     public function update(){
 
-
     }
 
     //确定正常退房
     public function sure(){
+        $input  = $this->input->post(null,true);
+        empty($input['id'])?$id='':$id=$input['id'];
+        if(empty($id))
+        {
+            $this->api_res(1007);
+            return;
+        }
+        empty($input['sequence'])?$sequence='':$sequence=$input['sequence'];
+        if(empty($sequence))
+        {
+            $this->api_res(1007);
+            return;
+        }
+        empty($input['remark'])?$sequence='':$sequence=$input['remark'];
 
+        $input['sequence']='';
+        $data['message']='办理成功!';
+        $this->api_res(0,$data);
 
     }
 
     //押金转收入退房
 
     public function Breach(){
-
-
+        $data['message']='办理成功!';
+        $this->api_res(0,$data);
     }
 
 
