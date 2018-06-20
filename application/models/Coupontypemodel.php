@@ -34,4 +34,6 @@ class Coupontypemodel extends Basemodel
     const STATUS_ACTIVATED  = 'ACTIVATED';       //已经激活, 有人领取的状态
     const STATUS_FINISHED   = 'FINISHED';        //活动已经结束, 不能再领取
     const STATUS_ABANDONED  = 'ABANDONED';       //被删除了, 不为外人道也
+    const STATUS_UNUSED  = 'UNUSED';       //未使用
+    const STATUS_USED  = 'USED';       //已使用
 }

@@ -115,6 +115,40 @@ class Coupon extends MY_Controller
     {
         $input  = $this->input->post(null,true);
         $coupon_id  = $input['coupon_id'];
+        $resident_ids    = $input['resident_ids'];
+        $this->load->model('residentmodel');
+        $this->load->model('couponmodel');
+        $coupon_type    = Coupontypemodel::findOrFail($coupon_id);
+        if($coupon_type->deadline<=date('Y-m-d',time()))
+        {
+            $this->api_res(10031);
+            return;
+        }
+        $residents   = Residentmodel::whereIn('id',$resident_ids)->get();
+
+        var_dump($residents->toArray());exit;
+
+        $data   = [];
+        foreach ($residents as $resident)
+        {
+            $data[] = [
+                'customer_id'   => $resident->customer_id,
+                'resident_id'   => $resident->id,
+                'employee_id'   => $this->employee->id,
+                'activity_id'   => 0,
+                'coupon_type_id'=> $coupon_id,
+                'status'        => Coupontypemodel::STATUS_UNUSED,
+                'deadline'      => $coupon_type->deadline
+            ];
+        }
+        var_dump($data);
+
+
+
+
+
+
+
 
     }
 

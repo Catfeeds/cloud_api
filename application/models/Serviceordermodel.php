@@ -17,7 +17,7 @@ class Serviceordermodel extends Basemodel
     }
     public function serviceType()
     {
-        return $this->belongsTo(Servicetypemodel::class,'service_type_id')->select('id','name');
+        return $this->belongsTo(Servicetypemodel::class,'service_id')->select('id','name');
     }
 
     public function roomunion()
