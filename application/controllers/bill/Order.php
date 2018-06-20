@@ -72,9 +72,6 @@ class Order extends MY_Controller
 
         $this->api_res(0,['orders'=>$orders,'total_page'=>$count]);
 
-
-
-
     }
 
     public function download()
