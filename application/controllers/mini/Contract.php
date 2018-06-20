@@ -33,7 +33,9 @@ class Contract extends MY_Controller{
         ->orderBy('updated_at','ASC')
         ->offset($offset)
         ->limit($per_page)
-        ->get();
+        ->get()->map(function($room){
+            $room->begin_time   = date('Y-m-d',$room->begin_time);
+            });
         $total_page = ceil(($rooms->count())/PAGINATE);
 
         $data['data']= $rooms->toArray();
