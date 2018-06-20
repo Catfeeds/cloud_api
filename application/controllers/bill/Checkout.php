@@ -61,6 +61,7 @@ class Checkout extends MY_Controller
         }
 
         $data['checkout']=$checkout->toArray();
+        $data['checkout']['bank_card_img']    = $this->fullAliossUrl($data['checkout']['bank_card_img']);
         $data['resident']=Residentmodel::find($checkout->resident_id)->toArray();
         $data['room']=Roomunionmodel::find($checkout->room_id)->toArray();
         $orders =   Ordermodel::where('resident_id',$checkout->resident_id)->where('sequence_number','')->get();
