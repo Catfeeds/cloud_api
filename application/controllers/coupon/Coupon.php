@@ -1,5 +1,6 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+use Carbon\Carbon;
 /**
  * Author:      hfq<1326432154@qq.com>
  * Date:        2018/6/2
@@ -126,9 +127,11 @@ class Coupon extends MY_Controller
         }
         $residents   = Residentmodel::whereIn('id',$resident_ids)->get();
 
-        var_dump($residents->toArray());exit;
+
 
         $data   = [];
+        $datetime   = Carbon::now();
+
         foreach ($residents as $resident)
         {
             $data[] = [
@@ -138,17 +141,14 @@ class Coupon extends MY_Controller
                 'activity_id'   => 0,
                 'coupon_type_id'=> $coupon_id,
                 'status'        => Coupontypemodel::STATUS_UNUSED,
-                'deadline'      => $coupon_type->deadline
+                'deadline'      => $coupon_type->deadline,
+                'created_at'      => $datetime,
+                'updated_at'      => $datetime,
             ];
         }
-        var_dump($data);
 
-
-
-
-
-
-
+        Couponmodel::insert($data);
+        $this->api_res(0);
 
     }
 
