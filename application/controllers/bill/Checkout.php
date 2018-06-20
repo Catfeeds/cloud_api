@@ -67,6 +67,7 @@ class Checkout extends MY_Controller
         $orders =   Ordermodel::where('resident_id',$checkout->resident_id)->where('sequence_number','')->get();
         $data['orders'] =   $orders->toArray();
         $data['countmoney'] = $orders->sum('money');
+        $data['paymoney']   =   $data['resident']['tmp_deposit']+$data['resident']['deposit_money']-$data['countmoney'];
 
         $this->api_res(0,$data);
 
