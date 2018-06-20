@@ -212,21 +212,7 @@ class Resident extends MY_Controller
         $this->load->model('ordermodel');
         $resident_id    = $this->input->post('resident_id',true);
         $resident   = Residentmodel::findOrFail($resident_id);
-//        $orders = $resident->orders()
-//            ->orderBy('year','ASC')
-//            ->orderBy('month','ASC')
-//            ->get()
-//            ->map(function($order){
-//            $order->date    = $order->year.'-'.$order->month;
-//            return $order;
-//        })->groupBy('date')
-//            ->map(function($group){
-//                $group->count   = $group->sum('money');
-//                return $group;
-//            })
-//            ->toArray();
-//
-//        $this->api_res(0,$orders);
+
         //未支付的列表
         $unpaid    = $resident->orders()
             ->where('status',Ordermodel::STATE_PENDING)
@@ -253,12 +239,21 @@ class Resident extends MY_Controller
         $paid_money     = $paid->sum('money');
         $discount_money     = $paid->sum('discount_money');
 
-        $unpaid   = $unpaid->groupBy('date')->map(function($a){
-            $a->sum = sum
+        $unpaid   = $unpaid->groupBy('date')->map(function($unpaid){
+            $a  = [];
+            $a['orders']    = $unpaid->toArray();
+            $a['total_money']=$unpaid->sum('money');
+            return $a;
         });
-        $paid   = $paid->groupBy('date');
-
-        $this->api_res(0,['unpaid'=>$unpaid,'paid'=>$paid,'unpaid_money'=>$unpaid_money,'paid_money'=>$paid_money,'discount_money'=>$discount_money]);
+        $paid   = $paid->groupBy('date')->map(function($paid){
+            $a  = [];
+            $a['orders']    = $paid->toArray();
+            $a['total_money']=$paid->sum('money');
+            $a['total_paid']=$paid->sum('paid');
+            $a['discount_money']=$paid->sum('discount');
+            return $a;
+        });
+        $this->api_res(0,compact('unpaid_money','paid_money','discount_money','unpaid','paid'));
 
     }
 
