@@ -254,7 +254,7 @@ class Resident extends MY_Controller
         $discount_money     = $paid->sum('discount_money');
 
         $unpaid   = $unpaid->groupBy('date')->map(function($a){
-
+            $a->sum = sum
         });
         $paid   = $paid->groupBy('date');
 

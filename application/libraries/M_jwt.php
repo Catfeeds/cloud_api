@@ -24,8 +24,8 @@ class M_jwt
             //token中各字段含义参见JWT payload的说明
             $token = array(
                 "iss" => config_item('jwt_iss'),
-//                "exp" => config_item('jwt_exp'),
-                "exp" => (time()+5),
+                "exp" => config_item('jwt_exp'),
+//                "exp" => (time()+5),
                 "nbf" => config_item('jwt_nbf'),
                 "bxid" => $bxid,  //自添加字段，
                 "company_id"    =>$company_id
