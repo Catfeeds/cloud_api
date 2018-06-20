@@ -90,7 +90,7 @@ class Coupon extends MY_Controller
     /**
      * 分配优惠券
      */
-    public function sendCoupon()
+   /* public function sendCoupon()
     {
         $this->load->model('residentmodel');
         $post = $this->input->post(null,true);
@@ -107,7 +107,7 @@ class Coupon extends MY_Controller
             }
         }
 
-    }
+    }*/
 
     /**
      * 发放优惠券
@@ -153,9 +153,34 @@ class Coupon extends MY_Controller
     }
 
     /**
-     * 客户列表
+     * 住户列表
      */
     public function resident()
+    {
+        $this->load->model('residentmodel');
+        $this->load->model('roomunionmodel');
+        $post = $this->input->post(null,true);
+        $page = isset($post['page'])?intval($post['page']):1;
+        $filed = ['room_id','name','phone','card_number','created_at','status'];
+        $offset = PAGINATE * ($page - 1);
+        $count = ceil((Residentmodel::get($filed)->count())/PAGINATE);
+        if ($count<$page||$page<0){
+            $this->api_res(0,[]);
+            return;
+        }
+        $resident   = Residentmodel::with('roomunion')
+            ->whereHas('roomunion')
+            ->offset($offset)
+            ->limit(PAGINATE)
+            ->get($filed);
+
+        $this->api_res(0,['total_page'=>$count,'list'=>$resident]);
+    }
+
+    /**
+     * 客户列表
+     */
+    /*public function resident()
     {
         $this->load->model('residentmodel');
         $post = $this->input->post(null,true);
@@ -170,7 +195,7 @@ class Coupon extends MY_Controller
         $customer = Residentmodel::orderBy('created_at','DESC')->offset($offset)->limit(PAGINATE)
                                     ->get($filed)->toArray();
         $this->api_res(0,['count'=>$count,'list'=>$customer]);
-    }
+    }*/
 
     /**
      * 表单验证规则
