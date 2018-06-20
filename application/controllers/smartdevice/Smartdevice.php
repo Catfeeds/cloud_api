@@ -57,7 +57,9 @@ class Smartdevice extends MY_Controller
                 $this->api_res(0,['list'=>[]]);
                 return ;
             }else{
-                $device = Smartdevicemodel::where($condition)->with('room')->with('store')
+                $device = Smartdevicemodel::where($condition)->with(['room'=>function($query){
+                    $query->with('store');
+                }])->with('store')
                                             ->take(PAGINATE)->skip($offset)
                                             ->orderBy('id','desc')->get($filed)->toArray();
             }
