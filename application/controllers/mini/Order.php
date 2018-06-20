@@ -579,7 +579,6 @@ class Order extends MY_Controller
 
 
         $bill->sequence_number     =   sprintf("%s%06d", $dateString, $count);
-        $bill->pay_type            =    $orders[0]->pay_type;
         $bill->store_id            =    $orders[0]->store_id;
         $bill->employee_id         =    $orders[0]->employee_id;
         $bill->resident_id         =    $orders[0]->resident_id;
