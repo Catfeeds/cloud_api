@@ -89,7 +89,7 @@ class Checkout extends MY_Controller
             $checkout->account     = $input['account'];
             $checkout->bank_card_number     = $input['bank_card_number'];
             $checkout->employee_remark     = $input['employee_remark'];
-            $checkout->bank_card_img     = $input['bank_card_img'];
+            $checkout->bank_card_img     = $this->splitAliossUrl($input['bank_card_img']);
             $checkout->store_id     = $store_id;
 
 
