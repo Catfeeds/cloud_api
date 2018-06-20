@@ -22,6 +22,7 @@ class Contract extends MY_Controller{
         $per_page   = (int)(isset($input['per_page'])?$input['per_page']:PAGINATE);
         $offset = ($page-1)*PAGINATE;
         $where['store_id']=$this->employee->store_id;
+//        $where['store_id']=1;
 //        isset($input['room_number'])?$where['number']=$input['room_number']:null;
 
         $this->load->model('residentmodel');
@@ -34,7 +35,9 @@ class Contract extends MY_Controller{
         ->offset($offset)
         ->limit($per_page)
         ->get()->map(function($room){
-            $room->begin_time   = date('Y-m-d',$room->begin_time);
+            $room2   = $room->toArray();
+            $room2['begin_time'] =date('Y-m-d',strtotime($room->begin_time->toDateTimeString()));
+            return $room2;
             });
         $total_page = ceil(($rooms->count())/PAGINATE);
 
