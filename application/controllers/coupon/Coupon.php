@@ -109,6 +109,16 @@ class Coupon extends MY_Controller
     }
 
     /**
+     * 发放优惠券
+     */
+    public function AssignCoupon()
+    {
+        $input  = $this->input->post(null,true);
+        $coupon_id  = $input['coupon_id'];
+
+    }
+
+    /**
      * 客户列表
      */
     public function resident()

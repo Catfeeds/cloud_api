@@ -49,8 +49,9 @@ class Template extends MY_Controller
         //找到员工所在的门店id
         $name   = isset($post['name'])?$post['name']:null;
         $rent_type  = isset($post['type'])?$post['type']:null;
+        $file_url   = $post['file_url'];
 
-        $config   = [
+        /*$config   = [
           'allowed_types'   => 'pdf',
           'upload_path'     => 'temp',
         ];
@@ -60,9 +61,7 @@ class Template extends MY_Controller
         {
             var_dump($this->upload->display_errors());exit;
         }
-        //$data   = $this->upload->data();
-        $data   = $this->upload->data('full_path');
-        //var_dump($data);die();
+        $data   = $this->upload->data('full_path');*/
         if(empty($name) || empty($rent_type)){
             $this->api_res(1002);
             return;
@@ -75,8 +74,8 @@ class Template extends MY_Controller
         $template   = new Contracttemplatemodel();
         $template->name = $name;
         $template->rent_type = $rent_type;
-        //$template->url  = $this->fullAliossUrl($data);
-        $template->url  = $data;
+        $template->url  = $this->splitAliossUrl($file_url);
+//        $template->url  = $data;
         if($template->save()){
             $this->api_res(0);
         }else{
@@ -165,12 +164,12 @@ class Template extends MY_Controller
         //找到员工所在的门店id
         $name   = isset($post['name'])?$post['name']:null;
         $rent_type   = isset($post['type'])?$post['type']:null;
-       // $file   = isset($post['file'])?$post['file']:null;
+        $file_url   = isset($post['file_url'])?$post['file_url']:null;
         if(empty($name) ||  empty($rent_type)){
             $this->api_res(1002);
             return;
         }
-        $config   = [
+       /* $config   = [
             'allowed_types'   => 'pdf',
             'upload_path'     => 'temp',
         ];
@@ -179,24 +178,24 @@ class Template extends MY_Controller
         {
             var_dump($this->upload->display_errors());exit;
         }
-        $data   = $this->upload->data('full_path');
+        $data   = $this->upload->data('full_path');*/
         //var_dump($data);die();
         if(empty($name) || empty($rent_type)){
             $this->api_res(1002);
             return;
         }
-        if(Contracttemplatemodel::where(['name'=>$name])->exists()){
-            $this->api_res(1008);
-            return;
-        }
+//        if(Contracttemplatemodel::where(['name'=>$name])->exists()){
+//            $this->api_res(1008);
+//            return;
+//        }
         $template   = Contracttemplatemodel::find($template_id);
         if(!$template){
             $this->api_res(1007);
         }
         $template->name = $name;
         $template->rent_type = $rent_type;
-        //$template->url  = $this->splitAliossUrl($file);
-        $template->url  = $data;
+        $template->url  = $this->splitAliossUrl($file_url);
+//        $template->url  = $data;
         if($template->save()){
             $this->api_res(0);
         }else{
