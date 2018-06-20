@@ -108,6 +108,8 @@ class Residentct extends MY_Controller
         $id   = isset($post['id'])?$post['id']:null;
 
         $resident = Residentmodel::with('customer','contract','roomunion')->find($id)->toArray();
+        $resident['begin_time'] = date('Y-m-d',strtotime($resident['begin_time']));
+        $resident['end_time'] = date('Y-m-d',strtotime($resident['end_time']));
 
         $this->api_res(0, $resident);
     }
