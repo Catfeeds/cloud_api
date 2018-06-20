@@ -34,7 +34,7 @@ class Checkout extends MY_Controller
 //            $status = array_diff($this->allStatus(),[Checkoutmodel::STATUS_COMPLETED,Checkoutmodel::STATUS_COMPLETED]);
         }
         $offset = ($page-1)*PAGINATE;
-        $list   = Checkoutmodel::with(['roomunion','store','resident'])->offset($offset)->limit(PAGINATE)->get();
+        $list   = Checkoutmodel::with(['roomunion','store','resident'])->orderBy('created_at','DESC')->offset($offset)->limit(PAGINATE)->get();
         if(isset($input['room_number'])){
             $list   = $list->where('roomunion.number',$input['room_number']);
         }
@@ -67,6 +67,7 @@ class Checkout extends MY_Controller
         $orders =   Ordermodel::where('resident_id',$checkout->resident_id)->where('sequence_number','')->get();
         $data['orders'] =   $orders->toArray();
         $data['countmoney'] = $orders->sum('money');
+        $data['paymoney']   =   $data['resident']['tmp_deposit']+$data['resident']['deposit_money']-$data['countmoney'];
 
         $this->api_res(0,$data);
 
