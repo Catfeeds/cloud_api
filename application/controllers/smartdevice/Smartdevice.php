@@ -24,7 +24,7 @@ class Smartdevice extends MY_Controller
     public function listsmartdevice()
     {
         $this->load->model('storemodel');
-        $this->load->model('roomdotmodel');
+        $this->load->model('roomunionmodel');
         $post           = $this->input->post(NULL,true);
         $page           = empty($post['page'])?1:intval($post['page']);
         $offset         = PAGINATE*($page-1);
@@ -36,7 +36,7 @@ class Smartdevice extends MY_Controller
 
         if(!empty($post['room_number'])) {
             $room_number = trim($post['room_number']);
-            $room_id = Roomdotmodel::where('number',$room_number)->get(['id'])->toArray();
+            $room_id = Roomunionmodel::where('number',$room_number)->get(['id'])->toArray();
             if($room_id){
                 $condition['room_id']      = $room_id;
             }else{
@@ -68,7 +68,9 @@ class Smartdevice extends MY_Controller
                 $this->api_res(0,['list'=>[]]);
                 return ;
             }else {
-                $device = Smartdevicemodel::with('room')->with('store')
+                $device = Smartdevicemodel::with(['room'=>function($query){
+                    $query->with('store');
+                }])->with('store')
                                             ->take(PAGINATE)->skip($offset)
                                             ->orderBy('id', 'desc')->get($filed)->toArray();
             }
