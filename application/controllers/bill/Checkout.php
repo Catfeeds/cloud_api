@@ -34,7 +34,7 @@ class Checkout extends MY_Controller
 //            $status = array_diff($this->allStatus(),[Checkoutmodel::STATUS_COMPLETED,Checkoutmodel::STATUS_COMPLETED]);
         }
         $offset = ($page-1)*PAGINATE;
-        $list   = Checkoutmodel::with(['roomunion','store','resident'])->offset($offset)->limit(PAGINATE)->get();
+        $list   = Checkoutmodel::with(['roomunion','store','resident'])->offset($offset)->limit(1)->get();
         if(isset($input['room_number'])){
             $list   = $list->where('roomunion.number',$input['room_number']);
         }
