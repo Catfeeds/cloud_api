@@ -12,9 +12,7 @@ class Server extends MY_Controller
     {
         parent::__construct();
         $this->load->model('serviceordermodel');
-        $this->load->model('employeemodel');
-        $this->load->model('roomunionmodel');
-        $this->load->model('customermodel');
+
     }
 
     /**
@@ -22,16 +20,17 @@ class Server extends MY_Controller
      */
     public function listServer()
     {
-
+        $this->load->model('employeemodel');
+        $this->load->model('roomunionmodel');
+        $this->load->model('customermodel');
         $post = $this->input->post(NULL, true);
         $filed = ['id','room_id','customer_id','type','name', 'phone', 'time','deal', 'remark','status'];
-//var_dump(CURRENT_ID);
-        $store_id   = 1;//$this->employee->store_id;
+        $store_id   = $this->employee->store_id;
         $server = Serviceordermodel::with('roomunion','customer')
                                     ->where('store_id',$store_id)
                                     ->orderBy('id', 'desc')
                                     ->get($filed)->toArray();
-        $this->api_res(0, ['list' => $server,'id'=>CURRENT_ID]);
+        $this->api_res(0, ['list' => $server]);
     }
 
     /**
