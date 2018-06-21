@@ -23,21 +23,13 @@ class Server extends MY_Controller
         $this->load->model('roomunionmodel');
         $this->load->model('customermodel');
         $post = $this->input->post(NULL, true);
-        $page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
-        $page_count = isset($post['page_count']) ? intval($post['page_count']) : 4;//当前页显示条数
-        $offset = $page_count * ($page - 1);
         $filed = ['id','room_id','customer_id','type','name', 'phone', 'time','deal', 'remark','status'];
-
-        $store_id   = 1;//$this->employee->store_id;
-
-        $count_total = ceil(Serviceordermodel::where('store_id',$store_id)->count());//总条数
-        $count = ceil($count_total / $page_count);//总页数
-        if ($page > $count) {
-            return;
-        }
-        $server = Serviceordermodel::with('roomunion','customer')->where('store_id',$store_id)
-                                    ->orderBy('id', 'desc')->get($filed)->toArray();
-        $this->api_res(0, ['list' => $server, 'page' => $page, 'count_total' => $count_total, 'count' => $count]);
+        $store_id   = $this->employee->store_id;
+        $server = Serviceordermodel::with('roomunion','customer')
+                                    ->where('store_id',$store_id)
+                                    ->orderBy('id', 'desc')
+                                    ->get($filed)->toArray();
+        $this->api_res(0, ['list' => $server]);
     }
 
     /**
