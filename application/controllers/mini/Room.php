@@ -28,7 +28,9 @@ class Room extends MY_Controller
         $where['store_id']  = $this->employee->store_id;
         $filed      = ['id','layer','status','number','room_type_id'];
         $this->load->model('roomtypemodel');
-        $room = Roomunionmodel::with('room_type')->with('order')->where($where)->orderBy('number','ASC')->get($filed)->groupBy('layer')
+        $room = Roomunionmodel::with('room_type')->with('order')
+                ->where($where)->orderBy('number','ASC')
+                ->get($filed)->groupBy('layer')
                 ->map(function ($room){
                     $roominfo = $room->toArray();
                     $roominfo['count_total']    = count($room);

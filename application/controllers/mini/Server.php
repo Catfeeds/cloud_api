@@ -47,7 +47,14 @@ class Server extends MY_Controller
             $this->api_res(0,[]);
             return;
         };
-        $server = Serviceordermodel::with('roomunion','customer')->find($id)->toArray();
+        $server = Serviceordermodel::with('roomunion','customer')->where('id',$id)->get()
+                                    ->map(function($s){
+                                        $paths =  json_decode($s->paths,true);
+                                        if (!empty($paths)){
+                                            $s->paths = $this->fullAliossUrl($paths[0]);
+                                        }
+                                        return $s;
+                                    })->toArray();
         $this->api_res(0,$server);
     }
 
@@ -97,59 +104,10 @@ class Server extends MY_Controller
         }
     }
 
-    //更新订单
-    public function update(){
-        $post = $this->input->post(NULL, true);
-        switch ($post['action']) {
-                case 'CONFIRM'  :
-                    $record     = $this->confirm();
-                    break;
-                case 'PAY'      :
-                    $record     = $this->payAndServe();
-                    break;
-                case 'SERVING'  :
-                    $record     = $this->serve();
-                    break;
-                case 'COMPLETE' :
-                    $record     = $this->complete();
-                    break;
-                case 'CANCEL'   :
-                    $record     = $this->cancel();
-                    break;
-            }
-        $this->api_res(0,$record);
-    }
-
-    /**
-     * 将记录改为服务中的状态
-     */
-    private function serve($record)
-    {
-        return $record;
-    }
-
     //确认订单
-    private function confirm($record)
+    public function comfirmOrder()
     {
-
-
-
-    }
-
-    /**
-     * 取消服务
-     */
-    private function cancel($record)
-    {
-
-    }
-
-    /**
-     * 完成服务
-     */
-    private function complete($record)
-    {
-
+        $this->input->post(null,true);
 
     }
 
