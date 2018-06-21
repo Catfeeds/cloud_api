@@ -107,8 +107,22 @@ class Server extends MY_Controller
     //确认订单
     public function comfirmOrder()
     {
-        $this->input->post(null,true);
-
+        $post = $this->input->post(null,true);
+        $id = isset($post['id'])?intval($post['id']):null;
+        $money = isset($post['money'])?trim($post['money']):null;
+        $remark = isset($post['remark'])?trim($post['remark']):null;
+        if ($money&&$remark){
+            $server = Serviceordermodel::where('id',$id)->first();
+            $server->money = $money;
+            $server->remark = $remark;
+            if ($server->save()){
+                $this->api_res(0,[]);
+            }else{
+                $this->api_res(1009);
+            }
+        }else{
+            $this->api_res(1002);
+        }
     }
 
     /**
