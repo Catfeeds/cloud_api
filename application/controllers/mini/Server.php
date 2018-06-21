@@ -62,7 +62,7 @@ class Server extends MY_Controller
         $post = $this->input->post(NULL, true);
         if(!$this->validation())
         {
-            $fieldarr= ['time','name','phone','type','money','remark'];
+            $fieldarr= ['time','name','phone','type','money','remark','money'];
             $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
             return;
         }
