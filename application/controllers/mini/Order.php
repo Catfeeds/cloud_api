@@ -94,8 +94,8 @@ class Order extends MY_Controller
             return;
         }
         $input=$this->input->post(null,true);
-        $where['store_id']= $this->employee->store_id;
-//        $store_id   = 1;
+//        $where['store_id']= $this->employee->store_id;
+        $where['room_id']=126;
         $page   = isset($input['page'])?intval(strip_tags(trim($input['page']))):1;
         $per_page   = isset($input['per_page'])?intval(strip_tags(trim($input['per_page']))):PAGINATE;
         if(isset($input['status'])){
