@@ -10,6 +10,7 @@ class Serviceordermodel extends Basemodel
 {
     protected $table    = 'boss_service_order';
     protected $hidden   = ['created_at','updated_at','deleted_at'];
+    protected $fillable = ['room_id','time','name','phone','type','money','remark'];
 
     public function store()
     {
