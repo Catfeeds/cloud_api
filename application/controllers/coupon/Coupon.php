@@ -163,7 +163,7 @@ class Coupon extends MY_Controller
         $post = $this->input->post(null,true);
         $page = isset($post['page'])?intval($post['page']):1;
         $where=[];
-        isset($post['store_id'])?$where['store_id']=$post['store_id']:null;
+        empty($post['store_id'])?:$where['store_id']=$post['store_id'];
 
         $filed = ['id','room_id','name','phone','card_number','created_at','status'];
         $offset = PAGINATE * ($page - 1);

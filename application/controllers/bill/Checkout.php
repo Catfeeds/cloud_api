@@ -22,6 +22,27 @@ class Checkout extends MY_Controller
 
     //退房账单列表
     public function list(){
+
+        $input  = $this->input->post(null,true);
+        $page   = isset($input['page'])?$input['page']:1;
+        $offset = ($page-1)*PAGINATE;
+        $where  = [];
+        empty($input['store_id'])?:$where['store_id']=$input['store_id'];
+        empty($input['type'])?:$where['type']=$input['type'];
+
+        $query   = Checkoutmodel::with('roomunion','store','resident')
+            ->where($where);
+
+        $total_page = ceil(($query->count())/PAGINATE);
+
+        $list   = $query->orderBy('created_at','DESC')
+            ->offset($offset)
+            ->limit(PAGINATE)
+            ->get();
+
+
+
+
         $input  = $this->input->post(null,true);
         $page   = isset($input['page'])?$input['page']:1;
         $where  = [];
@@ -33,6 +54,7 @@ class Checkout extends MY_Controller
             $status = array_diff($this->allStatus(),[Checkoutmodel::STATUS_COMPLETED]);
 //            $status = array_diff($this->allStatus(),[Checkoutmodel::STATUS_COMPLETED,Checkoutmodel::STATUS_COMPLETED]);
         }
+
         $offset = ($page-1)*PAGINATE;
         $list   = Checkoutmodel::with(['roomunion','store','resident'])->orderBy('created_at','DESC')->offset($offset)->limit(PAGINATE)->get();
         if(isset($input['room_number'])){
