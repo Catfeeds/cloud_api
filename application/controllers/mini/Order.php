@@ -23,15 +23,15 @@ class Order extends MY_Controller
     {
 
         $input  = $this->input->post(null,true);
-        $room_id    = $input['room_id'];
-        $resident_id    = $input['resident_id'];
+//        $room_id    = $input['room_id'];
+//        $resident_id    = $input['resident_id'];
         $status     = $input['status'];
         $this->load->model('roomunionmodel');
         $this->load->model('ordermodel');
         $this->load->model('residentmodel');
 
-        $room   = Roomunionmodel::where('store_id',$this->employee->store_id)->find($room_id);
-        //$room   = Roomunionmodel::find($room_id);
+//        $room   = Roomunionmodel::where('store_id',$this->employee->store_id)->find($room_id);
+        $room   = Roomunionmodel::find(126);
 
         if(empty($room))
         {
@@ -43,7 +43,7 @@ class Order extends MY_Controller
 
         $orders = $resident->orders()->where('status',$status)->get();
 
-        $totalMoney = $orders->sum('money');
+        $totalMoney = number_format($orders->sum('money'),2);
 
         $this->api_res(0,['totalMoney'=>$totalMoney,'orders'=>$orders,'resident'=>$resident,'room'=>$room]);
     }
