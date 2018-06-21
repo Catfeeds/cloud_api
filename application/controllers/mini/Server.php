@@ -12,6 +12,9 @@ class Server extends MY_Controller
     {
         parent::__construct();
         $this->load->model('serviceordermodel');
+        $this->load->model('employeemodel');
+        $this->load->model('roomunionmodel');
+        $this->load->model('customermodel');
     }
 
     /**
@@ -19,9 +22,7 @@ class Server extends MY_Controller
      */
     public function listServer()
     {
-        $this->load->model('employeemodel');
-        $this->load->model('roomunionmodel');
-        $this->load->model('customermodel');
+
         $post = $this->input->post(NULL, true);
         $filed = ['id','room_id','customer_id','type','name', 'phone', 'time','deal', 'remark','status'];
         $store_id   = $this->employee->store_id;
