@@ -197,8 +197,8 @@ class AuthHook {
 //            'contract/operation/operationfind',
 //            'contract/operation/booking',
 //            'contract/operation/book',
-//            'contract/resident/resident',
-//            'contract/contract/showcontract',
+           //'contract/resident/resident',
+            //'contract/contract/showcontract',
 //
 //
 //            'activity/activity/listactivity',
