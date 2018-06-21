@@ -25,12 +25,13 @@ class Server extends MY_Controller
 
         $post = $this->input->post(NULL, true);
         $filed = ['id','room_id','customer_id','type','name', 'phone', 'time','deal', 'remark','status'];
-        $store_id   = $this->employee->store_id;
+//var_dump(CURRENT_ID);
+        $store_id   = 1;//$this->employee->store_id;
         $server = Serviceordermodel::with('roomunion','customer')
                                     ->where('store_id',$store_id)
                                     ->orderBy('id', 'desc')
                                     ->get($filed)->toArray();
-        $this->api_res(0, ['list' => $server]);
+        $this->api_res(0, ['list' => $server,'id'=>CURRENT_ID]);
     }
 
     /**
