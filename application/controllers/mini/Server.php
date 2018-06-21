@@ -57,18 +57,18 @@ class Server extends MY_Controller
         $post = $this->input->post(NULL, true);
         if(!$this->validation())
         {
-            $fieldarr= ['number','time','name','phone','type','money','remark',];
+            $fieldarr= ['room_id','time','name','phone','type','addr_from','addr_to','money','remark',];
             $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
             return;
         }
-        $store_id       = $this->employee->store_id;
-        $employee_id    = CURRENT_ID;
-        $server_number         = (new Serviceordermodel())->getOrderNumber();
+        $store_id       = 1;//$this->employee->store_id;
+        $employee_id    = 40;//CURRENT_ID;
+        $server_number  = (new Serviceordermodel())->getOrderNumber();
         $order_number   = (new Ordermodel())->getOrderNumber();
         $this->load->model('residentmodel');
         $this->load->model('roomunionmodel');
-        $room = Roomunionmodel::where('number',$post['number'])
-                                ->where('store_id',$store_id)->get(['id','resident_id'])->toArray();
+        $room = Roomunionmodel::where('id',intval($post['room_id']))
+                                ->where('store_id',$store_id)->get(['resident_id'])->toArray();
         if (empty($room)){
             $this->api_res(1002);
             return;
@@ -86,9 +86,9 @@ class Server extends MY_Controller
         $server->store_id = $store_id;
         $server->customer_id = $customer_id;
 
-/*        $order = new Ordermodel();
+        $order = new Ordermodel();
         $order->number = $order_number;
-        $order->store_id = $store_id;*/
+        $order->store_id = $store_id;
 
         if ($server->save()){
             $this->api_res(0,[]);
