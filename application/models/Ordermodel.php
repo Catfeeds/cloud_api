@@ -312,7 +312,7 @@ class Ordermodel extends Basemodel{
                     'orders'    => [
                         'status'        => $order->status,
 //                        'status_name'   => config('strongberry.orderName.status')[$order->status],
-                        'amount'        => $items->sum('paid'),
+                        'amount'        => number_format($items->sum('paid'),2),
                         'months'        => $items->pluck('month')->unique()->values(),
                         'updated_at'    => $order->updated_at->format('Y-m-d'),
                     ],
