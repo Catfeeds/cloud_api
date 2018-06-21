@@ -51,7 +51,7 @@ class Server extends MY_Controller
                                     ->map(function($s){
                                         $paths =  json_decode($s->paths,true);
                                         if (!empty($paths)){
-                                            $s->paths = $this->fullAliossUrl($paths[0]);
+                                            $s->paths = $this->fullAliossUrl($paths,true);
                                         }
                                         return $s;
                                     })->toArray();
