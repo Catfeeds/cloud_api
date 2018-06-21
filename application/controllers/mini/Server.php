@@ -53,22 +53,22 @@ class Server extends MY_Controller
 
     //创建一个订单
     public function create(){
-
+        $this->load->model('ordermodel');
         $post = $this->input->post(NULL, true);
         if(!$this->validation())
         {
-            $fieldarr= ['number','time','name','phone','type','money','remark',];
+            $fieldarr= ['room_id','time','name','phone','type','addr_from','addr_to','money','remark',];
             $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
             return;
         }
         $store_id       = $this->employee->store_id;
         $employee_id    = CURRENT_ID;
-        $number         = (new Serviceordermodel())->getOrderNumber();
+        $server_number  = (new Serviceordermodel())->getOrderNumber();
+        $order_number   = (new Ordermodel())->getOrderNumber();
         $this->load->model('residentmodel');
-
         $this->load->model('roomunionmodel');
-        $room = Roomunionmodel::where('number',$post['number'])
-                                ->where('store_id',$store_id)->get(['id','resident_id'])->toArray();
+        $room = Roomunionmodel::where('id',intval($post['room_id']))
+                                ->where('store_id',$store_id)->get(['resident_id'])->toArray();
         if (empty($room)){
             $this->api_res(1002);
             return;
@@ -80,15 +80,20 @@ class Server extends MY_Controller
         }
         $server = new Serviceordermodel();
         $server->fill($post);
-        $server->number = $number;
+        $server->number = $server_number;
         $server->employee_id = $employee_id;
         $server->room_id = $room_id;
         $server->store_id = $store_id;
         $server->customer_id = $customer_id;
+
+        $order = new Ordermodel();
+        $order->number = $order_number;
+        $order->store_id = $store_id;
+
         if ($server->save()){
             $this->api_res(0,[]);
         }else{
-            $this->api_res(1002);
+            $this->api_res(1009);
         }
     }
 
@@ -112,9 +117,7 @@ class Server extends MY_Controller
                     $record     = $this->cancel();
                     break;
             }
-
         $this->api_res(0,$record);
-
     }
 
     /**
@@ -183,6 +186,16 @@ class Server extends MY_Controller
                 'rules' => 'trim|required',
             ),
             array(
+                'field' => 'addr_from',
+                'label' => '位置',
+                'rules' => 'trim',
+            ),
+            array(
+                'field' => 'addr_to',
+                'label' => '服务类型',
+                'rules' => 'trim',
+            ),
+            array(
                 'field' => 'money',
                 'label' => '服务费用',
                 'rules' => 'trim|required',
@@ -190,7 +203,7 @@ class Server extends MY_Controller
             array(
                 'field' => 'remark',
                 'label' => '备注信息',
-                'rules' => 'trim|required',
+                'rules' => 'trim',
             ),
         );
 
