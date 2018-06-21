@@ -81,8 +81,8 @@ class Couponmodel extends Basemodel
         }
 
         //之前是查找该住户下的优惠券，现在改成查找用户的优惠券
-        $couopnCollection   = $resident->customer->coupons()->where('status', Couponmodel::STATUS_UNUSED)->get();
-//       $couopnCollection   = $resident->coupons()->where('status', Couponmodel::STATUS_UNUSED)->get();
+//        $couopnCollection   = $resident->customer->coupons()->where('status', Couponmodel::STATUS_UNUSED)->get();
+       $couopnCollection   = $resident->coupons()->where('status', Couponmodel::STATUS_UNUSED)->get();
         $usageList          = $couopnCollection->groupBy('coupon_type.limit');
 
         //找出房租可用的代金券
@@ -212,6 +212,21 @@ class Couponmodel extends Basemodel
                 $update
             );
         }
+
+        $managementOrders = $orders->pull(Ordermodel::PAYTYPE_MANAGEMENT);
+
+        if (count($managementOrders)) {
+            $discount += $this->calcDiscountByType(
+                $resident,
+                $managementOrders,
+                $coupons,
+                Ordermodel::PAYTYPE_MANAGEMENT,
+                $resident->real_property_costs,
+                $update
+            );
+        }
+
+        return $discount;
     }
 
     /**
