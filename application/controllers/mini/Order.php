@@ -31,7 +31,7 @@ class Order extends MY_Controller
         $this->load->model('residentmodel');
 
         $room   = Roomunionmodel::where('store_id',$this->employee->store_id)->find($room_id);
-        //$room   = Roomunionmodel::find($room_id);
+//        $room   = Roomunionmodel::find(126);
 
         if(empty($room))
         {
@@ -43,7 +43,7 @@ class Order extends MY_Controller
 
         $orders = $resident->orders()->where('status',$status)->get();
 
-        $totalMoney = $orders->sum('money');
+        $totalMoney = number_format($orders->sum('money'),2);
 
         $this->api_res(0,['totalMoney'=>$totalMoney,'orders'=>$orders,'resident'=>$resident,'room'=>$room]);
     }
