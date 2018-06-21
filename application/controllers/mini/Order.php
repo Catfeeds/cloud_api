@@ -67,6 +67,8 @@ class Order extends MY_Controller
         $this->load->model('residentmodel');
         $this->load->model('ordermodel');
         $this->load->model('couponmodel');
+        $this->load->model('customermodel');
+        $this->load->model('coupontypemodel');
         $resident= Residentmodel::find($resident_id);
         $orders     = $this->undealOrdersOfSpecifiedResident($resident, $orderIds);
 
@@ -243,7 +245,9 @@ class Order extends MY_Controller
             ->whereIn('id', $orderIds)
             ->where('status', $status)
             ->get();
+
         if (count($orders) != count($orderIds)) {
+            log_message('error','COUNTORDER'.count($orders).'--'.count($orderIds));
             log_message('error','未找到订单信息或者订单状态错误!');
             return false;
         }

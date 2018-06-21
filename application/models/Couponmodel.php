@@ -43,8 +43,7 @@ class Couponmodel extends Basemodel
      */
     public function coupon_type()
     {
-        return $this->belongsTo(Coupontypemodel::class, 'coupon_type_id')
-                    ->select('id','name','discount');
+        return $this->belongsTo(Coupontypemodel::class, 'coupon_type_id');
     }
     /**
      * [确认订单时, 将优惠券给销掉]
@@ -81,7 +80,6 @@ class Couponmodel extends Basemodel
             }
         }
 
-        $this->load->model('customermodel');
         //之前是查找该住户下的优惠券，现在改成查找用户的优惠券
         $couopnCollection   = $resident->customer->coupons()->where('status', Couponmodel::STATUS_UNUSED)->get();
 //       $couopnCollection   = $resident->coupons()->where('status', Couponmodel::STATUS_UNUSED)->get();
