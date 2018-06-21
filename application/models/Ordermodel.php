@@ -89,6 +89,7 @@ class Ordermodel extends Basemodel{
         'pay_status',
     ];
 
+    protected $casts    = ['data'=>'array'];
 
     /**
      * 所有的订单类型

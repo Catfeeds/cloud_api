@@ -17,7 +17,6 @@ class Order extends MY_Controller
         $this->load->model('ordermodel');
     }
 
-
     /**
      * BOSS端订单列表
      */
@@ -133,6 +132,91 @@ class Order extends MY_Controller
             ->setCellValue('L3', '其他押金（元）')
             ->setCellValue('M3', '缴费方式')
             ->setCellValue('N3', '备注');
+    }
+
+    /**
+     * boss端创建账单
+     */
+    public function addOrder()
+    {
+        $input  = $this->input->post();
+        $room_id    = $input['room_id'];
+        $resident_id    = $input['resident_id'];
+        $month    = $input['month'];
+        $year    = $input['year'];
+        $type    = $input['type'];
+        $money    = $input['money'];
+        $this->load->model('roomunionmodel');
+        $this->load->model('residentmodel');
+//        $this->load->model('storemodel');
+//        $this->load->model('roomtypemodel');
+        $room   = Roomunionmodel::where('resident_id',$resident_id)->findOrFail($room_id);
+        $resident   = $room->resident;
+        $this->load->model('ordermodel');
+        $order  = new Ordermodel();
+        $order->number  = $order->getOrderNumber();
+        $order->store_id   = $room->store_id;
+        $order->room_type_id   = $room->room_type_id;
+        $order->employee_id   = $this->employee->id;
+        $order->resident_id   = $resident_id;
+        $order->customer_id   = $resident->customer_id;
+        $order->uxid   = $resident->uxid;
+        $order->money   = $money;
+        $order->paid   = $money;
+        $order->year   = $year;
+        $order->month   = $month;
+        $order->type   = $type;
+        $order->status   = Ordermodel::STATE_PENDING;
+        $order->data[]   = date('Y-m-d',time()).$this->employee->name.'通过后台添加了账单';
+        if($order->save()){
+            $this->api_res(0,['order_id'=>$order->id]);
+        }else {
+            $this->api_res(1009);
+        }
+    }
+
+    /**
+     * 通过门店和房间号获取住户和房间信息
+     */
+    public function getResidentByRoom()
+    {
+        $input  = $this->input->post(null,true);
+        $room_number    = $this->input->post('room_number',true);
+        $store_id       = $this->input->post('store',true);
+        if(empty($store_id) || empty($room_number))
+        {
+            $this->api_res(10032);
+            return;
+        }
+        $this->load->model('roomunionmodel');
+        $this->load->model('residentmodel');
+        $this->load->model('storemodel');
+        $room   = Roomunionmodel::with('resident','store')
+            ->where(['store_id'=>$store_id,'number'=>$room_number])
+            ->first();
+        if(empty($room)){
+            $this->api_res(10032);
+            return;
+        }
+        if(empty($room->resident)){
+            $this->api_res(10033);
+            return;
+        }
+
+        $this->api_res(0,[$room]);
+    }
+
+
+    private function validateStore()
+    {
+        return array(
+            array(
+                'field' => 'store_id',
+                'label' => '',
+                'rules' => '',
+            ),
+        );
+
     }
 
 
