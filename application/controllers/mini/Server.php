@@ -73,7 +73,7 @@ class Server extends MY_Controller
             $this->api_res(1002);
             return;
         }else{
-            $room_id = $room[0]['id'];
+            $room_id = intval($post['room_id']);
             $resident_id = $room[0]['resident_id'];
             $customer = Residentmodel::where('id',$resident_id)->get(['customer_id'])->toArray();
             $customer_id = $customer[0]['customer_id'];
@@ -158,8 +158,8 @@ class Server extends MY_Controller
         $this->load->library('form_validation');
         $config = array(
             array(
-                'field' => 'number',
-                'label' => '房间号',
+                'field' => 'room_id',
+                'label' => '房间ID',
                 'rules' => 'trim|required',
             ),
             array(
