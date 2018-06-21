@@ -167,7 +167,7 @@ class Order extends MY_Controller
         $order->month   = $month;
         $order->type   = $type;
         $order->status   = Ordermodel::STATE_PENDING;
-        $order->remark   = '后台添加账单';
+        $order->data[]   = date('Y-m-d',time()).$this->employee->name.'通过后台添加了账单';
         if($order->save()){
             $this->api_res(0,['order_id'=>$order->id]);
         }else {
