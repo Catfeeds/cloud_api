@@ -262,7 +262,7 @@ class Order extends MY_Controller
         $status     = Ordermodel::STATE_COMPLETED;
         $deal       = Ordermodel::DEAL_DONE;
 
-        $this->createBill($orders);
+        $this->createBill($orders,$payWay);
 
 
        $groups = $orders->groupBy('store_pay_id');
@@ -568,7 +568,7 @@ class Order extends MY_Controller
      *
      */
 
-    private function createBill($orders)
+    private function createBill($orders,$payWay=null)
     {
         $this->load->model('billmodel');
         $bill       = new Billmodel();
@@ -609,7 +609,7 @@ class Order extends MY_Controller
             }
         }
 
-        $bill->pay_type            =    $orders[0]->pay_type;
+        $bill->pay_type            =   $payWay?$payWay:$orders[0]->pay_type;
         $bill->confirm             =    '';
         $bill->pay_date            =    date('Y-m-d H:i:s',time());
         $bill->data                =    '';
