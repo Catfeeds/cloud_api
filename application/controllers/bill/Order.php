@@ -139,6 +139,12 @@ class Order extends MY_Controller
      */
     public function addOrder()
     {
+        $field  = ['room_id','resident_id','month','year','type','money'];
+        if(!$this->validationText($this->validateStore()))
+        {
+            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+            return;
+        }
         $input  = $this->input->post();
         $room_id    = $input['room_id'];
         $resident_id    = $input['resident_id'];
@@ -211,9 +217,34 @@ class Order extends MY_Controller
     {
         return array(
             array(
-                'field' => 'store_id',
-                'label' => '',
-                'rules' => '',
+                'field' => 'room_id',
+                'label' => '房间id',
+                'rules' => 'required|trim|integer',
+            ),
+            array(
+                'field' => 'resident_id',
+                'label' => '住户id',
+                'rules' => 'required|trim|integer',
+            ),
+            array(
+                'field' => 'year',
+                'label' => '账单周期--年',
+                'rules' => 'required|trim|integer|greater_than[2000]|less_than[2030]',
+            ),
+            array(
+                'field' => 'month',
+                'label' => '账单周期--月',
+                'rules' => 'required|trim|integer|greater_than[1]|less_than[12]',
+            ),
+            array(
+                'field' => 'type',
+                'label' => '账单类型',
+                'rules' => 'required|trim|in_list[ROOM,DEIVCE,UTILITY,REFUND,DEPOSIT_R,DEPOSIT_O,MANAGEMENT,OTHER,RESERVE,CLEAN,WATER,ELECTRICITY,COMPENSATION,REPAIR,HOT_WATER,OVERDUE]',
+            ),
+            array(
+                'field' => 'money',
+                'label' => '账单金额',
+                'rules' => 'required|trim|decimal',
             ),
         );
 
