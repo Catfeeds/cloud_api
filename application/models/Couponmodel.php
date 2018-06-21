@@ -81,7 +81,9 @@ class Couponmodel extends Basemodel
             }
         }
 
-        $couopnCollection   = $resident->coupons()->where('status', Couponmodel::STATUS_UNUSED)->get();
+        //之前是查找该住户下的优惠券，现在改成查找用户的优惠券
+        $couopnCollection   = $resident->customer->coupons()->where('status', Couponmodel::STATUS_UNUSED)->get();
+//       $couopnCollection   = $resident->coupons()->where('status', Couponmodel::STATUS_UNUSED)->get();
         $usageList          = $couopnCollection->groupBy('coupon_type.limit');
 
         //找出房租可用的代金券
