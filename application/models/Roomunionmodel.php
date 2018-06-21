@@ -222,7 +222,26 @@ class Roomunionmodel extends Basemodel{
 
             $this->details = Roomunionmodel::with('room_type')->with('resident')->with('order')
                 ->where($awhere)->whereBetween('updated_at',$time)->whereHas('order')
-                ->get($filed)->groupBy('layer');
+                ->get($filed)->groupBy('layer')
+                ->map(function ($s){
+                    $s = $s->toArray();
+                    global $arrears_count;
+//                            $s['count']= 0;
+//                            foreach ($s as $key=>$value){
+//                                if (!empty($s[$key]['order'])){
+//                                    $s['count'] += 1;
+//                                }
+//                            }
+//                            $arrears_count += $s['count'];
+                    $count=0;
+                    foreach ($s as $key=>$value){
+                        if (!empty($s[$key]['order'])){
+                            $count += 1;
+                        }
+                    }
+                    $arrears_count += $count;
+                    return [$s,'arrears_count'=>$arrears_count];
+                })->toArray();
 //                ->map(function ($s){
 //                    $s = $s->toArray();
 //                    global $arrears_count;
