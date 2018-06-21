@@ -61,8 +61,8 @@ class Server extends MY_Controller
             $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
             return;
         }
-        $store_id       = 1;//$this->employee->store_id;
-        $employee_id    = 40;//CURRENT_ID;
+        $store_id       = $this->employee->store_id;
+        $employee_id    = CURRENT_ID;
         $server_number  = (new Serviceordermodel())->getOrderNumber();
         $order_number   = (new Ordermodel())->getOrderNumber();
         $this->load->model('residentmodel');
