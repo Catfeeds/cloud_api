@@ -95,7 +95,7 @@ class Reserve extends MY_Controller
     public function room_type()
     {
         $this->load->model('roomtypemodel');
-        $room_type = Roomtypemodel::get(['id','name','feature']);
+        $room_type = Roomtypemodel::where('store_id',$this->employee->store_id)->get(['id','name','feature']);
         $this->api_res(0,['list'=>$room_type]);
     }
 
