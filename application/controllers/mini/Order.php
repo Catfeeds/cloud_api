@@ -13,7 +13,6 @@ class Order extends MY_Controller
     public function __construct()
     {
         parent::__construct();
-        $this->load->model('customermodel');
     }
 
 
@@ -68,6 +67,8 @@ class Order extends MY_Controller
         $this->load->model('residentmodel');
         $this->load->model('ordermodel');
         $this->load->model('couponmodel');
+        $this->load->model('customermodel');
+        $this->load->model('coupontypemodel');
         $resident= Residentmodel::find($resident_id);
         $orders     = $this->undealOrdersOfSpecifiedResident($resident, $orderIds);
 
