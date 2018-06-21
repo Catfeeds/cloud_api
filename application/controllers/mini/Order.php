@@ -77,6 +77,46 @@ class Order extends MY_Controller
         $this->api_res(0,['coupons'=>$coupons]);
     }
 
+    /**
+     * 核对支付时的总金额, 可能有使用优惠券
+     */
+    public function amountWithDiscount()
+    {
+        $input  = $this->input->post(null,true);
+        $resident_id    = $input['resident_id'];
+//        $room_id    = $input['room_id'];
+        $order_ids  = $this->getRequestIds($input['order_ids']);
+        $coupon_ids = $this->input->post('coupon_ids',true);
+        $this->load->model('residentmodel');
+        $this->load->model('ordermodel');
+        $this->load->model('couponmodel');
+        $this->load->model('coupontypemodel');
+        $this->load->model('customermodel');
+        $resident   = Residentmodel::findOrFail($resident_id);
+        $orders     = $this->undealOrdersOfSpecifiedResident($resident,$order_ids);
+        if(!empty($coupon_ids)){
+            $couponIds = $this->getRequestIds($coupon_ids);
+//            log_message('error',count($couponIds).json_encode($couponIds));
+            $coupons = $this->unusedCouponsOfSpecifiedResident($resident, $couponIds);
+            if (!$coupons) {
+                $this->api_res(10019);
+                return;
+            }
+        }else{
+            $coupons=null;
+        }
+        //核对提交的优惠券是否可用
+        $this->checkCoupons($resident, $orders, $coupons);
+        //计算优惠券的总优惠金额
+        $data   = array(
+            'amount_orginal'    => $orders->sum('money'),
+            'discount'          => $this->couponmodel->bindOrdersAndCalcDiscount($resident, $orders, $coupons),
+        );
+        $data['amount_real']    = $data['amount_orginal'] - $data['discount'];
+
+        $this->api_res(0,[$data]);
+    }
+
 
     /**
      * 订单列表
@@ -327,6 +367,7 @@ class Order extends MY_Controller
     {
 
         $coupons    = $resident->coupons()
+//        $coupons    = $resident->customer->coupons()
             ->whereIn('id', $couponIds)
             ->where('status', Couponmodel::STATUS_UNUSED)
             ->get();

@@ -186,7 +186,7 @@ class Coupon extends MY_Controller
             })
             ->offset($offset)
             ->limit(PAGINATE)
-//            ->orderBy('created_at')
+            ->orderBy('created_at','DESC')
             ->get($filed);
 
         $this->api_res(0,['total_page'=>$count,'list'=>$resident]);
