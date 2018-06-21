@@ -23,15 +23,15 @@ class Order extends MY_Controller
     {
 
         $input  = $this->input->post(null,true);
-//        $room_id    = $input['room_id'];
-//        $resident_id    = $input['resident_id'];
+        $room_id    = $input['room_id'];
+        $resident_id    = $input['resident_id'];
         $status     = $input['status'];
         $this->load->model('roomunionmodel');
         $this->load->model('ordermodel');
         $this->load->model('residentmodel');
 
-//        $room   = Roomunionmodel::where('store_id',$this->employee->store_id)->find($room_id);
-        $room   = Roomunionmodel::find(126);
+        $room   = Roomunionmodel::where('store_id',$this->employee->store_id)->find($room_id);
+//        $room   = Roomunionmodel::find(126);
 
         if(empty($room))
         {
