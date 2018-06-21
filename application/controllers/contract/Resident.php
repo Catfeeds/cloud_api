@@ -28,7 +28,7 @@ class Resident extends MY_Controller
         $post   = $this->input->post(NULL,true);
         $serial = $post['id'];
         $filed  = ['id','contract_id','resident_id','store_id','room_id','status','created_at'];
-        $resident = Contractmodel::where('id',$serial)->with('store')->with('roomunion')->with('residents')->get($filed);
+        $resident = Contractmodel::where('resident_id',$serial)->with('store')->with('roomunion')->with('residents')->get($filed);
         $this->api_res(0,['resident'=>$resident]);
     }
 
