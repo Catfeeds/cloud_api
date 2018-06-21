@@ -212,6 +212,16 @@ class Order extends MY_Controller
         $this->api_res(0,[$room]);
     }
 
+    /**
+     * 编辑账单
+     */
+    public function editOrder()
+    {
+        $order_id    = $this->input->post('order_id',null);
+
+
+    }
+
 
     private function validateStore()
     {
