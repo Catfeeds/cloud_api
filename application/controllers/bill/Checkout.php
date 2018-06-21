@@ -22,25 +22,32 @@ class Checkout extends MY_Controller
 
     //退房账单列表
     public function list(){
+
         $input  = $this->input->post(null,true);
         $page   = isset($input['page'])?$input['page']:1;
-        $where  = [];
-        empty($input['store_id'])?$where['store_id']='':$where['store_id']=$input['store_id'];
-        if(isset($input['status'])){
-            $status = [$input['status']];
-        }else{
-            //$status = $this->allStatus();
-            $status = array_diff($this->allStatus(),[Checkoutmodel::STATUS_COMPLETED]);
-//            $status = array_diff($this->allStatus(),[Checkoutmodel::STATUS_COMPLETED,Checkoutmodel::STATUS_COMPLETED]);
-        }
         $offset = ($page-1)*PAGINATE;
-        $list   = Checkoutmodel::with(['roomunion','store','resident'])->orderBy('created_at','DESC')->offset($offset)->limit(PAGINATE)->get();
-        if(isset($input['room_number'])){
-            $list   = $list->where('roomunion.number',$input['room_number']);
-        }
-        $allnumber=Checkoutmodel::with(['roomunion','store','resident'])->count();
+        $where  = [];
+        empty($input['store_id'])?:$where['store_id']=$input['store_id'];
+        empty($input['type'])?:$where['type']=$input['type'];
 
-        $total_page = ceil($allnumber/PAGINATE);
+        $query   = Checkoutmodel::with('roomunion','store','resident')
+            ->where($where);
+
+        if(!empty($input['search']))
+        {
+            $room_ids    = Roomunionmodel::where('number',$input['search'])->get()->map(function($q){
+                return $q->id;
+            });
+            $query  = $query->whereIn('room_id',$room_ids);
+        }
+
+        $total_page = ceil(($query->count())/PAGINATE);
+
+        $list   = $query->orderBy('created_at','DESC')
+            ->offset($offset)
+            ->limit(PAGINATE)
+            ->get();
+
         $this->api_res(0,['checkouts'=>$list,'total_page'=>$total_page]);
     }
 
