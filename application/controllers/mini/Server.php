@@ -12,9 +12,6 @@ class Server extends MY_Controller
     {
         parent::__construct();
         $this->load->model('serviceordermodel');
-        $this->load->model('employeemodel');
-        $this->load->model('roomunionmodel');
-        $this->load->model('customermodel');
     }
 
     /**
@@ -22,14 +19,16 @@ class Server extends MY_Controller
      */
     public function listServer()
     {
-
+        $this->load->model('employeemodel');
+        $this->load->model('roomunionmodel');
+        $this->load->model('customermodel');
         $post = $this->input->post(NULL, true);
         $page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
         $page_count = isset($post['page_count']) ? intval($post['page_count']) : 4;//当前页显示条数
         $offset = $page_count * ($page - 1);
-        $filed = ['id','room_id','customer_id','type','name', 'phone', 'time','deal', 'remark'];
+        $filed = ['id','room_id','customer_id','type','name', 'phone', 'time','deal', 'remark','status'];
 
-        $store_id   = $this->employee->store_id;
+        $store_id   = 1;//$this->employee->store_id;
 
         $count_total = ceil(Serviceordermodel::where('store_id',$store_id)->count());//总条数
         $count = ceil($count_total / $page_count);//总页数
@@ -40,6 +39,7 @@ class Server extends MY_Controller
                                     ->orderBy('id', 'desc')->get($filed)->toArray();
         $this->api_res(0, ['list' => $server, 'page' => $page, 'count_total' => $count_total, 'count' => $count]);
     }
+
     /**
      * 显示一条服务的详情
      */
@@ -59,17 +59,20 @@ class Server extends MY_Controller
 
     //创建一个订单
     public function create(){
-
         $post = $this->input->post(NULL, true);
-
-
-//      $room_id=$post['room_id'];
-        $room_id  =  152;
-
-//        $store_id   = $this->employee->store_id;
-
-
-
+        if(!$this->validation())
+        {
+            $fieldarr= ['time','name','phone','type','money','remark'];
+            $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
+            return;
+        }
+        $server = new Serviceordermodel();
+        $server->fill($post);
+        if ($server->save()){
+            $this->api_res(0,[]);
+        }else{
+            $this->api_res(1002);
+        }
     }
 
 
@@ -131,7 +134,53 @@ class Server extends MY_Controller
 
     }
 
+    /**
+     * 表单验证
+     */
+    public function validation()
+    {
+        $this->load->library('form_validation');
+        $config = array(
+            array(
+                'field' => 'number',
+                'label' => '房间号',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'time',
+                'label' => '预约时间',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'name',
+                'label' => '姓名',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'phone',
+                'label' => '联系方式',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'type',
+                'label' => '服务类型',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'money',
+                'label' => '服务费用',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'remark',
+                'label' => '备注信息',
+                'rules' => 'trim|required',
+            ),
+        );
 
+        $this->form_validation->set_rules($config)->set_error_delimiters('','');
+        return $this->form_validation->run();
+    }
 
 
 }
