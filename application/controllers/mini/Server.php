@@ -38,6 +38,8 @@ class Server extends MY_Controller
      */
     public function show()
     {
+        $this->load->model('roomunionmodel');
+        $this->load->model('customermodel');
         $post = $this->input->post(null,true);
         if ($post['id']){
             $id = intval($post['id']);
@@ -45,29 +47,42 @@ class Server extends MY_Controller
             $this->api_res(0,[]);
             return;
         };
-
         $server = Serviceordermodel::with('roomunion','customer')->find($id)->toArray();
         $this->api_res(0,$server);
     }
 
     //创建一个订单
     public function create(){
+
         $post = $this->input->post(NULL, true);
         if(!$this->validation())
         {
-            $fieldarr= ['time','name','phone','type','money','remark','money'];
+            $fieldarr= ['number','time','name','phone','type','money','remark',];
             $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
             return;
         }
+        $store_id   = 1;//$this->employee->store_id;
+        $employee_id = CURRENT_ID;
+        $this->load->model('roomunionmodel');
+        $room_id = Roomunionmodel::where('number',$post['number'])
+                                ->where('store_id',$store_id)->get(['id'])->toArray();
+        if (empty($room_id)){
+            $this->api_res(1002);
+            return;
+        }else{
+            $room_id = $room_id[0]['id'];
+        }
         $server = new Serviceordermodel();
         $server->fill($post);
+        $server->employee_id = $employee_id;
+        $server->room_id = $room_id;
+        $server->store_id = $store_id;
         if ($server->save()){
             $this->api_res(0,[]);
         }else{
             $this->api_res(1002);
         }
     }
-
 
     //更新订单
     public function update(){
