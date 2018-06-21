@@ -28,7 +28,7 @@ class Server extends MY_Controller
         $offset = $page_count * ($page - 1);
         $filed = ['id','room_id','customer_id','type','name', 'phone', 'time','deal', 'remark','status'];
 
-        $store_id   = 1;//$this->employee->store_id;
+        $store_id   = $this->employee->store_id;
 
         $count_total = ceil(Serviceordermodel::where('store_id',$store_id)->count());//总条数
         $count = ceil($count_total / $page_count);//总页数
