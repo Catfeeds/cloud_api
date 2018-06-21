@@ -77,6 +77,35 @@ class Order extends MY_Controller
         $this->api_res(0,['coupons'=>$coupons]);
     }
 
+    /**
+     * 核对支付时的总金额, 可能有使用优惠券
+     */
+//    public function amountWithDiscount(Request $request, ResidentRepo $residentRepo, CouponRepo $couponRepo)
+//    {
+//        try {
+//            $resident   = $this->checkRequestAndGetResident($request, $residentRepo);
+//            $orders     = $this->undealOrdersOfSpecifiedResident($resident, $request);
+//            $coupons    = $this->unusedCouponsOfSpecifiedResident($resident, $request, $couponRepo);
+//
+//            //核对提交的优惠券是否可用
+//            $this->checkCoupons($resident, $orders, $coupons, $couponRepo);
+//
+//            //计算优惠券的总优惠金额
+//            $data   = array(
+//                'amount_orginal'    => $orders->sum('money'),
+//                'discount'          => $couponRepo->bindOrdersAndCalcDiscount($resident, $orders, $coupons),
+//            );
+//
+//            $data['amount_real']    = $data['amount_orginal'] - $data['discount'];
+//
+//        } catch (\Exception $e) {
+//            \Log::error($e->getMessage());
+//            return $this->respError($e->getMessage());
+//        }
+//
+//        return $this->jsonRespSuccess($data);
+//    }
+
 
     /**
      * 订单列表
