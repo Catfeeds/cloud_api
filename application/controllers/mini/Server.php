@@ -61,22 +61,30 @@ class Server extends MY_Controller
             $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
             return;
         }
-        $store_id   = 1;//$this->employee->store_id;
-        $employee_id = CURRENT_ID;
+        $store_id       = $this->employee->store_id;
+        $employee_id    = CURRENT_ID;
+        $number         = (new Serviceordermodel())->getOrderNumber();
+        $this->load->model('residentmodel');
+
         $this->load->model('roomunionmodel');
-        $room_id = Roomunionmodel::where('number',$post['number'])
-                                ->where('store_id',$store_id)->get(['id'])->toArray();
-        if (empty($room_id)){
+        $room = Roomunionmodel::where('number',$post['number'])
+                                ->where('store_id',$store_id)->get(['id','resident_id'])->toArray();
+        if (empty($room)){
             $this->api_res(1002);
             return;
         }else{
-            $room_id = $room_id[0]['id'];
+            $room_id = intval($post['room_id']);
+            $resident_id = $room[0]['resident_id'];
+            $customer = Residentmodel::where('id',$resident_id)->get(['customer_id'])->toArray();
+            $customer_id = $customer[0]['customer_id'];
         }
         $server = new Serviceordermodel();
         $server->fill($post);
+        $server->number = $number;
         $server->employee_id = $employee_id;
         $server->room_id = $room_id;
         $server->store_id = $store_id;
+        $server->customer_id = $customer_id;
         if ($server->save()){
             $this->api_res(0,[]);
         }else{
@@ -150,8 +158,8 @@ class Server extends MY_Controller
         $this->load->library('form_validation');
         $config = array(
             array(
-                'field' => 'number',
-                'label' => '房间号',
+                'field' => 'room_id',
+                'label' => '房间ID',
                 'rules' => 'trim|required',
             ),
             array(

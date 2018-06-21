@@ -29,4 +29,9 @@ class Serviceordermodel extends Basemodel
     {
         return $this->belongsTo(Customermodel::class,'customer_id');
     }
+
+    public function getOrderNumber()
+    {
+        return date('YmdHis').mt_rand(1000000000, 9999999999);
+    }
 }
