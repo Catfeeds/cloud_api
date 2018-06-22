@@ -117,9 +117,12 @@ class Checkout extends MY_Controller
         if (!empty($orders)&&isset($orders)){
             $countmoney = $orders->sum('money');
             $new_orders=$orders->toArray();
+            echo "aa";
         }else{
             $countmoney = 0;
+            echo "cc";
         }
+        return;
         $paymoney   =   $resident->tmp_deposit+$resident->deposit_money-$countmoney;
 
         //将押金抵扣的金额转出
