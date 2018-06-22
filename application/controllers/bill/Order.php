@@ -164,6 +164,7 @@ class Order extends MY_Controller
         $order  = new Ordermodel();
         $order->number  = $order->getOrderNumber();
         $order->store_id   = $room->store_id;
+        $order->room_id   = $room_id;
         $order->room_type_id   = $room->room_type_id;
         $order->employee_id   = $this->employee->id;
 //        $order->employee_id   = 118;
