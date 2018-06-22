@@ -32,4 +32,6 @@ class Resident extends MY_Controller
         $this->api_res(0,['resident'=>$resident]);
     }
 
+
+
 }

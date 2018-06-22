@@ -190,9 +190,9 @@ class AuthHook {
 
             //'mini/server/show',
             //'mini/server/comfirmorder',
-            //'mini/server/create',
+//            'mini/server/create',
             //'mini/server/listserver',
-            //'mini/server/serverstatus',
+//            'mini/server/serverstatus',
 //            'mini/room/listroom',
 //            'mini/room/detailsroom',
 //            'mini/room/building',
