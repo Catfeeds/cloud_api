@@ -73,8 +73,8 @@ class Server extends MY_Controller
                                             $s->paths = $this->fullAliossUrl($paths,true);
                                         }
                                         return $s;
-                                    })->toArray();
-        $this->api_res(0,['list'=>$server]);
+                                    });
+        $this->api_res(0,$server);
     }
     //创建一个订单
     public function create(){
