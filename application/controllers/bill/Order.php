@@ -26,12 +26,22 @@ class Order extends MY_Controller
         $where  = [];
         empty($input['store_id'])?:$where['store_id']=$input['store_id'];
         empty($input['type'])?:$where['type']=$input['type'];
-        empty($input['status'])?:$where['status']=$input['status'];
+
         empty($input['year'])?:$where['year']=$input['year'];
         empty($input['month'])?:$where['month']=$input['month'];
         $search = empty($input['search'])?'':$input['search'];
         $page   = isset($input['page'])?$input['page']:1;
         $offset = ($page-1)*PAGINATE;
+        $status = $input['status'];
+        if($status=='PAY')
+        {
+            $status = [Ordermodel::STATE_COMPLETED];
+        }elseif($status=='NOTPAY')
+        {
+            $status = array_diff($this->ordermodel->getAllStatus(),[Ordermodel::STATE_COMPLETED]);
+        }else{
+            $status = $this->ordermodel->getAllStatus();
+        }
 
         $this->load->model('storemodel');
         $this->load->model('roomunionmodel');
@@ -49,6 +59,7 @@ class Order extends MY_Controller
                     });
                 })
                 ->where($where)
+                ->whereIn('status',$status)
                 ->count())/PAGINATE);
 
         if($count<$page){
@@ -67,6 +78,7 @@ class Order extends MY_Controller
                 });
             })
             ->where($where)
+            ->whereIn('status',$status)
             ->orderBy('created_at','DESC')->offset($offset)->limit(PAGINATE)
             ->get()->toArray();
 

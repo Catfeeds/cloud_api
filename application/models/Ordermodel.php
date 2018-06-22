@@ -92,6 +92,22 @@ class Ordermodel extends Basemodel{
     protected $casts    = ['data'=>'array'];
 
     /**
+     * 所有订单状态
+     */
+    public function getAllStatus(){
+        return [
+            self::STATE_GENERATED,
+            self::STATE_AUDITED,
+            self::STATE_PENDING,
+            self::STATE_CONFIRM,
+            self::STATE_COMPLETED,
+            self::STATE_REFUND,
+            self::STATE_EXPIRE,
+            self::STATE_CLOSE,
+        ];
+    }
+
+    /**
      * 所有的订单类型
      */
     public static function allTypes()
@@ -235,8 +251,8 @@ class Ordermodel extends Basemodel{
      */
     public function getOrderNumber()
     {
-        return date('YmdHis').mt_rand(1000000000, intval(9999999999));
-//        return date('YmdHis').mt_rand(1000000000, 9999999999);
+//        return date('YmdHis').mt_rand(1000000000, intval(9999999999));
+        return date('YmdHis').mt_rand(1000000000, 9999999999);
     }
 
     /**
