@@ -24,19 +24,31 @@ class Server extends MY_Controller
         $this->load->model('roomunionmodel');
         $this->load->model('customermodel');
         $post   = $this->input->post(NULL, true);
-        $number = !empty($post['number'])?trim($post['number']):null;
-        $room_id= Roomunionmodel::where('number',$number)->get(['id'])->toArray();
-        if ($room_id){
-            $room_id = $room_id[0]['id'];
+        if (isset($post['number'])){
+            $number = trim($post['number']);
+            $room_id= Roomunionmodel::where('number',$number)->get(['id'])->toArray();
+            if ($room_id){
+                $room_id = $room_id[0]['id'];
+                $filed  = ['id','room_id','customer_id','type','name', 'phone', 'time','deal', 'remark','status'];
+                $store_id   = $this->employee->store_id;
+                $server = Serviceordermodel::with('roomunion','customer')
+                    ->where('store_id',$store_id)->where('room_id',$room_id)
+                    ->orderBy('id', 'desc')
+                    ->get($filed)->toArray();
+            }else{
+                $this->api_res(1009);
+            }
         }else{
-            $this->api_res(1009);
+            $filed  = ['id','room_id','customer_id','type','name', 'phone', 'time','deal', 'remark','status'];
+            $store_id   = $this->employee->store_id;
+            $server = Serviceordermodel::with('roomunion','customer')
+                ->where('store_id',$store_id)
+                ->orderBy('id', 'desc')
+                ->get($filed)->toArray();
         }
-        $filed  = ['id','room_id','customer_id','type','name', 'phone', 'time','deal', 'remark','status'];
-        $store_id   = $this->employee->store_id;
-        $server = Serviceordermodel::with('roomunion','customer')
-                                    ->where('store_id',$store_id)->where('room_id',$room_id)
-                                    ->orderBy('id', 'desc')
-                                    ->get($filed)->toArray();
+
+
+
         $this->api_res(0, ['list' => $server]);
     }
 
