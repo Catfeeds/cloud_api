@@ -108,6 +108,10 @@ class Checkout extends MY_Controller
         //生成退款账单
 
         $checkout   = Checkoutmodel::find($id);
+        if($checkout->status=='COMPLETED'){
+            $this->api_res(1007);
+            return;
+        }
         $resident=Residentmodel::find($checkout->resident_id);
         $orders =   Ordermodel::where('resident_id',$checkout->resident_id)->where('sequence_number','')->get();
         if (!empty($orders)&&isset($orders)){
