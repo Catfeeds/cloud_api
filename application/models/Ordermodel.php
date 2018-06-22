@@ -430,14 +430,14 @@ class Ordermodel extends Basemodel{
     /**
      * 添加退房时的订单
      */
-    public function addCheckOutOrderByType($resident, $room, $employeeId, $type, $money, Carbon $time)
+    public function addCheckOutOrderByType($resident, $room,$store_id, $employeeId, $type, $money, Carbon $time)
     {
         $order  = new Ordermodel();
         $data   =[
             'number'        => $this->getOrderNumber(),
             'resident_id'   => $resident->id,
             'room_id'       => $room->id,
-            'store_id'      => $room->store_id,
+            'store_id'      => $store_id,
             'room_type_id'  => $room->room_type_id,
             'customer_id'   => $resident->customer_id,
             'uxid'          => $resident->uxid,
