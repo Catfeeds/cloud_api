@@ -108,19 +108,29 @@ class Checkout extends MY_Controller
         //生成退款账单
 
         $checkout   = Checkoutmodel::find($id);
+        if($checkout->status=='COMPLETED'){
+            $this->api_res(1007);
+            return;
+        }
         $resident=Residentmodel::find($checkout->resident_id);
         $orders =   Ordermodel::where('resident_id',$checkout->resident_id)->where('sequence_number','')->get();
-        $countmoney = $orders->sum('money');
+        if (!empty($orders)){
+            $countmoney = $orders->sum('money');
+            $new_orders=$orders->toArray();
+            echo "aa1";
+        }else{
+            $countmoney = 0;
+            echo "cc2";
+        }
+        return;
         $paymoney   =   $resident->tmp_deposit+$resident->deposit_money-$countmoney;
 
         //将押金抵扣的金额转出
         $this->backBill($resident,$countmoney);
         //将押金抵扣的账单转为已收款
-        $new_orders=$orders->toArray();
-        if (!empty($new_orders)){
+        if($countmoney!=0){
             $this->createBill($new_orders);
         }
-
         //将剩余的金额处理掉
         $this->backBill($resident,$paymoney);
 
