@@ -199,7 +199,7 @@ class AuthHook {
 //            'mini/room/countroom',
 //
 //            'contract/operation/operatlist',
-//            'contract/operation/operationfind',
+            //'contract/operation/operationfind',
 //            'contract/operation/booking',
 //            'contract/operation/book',
            //'contract/resident/resident',

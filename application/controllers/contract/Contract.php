@@ -48,4 +48,9 @@ class Contract extends MY_Controller
         $this->api_res(0,['list'=>$order,'count'=>$count]);
     }
 
+    /**
+     *  合同详细信息
+     */
+
 }
+
