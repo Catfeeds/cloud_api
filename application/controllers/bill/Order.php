@@ -268,7 +268,7 @@ class Order extends MY_Controller
             array(
                 'field' => 'money',
                 'label' => '账单金额',
-                'rules' => 'required|trim|decimal',
+                'rules' => 'required|trim|numeric',
             ),
         );
 
