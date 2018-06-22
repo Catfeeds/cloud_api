@@ -122,7 +122,7 @@ class Checkout extends MY_Controller
             //将押金抵扣的账单转为已收款
             var_dump($new_orders);
             if($countmoney!=0){
-                $this->createBill($new_orders);
+                $this->createBill($orders);
             }
         }else{
             $countmoney = 0;
