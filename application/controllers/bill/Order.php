@@ -38,7 +38,7 @@ class Order extends MY_Controller
             $status = [Ordermodel::STATE_COMPLETED];
         }elseif($status=='NOTPAY')
         {
-            $status = array_diff([Ordermodel::STATE_COMPLETED],$this->ordermodel->getAllStatus());
+            $status = array_diff($this->ordermodel->getAllStatus(),[Ordermodel::STATE_COMPLETED]);
         }else{
             $status = $this->ordermodel->getAllStatus();
         }
