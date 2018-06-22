@@ -55,7 +55,7 @@ class Home extends MY_Controller
         $this->load->model('ordermodel');
 
         $date_d = [date('Y-m-d', time())." 00:00:00", date('Y-m-d H:i:s', time())];
-        $date_m = [date('Y-m', time())."-01 00:00:00", date('Y-m-d H-i-s', time())];
+        $date_m = [date('Y-m', time())."-01 00:00:00", date('Y-m-d H:i:s', time())];
 
         $store_ids = Employeemodel::getMyStoreids();
         $result['home']['count_visit'] = Reserveordermodel::whereIn('store_id', $store_ids)->count(); //预约来访
