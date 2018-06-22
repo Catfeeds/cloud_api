@@ -47,7 +47,7 @@ class Server extends MY_Controller
             $filed  = ['id','room_id','customer_id','type','name', 'phone', 'time','deal', 'remark','status'];
             $store_id   = $this->employee->store_id;
             $server = Serviceordermodel::with('roomunion','customer')
-                ->where('deal','!=','PDONE')
+                ->whereIn('deal',['UNDONE','SDOING'])
                 ->where('store_id',$store_id)
                 ->orderBy('id', 'desc')
                 ->get($filed)->toArray();
@@ -207,7 +207,7 @@ class Server extends MY_Controller
      * 完成服务||取消服务
      */
     public function serverStatus()
-    {//PENDING A G
+    {
         $post   = $this->input->post(null,true);
         if (isset($post['deal'])&&isset($post['id'])){
             $status = trim($post['deal']);
@@ -217,7 +217,8 @@ class Server extends MY_Controller
             if ($status == 'PDONE'){
                 $this->load->model('ordermodel');
                 $order_status = Ordermodel::where('id',$server->order_id)->first();
-                if (in_array($order_status->status,['PENDING','AUDITED','GENERATE'])){
+                if (!empty($order_status)&&in_array($order_status->status,['PENDING','AUDITED','GENERATE'])){
+                    //var_dump($order_status);
                     $server->deal = $status;
                     Ordermodel::destroy($server->order_id);
                     if($server->save()){
@@ -225,13 +226,13 @@ class Server extends MY_Controller
                     }else{
                         $this->api_res(1009);
                     }
-                }else{
+                } else{
                     $this->api_res(10014);
+                    return;
                 }
             }else{
                 $server->deal = $status;
                 $this->api_res(0,[]);
-                //Ordermodel::destroy($server->order_id);
             }
         }else{
             $this->api_res(1002);
