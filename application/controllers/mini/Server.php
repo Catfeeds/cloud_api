@@ -23,11 +23,13 @@ class Server extends MY_Controller
         $this->load->model('employeemodel');
         $this->load->model('roomunionmodel');
         $this->load->model('customermodel');
-        $post = $this->input->post(NULL, true);
-        $filed = ['id','room_id','customer_id','type','name', 'phone', 'time','deal', 'remark','status'];
+        $post   = $this->input->post(NULL, true);
+        $number = !empty($post['number'])?trim($post['number']):null;
+        $room_id= Roomunionmodel::where('numbewr',$number)->get(['room_id'])->toArray();
+        $filed  = ['id','room_id','customer_id','type','name', 'phone', 'time','deal', 'remark','status'];
         $store_id   = $this->employee->store_id;
         $server = Serviceordermodel::with('roomunion','customer')
-                                    ->where('store_id',$store_id)
+                                    ->where('store_id',$store_id)->where('')
                                     ->orderBy('id', 'desc')
                                     ->get($filed)->toArray();
         $this->api_res(0, ['list' => $server]);
@@ -55,9 +57,8 @@ class Server extends MY_Controller
                                         }
                                         return $s;
                                     })->toArray();
-        $this->api_res(0,$server);
+        $this->api_res(0,['list'=>$server]);
     }
-
     //创建一个订单
     public function create(){
         $this->load->model('ordermodel');
@@ -111,8 +112,6 @@ class Server extends MY_Controller
         $order->status      = 'PENDING';
         $order->deal        = 'UNDONE';
         $order->pay_status  = 'SERVER';
-
-
         if ($server->save()&&$order->save()){
             $this->api_res(0,[]);
         }else{
