@@ -117,20 +117,17 @@ class Checkout extends MY_Controller
         $new_orders=$orders->toArray();
         if (!empty($new_orders)){
             $countmoney = $orders->sum('money');
-            echo "aa1";
+            //将押金抵扣的金额转出
+            $this->backBill($resident,$countmoney);
+            //将押金抵扣的账单转为已收款
+            if($countmoney!=0){
+                $this->createBill($new_orders);
+            }
         }else{
             $countmoney = 0;
-            echo "cc2";
         }
-        return;
         $paymoney   =   $resident->tmp_deposit+$resident->deposit_money-$countmoney;
 
-        //将押金抵扣的金额转出
-        $this->backBill($resident,$countmoney);
-        //将押金抵扣的账单转为已收款
-        if($countmoney!=0){
-            $this->createBill($new_orders);
-        }
         //将剩余的金额处理掉
         $this->backBill($resident,$paymoney);
 
