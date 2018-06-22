@@ -114,9 +114,9 @@ class Checkout extends MY_Controller
         }
         $resident=Residentmodel::find($checkout->resident_id);
         $orders =   Ordermodel::where('resident_id',$checkout->resident_id)->where('sequence_number','')->get();
-        if (!empty($orders)){
+        $new_orders=$orders->toArray();
+        if (!empty($new_orders)){
             $countmoney = $orders->sum('money');
-            $new_orders=$orders->toArray();
             echo "aa1";
         }else{
             $countmoney = 0;
