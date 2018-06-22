@@ -49,8 +49,27 @@ class Contract extends MY_Controller
     }
 
     /**
-     *  合同详细信息
+     *  即将到期合同
      */
+    public function limitContract()
+    {
+        $post = $this->input->post(null,true);
+        $limit_time = isset($post['limit_time']);
+        $this->load->model('roomunionmodel');
+        $this->load->model('residentmodel');
+        $this->load->model('storemodel');
+        $this->load->model('employeemodel');
+        $post  = $this->input->post(null,true);
+        $page  = isset($post['page'])?intval($post['page']):1;
+        $offset= PAGINATE * ($page - 1);
+        $filed = ['id','contract_id','resident_id','room_id','type','created_at','status','employee_id','store_id'];
+        $resident = Residentmodel::where('end_time','<','limit_time')->get(['resident_id'])->toArray();
+
+        $order = Contractmodel::whereIn($resident)
+            ->with('employee')->with('resident')->with('store')->with('roomunion')
+            ->take(PAGINATE)->skip($offset)
+            ->orderBy('id','desc')->get($filed)->toArray();
+    }
 
 }
 

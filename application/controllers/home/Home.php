@@ -54,6 +54,7 @@ class Home extends MY_Controller
         $this->load->model('reserveordermodel');
         $this->load->model('ordermodel');
         $date_d = [date('Y-m-d', time()), date('Y-m-d H-i-s', time())];
+        var_dump($date_d);
         $date_m = [date('Y-m', time()), date('Y-m-d H-i-s', time())];
 
         $store_ids = Employeemodel::getMyStoreids();
@@ -66,8 +67,8 @@ class Home extends MY_Controller
         $this->load->model('contractmodel');
         $result['day']['sign'] = Contractmodel::whereIn('store_id', $store_ids)
             ->whereBetween('created_at', $date_d)->count(); //新签住户数
-        $result['day']['recmoney'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)->sum('money'); //应收
-        $result['day']['paymoney'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)->sum('paid'); //实收
+        $result['day']['recmoney'] = Billmodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)->sum('money'); //应收
+        $result['day']['paymoney'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)->sum('money'); //实收
 
         $this->load->model('residentmodel');
         $result['day']['checkout'] = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('refund_time', $date_d)->count();  //退租
