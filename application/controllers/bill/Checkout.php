@@ -121,11 +121,9 @@ class Checkout extends MY_Controller
             $this->backBill($resident,$countmoney);
             //将押金抵扣的账单转为已收款
             if($countmoney!=0){
-                $this->createBill($new_orders);
+                $this->createBill($orders);
             }
-            echo "aa1";
         }else{
-            echo "ac";
             $countmoney = 0;
         }
         $paymoney   =   $resident->tmp_deposit+$resident->deposit_money-$countmoney;
@@ -139,7 +137,7 @@ class Checkout extends MY_Controller
         $updatedata['status']='COMPLETED';
         $updatedata['accountant_remark']=$remark;
 
-        Checkoutmodel::whereIn('id', $id)->update($updatedata);
+        Checkoutmodel::where('id', $id)->update($updatedata);
 
         $data['message']='办理成功!';
         $this->api_res(0,$data);
