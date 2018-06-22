@@ -110,17 +110,20 @@ class Checkout extends MY_Controller
         $checkout   = Checkoutmodel::find($id);
         $resident=Residentmodel::find($checkout->resident_id);
         $orders =   Ordermodel::where('resident_id',$checkout->resident_id)->where('sequence_number','')->get();
-        $countmoney = $orders->sum('money');
+        if (!empty($orders)&&isset($orders)){
+            $countmoney = $orders->sum('money');
+            $new_orders=$orders->toArray();
+        }else{
+            $countmoney = 0;
+        }
         $paymoney   =   $resident->tmp_deposit+$resident->deposit_money-$countmoney;
 
         //将押金抵扣的金额转出
         $this->backBill($resident,$countmoney);
         //将押金抵扣的账单转为已收款
-        $new_orders=$orders->toArray();
-        if (!empty($new_orders)){
+        if($countmoney!=0){
             $this->createBill($new_orders);
         }
-
         //将剩余的金额处理掉
         $this->backBill($resident,$paymoney);
 
