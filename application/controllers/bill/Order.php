@@ -231,6 +231,7 @@ class Order extends MY_Controller
         $order->employee_id = $this->employee->id;
         $order->money   = $money;
         $order->paid    = $money;
+        $order->remark  = $remark;
         $order->data   = array_merge((array)$order->data,[date('Y-m-d H:i:s',time())=>$this->employee->name.'修改了账单，'.'修改原因：'.$remark]);
 
         if($order->save()){
