@@ -46,7 +46,7 @@ class Server extends MY_Controller
         }else{
             $this->api_res(0,[]);
             return;
-        };
+        }
         $server = Serviceordermodel::with('roomunion','customer')->where('id',$id)->get()
                                     ->map(function($s){
                                         $paths =  json_decode($s->paths,true);
@@ -75,29 +75,45 @@ class Server extends MY_Controller
         $this->load->model('residentmodel');
         $this->load->model('roomunionmodel');
         $room = Roomunionmodel::where('id',intval($post['room_id']))
-                                ->where('store_id',$store_id)->get(['resident_id'])->toArray();
+                                ->where('store_id',$store_id)->get(['resident_id','room_type_id'])->toArray();
         if (empty($room)){
             $this->api_res(1002);
             return;
         }else{
-            $room_id = intval($post['room_id']);
-            $resident_id = $room[0]['resident_id'];
-            $customer = Residentmodel::where('id',$resident_id)->get(['customer_id'])->toArray();
-            $customer_id = $customer[0]['customer_id'];
+            $room_id        = intval($post['room_id']);
+            $resident_id    = $room[0]['resident_id'];
+            $customer       = Residentmodel::where('id',$resident_id)->get(['customer_id'])->toArray();
+            $customer_id    = $customer[0]['customer_id'];
+            $room_type_id   = $room[0]['room_type_id'];
         }
+//生成服务订单
         $server = new Serviceordermodel();
         $server->fill($post);
-        $server->number = $server_number;
-        $server->employee_id = $employee_id;
-        $server->room_id = $room_id;
-        $server->store_id = $store_id;
-        $server->customer_id = $customer_id;
-
+        $server->number     = $server_number;
+        $server->employee_id= $employee_id;
+        $server->room_id    = $room_id;
+        $server->store_id   = $store_id;
+        $server->customer_id= $customer_id;
+//生成账单
         $order = new Ordermodel();
-        $order->number = $order_number;
-        $order->store_id = $store_id;
+        $order->number      = $order_number;
+        $order->store_id    = $store_id;
+        $order->room_id     = $room_id;
+        $order->room_type_id= $room_type_id;
+        $order->employee_id = $employee_id;
+        $order->resident_id = $resident_id;
+        $order->customer_id = $customer_id;
+        $order->uxid        = $customer_id;
+        $order->money       = trim($post['money']);
+        $order->type        = trim($post['type']);
+        $order->year        = date('Y');
+        $order->month       = date('m');
+        $order->status      = 'PENDING';
+        $order->deal        = 'UNDONE';
+        $order->pay_status  = 'SERVER';
 
-        if ($server->save()){
+
+        if ($server->save()&&$order->save()){
             $this->api_res(0,[]);
         }else{
             $this->api_res(1009);
@@ -107,15 +123,48 @@ class Server extends MY_Controller
     //确认订单
     public function comfirmOrder()
     {
+        $this->load->model('residentmodel');
+        $this->load->model('ordermodel');
+        $this->load->model('roomunionmodel');
         $post = $this->input->post(null,true);
         $id = isset($post['id'])?intval($post['id']):null;
         $money = isset($post['money'])?trim($post['money']):null;
         $remark = isset($post['remark'])?trim($post['remark']):null;
         if ($money&&$remark){
+//确认服务订单
             $server = Serviceordermodel::where('id',$id)->first();
             $server->money = $money;
             $server->remark = $remark;
-            if ($server->save()){
+//创建账单
+            $order              = new Ordermodel();
+            $order_number       = $order->getOrderNumber();
+            $order->number      = $order_number;
+            $order->store_id    = $server->store_id;
+            $order->room_id     = $server->room_id;
+            $room = Roomunionmodel::where('id',$server->room_id)->where('store_id',$server->store_id)
+                                    ->get(['resident_id','room_type_id'])->toArray();
+            if (empty($room)){
+                $this->api_res(1002);
+                return;
+            }else{
+                $resident_id    = $room[0]['resident_id'];
+                $customer       = Residentmodel::where('id',$resident_id)->get(['customer_id'])->toArray();
+                $customer_id    = $customer[0]['customer_id'];
+                $room_type_id   = $room[0]['room_type_id'];
+            }
+            $order->room_type_id= $room_type_id;
+            $order->employee_id = $server->employee_id;
+            $order->resident_id = $resident_id;
+            $order->customer_id = $customer_id;
+            $order->uxid        = $customer_id;
+            $order->money       = trim($post['money']);
+            $order->type        = $server->type;
+            $order->year        = date('Y');
+            $order->month       = date('m');
+            $order->status      = 'PENDING';
+            $order->deal        = 'UNDONE';
+            $order->pay_status  = 'SERVER';
+            if ($server->save()&&$order->save()){
                 $this->api_res(0,[]);
             }else{
                 $this->api_res(1009);
