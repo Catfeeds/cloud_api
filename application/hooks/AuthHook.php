@@ -72,10 +72,12 @@ class AuthHook {
 //            'bill/meter/confirm',
 //            'bill/bill/listbill',
 //            'bill/order/listorder',
+//            'bill/order/editorder',
 //
 //            'mini/order/getavailablecoupons',
 //            'mini/order/listorder',
-            'mini/order/amountwithdiscount',
+//            'mini/order/amountwithdiscount',
+//            'bill/order/addorder',
 //            'mini/order/showbyroom',
             //'mini/order/confirm',
             //'mini/order/pay',

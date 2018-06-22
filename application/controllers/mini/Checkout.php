@@ -231,7 +231,7 @@ class Checkout extends MY_Controller
                     $order  = $this->ordermodel->addCheckOutOrderByType(
                         $resident,
                         $room,
-//                        $number,
+                        $this->employee->store_id,
                         $this->employee->id,
                         $type,
                         $money,
