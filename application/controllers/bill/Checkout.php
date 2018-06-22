@@ -126,7 +126,7 @@ class Checkout extends MY_Controller
         $updatedata['status']='COMPLETED';
         $updatedata['accountant_remark']=$remark;
 
-        Checkoutmodel::whereIn('id', $id)->update($updatedata);
+//        Checkoutmodel::whereIn('id', $id)->update($updatedata);
 
         $data['message']='办理成功!';
         $this->api_res(0,$data);
@@ -170,8 +170,10 @@ class Checkout extends MY_Controller
         $orderIds=array();
 
         foreach($orders as $order){
+
             $orderIds[]=$order->id;
             $bill->money               =    $bill->money+$order->paid;
+
         }
 
         $bill->type                =    'INPUT';
@@ -187,11 +189,12 @@ class Checkout extends MY_Controller
         $bill->out_trade_no='';
         $bill->store_pay_id='';
 
-        $res=$bill->save();
-        if(isset($res)){
-            Ordermodel::whereIn('id', $orderIds)->update(['sequence_number' => $bill->sequence_number]);
-        }
-        return $res;
+        var_dump($bill);
+//        $res=$bill->save();
+//        if(isset($res)){
+//            Ordermodel::whereIn('id', $orderIds)->update(['sequence_number' => $bill->sequence_number]);
+//        }
+//        return $res;
     }
 
 
@@ -229,11 +232,12 @@ class Checkout extends MY_Controller
         $bill->confirm_date        =    date('Y-m-d H:i:s',time());
 
         //如果是微信支付
-        $bill->out_trade_no='';
-        $bill->store_pay_id='';
-
-        $res=$bill->save();
-        return $res;
+//        $bill->out_trade_no='';
+//        $bill->store_pay_id='';
+//
+//        $res=$bill->save();
+//        return $res;
+        var_dump($bill);
 
     }
 
