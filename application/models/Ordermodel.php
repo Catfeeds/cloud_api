@@ -235,8 +235,8 @@ class Ordermodel extends Basemodel{
      */
     public function getOrderNumber()
     {
-//        return date('YmdHis').mt_rand(1000000000, intval(9999999999));
-        return date('YmdHis').mt_rand(1000000000, 9999999999);
+        return date('YmdHis').mt_rand(1000000000, intval(9999999999));
+//        return date('YmdHis').mt_rand(1000000000, 9999999999);
     }
 
     /**

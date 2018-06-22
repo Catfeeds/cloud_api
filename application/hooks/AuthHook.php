@@ -75,7 +75,8 @@ class AuthHook {
 //
 //            'mini/order/getavailablecoupons',
 //            'mini/order/listorder',
-            'mini/order/amountwithdiscount',
+//            'mini/order/amountwithdiscount',
+//            'bill/order/addorder',
 //            'mini/order/showbyroom',
             //'mini/order/confirm',
             //'mini/order/pay',
@@ -186,7 +187,7 @@ class AuthHook {
 
 //            'mini/home/lists',
 
-            //'mini/server/show',
+            'mini/server/show',
 //            'mini/server/comfirmorder',
             //'mini/server/create',
             //'mini/server/listserver',
