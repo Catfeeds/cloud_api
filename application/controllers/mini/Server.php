@@ -32,10 +32,11 @@ class Server extends MY_Controller
                 foreach ($room_id as $key=>$value){
                     array_push($room_ids,$room_id[$key]['id']);
                 }
-                var_dump($room_ids);
+                 var_dump($room_ids);
                 $filed  = ['id','room_id','customer_id','type','name', 'phone', 'time','deal', 'remark','status'];
                 $store_id   = $this->employee->store_id;
                 $server = Serviceordermodel::with('roomunion','customer')
+                    ->where('deal','!=','PDONE')
                     ->where('store_id',$store_id)->whereIn('room_id',$room_ids)
                     ->orderBy('id', 'desc')
                     ->get($filed)->toArray();
@@ -46,12 +47,11 @@ class Server extends MY_Controller
             $filed  = ['id','room_id','customer_id','type','name', 'phone', 'time','deal', 'remark','status'];
             $store_id   = $this->employee->store_id;
             $server = Serviceordermodel::with('roomunion','customer')
+                ->where('deal','!=','PDONE')
                 ->where('store_id',$store_id)
                 ->orderBy('id', 'desc')
                 ->get($filed)->toArray();
         }
-
-
 
         $this->api_res(0, ['list' => $server]);
     }
@@ -199,8 +199,8 @@ class Server extends MY_Controller
     public function serverStatus()
     {
         $post   = $this->input->post(null,true);
-
         if (isset($post['deal'])&&isset($post['id'])){
+
             $status = trim($post['deal']);
             $id     = trim($post['id']);
             $server = Serviceordermodel::where('id',$id)->first();
