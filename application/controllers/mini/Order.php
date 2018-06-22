@@ -306,10 +306,13 @@ class Order extends MY_Controller
         $status     = Ordermodel::STATE_COMPLETED;
         $deal       = Ordermodel::DEAL_DONE;
 
+
         $this->createBill($orders,$payWay);
 
 
        $groups = $orders->groupBy('store_pay_id');
+
+       $pay_date    = date('Y-m-d H:i:s',time());
 
         foreach ($groups as $key=>$orders)
         {
@@ -325,6 +328,7 @@ class Order extends MY_Controller
                 );
 
                 $order->pay_type            = $payWay ? $payWay: $order->pay_type;
+                $order->pay_date            = $pay_date;
                 $order->status              = $status;
                 $order->deal                = $deal;
                 $order->save();
@@ -405,7 +409,6 @@ class Order extends MY_Controller
      */
     private function updateRoomAndResident($orders, $resident, $room)
     {
-        log_message('error','TEST3');
         //检索住户是否仍有未缴费的账单, 如果仍有需缴费的账单, 则不更新
         $ordersUnpaid   = $this->ordermodel->ordersUnpaidOfResident($resident->id);
 

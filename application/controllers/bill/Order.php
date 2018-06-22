@@ -47,7 +47,7 @@ class Order extends MY_Controller
                     })->orWhereHas('employee',function($query) use($search){
                         $query->where('name','like',"%$search%");
                     });
-                })->count())/PAGINATE);
+                })->where($where)->count())/PAGINATE);
 
         if($count<$page){
             $this->api_res(0,[]);
@@ -188,7 +188,7 @@ class Order extends MY_Controller
     {
         $input  = $this->input->post(null,true);
         $room_number    = $this->input->post('room_number',true);
-        $store_id       = $this->input->post('store',true);
+        $store_id       = $this->input->post('store_id',true);
         if(empty($store_id) || empty($room_number))
         {
             $this->api_res(10032);
@@ -268,7 +268,7 @@ class Order extends MY_Controller
             array(
                 'field' => 'money',
                 'label' => '账单金额',
-                'rules' => 'required|trim|decimal',
+                'rules' => 'required|trim|numeric',
             ),
         );
 
