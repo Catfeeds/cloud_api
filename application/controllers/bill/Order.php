@@ -63,7 +63,7 @@ class Order extends MY_Controller
                 ->count())/PAGINATE);
 
         if($count<$page){
-            $this->api_res(0,[]);
+            $this->api_res(0,['orders'=>[],'total_page'=>$count]);
             return;
         }
 
