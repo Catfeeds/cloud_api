@@ -187,7 +187,7 @@ class AuthHook {
 
 //            'mini/home/lists',
 
-            //'mini/server/show',
+            'mini/server/show',
 //            'mini/server/comfirmorder',
             //'mini/server/create',
             //'mini/server/listserver',
