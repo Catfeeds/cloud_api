@@ -110,6 +110,8 @@ class Checkout extends MY_Controller
 
             DB::commit();
 
+            Residentmodel::where('id', $input['resident_id'])->update(['status' => 'CHECKOUT']);
+
             $this->api_res(0,['checkout_id'=>$checkout->id]);
 
         }catch (Exception $e){
