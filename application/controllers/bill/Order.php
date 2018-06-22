@@ -221,6 +221,11 @@ class Order extends MY_Controller
     public function editOrder()
     {
         $input  = $this->input->post(null,true);
+        $field  = ['order_id','money','remark'];
+        if(!$this->validationText($this->validateEdit())){
+            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+            return;
+        }
         $order_id    = $input['order_id'];
         $money       = $input['money'];
         $remark      = $input['remark'];
@@ -275,6 +280,28 @@ class Order extends MY_Controller
                 'field' => 'money',
                 'label' => '账单金额',
                 'rules' => 'required|trim|numeric',
+            ),
+        );
+
+    }
+
+    private function validateEdit()
+    {
+        return array(
+            array(
+                'field' => 'money',
+                'label' => '账单金额',
+                'rules' => 'required|trim|numeric',
+            ),
+            array(
+                'field' => 'order_id',
+                'label' => '账单id',
+                'rules' => 'required|trim|integer',
+            ),
+            array(
+                'field' => 'remark',
+                'label' => '修改原因',
+                'rules' => 'required|trim',
             ),
         );
 

@@ -178,6 +178,26 @@ class Server extends MY_Controller
         }
     }
 
+//   完成服务||取消服务
+    public function serverStatus()
+    {
+        $post   = $this->input->post(null,true);
+
+        if (isset($post['deal'])&&isset($post['id'])){
+            $status = trim($post['deal']);
+            $id     = trim($post['id']);
+            $server = Serviceordermodel::where('id',$id)->first();
+            $server->deal = $status;
+            if($server->save()){
+                $this->api_res(0,[]);
+            }else{
+                $this->api_res(1009);
+            }
+        }else{
+            $this->api_res(1002);
+        }
+    }
+
     /**
      * 表单验证
      */
