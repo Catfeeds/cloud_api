@@ -312,6 +312,8 @@ class Order extends MY_Controller
 
        $groups = $orders->groupBy('store_pay_id');
 
+       $pay_date    = date('Y-m-d H:i:s',time());
+
         foreach ($groups as $key=>$orders)
         {
 
@@ -326,7 +328,7 @@ class Order extends MY_Controller
                 );
 
                 $order->pay_type            = $payWay ? $payWay: $order->pay_type;
-                $order->pay_date            = date('Y-m-d H:i:s',time());
+                $order->pay_date            = $pay_date;
                 $order->status              = $status;
                 $order->deal                = $deal;
                 $order->save();
