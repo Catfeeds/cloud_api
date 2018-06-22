@@ -26,7 +26,7 @@ class Contract extends MY_Controller
         $post  = $this->input->post(null,true);
         $page  = isset($post['page'])?intval($post['page']):1;
         $offset= PAGINATE * ($page - 1);
-        $filed = ['id','contract_id','resident_id','room_id','type','updated_at','status','employee_id','store_id'];
+        $filed = ['id','contract_id','resident_id','room_id','type','created_at','status','employee_id','store_id'];
         $where = [];
         if(!empty($post['store_id'])){$where['store_id'] = intval($post['store_id']);};
         if(!empty($post['status'])){$where['status'] = trim($post['status']);};
@@ -48,4 +48,9 @@ class Contract extends MY_Controller
         $this->api_res(0,['list'=>$order,'count'=>$count]);
     }
 
+    /**
+     *  合同详细信息
+     */
+
 }
+

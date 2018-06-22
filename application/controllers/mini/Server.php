@@ -47,12 +47,11 @@ class Server extends MY_Controller
             $filed  = ['id','room_id','customer_id','type','name', 'phone', 'time','deal', 'remark','status'];
             $store_id   = $this->employee->store_id;
             $server = Serviceordermodel::with('roomunion','customer')
-                ->where('deal','!=','PDONE')
+                ->whereIn('deal',['UNDONE','SDOING'])
                 ->where('store_id',$store_id)
                 ->orderBy('id', 'desc')
                 ->get($filed)->toArray();
         }
-
         $this->api_res(0, ['list' => $server]);
     }
 
@@ -80,7 +79,10 @@ class Server extends MY_Controller
                                     });
         $this->api_res(0,$server);
     }
-    //创建一个订单
+
+    /**
+     * 创建一个订单
+     */
     public function create(){
         $this->load->model('ordermodel');
         $post = $this->input->post(NULL, true);
@@ -134,13 +136,17 @@ class Server extends MY_Controller
         $order->deal        = 'UNDONE';
         $order->pay_status  = 'SERVER';
         if ($server->save()&&$order->save()){
+            $server->order_id = $order->id;
+            $server->save();
             $this->api_res(0,[]);
         }else{
             $this->api_res(1009);
         }
     }
 
-    //确认订单
+    /**
+     * 确认订单
+     */
     public function comfirmOrder()
     {
         $this->load->model('residentmodel');
@@ -186,6 +192,8 @@ class Server extends MY_Controller
             $order->deal        = 'UNDONE';
             $order->pay_status  = 'SERVER';
             if ($server->save()&&$order->save()){
+                $server->order_id = $order->id;
+                $server->save();
                 $this->api_res(0,[]);
             }else{
                 $this->api_res(1009);
@@ -195,20 +203,36 @@ class Server extends MY_Controller
         }
     }
 
-//   完成服务||取消服务
+    /**
+     * 完成服务||取消服务
+     */
     public function serverStatus()
     {
         $post   = $this->input->post(null,true);
         if (isset($post['deal'])&&isset($post['id'])){
-
             $status = trim($post['deal']);
             $id     = trim($post['id']);
             $server = Serviceordermodel::where('id',$id)->first();
-            $server->deal = $status;
-            if($server->save()){
-                $this->api_res(0,[]);
+            //如果账单已完成将无法取消服务
+            if ($status == 'PDONE'){
+                $this->load->model('ordermodel');
+                $order_status = Ordermodel::where('id',$server->order_id)->first();
+                if (!empty($order_status)&&in_array($order_status->status,['PENDING','AUDITED','GENERATE'])){
+                    //var_dump($order_status);
+                    $server->deal = $status;
+                    Ordermodel::destroy($server->order_id);
+                    if($server->save()){
+                        $this->api_res(0,[]);
+                    }else{
+                        $this->api_res(1009);
+                    }
+                } else{
+                    $this->api_res(10014);
+                    return;
+                }
             }else{
-                $this->api_res(1009);
+                $server->deal = $status;
+                $this->api_res(0,[]);
             }
         }else{
             $this->api_res(1002);

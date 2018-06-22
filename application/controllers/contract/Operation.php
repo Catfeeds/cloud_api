@@ -74,12 +74,13 @@ class Operation extends MY_Controller
         $serial = $post['id'];
         $filed  = ['id','contract_id','resident_id','room_id','status'];
         $operation = Contractmodel::where('id',$serial)->with('room')->with('residents')->get($filed);
-        $aa = ['resident_id'];$bb = ['discount_id'];$cc = ['activity_id'];$dd = ['name'];
+
+        /*$aa = ['resident_id'];$bb = ['discount_id'];$cc = ['activity_id'];$dd = ['name'];
         $resident_id = Contractmodel::where('id',$serial)->get($aa)->toArray();
         $discount_id = Residentmodel::where('id',$resident_id)->get($bb)->toArray();
         $activity_id = Couponmodel::  where('id',$discount_id)->get($cc)->toArray();
-        $name        = Activitymodel::where('id',$activity_id)->get($dd)->toArray();
-        $this->api_res(0,['info'=>$operation,'activity'=>$name]);
+        $name        = Activitymodel::where('id',$activity_id)->get($dd)->toArray();*/
+        $this->api_res(0,['info'=>$operation]);
     }
 
     /**
