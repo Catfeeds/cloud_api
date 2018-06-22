@@ -109,16 +109,18 @@ class Checkout extends MY_Controller
 
         $checkout   = Checkoutmodel::find($id);
         $resident=Residentmodel::find($checkout->resident_id);
+        var_dump($resident);
         $orders =   Ordermodel::where('resident_id',$checkout->resident_id)->where('sequence_number','')->get();
+        var_dump($orders);
         $countmoney = $orders->sum('money');
         $paymoney   =   $resident->tmp_deposit+$resident->deposit_money-$countmoney;
 
         //将押金抵扣的金额转出
-        $this->backBill($resident,$countmoney);
-        //将押金抵扣的账单转为已收款
-        $this->createBill($orders);
-        //将剩余的金额处理掉
-        $this->backBill($resident,$paymoney);
+//        $this->backBill($resident,$countmoney);
+//        //将押金抵扣的账单转为已收款
+//        $this->createBill($orders);
+//        //将剩余的金额处理掉
+//        $this->backBill($resident,$paymoney);
 
         //更新退房单
         $updatedata['refund']=$paymoney;
