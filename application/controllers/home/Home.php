@@ -53,6 +53,7 @@ class Home extends MY_Controller
         $this->load->model('employeemodel');
         $this->load->model('reserveordermodel');
         $this->load->model('ordermodel');
+        $this->load->model('billmodel');
 
         $date_d = [date('Y-m-d', time())." 00:00:00", date('Y-m-d H:i:s', time())];
         $date_m = [date('Y-m', time())."-01 00:00:00", date('Y-m-d H:i:s', time())];
