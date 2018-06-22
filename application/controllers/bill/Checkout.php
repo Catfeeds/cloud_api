@@ -137,8 +137,6 @@ class Checkout extends MY_Controller
 
     public function Breach(){
 
-
-
         $data['message']='办理成功!';
         $this->api_res(0,$data);
     }
