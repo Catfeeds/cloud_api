@@ -188,7 +188,7 @@ class Order extends MY_Controller
     {
         $input  = $this->input->post(null,true);
         $room_number    = $this->input->post('room_number',true);
-        $store_id       = $this->input->post('store',true);
+        $store_id       = $this->input->post('store_id',true);
         if(empty($store_id) || empty($room_number))
         {
             $this->api_res(10032);
