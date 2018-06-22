@@ -123,7 +123,9 @@ class Checkout extends MY_Controller
             if($countmoney!=0){
                 $this->createBill($new_orders);
             }
+            echo "aa1";
         }else{
+            echo "ac";
             $countmoney = 0;
         }
         $paymoney   =   $resident->tmp_deposit+$resident->deposit_money-$countmoney;
@@ -221,9 +223,6 @@ class Checkout extends MY_Controller
         $bill->id     =    '';
         $count      = $this->billmodel->ordersConfirmedToday()+1;
         $dateString = date('Ymd');
-        $this->load->model('residentmodel');
-
-
         $bill->sequence_number     =   sprintf("%s%06d", $dateString, $count);
 
         $bill->store_id            =    $resident->store_id;
