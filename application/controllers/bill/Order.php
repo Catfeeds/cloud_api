@@ -227,11 +227,12 @@ class Order extends MY_Controller
         $this->load->model('ordermodel');
         $order  = Ordermodel::whereIn('status',[Ordermodel::STATE_GENERATED,Ordermodel::STATE_PENDING,Ordermodel::STATE_AUDITED])
             ->findOrFail($order_id);
+
         $order->employee_id = $this->employee->id;
         $order->money   = $money;
         $order->paid    = $money;
         $order->data   = array_merge((array)$order->data,[date('Y-m-d H:i:s',time())=>$this->employee->name.'修改了账单，'.'修改原因：'.$remark]);
-//        $order->data[]  = date('Y-m-d H:i:s',time()).$this->employee->name.'修改了账单，'.'修改原因：'.$remark;
+
         if($order->save()){
             $this->api_res(0,['order_id'=>$order->id]);
         }else{
