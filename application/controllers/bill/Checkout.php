@@ -120,7 +120,6 @@ class Checkout extends MY_Controller
             //将押金抵扣的金额转出
             $this->backBill($resident,$countmoney);
             //将押金抵扣的账单转为已收款
-            var_dump($new_orders);
             if($countmoney!=0){
                 $this->createBill($orders);
             }
