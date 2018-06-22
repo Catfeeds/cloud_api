@@ -26,13 +26,17 @@ class Server extends MY_Controller
         $post   = $this->input->post(NULL, true);
         if (isset($post['number'])){
             $number = trim($post['number']);
-            $room_id= Roomunionmodel::where('number',$number)->get(['id'])->toArray();
+            $room_id= Roomunionmodel::where('number','like',"$number%")->get(['id'])->toArray();
+            $room_ids = [];
             if ($room_id){
-                $room_id = $room_id[0]['id'];
+                foreach ($room_id as $key=>$value){
+                    array_push($room_ids,$room_id[$key]['id']);
+                }
+                var_dump($room_ids);
                 $filed  = ['id','room_id','customer_id','type','name', 'phone', 'time','deal', 'remark','status'];
                 $store_id   = $this->employee->store_id;
                 $server = Serviceordermodel::with('roomunion','customer')
-                    ->where('store_id',$store_id)->where('room_id',$room_id)
+                    ->where('store_id',$store_id)->whereIn('room_id',$room_ids)
                     ->orderBy('id', 'desc')
                     ->get($filed)->toArray();
             }else{
@@ -149,8 +153,9 @@ class Server extends MY_Controller
         if ($money&&$remark){
 //确认服务订单
             $server = Serviceordermodel::where('id',$id)->first();
-            $server->money = $money;
+            $server->money  = $money;
             $server->remark = $remark;
+            $server->deal   = 'SDOING';
 //创建账单
             $order              = new Ordermodel();
             $order_number       = $order->getOrderNumber();
