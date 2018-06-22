@@ -114,23 +114,20 @@ class Checkout extends MY_Controller
         }
         $resident=Residentmodel::find($checkout->resident_id);
         $orders =   Ordermodel::where('resident_id',$checkout->resident_id)->where('sequence_number','')->get();
-        if (!empty($orders)){
+        $new_orders=$orders->toArray();
+        if (!empty($new_orders)){
             $countmoney = $orders->sum('money');
-            $new_orders=$orders->toArray();
-            echo "aa1";
+            //将押金抵扣的金额转出
+            $this->backBill($resident,$countmoney);
+            //将押金抵扣的账单转为已收款
+            if($countmoney!=0){
+                $this->createBill($orders);
+            }
         }else{
             $countmoney = 0;
-            echo "cc2";
         }
-        return;
         $paymoney   =   $resident->tmp_deposit+$resident->deposit_money-$countmoney;
 
-        //将押金抵扣的金额转出
-        $this->backBill($resident,$countmoney);
-        //将押金抵扣的账单转为已收款
-        if($countmoney!=0){
-            $this->createBill($new_orders);
-        }
         //将剩余的金额处理掉
         $this->backBill($resident,$paymoney);
 
@@ -140,7 +137,7 @@ class Checkout extends MY_Controller
         $updatedata['status']='COMPLETED';
         $updatedata['accountant_remark']=$remark;
 
-        Checkoutmodel::whereIn('id', $id)->update($updatedata);
+        Checkoutmodel::where('id', $id)->update($updatedata);
 
         $data['message']='办理成功!';
         $this->api_res(0,$data);
@@ -150,6 +147,57 @@ class Checkout extends MY_Controller
     //押金转收入退房
 
     public function Breach(){
+
+        $input  = $this->input->post(null,true);
+        empty($input['id'])?$id='':$id=$input['id'];
+        if(empty($id))
+        {
+            $this->api_res(1007);
+            return;
+        }
+        empty($input['sequence'])?$sequence='':$sequence=$input['sequence'];
+        if(empty($sequence))
+        {
+            $this->api_res(1007);
+            return;
+        }
+        empty($input['remark'])?$remark='':$remark=$input['remark'];
+
+        $input['sequence']='';
+
+        //生成退款账单
+
+        $checkout   = Checkoutmodel::find($id);
+        if($checkout->status=='COMPLETED'){
+            $this->api_res(1007);
+            return;
+        }
+        $resident=Residentmodel::find($checkout->resident_id);
+        $orders =   Ordermodel::where('resident_id',$checkout->resident_id)->where('sequence_number','')->get();
+        $new_orders=$orders->toArray();
+        if (!empty($new_orders)){
+            $countmoney = $orders->sum('money');
+            //将押金抵扣的金额转出
+            $this->backBill($resident,$countmoney);
+            //将押金抵扣的账单转为已收款
+            if($countmoney!=0){
+                $this->createBill($orders);
+            }
+        }else{
+            $countmoney = 0;
+        }
+        $paymoney   =   $resident->tmp_deposit+$resident->deposit_money-$countmoney;
+
+        //将剩余的金额处理掉
+        $this->backBill($resident,$paymoney,false);
+
+        //更新退房单
+        $updatedata['refund']=$paymoney;
+        $updatedata['bank_sequence']=$sequence;
+        $updatedata['status']='COMPLETED';
+        $updatedata['accountant_remark']=$remark;
+
+        Checkoutmodel::where('id', $id)->update($updatedata);
 
         $data['message']='办理成功!';
         $this->api_res(0,$data);
@@ -217,16 +265,13 @@ class Checkout extends MY_Controller
      *
      */
 
-    private function backBill($resident,$backmoney)
+    private function backBill($resident,$backmoney,$isback=true)
     {
         $this->load->model('billmodel');
         $bill       = new Billmodel();
         $bill->id     =    '';
         $count      = $this->billmodel->ordersConfirmedToday()+1;
         $dateString = date('Ymd');
-        $this->load->model('residentmodel');
-
-
         $bill->sequence_number     =   sprintf("%s%06d", $dateString, $count);
 
         $bill->store_id            =    $resident->store_id;
@@ -235,7 +280,11 @@ class Checkout extends MY_Controller
         $bill->customer_id         =    $resident->customer_id;
         $bill->uxid                =    $resident->uxid;
         $bill->room_id             =    $resident->room_id;
-        $bill->type                =    'OUTPUT';
+        if($isback){
+            $bill->type                =    'OUTPUT';
+        }else{
+            $bill->type                =    'INPUT';
+        }
         $bill->money               =    $backmoney;
         $bill->pay_type            =    'DEPOSIT';
         $bill->confirm             =    '';
