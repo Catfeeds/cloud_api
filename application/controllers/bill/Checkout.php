@@ -115,25 +115,18 @@ class Checkout extends MY_Controller
 
         //将押金抵扣的金额转出
         $this->backBill($resident,$countmoney);
-
         //将押金抵扣的账单转为已收款
-
-
-
+        $this->createBill($orders);
         //将剩余的金额处理掉
+        $this->backBill($resident,$paymoney);
 
+        //更新退房单
+        $updatedata['refund']=$paymoney;
+        $updatedata['bank_sequence']=$sequence;
+        $updatedata['status']='COMPLETED';
+        $updatedata['accountant_remark']=$remark;
 
-
-
-
-
-
-
-
-        //生成付费账单
-
-
-
+        Checkoutmodel::whereIn('id', $id)->update($updatedata);
 
         $data['message']='办理成功!';
         $this->api_res(0,$data);
@@ -158,64 +151,50 @@ class Checkout extends MY_Controller
      *
      */
 
-//    private function createBill($orders)
-//    {
-//        $this->load->model('billmodel');
-//        $bill       = new Billmodel();
-//        $bill->id     =    '';
-//        $count      = $this->billmodel->ordersConfirmedToday()+1;
-//        $dateString = date('Ymd');
-//        $this->load->model('residentmodel');
-//
-//
-//        $bill->sequence_number     =   sprintf("%s%06d", $dateString, $count);
-//
-//        $bill->store_id            =    $orders[0]->store_id;
-//        $bill->employee_id         =    $orders[0]->employee_id;
-//        $bill->resident_id         =    $orders[0]->resident_id;
-//        $bill->customer_id         =    $orders[0]->customer_id;
-//        $bill->uxid                =    $orders[0]->uxid;
-//        $bill->room_id             =    $orders[0]->room_id;
-//        $orderIds=array();
-//
-//        $change_resident = false;
-//        foreach($orders as $order){
-//
-//            $orderIds[]=$order->id;
-//            $bill->money               =    $bill->money+$order->paid;
-////            if($order->pay_type=='REFUND'){
-////                $bill->type                =    'OUTPUT';
-////            }else{
-////                $bill->type                =    'INPUT';
-////            }
-//            if($order->pay_type=='ROOM'){
-//                $change_resident=true;
-//            }
-//        }
-//        if($change_resident){
-//            $Resident=Residentmodel::find($orders[0]->resident_id);
-//            $Resident_time=substr($Resident['begin_time'],0,7);
-//            if($Resident_time==substr($orders[0]->pay_type,0,7)){
-//                Residentmodel::where('id', $orders[0]->resident_id)->update(['status' => 'NORMAL']);
-//            }
-//        }
-//
-//        $bill->pay_type            =    $orders[0]->pay_type;
-//        $bill->confirm             =    '';
-//        $bill->pay_date            =    date('Y-m-d H:i:s',time());
-//        $bill->data                =    '';
-//        $bill->confirm_date        =    date('Y-m-d H:i:s',time());
-//
-//        //如果是微信支付
-//        $bill->out_trade_no='';
-//        $bill->store_pay_id='';
-//
-//        $res=$bill->save();
-//        if(isset($res)){
-//            Ordermodel::whereIn('id', $orderIds)->update(['sequence_number' => $bill->sequence_number]);
-//        }
-//        return $res;
-//    }
+    private function createBill($orders)
+    {
+        $this->load->model('billmodel');
+        $bill       = new Billmodel();
+        $bill->id     =    '';
+        $count      = $this->billmodel->ordersConfirmedToday()+1;
+        $dateString = date('Ymd');
+        $this->load->model('residentmodel');
+
+
+        $bill->sequence_number     =   sprintf("%s%06d", $dateString, $count);
+
+        $bill->store_id            =    $orders[0]->store_id;
+        $bill->employee_id         =    $orders[0]->employee_id;
+        $bill->resident_id         =    $orders[0]->resident_id;
+        $bill->customer_id         =    $orders[0]->customer_id;
+        $bill->uxid                =    $orders[0]->uxid;
+        $bill->room_id             =    $orders[0]->room_id;
+        $orderIds=array();
+
+        foreach($orders as $order){
+            $orderIds[]=$order->id;
+            $bill->money               =    $bill->money+$order->paid;
+        }
+
+        $bill->type                =    'INPUT';
+
+
+        $bill->pay_type            =    $orders[0]->pay_type;
+        $bill->confirm             =    '';
+        $bill->pay_date            =    date('Y-m-d H:i:s',time());
+        $bill->data                =    '';
+        $bill->confirm_date        =    date('Y-m-d H:i:s',time());
+
+        //如果是微信支付
+        $bill->out_trade_no='';
+        $bill->store_pay_id='';
+
+        $res=$bill->save();
+        if(isset($res)){
+            Ordermodel::whereIn('id', $orderIds)->update(['sequence_number' => $bill->sequence_number]);
+        }
+        return $res;
+    }
 
 
     /**
@@ -255,8 +234,8 @@ class Checkout extends MY_Controller
         $bill->out_trade_no='';
         $bill->store_pay_id='';
 
-        var_dump($bill);
-
+        $res=$bill->save();
+        return $res;
 
     }
 
