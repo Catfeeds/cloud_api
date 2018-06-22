@@ -11,17 +11,24 @@ class test extends MY_Controller
 
     public function test1(){
 
-        $this->load->model('activitymodel');
-//        $acs=Activitymodel::get();
-//        $acs->each(function($q){
-//            $q->update(['description'=>555]);
-//            //$q->save();
-//        });
-//        var_dump($acs->toArray());
-        $activity   = New Activitymodel();
-        //$activity->save();
-        $id=$activity->id;
-        echo $id;
+//        $this->load->model('activitymodel');
+////        $acs=Activitymodel::get();
+////        $acs->each(function($q){
+////            $q->update(['description'=>555]);
+////            //$q->save();
+////        });
+////        var_dump($acs->toArray());
+//        $activity   = New Activitymodel();
+//        //$activity->save();
+//        $id=$activity->id;
+//        echo $id;
+
+        $a=1;
+        if($a==0||$a==1||$a==3){
+            echo $a;
+        }else{
+            echo 'no';
+        }
 
     }
 }
