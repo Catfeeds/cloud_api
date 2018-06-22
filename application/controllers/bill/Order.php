@@ -47,7 +47,9 @@ class Order extends MY_Controller
                     })->orWhereHas('employee',function($query) use($search){
                         $query->where('name','like',"%$search%");
                     });
-                })->where($where)->count())/PAGINATE);
+                })
+                ->where($where)
+                ->count())/PAGINATE);
 
         if($count<$page){
             $this->api_res(0,[]);
