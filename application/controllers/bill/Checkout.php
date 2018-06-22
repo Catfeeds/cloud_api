@@ -114,18 +114,20 @@ class Checkout extends MY_Controller
         $paymoney   =   $resident->tmp_deposit+$resident->deposit_money-$countmoney;
 
         //将押金抵扣的金额转出
-        $this->backBill($resident,$countmoney);
+//        $this->backBill($resident,$countmoney);
         //将押金抵扣的账单转为已收款
-        $this->createBill($orders);
-        //将剩余的金额处理掉
-        $this->backBill($resident,$paymoney);
-
-        //更新退房单
-        $updatedata['refund']=$paymoney;
-        $updatedata['bank_sequence']=$sequence;
-        $updatedata['status']='COMPLETED';
-        $updatedata['accountant_remark']=$remark;
-
+        $new_orders=$orders->toArray();
+        var_dump($new_orders);
+//        $this->createBill($new_orders);
+//        //将剩余的金额处理掉
+//        $this->backBill($resident,$paymoney);
+//
+//        //更新退房单
+//        $updatedata['refund']=$paymoney;
+//        $updatedata['bank_sequence']=$sequence;
+//        $updatedata['status']='COMPLETED';
+//        $updatedata['accountant_remark']=$remark;
+//
 //        Checkoutmodel::whereIn('id', $id)->update($updatedata);
 
         $data['message']='办理成功!';
@@ -170,7 +172,6 @@ class Checkout extends MY_Controller
         $orderIds=array();
 
         foreach($orders as $order){
-
             $orderIds[]=$order->id;
             $bill->money               =    $bill->money+$order->paid;
 
@@ -189,12 +190,11 @@ class Checkout extends MY_Controller
         $bill->out_trade_no='';
         $bill->store_pay_id='';
 
-        var_dump($bill);
-//        $res=$bill->save();
-//        if(isset($res)){
-//            Ordermodel::whereIn('id', $orderIds)->update(['sequence_number' => $bill->sequence_number]);
-//        }
-//        return $res;
+        $res=$bill->save();
+        if(isset($res)){
+            Ordermodel::whereIn('id', $orderIds)->update(['sequence_number' => $bill->sequence_number]);
+        }
+        return $res;
     }
 
 
@@ -232,12 +232,11 @@ class Checkout extends MY_Controller
         $bill->confirm_date        =    date('Y-m-d H:i:s',time());
 
         //如果是微信支付
-//        $bill->out_trade_no='';
-//        $bill->store_pay_id='';
-//
-//        $res=$bill->save();
-//        return $res;
-        var_dump($bill);
+        $bill->out_trade_no='';
+        $bill->store_pay_id='';
+
+        $res=$bill->save();
+        return $res;
 
     }
 
