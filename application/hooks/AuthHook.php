@@ -48,7 +48,7 @@ class AuthHook {
 //            'bill/bill/showbill',
 
 //            'account/login/login',
-//            'demo/test/test1',
+            'demo/test/test1',
 
             //'mini/resident/checkroomunion',
             //'mini/resident/checkin',
@@ -81,7 +81,7 @@ class AuthHook {
 //            'mini/order/showbyroom',
             //'mini/order/confirm',
             //'mini/order/pay',
-            //'store/store/liststore',
+//            'store/store/liststore',
             //'store/store/addstoredot',
             //'store/store/addstoreunion',
             //'store/store/deletestore',
