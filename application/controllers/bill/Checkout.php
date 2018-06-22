@@ -114,20 +114,21 @@ class Checkout extends MY_Controller
         $paymoney   =   $resident->tmp_deposit+$resident->deposit_money-$countmoney;
 
         //将押金抵扣的金额转出
-        $this->backBill($resident,$countmoney);
+//        $this->backBill($resident,$countmoney);
         //将押金抵扣的账单转为已收款
         $new_orders=$orders->toArray();
-        $this->createBill($new_orders);
-        //将剩余的金额处理掉
-        $this->backBill($resident,$paymoney);
-
-        //更新退房单
-        $updatedata['refund']=$paymoney;
-        $updatedata['bank_sequence']=$sequence;
-        $updatedata['status']='COMPLETED';
-        $updatedata['accountant_remark']=$remark;
-
-        Checkoutmodel::whereIn('id', $id)->update($updatedata);
+        var_dump($new_orders);
+//        $this->createBill($new_orders);
+//        //将剩余的金额处理掉
+//        $this->backBill($resident,$paymoney);
+//
+//        //更新退房单
+//        $updatedata['refund']=$paymoney;
+//        $updatedata['bank_sequence']=$sequence;
+//        $updatedata['status']='COMPLETED';
+//        $updatedata['accountant_remark']=$remark;
+//
+//        Checkoutmodel::whereIn('id', $id)->update($updatedata);
 
         $data['message']='办理成功!';
         $this->api_res(0,$data);
