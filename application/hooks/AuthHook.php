@@ -69,6 +69,8 @@ class AuthHook {
 
 //            'mini/activity/showactivity',
 //
+
+            //'home/home/home'
 //            'bill/meter/confirm',
 //            'bill/bill/listbill',
 //            'bill/order/listorder',
@@ -192,7 +194,7 @@ class AuthHook {
             //'mini/server/comfirmorder',
 //            'mini/server/create',
             //'mini/server/listserver',
-            'mini/server/limitcontract',
+            //'mini/server/limitcontract',
 //            'mini/server/serverstatus',
 //            'mini/room/listroom',
 //            'mini/room/detailsroom',
