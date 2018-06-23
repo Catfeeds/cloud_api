@@ -75,7 +75,7 @@ class Home extends MY_Controller
         $result['home']['count_bills']  = Ordermodel::whereIn('store_id', $store_ids)->whereIn('status', ['PENDING','AUDITED','GENERATE'])->count();
 /******************************日报表****************************/
         //预约看房数
-        $result['day']['view'] = Reserveordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)->get(['visit_time'])->count();
+        $result['day']['view'] = Reserveordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)->count();
         //新签住户数
         $this->load->model('contractmodel');
         $result['day']['sign'] = Contractmodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)->count();
