@@ -80,9 +80,9 @@ class Home extends MY_Controller
         $this->load->model('contractmodel');
         $result['day']['sign'] = Contractmodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)->count();
         //应收
-        $result['day']['recmoney'] = Billmodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)->sum('money');
+        $result['day']['paymoney'] = Billmodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)->sum('money');
         //实收
-        $result['day']['paymoney'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)->sum('money');
+        $result['day']['recmoney'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)->sum('money');
         //退租
         $result['day']['checkout'] = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('refund_time', $date_d)->count();
         //维修订单
