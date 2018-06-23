@@ -21,19 +21,16 @@ class Reserve extends MY_Controller
     public function listReserve()
     {
         $this->load->model('roomtypemodel');
+        $this->load->model('employeemodel');
         $post = $this->input->post(NULL, true);
         $page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
         $page_count = isset($post['page_count']) ? intval($post['page_count']) : 4;//当前页显示条数
         $offset = $page_count * ($page - 1);
-        $filed = ['id', 'customer_id','room_type_id', 'name', 'phone', 'visit_time', 'remark'];
-        $store_id   = $this->employee->store_id;
-
-        $count_total = ceil(Reserveordermodel::where(['store_id'=>$store_id])->whereIn('status', ['WAIT', 'BEGIN'])->count());//总条数
+        $filed = ['id', 'customer_id','room_type_id', 'name', 'phone', 'visit_time', 'remark','status','employee_id'];
+        $store_id   = 1;//$this->employee->store_id;
+        $count_total = ceil(Reserveordermodel::where('store_id',$store_id)->whereIn('status', ['WAIT', 'BEGIN'])->count());//总条数
         $count = ceil($count_total / $page_count);//总页数
-//        if ($page > $count) {
-//            return;
-//        }
-        $reserve = Reserveordermodel::with('roomtype')->where(['store_id'=>$store_id])->whereIn('status', ['WAIT', 'BEGIN'])
+        $reserve = Reserveordermodel::with('roomtype')->with('employee')->where('store_id',$store_id)->whereIn('status', ['WAIT', 'BEGIN'])
                                     ->take($page_count)->skip($offset)
                                     ->orderBy('id', 'desc')->get($filed)->toArray();
         $this->api_res(0, ['list' => $reserve, 'page' => $page, 'count_total' => $count_total, 'count' => $count]);
