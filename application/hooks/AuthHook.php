@@ -175,7 +175,7 @@ class AuthHook {
 //            'sellcontrol/sellcontrol/details',
 
 //            'resident/resident/getresidentorder'
-            'mini/reserve/listreserve',
+            //'mini/reserve/listreserve',
 //            'mini/reserve/addreserve',
 //            'mini/reserve/reserveinfo',
 //            'mini/reserve/room_type',
