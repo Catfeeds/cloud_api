@@ -232,6 +232,7 @@ class Server extends MY_Controller
                 }
             }else{
                 $server->deal = $status;
+                $server->save();
                 $this->api_res(0,[]);
             }
         }else{
