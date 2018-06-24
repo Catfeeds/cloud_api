@@ -168,8 +168,8 @@ class Login extends MY_Controller
             $this->api_res(1006);
         }
         //暂时关闭验证短信验证码功能
-        //if($this->m_redis->verifySmsCode($phone,$code))
-        if(true)
+        if($this->m_redis->verifySmsCode($phone,$code))
+//        if(true)
         {
             //判断用户的身份
             $position   = $user->base_position;
