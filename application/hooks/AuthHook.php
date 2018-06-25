@@ -84,6 +84,7 @@ class AuthHook {
 //            'mini/order/showbyroom',
             //'mini/order/confirm',
             //'mini/order/pay',
+            //'mini/owner/showdetail',
 //            'store/store/liststore',
             //'store/store/addstoredot',
             //'store/store/addstoreunion',

@@ -112,7 +112,7 @@ class Employee extends MY_Controller
         $field = ['id', 'name', 'phone', 'position_id', 'store_ids', 'hiredate', 'status'];
         $this->load->model('positionmodel');
         $post   = $this->input->post(null,true);
-        $name   = isset($post['name'])?$post['name']:null;
+        $name   = !empty($post['name'])?$post['name']:null;
         $page   = intval(isset($post['page'])?$post['page']:1);
         $offset = PAGINATE * ($page-1);
         //define('COMPANY_ID', 4); //测试用
