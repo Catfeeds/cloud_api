@@ -165,27 +165,27 @@ class Coupon extends MY_Controller
         $where=[];
         empty($post['store_id'])?:$where['store_id']=$post['store_id'];
         if(!empty($post['search'])){
-            $name = $post['name'];
+            $name = $post['search'];
         }
         $filed = ['id','room_id','name','phone','card_number','created_at','status'];
         $offset = PAGINATE * ($page - 1);
         if (isset($name)){
-            $count = ceil((Residentmodel::with(['roomunion'=>function($query) use ($where){
+            $count = ceil((Residentmodel::where('name','like',"%$name%")->with(['roomunion'=>function($query) use ($where){
                     $query->with('store');
                 }])
                     ->whereHas('roomunion',function ($query) use ($where){
                         $query->where($where);
-                    })->where('name','like',"%.$name.%")->count())/PAGINATE);
+                    })->count())/PAGINATE);
             if ($count<$page||$page<0){
                 $this->api_res(0,[]);
                 return;
             }
-            $resident   = Residentmodel::with(['roomunion'=>function($query) use ($where){
+            $resident   = Residentmodel::where('name','like',"%$name%")->with(['roomunion'=>function($query) use ($where){
                 $query->with('store');
             }])
                 ->whereHas('roomunion',function ($query) use ($where){
                     $query->where($where);
-                })->where('name','like',"%.$name.%")
+                })
                 ->offset($offset)
                 ->limit(PAGINATE)
                 ->orderBy('created_at','DESC')
