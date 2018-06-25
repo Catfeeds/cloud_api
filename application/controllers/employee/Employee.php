@@ -391,7 +391,7 @@ class Employee extends MY_Controller
         $user   = $this->httpCurl($url,'get','json');
         if(array_key_exists('errcode',$user))
         {
-            log_message('error',$user['errmsg']);
+            log_message('error','GET_ACCESS_TOKEN'.$user['errmsg']);
             $this->api_res(1006);
             return false;
         }
