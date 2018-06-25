@@ -132,7 +132,7 @@ class Owner extends MY_Controller
         $rent_increase_rate = trim($rent_increase_rate,']');
         $owner->rent_increase_rate = explode(',', $rent_increase_rate);
 
-        $no_rent_days = trim($owner->rent_increase_rate,'[');
+        $no_rent_days = trim($owner->no_rent_days,'[');
         $no_rent_days = trim($no_rent_days,']');
         $owner->no_rent_days = explode(',', $no_rent_days);
         $owner->agent_info = json_decode($owner->agent_info);
