@@ -13,7 +13,7 @@ class Login extends MY_Controller
         parent::__construct();
         $this->load->model('employeemodel');
         $this->load->model('companymodel');
-        $this->load->library('m_redis');
+//        $this->load->library('m_redis');
     }
     /**
      * 手机或者微信登陆
@@ -242,6 +242,7 @@ class Login extends MY_Controller
         $this->load->model('privilegemodel');
 
         $position_id = $this->employee->position_id;
+//        $position_id = 19;
         $pc_privilege_ids_string = Positionmodel::where('id', $position_id)->first(['pc_privilege_ids']);
         $employee_all_privilege = explode(',', $pc_privilege_ids_string);
 
@@ -252,10 +253,13 @@ class Login extends MY_Controller
         }
 
         foreach ($privileges_one as $key=>$privilege_two) {
+
             $temps= privilegemodel::where('parent_id', $privilege_two['id'])->get(['id', 'parent_id', 'name'])->toArray();
+
             if (!$temps) {
-                $this->api_res(1009);
-                return;
+                continue;
+//                $this->api_res(1009);
+//                return;
             }
             $i=0;
             foreach ($temps as $k2=>$temp) {

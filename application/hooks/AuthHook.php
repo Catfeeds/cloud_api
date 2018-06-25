@@ -48,6 +48,7 @@ class AuthHook {
 //            'bill/bill/showbill',
 
 //            'account/login/login',
+//            'account/login/listmenu',
             'demo/test/test1',
 
             //'mini/resident/checkroomunion',
