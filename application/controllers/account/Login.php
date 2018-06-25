@@ -247,7 +247,7 @@ class Login extends MY_Controller
 
         $privileges_one = privilegemodel::where('parent_id', 0)->get(['id', 'parent_id', 'name'])->toArray();
         if (!$privileges_one) {
-            $this->api_res(1009);
+            $this->api_res(1007);
             return;
         }
 
