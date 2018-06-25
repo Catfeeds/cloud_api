@@ -32,7 +32,7 @@ class AuthHook {
             'bill/checkout/show',
 
 //            'demo/copy/transferimages',
-//            'demo/copy/run',
+            'demo/copy/run',
 //
 //            'common/imageupload',
 //            'common/fileupload',

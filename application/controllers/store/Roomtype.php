@@ -25,7 +25,7 @@ class Roomtype extends MY_Controller
         $offset = PAGINATE*($page-1);
         $field  = ['id','store_id','name','feature'];
         $this->load->model('storemodel');
-        $where  = isset($post['store_id'])?['store_id'=>$post['store_id']]:[];
+        $where  = empty($post['store_id'])?[]:['store_id'=>$post['store_id']];
         if(isset($post['city'])&&!empty($post['city'])){
             $store_ids  = Storemodel::where('city',$post['city'])->get(['id'])->map(function($s){
                 return $s['id'];

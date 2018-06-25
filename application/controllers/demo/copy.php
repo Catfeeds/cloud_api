@@ -11,8 +11,8 @@ class copy extends MY_Controller
 {
 
     public function run(){
-        $this->transferImages();
-        //$this->copy_contract_template();
+//        $this->transferImages();
+//        $this->copy_contract_template();
 //       $this->templateToUnionRoom();
 //        $this->customerUxid();
 //        $this->residentUxid();
@@ -21,6 +21,7 @@ class copy extends MY_Controller
 //        $this->orderToNew();
         //$this->orderToBill();
         //$this->billToOrder();
+//        $this->room_building_name();
 
 
     }
@@ -346,6 +347,17 @@ class copy extends MY_Controller
 
         $this->api_res(0);
 
+    }
+
+    public function room_building_name(){
+        $this->load->model('roomunionmodel');
+        $this->load->model('buildingmodel');
+       $rooms   = Roomunionmodel::all();
+       foreach ($rooms as $room){
+           $room->building_name = Buildingmodel::find($room->building_id)->name;
+           $room->save();
+       }
+       echo 1;
     }
 
     /**

@@ -27,9 +27,9 @@ class Store extends MY_Controller
         $post   = $this->input->post(null,true);
         $page   = intval(isset($post['page'])?$post['page']:1);
         $where  = ['company_id'=>COMPANY_ID];
-        isset($post['city'])?$where['city']=$post['city']:null;
-        isset($post['type'])?$where['rent_type']=$post['type']:null;
-        isset($post['status'])?$where['status']=$post['status']:null;
+        empty($post['city'])?:$where['city']=$post['city'];
+        empty($post['type'])?:$where['rent_type']=$post['type'];
+        empty($post['status'])?:$where['status']=$post['status'];
         $offset = PAGINATE*($page-1);
         $field  = ['id','name','city','rent_type','address','contact_user','counsel_phone','status','created_at'];
         $count  = ceil(Storemodel::where($where)->count()/PAGINATE);
