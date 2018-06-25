@@ -267,14 +267,15 @@ class Position extends MY_Controller
         $this->load->model('privilegemodel');
         $privileges_one = privilegemodel::where('parent_id', 0)->get(['id', 'parent_id', 'name'])->toArray();
         if (!$privileges_one) {
-            $this->api_res(1009);
+            $this->api_res(1007);
             return;
         }
         foreach ($privileges_one as $key=>$privilege_two) {
             $temps= privilegemodel::where('parent_id', $privilege_two['id'])->get(['id', 'parent_id', 'name'])->toArray();
             if (!$temps) {
-                $this->api_res(1009);
-                return;
+                continue;
+//                $this->api_res(1009);
+//                return;
             }
             foreach ($temps as $k2=>$temp) {
                 if ($temp['id'] == 37) break;
