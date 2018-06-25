@@ -391,17 +391,32 @@ class Employee extends MY_Controller
         $user   = $this->httpCurl($url,'get','json');
         if(array_key_exists('errcode',$user))
         {
-            log_message('error',$user['errmsg']);
+            log_message('error','GET_ACCESS_TOKEN'.$user['errmsg']);
             $this->api_res(1006);
             return false;
         }
         $openid         = $user['openid'];
         $unionid        = $user['unionid'];
+        $access_token    = $user['access_token'];
+
+        $info_url   = 'https://api.weixin.qq.com/sns/userinfo?access_token='.$access_token.'&openid='.$openid.'&lang=zh_CN';
+        $user_info  = $this->httpCurl($info_url,'get','json');
+        if(array_key_exists('errcode',$user_info)){
+            log_message('error','请求info:'.$user_info['errmsg']);
+            $this->api_res(1006);
+            return false;
+        }
 
 
         $employee = Employeemodel::find($post['id']);
         $employee->openid = $openid;
         $employee->unionid = $unionid;
+        $employee->nickname = $user['nickname'];
+        $employee->gender     = $user_info['sex'];
+        $employee->province   = $user_info['province'];
+        $employee->city       = $user_info['city'];
+        $employee->country    = $user_info['country'];
+        $employee->avatar     = $user_info['headimgurl'];
 
         if ($employee->save()) {
             $this->api_res(0);
