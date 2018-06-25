@@ -93,7 +93,7 @@ if (!is_cli()){
 }
 
 //自定义常量
-define('WXID','openid');    //验证用户的用到的微信标识 （openid/unionid）
+define('WXID','unionid');    //验证用户的用到的微信标识 （openid/unionid）
 
 define('SMSTEXT','【火花草莓社区】您的验证码是'); //发送短信的文本内容
 

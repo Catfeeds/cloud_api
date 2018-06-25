@@ -32,7 +32,7 @@ class AuthHook {
             'bill/checkout/show',
 
 //            'demo/copy/transferimages',
-//            'demo/copy/run',
+            'demo/copy/run',
 //
 //            'common/imageupload',
 //            'common/fileupload',
@@ -48,6 +48,7 @@ class AuthHook {
 //            'bill/bill/showbill',
 
 //            'account/login/login',
+//            'account/login/listmenu',
             'demo/test/test1',
 
             //'mini/resident/checkroomunion',

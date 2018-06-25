@@ -168,8 +168,8 @@ class Login extends MY_Controller
             $this->api_res(1006);
         }
         //暂时关闭验证短信验证码功能
-        //if($this->m_redis->verifySmsCode($phone,$code))
-        if(true)
+        if($this->m_redis->verifySmsCode($phone,$code))
+//        if(true)
         {
             //判断用户的身份
             $position   = $user->base_position;
@@ -242,20 +242,24 @@ class Login extends MY_Controller
         $this->load->model('privilegemodel');
 
         $position_id = $this->employee->position_id;
+//        $position_id = 19;
         $pc_privilege_ids_string = Positionmodel::where('id', $position_id)->first(['pc_privilege_ids']);
         $employee_all_privilege = explode(',', $pc_privilege_ids_string);
 
         $privileges_one = privilegemodel::where('parent_id', 0)->get(['id', 'parent_id', 'name'])->toArray();
         if (!$privileges_one) {
-            $this->api_res(1009);
+            $this->api_res(1007);
             return;
         }
 
         foreach ($privileges_one as $key=>$privilege_two) {
+
             $temps= privilegemodel::where('parent_id', $privilege_two['id'])->get(['id', 'parent_id', 'name'])->toArray();
+
             if (!$temps) {
-                $this->api_res(1009);
-                return;
+                continue;
+//                $this->api_res(1009);
+//                return;
             }
             $i=0;
             foreach ($temps as $k2=>$temp) {

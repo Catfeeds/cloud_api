@@ -47,3 +47,26 @@ function getMiniWechatConfig()
         ],
     ];
 }
+
+/**
+ * 员工公众号
+ */
+function getWechatEmployeeConfig()
+{
+    $debug  = (ENVIRONMENT!=='development'?false:true);
+    return [
+        'debug'     => $debug,
+        'app_id'    => config_item('wx_employee_appid'),
+        'secret'    => config_item('wx_employee_secret'),
+        'token'     => config_item('wx_employee_token'),
+        'aes_key'   => config_item('wx_employee_aes_key'),
+        'log' => [
+            'level' => 'debug',
+            'file'  => APPPATH.'cache/wechatEmployee.log',
+        ],
+        'guzzle' => [
+            'timeout' => 3.0,
+        ]
+    ];
+
+}
