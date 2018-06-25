@@ -128,8 +128,8 @@ class Owner extends MY_Controller
             $this->api_res(1007);
             return;
         }
-        $owner->rent_increase_rate = explode(',', $owner->rent_increase_rate);
-        $owner->no_rent_days = explode(',', $owner->no_rent_days);
+//        $owner->rent_increase_rate = explode(',', $owner->rent_increase_rate);
+//        $owner->no_rent_days = explode(',', $owner->no_rent_days);
         $owner->agent_info = json_decode($owner->agent_info);
         $owner->id_card_urls = json_decode($owner->id_card_urls);
         $owner->bank_card_urls = json_decode($owner->bank_card_urls);
