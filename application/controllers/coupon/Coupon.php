@@ -164,31 +164,55 @@ class Coupon extends MY_Controller
         $page = isset($post['page'])?intval($post['page']):1;
         $where=[];
         empty($post['store_id'])?:$where['store_id']=$post['store_id'];
-
+        if(!empty($post['search'])){
+            $name = $post['name'];
+        }
         $filed = ['id','room_id','name','phone','card_number','created_at','status'];
         $offset = PAGINATE * ($page - 1);
-        $count = ceil((Residentmodel::with(['roomunion'=>function($query) use ($where){
+        if (isset($name)){
+            $count = ceil((Residentmodel::with(['roomunion'=>function($query) use ($where){
+                    $query->with('store');
+                }])
+                    ->whereHas('roomunion',function ($query) use ($where){
+                        $query->where($where);
+                    })->where('name','like',"%.$name.%")->count())/PAGINATE);
+            if ($count<$page||$page<0){
+                $this->api_res(0,[]);
+                return;
+            }
+            $resident   = Residentmodel::with(['roomunion'=>function($query) use ($where){
                 $query->with('store');
             }])
                 ->whereHas('roomunion',function ($query) use ($where){
                     $query->where($where);
-                })->count())/PAGINATE);
-        if ($count<$page||$page<0){
-            $this->api_res(0,[]);
-            return;
+                })->where('name','like',"%.$name.%")
+                ->offset($offset)
+                ->limit(PAGINATE)
+                ->orderBy('created_at','DESC')
+                ->get($filed);
+        }else{
+            $count = ceil((Residentmodel::with(['roomunion'=>function($query) use ($where){
+                    $query->with('store');
+                }])
+                    ->whereHas('roomunion',function ($query) use ($where){
+                        $query->where($where);
+                    })->count())/PAGINATE);
+            if ($count<$page||$page<0){
+                $this->api_res(0,[]);
+                return;
+            }
+
+            $resident   = Residentmodel::with(['roomunion'=>function($query) use ($where){
+                $query->with('store');
+            }])
+                ->whereHas('roomunion',function ($query) use ($where){
+                    $query->where($where);
+                })
+                ->offset($offset)
+                ->limit(PAGINATE)
+                ->orderBy('created_at','DESC')
+                ->get($filed);
         }
-
-        $resident   = Residentmodel::with(['roomunion'=>function($query) use ($where){
-            $query->with('store');
-        }])
-            ->whereHas('roomunion',function ($query) use ($where){
-                $query->where($where);
-            })
-            ->offset($offset)
-            ->limit(PAGINATE)
-            ->orderBy('created_at','DESC')
-            ->get($filed);
-
         $this->api_res(0,['total_page'=>$count,'list'=>$resident]);
     }
 
