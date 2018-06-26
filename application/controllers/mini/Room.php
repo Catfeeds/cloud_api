@@ -111,7 +111,47 @@ class Room extends MY_Controller
                     ]];
                 })
                 ->toArray();
-        }else{
+        }elseif($status == null){
+            $room = Roomunionmodel::with('room_type')->with('due')->with('order')
+                ->where($where)->orderBy('number','ASC')
+                ->get($filed)->groupBy('layer')
+                ->map(function ($room){
+                    $roominfo = $room->toArray();
+                    $roominfo['count_total']    = count($room);
+                    $roominfo['count_rent']     = 0;
+                    $roominfo['count_blank']    = 0;
+                    $roominfo['count_arrears']  = 0;
+                    $roominfo['count_repair']   = 0;
+                    $roominfo['count_due']      = 0;
+                    for($i = 0;$i<$roominfo['count_total'];$i++){
+                        $status = $roominfo[$i]['status'];
+                        if ($status == 'RENT'){
+                            $roominfo['count_rent']     += 1;
+                        }
+                        if ($status == 'BLANK'){
+                            $roominfo['count_blank']    += 1;
+                        }
+                        if (!empty($roominfo[$i]['order'])){
+                            $roominfo['count_arrears']  += 1;
+                        }
+                        if (!empty($roominfo[$i]['due'])){
+                            $roominfo['count_due']  += 1;
+                        }
+                        if ($status == 'REPAIR'){
+                            $roominfo['count_repair']   += 1;
+                        }
+                    }
+                    return [$room,'count'=>[
+                        'count_total'   =>$roominfo['count_total'],
+                        'count_rent'    =>$roominfo['count_rent'],
+                        'count_blank'   =>$roominfo['count_blank'],
+                        'count_arrears' =>$roominfo['count_arrears'],
+                        'count_repair'  =>$roominfo['count_repair'],
+                        'count_due'     =>$roominfo['count_due']
+                    ]];
+                })
+                ->toArray();
+        }else {
             $room = Roomunionmodel::with('room_type')->with('due')->with('order')
                 ->where($where)->where('status',$status)->orderBy('number','ASC')
                 ->get($filed)->groupBy('layer')
