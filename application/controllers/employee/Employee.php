@@ -115,7 +115,7 @@ class Employee extends MY_Controller
         $name   = !empty($post['name'])?$post['name']:null;
         $page   = intval(isset($post['page'])?$post['page']:1);
         $offset = PAGINATE * ($page-1);
-        //define('COMPANY_ID', 4); //测试用
+
         $this->load->model('storemodel');
         $store_ids = Storemodel::where('company_id', COMPANY_ID)->get(['id'])->map(function ($s) {
                 return $s->id;
