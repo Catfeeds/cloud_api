@@ -58,9 +58,9 @@ class Home extends MY_Controller
         $this->load->model('serviceordermodel');
 /**************************时间节点******************************/
         //当前时间节点之前的一天之内(只含当天)
-        $date_d = [date('Y-m-d', time()), date('Y-m-d H:i:s', time())];
+        $date_d = [date('Y-m-d', time())." 00:00:00", date('Y-m-d H:i:s', time())];
         //当前时间节点之前的一月之内(只含本月)
-        $date_m = [date('Y-m', time()), date('Y-m-d H:i:s', time())];
+        $date_m = [date('Y-m', time())."-00 00:00:00", date('Y-m-d H:i:s', time())];
         //当前时间节点之后的一月之内
         $date_later_m = [date('Y-m-d H:i:s', time()),date('Y-m-d H:i:s', strtotime('+1month'))];
         $store_ids = Employeemodel::getMyStoreids();
@@ -112,9 +112,10 @@ class Home extends MY_Controller
         $result['month']['total']['server'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->where('type', 'ROOM')->sum('paid');
         //月报表其他服务费实收
         $result['month']['total']['other'] = strval(floatval($result['month']['total']['all']) - floatval($result['month']['total']['server']));
-
-        $count_thz = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('begin_time', $date_d)->count();  //住户增
-        $count_thj = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('end_time', $date_d)->count();  //住户减
+        //住户增
+        $count_thz = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('begin_time', $date_d)->count();
+        //住户减
+        $count_thj = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('end_time', $date_d)->count();
         $count_yhzj = $count_thz - $count_thj;
         if ($count_yhzj > 0) {
             $count_yhzj = '+' . $count_yhzj;
