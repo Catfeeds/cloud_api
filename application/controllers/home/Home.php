@@ -58,9 +58,11 @@ class Home extends MY_Controller
         $this->load->model('serviceordermodel');
 /**************************时间节点******************************/
         //当前时间节点之前的一天之内(只含当天)
-        $date_d = [date('Y-m-d', time()), date('Y-m-d H:i:s', time())];
+        $date_d = [date('Y-m-d', time())." 00:00:00", date('Y-m-d H:i:s', time())];
+        var_dump($date_d);
         //当前时间节点之前的一月之内(只含本月)
-        $date_m = [date('Y-m', time()), date('Y-m-d H:i:s', time())];
+        $date_m = [date('Y-m', time())."-00 00:00:00", date('Y-m-d H:i:s', time())];
+        var_dump($date_m);
         //当前时间节点之后的一月之内
         $date_later_m = [date('Y-m-d H:i:s', time()),date('Y-m-d H:i:s', strtotime('+1month'))];
         $store_ids = Employeemodel::getMyStoreids();
