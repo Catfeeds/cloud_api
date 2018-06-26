@@ -112,6 +112,7 @@ class Home extends MY_Controller
         $result['month']['total']['utility'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->where('type', 'UTILITY')->sum('paid');
         //月报表其他服务费实收
         $result['month']['total']['other'] = $result['month']['total']['all']- $result['month']['total']['server']-$result['month']['total']['management']-$result['month']['total']['utility'];
+        $result['month']['total']['other'] = number_format($result['month']['total']['other'], 2);
         //住户增
         $count_thz = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('begin_time', $date_d)->count();
         //住户减
