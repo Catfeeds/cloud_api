@@ -30,7 +30,7 @@ class Room extends MY_Controller
         $filed      = ['id','layer','status','number','room_type_id'];
         $this->load->model('roomtypemodel');
         if ($status == 'ARREARS'){
-            $room = Roomunionmodel::with('room_type')->with('order')->with('due')
+            $room = Roomunionmodel::with('room_type')->with('order')//->with('due')
                 ->where($where)->whereHas('order')->orderBy('number','ASC')
                 ->get($filed)->groupBy('layer')
                 ->map(function ($room){
@@ -72,7 +72,7 @@ class Room extends MY_Controller
         }
         if ($status == 'DUE'){
             $this->load->model('residentmodel');
-            $room = Roomunionmodel::with('room_type')->with('due')->with('order')
+            $room = Roomunionmodel::with('room_type')->with('due')//->with('order')
                 ->where($where)->whereHas('due')->orderBy('number','ASC')
                 ->get($filed)->groupBy('layer')
                 ->map(function ($room){
@@ -114,7 +114,7 @@ class Room extends MY_Controller
         }else{
             $this->load->model('residentmodel');
             $room = Roomunionmodel::with('room_type')->with('due')->with('order')
-                ->where($where)->orderBy('number','ASC')
+                ->where($where)->where('status',$status)->orderBy('number','ASC')
                 ->get($filed)->groupBy('layer')
                 ->map(function ($room){
                     $roominfo = $room->toArray();
