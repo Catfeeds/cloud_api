@@ -112,8 +112,9 @@ class Roomunionmodel extends Basemodel{
     public function order()
     {
         return $this->hasMany(Ordermodel::class,'room_id')
-                    ->where('type','ROOM')->whereIn('status',['GENERATE','AUDITED','PENDING'])
-                    ->select('id','room_id','resident_id','type','status');
+//            ->where('type','ROOM')
+            ->whereIn('status',['GENERATE','AUDITED','PENDING'])
+            ->select('id','room_id','resident_id','type','status');
     }
 
 //    public function utilities()

@@ -8,7 +8,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  */
 class Contract extends MY_Controller{
 
-    public function notify(){
+    public function notify()
+    {
         log_message('error','FDD合同签署回调成功');
     }
 
@@ -23,13 +24,12 @@ class Contract extends MY_Controller{
         $offset = ($page-1)*PAGINATE;
         $where['store_id']=$this->employee->store_id;
 //        $where['store_id']=1;
-        isset($input['room_number'])?$where['number']=$input['room_number']:null;
+//        isset($input['room_number'])?$where['number']=$input['room_number']:null;
 
         $this->load->model('residentmodel');
         $this->load->model('roomunionmodel');
         $this->load->model('contractmodel');
         $rooms  = Residentmodel::with('roomunion')
-            ->whereHas('roomunion')
             ->where($where)
             ->whereIn('status',['NOT_PAY','PRE_RESERVE'])
             ->orderBy('updated_at','ASC')
@@ -51,6 +51,41 @@ class Contract extends MY_Controller{
 
          $this->api_res(0,$data);
     }
+
+
+  /*  public function listUnSign()
+    {
+        $input  = $this->input->post(null,true);
+        $page   = (int)(isset($input['page'])?$input['page']:1);
+        $per_page   = isset($input['per_page'])?$input['per_page']:PAGINATE;
+        $offset = ($page-1)*PAGINATE;
+        $where=[];
+//        $where['store_id']=$this->employee->store_id;
+        isset($input['room_number'])?$where['number']=$input['room_number']:null;
+
+        $this->load->model('residentmodel');
+        $this->load->model('roomunionmodel');
+        $this->load->model('contractmodel');
+
+        $rooms  = Roomunionmodel::with(['resident'=>function($query){
+            $query->with(['contract']);
+        }])
+            ->whereHas('resident',function($query){
+                $query->whereHas('contract',function ($que){
+                    $que->where('status','!=',Contractmodel::STATUS_ARCHIVED);
+                })->orDoesntHave('contract')
+                ;
+            })
+            ->where('resident_id','>',0)
+            ->where($where)
+            ->orderBy('updated_at','ASC')
+            ->offset($offset)
+            ->limit($per_page)
+            ->get();
+//            ->orderBy('resident.created_at')
+
+        $this->api_res(0,['data'=>$rooms]);
+    }*/
 
 
 }

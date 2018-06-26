@@ -36,7 +36,7 @@ class Employee extends MY_Controller
     public function listEmp()
     {
         $post = $this->input->post(null, true);
-        $field = ['id', 'name', 'avatar', 'phone', 'position_id'];
+        $field = ['id', 'name', 'avatar', 'phone', 'position_id','status'];
         $current_page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
         $pre_page = isset($post['pre_page']) ? intval($post['pre_page']) : 10;//当前页显示条数
         $offset = $pre_page * ($current_page - 1);
