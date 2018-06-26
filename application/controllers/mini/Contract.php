@@ -29,12 +29,14 @@ class Contract extends MY_Controller{
         $this->load->model('roomunionmodel');
         $this->load->model('contractmodel');
         $rooms  = Residentmodel::with('roomunion')
-        ->where($where)
-        ->whereIn('status',['NOT_PAY','PRE_RESERVE'])
-        ->orderBy('updated_at','ASC')
-        ->offset($offset)
-        ->limit($per_page)
-        ->get()->map(function($room){
+            ->whereHas('roomunion')
+            ->where($where)
+            ->whereIn('status',['NOT_PAY','PRE_RESERVE'])
+            ->orderBy('updated_at','ASC')
+            ->offset($offset)
+            ->limit($per_page)
+            ->get()
+            ->map(function($room){
             $room2   = $room->toArray();
             $room2['begin_time'] =date('Y-m-d',strtotime($room->begin_time->toDateTimeString()));
             return $room2;
