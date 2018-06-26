@@ -170,6 +170,12 @@ class Roomunionmodel extends Basemodel{
         return $this->update(['status'=>self::STATE_BLANK]);
     }
 
+    public function due()
+    {
+        return $this->hasMany(Residentmodel::class,'room_id')
+            ->whereBetween('end_time',[date('Y-m-d H:i:s', time()),date('Y-m-d H:i:s', strtotime('+1month'))])
+            ->select('id','room_id','end_time');
+    }
 
     /*
      * 查询

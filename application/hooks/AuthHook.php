@@ -198,7 +198,7 @@ class AuthHook {
             //'mini/server/listserver',
             //'mini/server/limitcontract',
 //            'mini/server/serverstatus',
-//            'mini/room/listroom',
+            //'mini/room/listroom',
 //            'mini/room/detailsroom',
 //            'mini/room/building',
 //            'mini/room/countroom',

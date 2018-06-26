@@ -24,12 +24,14 @@ class Room extends MY_Controller
         $post       = $this->input->post(null,true);
         $where      = [];
         if(!empty($post['building_id'])){$where['building_id'] = intval($post['building_id']);};
-        if(!empty($post['status'])){$where['status'] = $post['status'];};
+        if(!empty($post['status'])){$status = $post['status'];}else{$status = null;};
         $where['store_id']  = $this->employee->store_id;
+
         $filed      = ['id','layer','status','number','room_type_id'];
         $this->load->model('roomtypemodel');
-        $room = Roomunionmodel::with('room_type')->with('order')
-                ->where($where)->orderBy('number','ASC')
+        if ($status == 'ARREARS'){
+            $room = Roomunionmodel::with('room_type')->with('order')->with('due')
+                ->where($where)->whereHas('order')->orderBy('number','ASC')
                 ->get($filed)->groupBy('layer')
                 ->map(function ($room){
                     $roominfo = $room->toArray();
@@ -38,6 +40,7 @@ class Room extends MY_Controller
                     $roominfo['count_blank']    = 0;
                     $roominfo['count_arrears']  = 0;
                     $roominfo['count_repair']   = 0;
+                    $roominfo['count_due']      = 0;
                     for($i = 0;$i<$roominfo['count_total'];$i++){
                         $status = $roominfo[$i]['status'];
                         if ($status == 'RENT'){
@@ -49,19 +52,107 @@ class Room extends MY_Controller
                         if (!empty($roominfo[$i]['order'])){
                             $roominfo['count_arrears']  += 1;
                         }
+                        if (!empty($roominfo[$i]['due'])){
+                            $roominfo['count_due']  += 1;
+                        }
                         if ($status == 'REPAIR'){
                             $roominfo['count_repair']   += 1;
                         }
                     }
                     return [$room,'count'=>[
-                            'count_total'   =>$roominfo['count_total'],
-                            'count_rent'    =>$roominfo['count_rent'],
-                            'count_blank'   =>$roominfo['count_blank'],
-                            'count_arrears' =>$roominfo['count_arrears'],
-                            'count_repair'  =>$roominfo['count_repair']
-                        ]];
+                        'count_total'   =>$roominfo['count_total'],
+                        'count_rent'    =>$roominfo['count_rent'],
+                        'count_blank'   =>$roominfo['count_blank'],
+                        'count_arrears' =>$roominfo['count_arrears'],
+                        'count_repair'  =>$roominfo['count_repair'],
+                        'count_due'     =>$roominfo['count_due'],
+                    ]];
                 })
-            ->toArray();
+                ->toArray();
+        }
+        if ($status == 'DUE'){
+            $this->load->model('residentmodel');
+            $room = Roomunionmodel::with('room_type')->with('due')->with('order')
+                ->where($where)->whereHas('due')->orderBy('number','ASC')
+                ->get($filed)->groupBy('layer')
+                ->map(function ($room){
+                    $roominfo = $room->toArray();
+                    $roominfo['count_total']    = count($room);
+                    $roominfo['count_rent']     = 0;
+                    $roominfo['count_blank']    = 0;
+                    $roominfo['count_arrears']  = 0;
+                    $roominfo['count_repair']   = 0;
+                    $roominfo['count_due']      = 0;
+                    for($i = 0;$i<$roominfo['count_total'];$i++){
+                        $status = $roominfo[$i]['status'];
+                        if ($status == 'RENT'){
+                            $roominfo['count_rent']     += 1;
+                        }
+                        if ($status == 'BLANK'){
+                            $roominfo['count_blank']    += 1;
+                        }
+                        if (!empty($roominfo[$i]['order'])){
+                            $roominfo['count_arrears']  += 1;
+                        }
+                        if (!empty($roominfo[$i]['due'])){
+                            $roominfo['count_due']  += 1;
+                        }
+                        if ($status == 'REPAIR'){
+                            $roominfo['count_repair']   += 1;
+                        }
+                    }
+                    return [$room,'count'=>[
+                        'count_total'   =>$roominfo['count_total'],
+                        'count_rent'    =>$roominfo['count_rent'],
+                        'count_blank'   =>$roominfo['count_blank'],
+                        'count_arrears' =>$roominfo['count_arrears'],
+                        'count_repair'  =>$roominfo['count_repair'],
+                        'count_due'     =>$roominfo['count_due']
+                    ]];
+                })
+                ->toArray();
+        }else{
+            $this->load->model('residentmodel');
+            $room = Roomunionmodel::with('room_type')->with('due')->with('order')
+                ->where($where)->orderBy('number','ASC')
+                ->get($filed)->groupBy('layer')
+                ->map(function ($room){
+                    $roominfo = $room->toArray();
+                    $roominfo['count_total']    = count($room);
+                    $roominfo['count_rent']     = 0;
+                    $roominfo['count_blank']    = 0;
+                    $roominfo['count_arrears']  = 0;
+                    $roominfo['count_repair']   = 0;
+                    $roominfo['count_due']      = 0;
+                    for($i = 0;$i<$roominfo['count_total'];$i++){
+                        $status = $roominfo[$i]['status'];
+                        if ($status == 'RENT'){
+                            $roominfo['count_rent']     += 1;
+                        }
+                        if ($status == 'BLANK'){
+                            $roominfo['count_blank']    += 1;
+                        }
+                        if (!empty($roominfo[$i]['order'])){
+                            $roominfo['count_arrears']  += 1;
+                        }
+                        if (!empty($roominfo[$i]['due'])){
+                            $roominfo['count_due']  += 1;
+                        }
+                        if ($status == 'REPAIR'){
+                            $roominfo['count_repair']   += 1;
+                        }
+                    }
+                    return [$room,'count'=>[
+                        'count_total'   =>$roominfo['count_total'],
+                        'count_rent'    =>$roominfo['count_rent'],
+                        'count_blank'   =>$roominfo['count_blank'],
+                        'count_arrears' =>$roominfo['count_arrears'],
+                        'count_repair'  =>$roominfo['count_repair'],
+                        'count_due'     =>$roominfo['count_due']
+                    ]];
+                })
+                ->toArray();
+        }
         $this->api_res(0,['list'=>$room]);
     }
 
