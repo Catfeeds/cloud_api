@@ -240,7 +240,8 @@ class Checkout extends MY_Controller
         $bill->type                =    'INPUT';
 
 
-        $bill->pay_type            =    $orders[0]->pay_type;
+//        $bill->pay_type            =    $orders[0]->pay_type;
+        $bill->pay_type            =    Ordermodel::PAYWAY_DEPOSIT;
         $bill->confirm             =    '';
         $bill->pay_date            =    date('Y-m-d H:i:s',time());
         $bill->data                =    '';
@@ -253,7 +254,9 @@ class Checkout extends MY_Controller
         $res=$bill->save();
         if(isset($res)){
             Ordermodel::whereIn('id', $orderIds)->update(['sequence_number' => $bill->sequence_number,
-                'status'=>Ordermodel::STATE_COMPLETED,'deal'=>Ordermodel::DEAL_DONE,'pay_date'=>date('Y-m-d H:i:s',time())]);
+                'status'=>Ordermodel::STATE_COMPLETED,'deal'=>Ordermodel::DEAL_DONE,'pay_date'=>date('Y-m-d H:i:s',time()),
+                'pay_type'=>Ordermodel::PAYWAY_DEPOSIT
+            ]);
         }
         return $res;
     }
