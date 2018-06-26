@@ -23,18 +23,20 @@ class Contract extends MY_Controller{
         $offset = ($page-1)*PAGINATE;
         $where['store_id']=$this->employee->store_id;
 //        $where['store_id']=1;
-//        isset($input['room_number'])?$where['number']=$input['room_number']:null;
+        isset($input['room_number'])?$where['number']=$input['room_number']:null;
 
         $this->load->model('residentmodel');
         $this->load->model('roomunionmodel');
         $this->load->model('contractmodel');
         $rooms  = Residentmodel::with('roomunion')
-        ->where($where)
-        ->whereIn('status',['NOT_PAY','PRE_RESERVE'])
-        ->orderBy('updated_at','ASC')
-        ->offset($offset)
-        ->limit($per_page)
-        ->get()->map(function($room){
+            ->whereHas('roomunion')
+            ->where($where)
+            ->whereIn('status',['NOT_PAY','PRE_RESERVE'])
+            ->orderBy('updated_at','ASC')
+            ->offset($offset)
+            ->limit($per_page)
+            ->get()
+            ->map(function($room){
             $room2   = $room->toArray();
             $room2['begin_time'] =date('Y-m-d',strtotime($room->begin_time->toDateTimeString()));
             return $room2;
