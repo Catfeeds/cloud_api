@@ -70,7 +70,7 @@ class Room extends MY_Controller
                 })
                 ->toArray();
         }
-        if ($status == 'DUE'){
+        elseif ($status == 'DUE'){
             $this->load->model('residentmodel');
             $room = Roomunionmodel::with('room_type')->with('due')//->with('order')
                 ->where($where)->whereHas('due')->orderBy('number','ASC')
