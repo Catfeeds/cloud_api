@@ -107,11 +107,11 @@ class Home extends MY_Controller
         //月报表住宿服务费实收
         $result['month']['total']['server'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->where('type', 'ROOM')->sum('paid');
         //月报表物业服务费实收
-        $result['month']['total']['server'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->where('type', 'ROOM')->sum('paid');
+        $result['month']['total']['management'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->where('type', 'MANAGEMENT')->sum('paid');
         //月报表水电服务费实收
-        $result['month']['total']['server'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->where('type', 'ROOM')->sum('paid');
+        $result['month']['total']['utility'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->where('type', 'UTILITY')->sum('paid');
         //月报表其他服务费实收
-        $result['month']['total']['other'] = strval(floatval($result['month']['total']['all']) - floatval($result['month']['total']['server']));
+        $result['month']['total']['other'] = $result['month']['total']['all']- $result['month']['total']['server']-$result['month']['total']['management']-$result['month']['total']['utility'];
         //住户增
         $count_thz = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('begin_time', $date_d)->count();
         //住户减
@@ -120,6 +120,9 @@ class Home extends MY_Controller
         $result['month']['resident']['server']  = Contractmodel::whereIn('store_id', $store_ids)->where('status','ARCHIVED')->whereBetween('created_at', $date_m)->count();
         //退租
         $result['month']['resident']['other']   = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('refund_time', $date_m)->count();
+        //住戶增减
+        $result['month']['resident']['all']     = $result['month']['resident']['server']-$result['month']['resident']['other'];
+
         /*$count_yhzj = $count_thz - $count_thj;
         if ($count_yhzj > 0) {
             $count_yhzj = '+' . $count_yhzj;
