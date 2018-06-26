@@ -116,7 +116,11 @@ class Home extends MY_Controller
         $count_thz = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('begin_time', $date_d)->count();
         //住户减
         $count_thj = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('end_time', $date_d)->count();
-        $count_yhzj = $count_thz - $count_thj;
+        //新签数
+        $result['month']['resident']['server']  = Contractmodel::whereIn('store_id', $store_ids)->where('status','ARCHIVED')->whereBetween('created_at', $date_m)->count();
+        //退租
+        $result['month']['resident']['other']   = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('refund_time', $date_m)->count();
+        /*$count_yhzj = $count_thz - $count_thj;
         if ($count_yhzj > 0) {
             $count_yhzj = '+' . $count_yhzj;
         } else if ($count_yhzj == 0) {
@@ -161,7 +165,7 @@ class Home extends MY_Controller
             }
         } else {
             $result['month']['free']['all'] = 0;
-        }
+        }*/
 
         $this->api_res(0, $result);
     }

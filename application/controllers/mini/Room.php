@@ -84,8 +84,8 @@ class Room extends MY_Controller
                     $roominfo['count_repair']   = 0;
                     $roominfo['count_due']      = 0;
                     for($i = 0;$i<$roominfo['count_total'];$i++){
-                        $status = $roominfo[$i]['status'];
-                        /*if ($status == 'RENT'){
+                        /*$status = $roominfo[$i]['status'];
+                        if ($status == 'RENT'){
                             $roominfo['count_rent']     += 1;
                         }
                         if ($status == 'BLANK'){
