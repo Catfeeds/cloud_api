@@ -123,6 +123,9 @@ class Home extends MY_Controller
         //住戶增减
         $result['month']['resident']['all']     = $result['month']['resident']['server']-$result['month']['resident']['other'];
 
+        if ($result['month']['resident']['all']>=0){
+            $result['month']['resident']['all'] = "+".$result['month']['resident']['all'];
+        }
         /*$count_yhzj = $count_thz - $count_thj;
         if ($count_yhzj > 0) {
             $count_yhzj = '+' . $count_yhzj;
