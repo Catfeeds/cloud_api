@@ -25,7 +25,7 @@ class Room extends MY_Controller
         $post       = $this->input->post(null,true);
         $where      = [];
         if(!empty($post['building_id'])){$where['building_id'] = intval($post['building_id']);};
-        if(!empty($post['status'])){$status = $post['status'];}else{$status = null;};
+        if(!empty($post['status'])){$status = $post['status'];};
         $where['store_id']  = $this->employee->store_id;
 
         $filed      = ['id','layer','status','number','room_type_id'];
