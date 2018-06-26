@@ -21,6 +21,7 @@ class Room extends MY_Controller
     public function listRoom()
     {
         $this->load->model('ordermodel');
+        $this->load->model('residentmodel');
         $post       = $this->input->post(null,true);
         $where      = [];
         if(!empty($post['building_id'])){$where['building_id'] = intval($post['building_id']);};
@@ -71,7 +72,6 @@ class Room extends MY_Controller
                 ->toArray();
         }
         elseif ($status == 'DUE'){
-            $this->load->model('residentmodel');
             $room = Roomunionmodel::with('room_type')->with('due')//->with('order')
                 ->where($where)->whereHas('due')->orderBy('number','ASC')
                 ->get($filed)->groupBy('layer')
@@ -112,7 +112,6 @@ class Room extends MY_Controller
                 })
                 ->toArray();
         }else{
-            $this->load->model('residentmodel');
             $room = Roomunionmodel::with('room_type')->with('due')->with('order')
                 ->where($where)->where('status',$status)->orderBy('number','ASC')
                 ->get($filed)->groupBy('layer')
