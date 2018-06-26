@@ -48,8 +48,11 @@ class Employee extends MY_Controller
             return;
         }
         $this->load->model('positionmodel');
-        $category = Employeemodel::with('position')->where('status', 'ENABLE')->take($pre_page)->skip($offset)
-            ->orderBy('id', 'desc')->get($field)->toArray();
+        $category = Employeemodel::with('position')->where('store_id',$this->employee->store_id)
+            ->where('status', 'ENABLE')
+            ->take($pre_page)->skip($offset)
+            ->orderBy('id', 'desc')
+            ->get($field)->toArray();
         $this->api_res(0, ['total' => $total, 'pre_page' => $pre_page, 'current_page' => $current_page,
                                 'total_pages' => $total_pages, 'data' => $category]);
     }
