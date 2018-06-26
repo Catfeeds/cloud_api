@@ -23,7 +23,7 @@ class Contract extends MY_Controller{
         $offset = ($page-1)*PAGINATE;
         $where['store_id']=$this->employee->store_id;
 //        $where['store_id']=1;
-//        isset($input['room_number'])?$where['number']=$input['room_number']:null;
+        isset($input['room_number'])?$where['number']=$input['room_number']:null;
 
         $this->load->model('residentmodel');
         $this->load->model('roomunionmodel');

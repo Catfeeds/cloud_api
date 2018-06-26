@@ -131,6 +131,7 @@ class Resident extends MY_Controller
             $resident->card_one = $this->splitAliossUrl($data['card_one']);
             $resident->card_two = $this->splitAliossUrl($data['card_two']);
             $resident->card_three = $this->splitAliossUrl($data['card_three']);
+            $resident->company_id = 1;
             $a=$resident->save();
             //把房间状态改成占用
             $b=$this->occupiedByResident($room, $resident);
@@ -842,6 +843,7 @@ class Resident extends MY_Controller
             $resident->status       = Residentmodel::STATE_NOTPAY;
             $resident->remark       = $remark;
             $resident->store_id     = $this->employee->store_id;
+            $resident->company_id   = 1;
             $a  = $resident->save();
             //更新房间状态
             $this->occupiedByResident($room, $resident);
