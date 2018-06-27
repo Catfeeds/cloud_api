@@ -395,6 +395,7 @@ class Employee extends MY_Controller
             $this->api_res(1006);
             return false;
         }*/
+        var_dump($user);
         $openid         = $user['openid'];
         $unionid        = $user['unionid'];
         $access_token    = $user['access_token'];
