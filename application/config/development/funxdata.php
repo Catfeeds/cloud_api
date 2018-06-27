@@ -77,7 +77,7 @@ $config['miniToken']        = '';
 $config['miniAes_key']      = '';
 
 //员工公众号配置
-$config['wx_employee_appid']    = 'wx3f45803d56359770';
+$config['wx_employee_appid']     = 'wx3f45803d56359770';
 $config['wx_employee_secret']    = 'c988ed5fba2a02b66efa9dd1130ce580';
 $config['wx_employee_token']     = 'PDH4f7Bgpk7agQ5y4vLVlPgdIdJPhE';
 $config['wx_employee_aes_key']   = 'NRgcvwQZX2soZSB9dq1yX0bmEz2JF1ppcS5Gjb2Bm5i';
