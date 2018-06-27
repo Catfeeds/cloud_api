@@ -385,8 +385,8 @@ class Employee extends MY_Controller
             return false;
         }
         $code = $post['code'];
-        $appid = config_item('wx75fd74e2316b2355');
-        $secret = config_item('70fa3a7fe658be97552788fc764f5434');
+        $appid = config_item('wx_web_appid');
+        $secret = config_item('wx_web_secret');
         $url    = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid='.$appid.'&secret='.$secret.'&code='.$code.'&grant_type=authorization_code';
         $user   = $this->httpCurl($url,'get','json');
         if(array_key_exists('errcode',$user))
