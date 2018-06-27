@@ -389,24 +389,23 @@ class Employee extends MY_Controller
         $secret = config_item('wx_web_secret');
         $url    = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid='.$appid.'&secret='.$secret.'&code='.$code.'&grant_type=authorization_code';
         $user   = $this->httpCurl($url,'get','json');
-        /*if(array_key_exists('errcode',$user))
+        if(array_key_exists('errcode',$user))
         {
             log_message('error','GET_ACCESS_TOKEN'.$user['errmsg']);
             $this->api_res(1006);
             return false;
-        }*/
-        var_dump($user);
+        }
         $openid         = $user['openid'];
         $unionid        = $user['unionid'];
-        $access_token    = $user['access_token'];
+        $access_token   = $user['access_token'];
 
         $info_url   = 'https://api.weixin.qq.com/sns/userinfo?access_token='.$access_token.'&openid='.$openid.'&lang=zh_CN';
         $user_info  = $this->httpCurl($info_url,'get','json');
-        /*if(array_key_exists('errcode',$user_info)){
+        if(array_key_exists('errcode',$user_info)){
             log_message('error','请求info:'.$user_info['errmsg']);
             $this->api_res(1006);
             return false;
-        }*/
+        }
 
         $employee = Employeemodel::find($post['id']);
         $employee->openid = $openid;
@@ -417,7 +416,6 @@ class Employee extends MY_Controller
         $employee->city       = $user_info['city'];
         $employee->country    = $user_info['country'];
         $employee->avatar     = $user_info['headimgurl'];
-        var_dump($user_info);
         if ($employee->save()) {
             $this->api_res(0);
         } else {
