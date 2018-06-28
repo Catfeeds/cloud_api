@@ -51,7 +51,9 @@ class Bill extends MY_Controller
                     $query->where('number','like',"%$search%");
                 });
             })->offset($offset)->limit(PAGINATE)->get()->map(function($query){
-                $query->pay_date    = $query->created_at->toDateTimeString();
+                if ($query->pay_date = '1970-01-01 00:00:00'){
+                    $query->pay_date    = $query->created_at->toDateTimeString();
+                }
                 return $query;
             });
 
