@@ -25,7 +25,7 @@ class Utility extends MY_Controller
         $this->load->model('buildingmodel');
         $this->load->model('roomunionmodel');
         $post = $this->input->post(null,true);
-        $page  = isset($post['page'])?intval($post['page']):1;
+        $page  = !empty($post['page'])?intval($post['page']):1;
         $offset= PAGINATE * ($page - 1);
         $where      = [];
         if(!empty($post['building_id'])){$where['building_id'] = intval($post['building_id']);};
@@ -39,7 +39,7 @@ class Utility extends MY_Controller
             return;
         }else {
             $utility = Meterreadingtransfermodel::where($where)->orderBy('updated_at', 'DESC')
-                ->with('store', 'building', 'roomunion')
+                ->with('store', 'building', 'roomunion')->take(PAGINATE)->skip($offset)
                 ->get($filed)->toArray();
             $this->api_res(0, ['list'=>$utility,'count'=>$count]);
         }
