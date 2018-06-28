@@ -50,7 +50,7 @@ class Checkout extends MY_Controller
     public function store()
     {
         $field  = ['room_id','resident_id','type','water','electricity',
-            'clean','compensation','other_deposit_deduction'];
+        'clean','compensation','other_deposit_deduction'];
         $input  = $this->input->post(null,true);
         $store_id   = $this->employee->store_id;
         if(!$this->validationText($this->validateStore())){
