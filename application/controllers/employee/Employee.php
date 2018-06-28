@@ -389,7 +389,7 @@ class Employee extends MY_Controller
         $secret = config_item('wx_web_secret');
         $url    = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid='.$appid.'&secret='.$secret.'&code='.$code.'&grant_type=authorization_code';
         $user   = $this->httpCurl($url,'get','json');
-        if(array_key_exists('errcode',$user))
+        if(array_key_exists('errcode',$user)||empty($user['openid']))
         {
             log_message('error','GET_ACCESS_TOKEN'.$user['errmsg']);
             $this->api_res(1006);
