@@ -13,7 +13,7 @@ class Meterreadingtransfermodel extends Basemodel
 {
     protected $table    = 'boss_meter_reading_transfer';
 
-    protected $dates    = ['created_at', 'updated_at'];
+    protected $dates    = [];
 
     protected $fillable = [
         'store_id',
@@ -43,17 +43,20 @@ class Meterreadingtransfermodel extends Basemodel
      */
     public function roomunion()
     {
-        return $this->belongsTo(Roomunionmodel::class, 'room_id');
+        return $this->belongsTo(Roomunionmodel::class, 'room_id')
+            ->select('id','number');
     }
 
     public function building()
     {
-        return $this->belongsTo(BuildingModel::class, 'building_id');
+        return $this->belongsTo(BuildingModel::class, 'building_id')
+            ->select('id','name');
     }
 
     public function store()
     {
-        return $this->belongsTo(Storemodel::class, 'store_id');
+        return $this->belongsTo(Storemodel::class, 'store_id')
+            ->select('id','name');
     }
 }
 

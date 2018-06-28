@@ -20,6 +20,10 @@ class Utility extends MY_Controller
      */
     public function listUtility()
     {
+        $this->load->model('meterreadingtransfermodel');
+        $this->load->model('storemodel');
+        $this->load->model('buildingmodel');
+        $this->load->model('roomunionmodel');
         $post = $this->input->post(null,true);
         $where      = [];
         if(!empty($post['building_id'])){$where['building_id'] = intval($post['building_id']);};
@@ -28,7 +32,9 @@ class Utility extends MY_Controller
         if(!empty($post['number'])){$number = trim($post['number']);}
         $filed      = ['id','store_id','building_id','room_id','type','last_reading','this_reading','updated_at'];
         $utility = Meterreadingtransfermodel::where($where)->orderBy('updated_at','DESC')
-                                    ->get($filed)->toArray();
+                    ->with('store','building','roomunion')
+                    ->get($filed)->toArray();
+
         $this->api_res(0,$utility);
     }
 }

@@ -234,7 +234,7 @@ class AuthHook {
 //            'resident/resident/contract',
 //            'resident/resident/bill',
 //            'sellcontrol/sellcontrol/details',
-
+//            'utility/utility/listutility'
 
         );
 //        if(ENVIRONMENT !=='production')
