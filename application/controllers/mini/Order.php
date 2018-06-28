@@ -139,7 +139,7 @@ class Order extends MY_Controller
         $where['store_id']= $this->employee->store_id;
 //        $where['room_id']=126;
         $page       = isset($input['page'])?intval(strip_tags(trim($input['page']))):1;
-        $per_page   = isset($input['per_page'])?intval(strip_tags(trim($input['per_page']))):PAGINATE;
+        $per_page   = isset($input['per_page'])?intval(strip_tags(trim($input['per_page']))):15;
         if(isset($input['status'])){
             $where['status']    = $input['status'];
         }
