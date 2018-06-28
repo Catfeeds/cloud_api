@@ -40,7 +40,9 @@ class Utility extends MY_Controller
         }else {
             $utility = Meterreadingtransfermodel::where($where)->orderBy('updated_at', 'DESC')
                 ->with('store', 'building', 'roomunion')->take(PAGINATE)->skip($offset)
-                ->get($filed)->toArray();
+                ->get($filed)->map(function ($s){
+
+                })->toArray();
             $this->api_res(0, ['list'=>$utility,'count'=>$count]);
         }
     }
