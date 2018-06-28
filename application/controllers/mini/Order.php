@@ -143,7 +143,6 @@ class Order extends MY_Controller
         if(isset($input['status'])){
             $where['status']    = $input['status'];
         }
-
         if(isset($input['type'])){
             $where['type']    = $input['type'];
         }
