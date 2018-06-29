@@ -213,4 +213,90 @@ class Meter extends MY_Controller
         );
     }
 
+    /**
+     * 上传读数
+     */
+    public function import()
+    {
+        $this->load->model('meterreadingmodel');
+
+        $type   = $this->input->post('type');
+        $store_id   = $this->input->post('store_id');
+        $type       = $this->checkAndGetReadingType($type);
+
+        $filePath   = $this->uploadExcel();
+        try {
+//            $this->limitAccessToApartment();
+
+
+
+            $data       = $this->checkAndGetInputData($filePath);
+
+            $this->writeReading($data, $type);
+        } catch (Exception $e) {
+            Util::error($e->getMessage());
+        }
+
+        Util::success('上传成功！');
+    }
+
+    /**
+     * 检查表计读数类型
+     */
+    public function checkAndGetReadingType($type)
+    {
+        if (!in_array($type, [
+            Meterreadingtransfermodel::TYPE_WATER_H,
+            Meterreadingtransfermodel::TYPE_WATER_C,
+            Meterreadingtransfermodel::TYPE_ELECTRIC,
+        ])) {
+            throw new Exception('表计类型值不正确！');
+        }
+
+        return $type;
+    }
+
+
+    /**
+     * 处理文件的上传
+     */
+    private function uploadExcel()
+    {
+        $this->load->library('upload', [
+            'allowed_types' => 'xls|xlsx',
+            'max_size'  => 40*1024,
+        ]);
+
+        if(!$this->excel->do_upload('file')){
+            $this->api_res(1004,array('error' => $this->excel->display_errors('','')));
+            return;
+        }else {
+            //var_dump($this->excel->excel);
+            $sheet  = $this->excel->excel->getActiveSheet();
+            $row    = $sheet->getHighestRow();
+            var_dump($row);
+
+            // $oss_path   = $this->excel->data()['oss_path'];
+            // $this->api_res(0,['file_url'=>config_item('cdn_path').$oss_path]);
+        }
+
+
+
+
+
+        if (!$this->upload->do_upload('data_file')) {
+            $error = $this->upload->display_errors();
+            throw new Exception(strip_tags($error));
+        }
+
+        $file       = $this->upload->data();
+        $filename   = 'temp' . DIRECTORY_SEPARATOR . $file['file_name'];
+        $fullname   = FCPATH.$filename;
+
+        if (!file_exists($fullname)) {
+            throw new Exception('文件上传失败!');
+        }
+
+        return $fullname;
+    }
 }
