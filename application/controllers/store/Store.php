@@ -109,7 +109,7 @@ class Store extends MY_Controller
     public function showStore(){
         $city   = $this->input->post('city',true);
         $where  = ['company_id'=>COMPANY_ID];
-        $city?$where['city']=$city:null;
+        empty($city)?:$where['city']=$city;
         $store_ids['id']= explode(',',$this->employee->store_ids);
 
         if (empty($store_ids)||!isset($store_ids)){

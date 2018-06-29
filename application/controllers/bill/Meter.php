@@ -55,7 +55,8 @@ class Meter extends MY_Controller
             $transfers = Meterreadingtransfermodel::with('roomunion')
                 ->where('type', $type)
 //                ->where('store_id',1)
-                ->where('store_id', $this->employee->store_id)
+//                ->where('store_id', $this->employee->store_id)
+                ->where('store_id', $this->input->post('store_id',true))
                 ->where('confirmed', Meterreadingtransfermodel::UNCONFIRMED)
                 ->get();
 
@@ -220,17 +221,17 @@ class Meter extends MY_Controller
     {
         $this->load->model('meterreadingmodel');
 
-        $type   = $this->input->post('type');
+        $type       = $this->input->post('type');
         $store_id   = $this->input->post('store_id');
         $type       = $this->checkAndGetReadingType($type);
-
-        $filePath   = $this->uploadExcel();
+        $sheetArray   = $this->uploadExcel();
+        $data       = $this->checkAndGetInputData($sheetArray,$store_id);
         try {
 //            $this->limitAccessToApartment();
 
 
 
-            $data       = $this->checkAndGetInputData($filePath);
+
 
             $this->writeReading($data, $type);
         } catch (Exception $e) {
@@ -238,6 +239,56 @@ class Meter extends MY_Controller
         }
 
         Util::success('上传成功！');
+    }
+
+    /**
+     * 处理文件中上传的数据
+     */
+    private function checkAndGetInputData($sheetArray,$store_id)
+    {
+        $rooms  = Roomunionmodel::with('meterreadingtransfer')->where('store_id',$store_id)->get();
+
+        $buildings  = $this->adminuser->apartment->buildings;
+        $buildCount = count($buildings);
+        $building   = $buildings->first();
+
+        foreach ($input as $key => $item) {
+            if (0 == $key || !$item[0] || !$item[1]) continue;
+
+            $read   = trim($item[2]);
+
+            if (!is_numeric($read) || 0 > $read || 1e8 < $read) {
+                throw new Exception('请检查房间：' . $item[1] . '的表读数');
+            }
+
+            if (1 < $buildCount) {
+                if (!isset($item[3])) {
+                    throw new Exception('请检查楼幢 id');
+                }
+
+                $buildingId = (int) trim($item[3]);
+            } else {
+                $buildingId = $building->id;
+            }
+
+            $room   = $rooms->where('number', strtoupper($item[1]))->where('building_id', $buildingId)->first();
+
+            if (!$room) {
+                throw new Exception('未找到房间：' . $item[1]);
+            }
+
+            $weight = isset($item[4]) ? (int) $item[4] : 100;
+
+            if (!$weight) {
+                $weight = 100;
+            } elseif (100 < $weight || 0 > $weight) {
+                throw new Exception('请检查房间：' . $item[1] . '的均摊比例');
+            }
+
+            $data[] = ['read' => $read, 'room' => $room, 'weight' => $weight];
+        }
+
+        return $data;
     }
 
     /**
@@ -268,35 +319,14 @@ class Meter extends MY_Controller
         ]);
 
         if(!$this->excel->do_upload('file')){
+
             $this->api_res(1004,array('error' => $this->excel->display_errors('','')));
             return;
         }else {
             //var_dump($this->excel->excel);
             $sheet  = $this->excel->excel->getActiveSheet();
-            $row    = $sheet->getHighestRow();
-            var_dump($row);
 
-            // $oss_path   = $this->excel->data()['oss_path'];
-            // $this->api_res(0,['file_url'=>config_item('cdn_path').$oss_path]);
         }
-
-
-
-
-
-        if (!$this->upload->do_upload('data_file')) {
-            $error = $this->upload->display_errors();
-            throw new Exception(strip_tags($error));
-        }
-
-        $file       = $this->upload->data();
-        $filename   = 'temp' . DIRECTORY_SEPARATOR . $file['file_name'];
-        $fullname   = FCPATH.$filename;
-
-        if (!file_exists($fullname)) {
-            throw new Exception('文件上传失败!');
-        }
-
-        return $fullname;
+        return $sheet->toArray();
     }
 }

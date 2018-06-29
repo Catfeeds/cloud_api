@@ -104,6 +104,14 @@ class Roomunionmodel extends Basemodel{
             ->where('rent_type','RESERVE')->select(['id','name']);
     }
 
+    /**
+     * 表计临时读数
+     */
+    public function utilityTransfers()
+    {
+        return $this->hasMany(Meterreadingtransfermodel::class, 'room_id');
+    }
+
     public function orders()
     {
         return $this->hasMany(Ordermodel::class,'room_id');
