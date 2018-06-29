@@ -1,6 +1,8 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 use Illuminate\Database\Capsule\Manager as DB;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 /**
  * Author:      zjh<401967974@qq.com>
  * Date:        2018/6/4 0004
@@ -366,4 +368,33 @@ class Meter extends MY_Controller
         }
         return ($sheet->toArray());
     }
+
+    /**
+     * 输出水电表excel模板
+     */
+    public function outputTemplate(){
+//
+//        $spreadsheet    = new Spreadsheet();
+//        $sheet  = $spreadsheet->getActiveSheet();
+//        $data   = ['序号','房间号','起始读数','楼幢ID','均摊百分比'];
+//        $sheet->fromArray($data,null,'A1');
+//        $writer = new Xlsx($spreadsheet);
+//
+        header("Pragma: public");
+        header("Expires: 0");
+        header("Cache-Control:must-revalidate, post-check=0, pre-check=0");
+        header("Content-Type:application/force-download");
+        header("Content-Type:application/vnd.ms-excel");
+        header("Content-Type:application/octet-stream");
+        header("Content-Type:application/download");;
+        header('Content-Disposition:attachment;filename="meterReadingTemplate.xlsx"');
+        header("Content-Transfer-Encoding:binary");
+
+        $file=file_get_contents('http://api.boss.strongberry.cn/水电读数导入模板.xlsx');
+
+        echo $file;
+//        $writer->save('php://output');
+//        $this->api_res(0,['url'=>'http://api.boss.strongberry.com/水电读数导入模板.xlsx']);
+    }
+
 }

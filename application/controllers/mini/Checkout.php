@@ -108,6 +108,15 @@ class Checkout extends MY_Controller
                 $resident->roomunion
             );
 
+            //重置原房间状态
+            $resident->roomunion->update(
+                [
+                    'status'        => Roomunionmodel::STATE_BLANK,
+                    'people_count'  => 0,
+                    'resident_id'   => 0,
+                ]
+            );
+
             DB::commit();
 
             Residentmodel::where('id', $input['resident_id'])->update(['status' => 'CHECKOUT']);
