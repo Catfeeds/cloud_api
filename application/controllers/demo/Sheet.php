@@ -46,6 +46,24 @@ class Sheet extends MY_Controller{
 
 //        var_dump($_SERVER);exit;
 
+        $url    = $this->input->post('url');
+        $f_open = fopen($url,'r');
+        $file_name  = APPPATH.'cache/test.xlsx';
+        file_put_contents(APPPATH.'cache/test.xlsx',$f_open);
+        $inputFileType = \PhpOffice\PhpSpreadsheet\IOFactory::identify($file_name);
+        $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($inputFileType);
+        $reader->setReadDataOnly(true);
+        $excel = $reader->load($file_name);
+        $sheet  = $excel->getActiveSheet();
+        var_dump($sheet->toArray());
+
+
+        exit;
+
+
+
+        var_dump($_FILES);exit;
+
         $config = [
             'allowed_types' => 'xls|xlsx',
             'max_size'  => 40*1024,

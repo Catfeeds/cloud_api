@@ -43,20 +43,21 @@ class Meterreadingtransfermodel extends Basemodel
      */
     public function roomunion()
     {
-        return $this->belongsTo(Roomunionmodel::class, 'room_id')
-            ->select('id','number');
+        return $this->belongsTo(Roomunionmodel::class, 'room_id');
+//            ->select('id','number');
     }
 
     public function building()
     {
-        return $this->belongsTo(BuildingModel::class, 'building_id')
-            ->select('id','name');
+        return $this->belongsTo(BuildingModel::class, 'building_id');
+//            ->select('id','name');
     }
 
     public function store()
     {
         return $this->belongsTo(Storemodel::class, 'store_id')
             ->select('id','name','water_price','hot_water_price','electricity_price');
+
     }
 }
 
