@@ -31,10 +31,10 @@ class Meter extends MY_Controller
             return;
         }
 
-        if($this->employee->position!='APARTMENT'){
-            $this->api_res(1011);
-            return;
-        }
+//        if($this->employee->position!='APARTMENT'){
+//            $this->api_res(1011);
+//            return;
+//        }
 
 
         $month  = $this->checkAndGetMonth($input['month'],false);
@@ -54,9 +54,11 @@ class Meter extends MY_Controller
 
             $transfers = Meterreadingtransfermodel::with('roomunion')
                 ->where('type', $type)
+//                ->where('store_id',1)
                 ->where('store_id', $this->employee->store_id)
                 ->where('confirmed', Meterreadingtransfermodel::UNCONFIRMED)
                 ->get();
+
 
             $transfers->map(function ($transfer) use ($year, $month) {
                 if (0.01 > $transfer->this_reading - $transfer->last_reading) return true;
