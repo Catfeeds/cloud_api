@@ -185,6 +185,8 @@ class Bill extends MY_Controller
         $this->load->model('ordermodel');
         $this->load->model('roomunionmodel');
         $this->load->model('smartdevicemodel');
+        $this->load->model('residentmodel');
+        $this->load->model('devicemodel');
         $payDate = Ordermodel::calcPayDate($year, $month);
         try {
             DB::beginTransaction();

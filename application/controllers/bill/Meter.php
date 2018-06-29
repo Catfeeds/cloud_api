@@ -247,7 +247,9 @@ class Meter extends MY_Controller
             $transfer   = $room->meterreadingtransfer->where('type', $type)->first();
 
             if (count($transfer) && 0.01 <= $transfer->last_reading - $item['read']) {
-                throw new Exception('错误：房间 ' . $room->number . ' 新导入读数低于上次记录!');
+                log_message('error','错误：房间 ' . $room->number . ' 新导入读数低于上次记录!');
+                $this->api_res(10051,['error'=>'错误：房间 ' . $room->number . ' 新导入读数低于上次记录!']);
+                return;
             }
             //新读数
             if ($transfer && $transfer->confirmed) {
