@@ -55,8 +55,9 @@ class Meterreadingtransfermodel extends Basemodel
 
     public function store()
     {
-        return $this->belongsTo(Storemodel::class, 'store_id');
-//            ->select('id','name');
+        return $this->belongsTo(Storemodel::class, 'store_id')
+            ->select('id','name','water_price','hot_water_price','electricity_price');
+
     }
 }
 
