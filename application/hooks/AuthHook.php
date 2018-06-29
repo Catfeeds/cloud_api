@@ -73,6 +73,7 @@ class AuthHook {
 
             //'home/home/home'
 //            'bill/meter/confirm',
+//            'bill/meter/import',
 //            'bill/bill/listbill',
 //            'bill/order/listorder',
 //            'bill/order/editorder',

@@ -220,25 +220,58 @@ class Meter extends MY_Controller
     public function import()
     {
         $this->load->model('meterreadingmodel');
+        $this->load->model('storemodel');
+        $this->load->model('roomunionmodel');
+        $this->load->model('buildingmodel');
 
         $type       = $this->input->post('type');
         $store_id   = $this->input->post('store_id');
         $type       = $this->checkAndGetReadingType($type);
         $sheetArray   = $this->uploadExcel();
         $data       = $this->checkAndGetInputData($sheetArray,$store_id);
-        try {
-//            $this->limitAccessToApartment();
 
+        $this->writeReading($data, $type);
 
+        $this->api_res(0);
+    }
 
+    /**
+     * 处理上传的记录
+     */
+    private function writeReading($data = [], $type)
+    {
+        $transfers = [];
 
+        foreach ($data as $item) {
+            $room       = $item['room'];
+            $transfer   = $room->meterreadingtransfer->where('type', $type)->first();
 
-            $this->writeReading($data, $type);
-        } catch (Exception $e) {
-            Util::error($e->getMessage());
+            if (count($transfer) && 0.01 <= $transfer->last_reading - $item['read']) {
+                throw new Exception('错误：房间 ' . $room->number . ' 新导入读数低于上次记录!');
+            }
+            //新读数
+            if ($transfer && $transfer->confirmed) {
+
+                $transfer->last_reading = $transfer->this_reading;
+                $transfer->confirmed    = !$transfer->confirmed;
+            } elseif (!$transfer) {
+                $transfer   = new Meterreadingtransfermodel();
+                $transfer->room_id      = $room->id;
+                $transfer->building_id  = $room->building_id;
+                $transfer->store_id     = $room->store_id;
+                $transfer->last_reading = $item['read'];
+                $transfer->type         = $type;
+            }
+
+            $transfer->weight = $item['weight'];
+            $transfer->this_reading = $item['read'];
+            $transfers[]    = $transfer;
+        }
+        foreach ($transfers as $transfer) {
+            $transfer->save();
         }
 
-        Util::success('上传成功！');
+        return true;
     }
 
     /**
@@ -247,12 +280,14 @@ class Meter extends MY_Controller
     private function checkAndGetInputData($sheetArray,$store_id)
     {
         $rooms  = Roomunionmodel::with('meterreadingtransfer')->where('store_id',$store_id)->get();
-
-        $buildings  = $this->adminuser->apartment->buildings;
+        $store  = Storemodel::find($store_id);
+        $buildings  = $store->building;
         $buildCount = count($buildings);
         $building   = $buildings->first();
 
-        foreach ($input as $key => $item) {
+        $data   = [];
+
+        foreach ($sheetArray as $key => $item) {
             if (0 == $key || !$item[0] || !$item[1]) continue;
 
             $read   = trim($item[2]);
@@ -313,7 +348,7 @@ class Meter extends MY_Controller
      */
     private function uploadExcel()
     {
-        $this->load->library('upload', [
+        $this->load->library('excel', [
             'allowed_types' => 'xls|xlsx',
             'max_size'  => 40*1024,
         ]);
@@ -327,6 +362,6 @@ class Meter extends MY_Controller
             $sheet  = $this->excel->excel->getActiveSheet();
 
         }
-        return $sheet->toArray();
+        return ($sheet->toArray());
     }
 }

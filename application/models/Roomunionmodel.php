@@ -107,7 +107,7 @@ class Roomunionmodel extends Basemodel{
     /**
      * 表计临时读数
      */
-    public function utilityTransfers()
+    public function meterreadingtransfer()
     {
         return $this->hasMany(Meterreadingtransfermodel::class, 'room_id');
     }
