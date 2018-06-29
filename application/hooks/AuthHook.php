@@ -39,7 +39,7 @@ class AuthHook {
 //
 //            'bill/order/download',
 //
-//            'demo/sheet/index',
+            'demo/sheet/index',
 //            'demo/sheet/output',
 //
 //            'bill/bill/generate',
@@ -217,6 +217,7 @@ class AuthHook {
 //            'coupon/coupon/addcoupon',
 //            'coupon/coupon/updatecoupon',
 //            'coupon/coupon/sendcoupon',
+//            'coupon/coupon/sendcoupon',
             //'coupon/coupon/resident',
 //            'coupon/coupon/assigncoupon',
 //
@@ -234,7 +235,7 @@ class AuthHook {
 //            'resident/resident/contract',
 //            'resident/resident/bill',
 //            'sellcontrol/sellcontrol/details',
-//            'utility/utility/listutility'
+            'utility/utility/listutility'
 
         );
 //        if(ENVIRONMENT !=='production')

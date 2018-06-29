@@ -54,17 +54,21 @@ class Sheet extends MY_Controller{
         if(!$this->excel->do_upload('file'))
         {
 
-            //$this->api_res(1004,array('error' => $this->excel->display_errors('','')));
-        }else
-        {
+            $this->api_res(1004,array('error' => $this->excel->display_errors('','')));
+        }else {
             //var_dump($this->excel->excel);
-            $sheet  = $this->excel->excel->getActiveSheet();
-            $row    = $sheet->getHighestRow();
-            var_dump($row);
+//            $sheet  = $this->excel->excel->getActiveSheet();
+            $sheet  = $this->excel->excel->getSheetByName('Sheet2');
+            $sheetArray = $sheet->toArray('A1','G1');
+            var_dump($sheetArray);
+//            $row    = $sheet->getHighestRow();
+//            var_dump($row);
 
            // $oss_path   = $this->excel->data()['oss_path'];
            // $this->api_res(0,['file_url'=>config_item('cdn_path').$oss_path]);
         }
+
+
 
     }
 
