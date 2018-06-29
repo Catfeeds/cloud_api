@@ -229,7 +229,6 @@ class Meter extends MY_Controller
         $type       = $this->input->post('type');
         $store_id   = $this->input->post('store_id');
         $type       = $this->checkAndGetReadingType($type);
-//        $sheetArray   = $this->uploadExcel();
         $sheetArray   = $this->uploadOssSheet();
         $data       = $this->checkAndGetInputData($sheetArray,$store_id);
 
