@@ -52,11 +52,13 @@ class Employeemodel extends Basemodel{
     //获取当前登陆者拥有权限的某个城市的门店信息
     public static function getMyCitystores($city)
     {
+        $where  = [];
+        empty($city)?:$where['city']=$city;
         require_once 'Storemodel.php';
         $employee = static::where('bxid', CURRENT_ID)->get(['store_ids'])->first();
         if (!$employee) return FALSE;
         $store_ids = explode(',', $employee->store_ids);
-        $storems = Storemodel::whereIn('id', $store_ids)->where('city', $city)->get(['id', 'name', 'province', 'city', 'district']);
+        $storems = Storemodel::whereIn('id', $store_ids)->where($where)->get(['id', 'name', 'province', 'city', 'district']);
         return $storems;
     }
 
