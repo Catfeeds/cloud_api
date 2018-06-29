@@ -229,7 +229,8 @@ class Meter extends MY_Controller
         $type       = $this->input->post('type');
         $store_id   = $this->input->post('store_id');
         $type       = $this->checkAndGetReadingType($type);
-        $sheetArray   = $this->uploadExcel();
+//        $sheetArray   = $this->uploadExcel();
+        $sheetArray   = $this->uploadOssSheet();
         $data       = $this->checkAndGetInputData($sheetArray,$store_id);
 
         $this->writeReading($data, $type);
@@ -344,6 +345,22 @@ class Meter extends MY_Controller
         }
 
         return $type;
+    }
+
+
+    private function uploadOssSheet(){
+
+        $url    = $this->input->post('url');
+        $f_open = fopen($url,'r');
+        $file_name  = APPPATH.'cache/test.xlsx';
+        file_put_contents($file_name,$f_open);
+        $inputFileType = \PhpOffice\PhpSpreadsheet\IOFactory::identify($file_name);
+        $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($inputFileType);
+        $reader->setReadDataOnly(true);
+        $excel = $reader->load($file_name);
+        $sheet  = $excel->getActiveSheet();
+        return $sheet->toArray();
+
     }
 
 

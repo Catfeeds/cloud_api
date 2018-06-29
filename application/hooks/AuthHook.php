@@ -35,11 +35,11 @@ class AuthHook {
             'demo/copy/run',
 //
 //            'common/imageupload',
-//            'common/fileupload',
+            'common/fileupload',
 //
 //            'bill/order/download',
 //
-//            'demo/sheet/index',
+            'demo/sheet/index',
 //            'demo/sheet/output',
 //
 //            'bill/bill/generate',
