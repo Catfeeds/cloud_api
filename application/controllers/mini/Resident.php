@@ -700,11 +700,11 @@ class Resident extends MY_Controller
      */
     public function checkIdCardNumber($type, $cardNumber)
     {
-        /*$this->load->helper('check');
+        $this->load->helper('check');
         if (Residentmodel::CARD_ZERO == $type AND !isIdNumber($cardNumber)) {
             log_message('debug','请检查证件号码的有效性');
             return false;
-        }*/
+        }
 
         return true;
     }
