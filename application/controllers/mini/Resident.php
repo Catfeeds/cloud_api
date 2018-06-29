@@ -351,7 +351,7 @@ class Resident extends MY_Controller
                 'label' => '证件照3',
                 'rules' => 'required|trim',
             ),
-            array(
+            /*array(
                 'field' => 'name_two',
                 'label' => '住户名称',
                 'rules' => 'trim',
@@ -370,7 +370,7 @@ class Resident extends MY_Controller
                 'field' => 'card_number_two',
                 'label' => '证件号码',
                 'rules' => 'trim',
-            ),
+            ),*/
 
         );
 
