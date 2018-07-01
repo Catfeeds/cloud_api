@@ -274,7 +274,7 @@ class Bill extends MY_Controller
             if($rent>0){
                 $numberRoom = Ordermodel::newNumber();
                 $rentOrder=$this->newBill($room, $resident,Ordermodel::PAYTYPE_ROOM, $rent, $numberRoom, $year, $month, $payDate, 0);
-            var_dump($rentOrder->toArray());exit;
+//            var_dump($rentOrder->toArray());exit;
             }
 
             if($property>0){
