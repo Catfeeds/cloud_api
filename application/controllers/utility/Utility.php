@@ -31,7 +31,7 @@ class Utility extends MY_Controller
         $offset= PAGINATE * ($page - 1);
         $where      = [];
         if(!empty($post['building_id'])){$where['building_id'] = intval($post['building_id']);};
-        if(!empty($post['status'])){$where['status'] = trim($post['status']);};
+        //if(!empty($post['status'])){$where['status'] = trim($post['status']);};
         if(!empty($post['store_id'])){$where['store_id'] = intval($post['store_id']);}
         if(!empty($post['status'])){$where['comfired'] = intval($post['status']);}
         if(!empty($post['type'])){$where['type'] = $post['type'];}
