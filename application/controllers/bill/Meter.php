@@ -151,10 +151,7 @@ class Meter extends MY_Controller
             'pay_status'    => Ordermodel::PAYSTATE_RENEWALS,
         ]);
 
-
         $order->save();
-
-
 
         return $order;
     }
