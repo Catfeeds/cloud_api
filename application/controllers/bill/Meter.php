@@ -236,7 +236,11 @@ class Meter extends MY_Controller
             return;
         }
 
-        $this->writeReading($data, $type);
+        $c  = $this->writeReading($data, $type);
+        if(!empty($c['error'])){
+            $this->api_res(10051,['error'=>$c['error']]);
+            return;
+        }
 
         $this->api_res(0);
     }
@@ -253,10 +257,10 @@ class Meter extends MY_Controller
             $transfer   = $room->meterreadingtransfer->where('type', $type)->first();
 
             if (count($transfer) && 0.01 <= $transfer->last_reading - $item['read']) {
-                log_message('error','错误：房间 ' . $room->number . ' 新导入读数低于上次记录!');
-                $this->api_res(10051,['error'=>'错误：房间 ' . $room->number . ' 新导入读数低于上次记录!']);
-                return;
+                $data   = ['error'=>'错误：房间 ' . $room->number . ' 新导入读数低于上次记录!'];
+                return $data;
             }
+
             //新读数
             if ($transfer && $transfer->confirmed) {
 

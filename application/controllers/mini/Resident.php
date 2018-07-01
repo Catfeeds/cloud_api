@@ -86,7 +86,7 @@ class Resident extends MY_Controller
         }
 
         if(!empty($post['name_two'])){
-            if(empty($post['phone_two']) || empty($post['card_type_two'] || empty($post['card_number_two']))){
+            if((empty($post['phone_two']) || empty($post['card_number_two']) )||(( empty($post['card_type_two']))&&$post['card_number_two']!==0)){
                 $this->api_res(1002,['error'=>'住户二信息不全']);
                 return;
 
