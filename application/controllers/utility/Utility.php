@@ -149,6 +149,7 @@ class Utility extends MY_Controller
             $res['this_reading'] = $utility[$key]['this_reading'];
             $res['diff'] = $utility[$key]['diff'];
             $res['price'] = $utility[$key]['price'];
+            $res['updated_at'] = $utility[$key]['updated_at'];
             $newUtility[]   = $res;
         }
         $objPHPExcel    = new Spreadsheet();
@@ -162,6 +163,7 @@ class Utility extends MY_Controller
         $objPHPExcel->getActiveSheet()->setCellValue('F'.$i , '本次读数');
         $objPHPExcel->getActiveSheet()->setCellValue('G'.$i , '差值');
         $objPHPExcel->getActiveSheet()->setCellValue('H'.$i , '价格');
+        $objPHPExcel->getActiveSheet()->setCellValue('I'.$i , '更新時間');
         $sheet->fromArray($newUtility,null,'A2');
         $writer = new Xlsx($objPHPExcel);
         header("Pragma: public");
