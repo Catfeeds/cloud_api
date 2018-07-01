@@ -219,6 +219,18 @@ class Bill extends MY_Controller
         $this->api_res(0);
     }
 
+//    public function testa(){
+//        $this->load->model('roomunionmodel');
+//        $this->load->model('residentmodel');
+//        $this->load->model('ordermodel');
+//        $this->load->model('devicemodel');
+//        $room   = Roomunionmodel::find(1);
+//        $year   = 2018;
+//        $month   = 8;
+//        $this->queryAndGenerateOrders($room,2018,8,$payDate = Ordermodel::calcPayDate($year, $month));
+//        echo 1;
+//    }
+
     /**
      * 查询数据库并生成当月账单, 这里没有考虑用户月中合同到期的情况
      */
@@ -230,9 +242,38 @@ class Bill extends MY_Controller
 
         $resident   = $room->resident;
 
+//        var_dump($resident->toArray());exit;
+
+        $endTime    = $resident->end_time;
+        $dataCheckoutYear   = $endTime->year;
+        $dataCheckoutMonth   = $endTime->month;
+//        var_dump($dataCheckoutMonth);exit;
+
         if (empty($resident)) {
             log_message('error', 'no-resident' . $room->number);
             return false;
+        }
+
+//        var_dump($dataCheckoutYear);
+//        var_dump($dataCheckoutMonth);
+//        exit;
+
+        if($year==$dataCheckoutYear && $month==$dataCheckoutMonth)
+        {
+//            echo 1;exit;
+//            $dataCheckoutDay    = $endTime->day;
+            $startDay       = $resident->begin_time->lte($endTime->copy()->startOfMonth()) ? 1 : $resident->begin_time->day;
+            $daysOfMonth    = $endTime->copy()->endOfMonth()->day;
+            $rent       = ceil($resident->real_rent_money * ($endTime->day - $startDay + 1) / $daysOfMonth);
+            $property   = ceil($resident->real_property_costs * ($endTime->day - $startDay + 1) / $daysOfMonth);
+
+            $numberRoom = Ordermodel::newNumber();
+            $this->newBill($room, $resident,Ordermodel::PAYTYPE_ROOM, $rent, $numberRoom, $year, $month, $payDate, 0);
+//            var_dump($rentOrder->toArray());exit;
+
+            $numberProperty = Ordermodel::newNumber();
+            $this->newBill($room, $resident,Ordermodel::PAYTYPE_MANAGEMENT, $property, $numberProperty, $year, $month, $payDate, 0);
+            return true;
         }
 
         $orders     = $room->orders->where('resident_id', $resident->id);
@@ -289,6 +330,60 @@ class Bill extends MY_Controller
         return true;
     }
 
+    private function generateHalfOrder($residents)
+    {
+       /* foreach($residents as $resident){
+            $beginTime          = $resident->begin_time;
+            $payFrequency       = $resident->pay_frequency;
+            $dateCheckIn        = $beginTime->day;
+            $daysThatMonth      = $beginTime->copy()->endOfMonth()->day;
+            $daysLeftOfMonth    = $daysThatMonth - $dateCheckIn + 1;
+            $firstOfMonth       = $resident->begin_time->copy()->firstOfMonth();
+
+            //当月剩余天数的订单
+            $data[]     = array(
+                'year'       => $beginTime->year,
+                'month'      => $beginTime->month,
+                'rent'       => ceil($resident->real_rent_money * $daysLeftOfMonth / $daysThatMonth),
+                'management' => ceil($resident->real_property_costs * $daysLeftOfMonth / $daysThatMonth),
+            );
+
+            //如果是短租, 只生成当月的账单
+            if ($resident->rent_type == Residentmodel::RENTTYPE_SHORT) {
+                return $data;
+            }
+
+            if ($payFrequency > 1 OR $beginTime->day >= 21) {
+                $i = 1;
+                do {
+                    $tmpDate    = $firstOfMonth->copy()->addMonths($i);
+                    $data[] = array(
+                        'year'       => $tmpDate->year,
+                        'month'      => $tmpDate->month,
+                        'rent'       => $resident->real_rent_money,
+                        'management' => $resident->real_property_costs,
+                    );
+                } while (++ $i < $resident->pay_frequency);
+            }
+
+            //如果是年付, 可能要有第13个月的账单
+            if (12 == $payFrequency) {
+                $endDate    = $resident->end_time;
+                $endOfMonth = $endDate->copy()->endOfMonth();
+
+                if ($endDate->day < $endOfMonth->day) {
+                    $data[] = array(
+                        'year'          => $endDate->year,
+                        'month'         => $endDate->month,
+                        'rent'          => ceil($resident->real_rent_money * $endDate->day / $endOfMonth->day),
+                        'management'    => ceil($resident->real_property_costs * $endDate->day / $endOfMonth->day),
+                    );
+                }
+            }
+            return $data;
+        }*/
+    }
+
     /**
      * 向数据库里写入账单记录
      */
@@ -305,7 +400,8 @@ class Bill extends MY_Controller
             'money'         => $money,
             'paid'          => $money,
             'room_id'       => $room->id,
-            'employee_id'   => $this->employee->id,
+            'employee_id'   => 99,
+//            'employee_id'   => $this->employee->id,
             'store_id'      => $room->store_id,
             'room_type_id'  => $room->room_type_id,
             'deal'          => Ordermodel::DEAL_UNDONE,
@@ -317,7 +413,6 @@ class Bill extends MY_Controller
             'pay_status'    => Ordermodel::PAYSTATE_RENEWALS,
         ]);
         $order->save();
-
         return $order;
     }
 

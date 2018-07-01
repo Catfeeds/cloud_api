@@ -77,6 +77,7 @@ class AuthHook {
 //            'bill/meter/outputtemplate',
 //            'bill/bill/generate',
 //            'bill/bill/listbill',
+            'bill/bill/testa',
 //            'bill/order/listorder',
 //            'bill/order/editorder',
 //
