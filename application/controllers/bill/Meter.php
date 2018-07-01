@@ -228,15 +228,18 @@ class Meter extends MY_Controller
         $store_id   = $this->input->post('store_id');
         $type       = $this->checkAndGetReadingType($type);
         $sheetArray   = $this->uploadOssSheet();
+
         $data       = $this->checkAndGetInputData($sheetArray,$store_id);
+
+
         /*if(!empty($data['error'])){
             $this->api_res(10052,['error'=>$data['error']]);
            // return;
         }*/
         $c  = $this->writeReading($data, $type);
-       /* if(!empty($c['error'])){
+        /*if(!empty($c['error'])){
             $this->api_res(10051,['error'=>$c['error']]);
-           // return;
+            return;
         }*/
         $this->api_res(0);
     }
@@ -253,10 +256,10 @@ class Meter extends MY_Controller
             $room       = $item['room'];
             $transfer   = $room->meterreadingtransfer->where('type', $type)->first();
 
-            if (count($transfer) && 0.01 <= $transfer->last_reading - $item['read']) {
+            /*if (count($transfer) && 0.01 <= $transfer->last_reading - $item['read']) {
                 $error['error'][]   = '错误：房间 ' . $room->number . ' 新导入读数低于上次记录!';
                 continue;
-            }
+            }*/
             //新读数
             if ($transfer && $transfer->confirmed) {
 
@@ -270,10 +273,12 @@ class Meter extends MY_Controller
                 $transfer->last_reading = $item['read'];
                 $transfer->type         = $type;
             }
+        }/*else{
+                $transfer->last_reading = $transfer->this_reading;
+            }*/
             $transfer->weight = $item['weight'];
             $transfer->this_reading = $item['read'];
             $transfers[]    = $transfer;
-        }
         if(!empty($error)){
             return $error;
         }

@@ -34,7 +34,8 @@ class Utility extends MY_Controller
         if(!empty($post['status'])){$where['status'] = trim($post['status']);};
         if(!empty($post['store_id'])){$where['store_id'] = intval($post['store_id']);}
         if(!empty($post['number'])){$number = trim($post['number']);}
-        $filed  = ['id','store_id','building_id','room_id','type','last_reading','last_time','this_reading','updated_at'];
+        if(!empty($post['type'])){$where['type'] = $post['type'];}
+        $filed  = ['id','store_id','building_id','room_id','type','last_reading','last_time','this_reading','updated_at','confirmed'];
         $count  = ceil(Meterreadingtransfermodel::where($where)->count()/PAGINATE);
         if ($page>$count||$page<1){
             $this->api_res(0,['list'=>[]]);
