@@ -86,11 +86,11 @@ class Checkout extends MY_Controller
             $checkout->other_deposit_deduction  = $input['other_deposit_deduction'];
             $checkout->status       = Checkoutmodel::STATUS_UNPAID;
             $checkout->bank         = $input['bank'];
-            $checkout->account     = $input['account'];
-            $checkout->bank_card_number     = $input['bank_card_number'];
+            $checkout->account      = $input['account'];
+            $checkout->bank_card_number    = $input['bank_card_number'];
             $checkout->employee_remark     = $input['employee_remark'];
-            $checkout->bank_card_img     = $this->splitAliossUrl($input['bank_card_img']);
-            $checkout->store_id     = $store_id;
+            $checkout->bank_card_img       = $this->splitAliossUrl($input['bank_card_img']);
+            $checkout->store_id            = $store_id;
 
 
             $checkout->time         = Carbon::now();

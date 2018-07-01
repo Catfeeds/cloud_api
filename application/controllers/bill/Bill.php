@@ -312,6 +312,7 @@ class Bill extends MY_Controller
             'status'        => Ordermodel::STATE_GENERATED,
             'resident_id'   => $room->resident_id,
             'customer_id'   => $resident->customer_id,
+            'uxid'          => $resident->uxid,
             'remark'        => $remark,
             'pay_status'    => Ordermodel::PAYSTATE_RENEWALS,
         ]);
@@ -319,5 +320,7 @@ class Bill extends MY_Controller
 
         return $order;
     }
+
+
 
 }

@@ -320,6 +320,13 @@ class Order extends MY_Controller
 
     }
 
+    /**
+     * 推送账单
+     */
+    public function push()
+    {
+
+    }
 
 
 }
