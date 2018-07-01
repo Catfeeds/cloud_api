@@ -262,7 +262,7 @@ class Bill extends MY_Controller
         {
 //            echo 1;exit;
 //            $dataCheckoutDay    = $endTime->day;
-            $startDay       = $resident->begin_time->lte($endTime->copy()->startOfMonth()) ? 1 : $resident->begin_time->day;
+            $startDay       = $resident->begin_time->day;
             $daysOfMonth    = $endTime->copy()->endOfMonth()->day;
             $rent       = ceil($resident->real_rent_money * ($endTime->day - $startDay + 1) / $daysOfMonth);
             $property   = ceil($resident->real_property_costs * ($endTime->day - $startDay + 1) / $daysOfMonth);
