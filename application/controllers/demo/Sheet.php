@@ -56,11 +56,7 @@ class Sheet extends MY_Controller{
         $excel = $reader->load($file_name);
         $sheet  = $excel->getActiveSheet();
         var_dump($sheet->toArray());
-
-
         exit;
-
-
 
         var_dump($_FILES);exit;
 
