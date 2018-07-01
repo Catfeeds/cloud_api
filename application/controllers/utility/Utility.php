@@ -115,7 +115,7 @@ class Utility extends MY_Controller
         $this->load->model('buildingmodel');
         $this->load->model('roomunionmodel');
         $filed  = ['id','store_id','building_id','room_id','type','last_reading','last_time','this_reading','updated_at'];
-        $utility = Meterreadingtransfermodel::orderBy('store_id')->orderBy('number')
+        $utility = Meterreadingtransfermodel::orderBy('store_id')
             ->with('store', 'building', 'roomunion')
             ->get($filed)->map(function($s){
                 switch ($s->type){
