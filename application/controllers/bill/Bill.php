@@ -207,6 +207,7 @@ class Bill extends MY_Controller
                 ])
                 ->chunk(100, function ($rooms) use ($year, $month, $payDate) {
                     foreach ($rooms as $room) {
+
                         $this->queryAndGenerateOrders($room, $year, $month, $payDate);
                     }
                 });
@@ -219,17 +220,18 @@ class Bill extends MY_Controller
         $this->api_res(0);
     }
 
-//    public function testa(){
-//        $this->load->model('roomunionmodel');
-//        $this->load->model('residentmodel');
-//        $this->load->model('ordermodel');
-//        $this->load->model('devicemodel');
-//        $room   = Roomunionmodel::find(1);
-//        $year   = 2018;
-//        $month   = 8;
-//        $this->queryAndGenerateOrders($room,2018,8,$payDate = Ordermodel::calcPayDate($year, $month));
-//        echo 1;
-//    }
+    public function testa(){
+        $this->load->model('roomunionmodel');
+        $this->load->model('residentmodel');
+        $this->load->model('ordermodel');
+        $this->load->model('devicemodel');
+        $rooms   = Roomunionmodel::whereIn('id',[2,4])->get();
+        $year   = 2018;
+        $month   = 8;
+        foreach ($rooms as $room)
+        $this->queryAndGenerateOrders($room,2018,8,$payDate = Ordermodel::calcPayDate($year, $month));
+        echo 1;
+    }
 
     /**
      * 查询数据库并生成当月账单, 这里没有考虑用户月中合同到期的情况
@@ -239,6 +241,7 @@ class Bill extends MY_Controller
         if (empty($room->resident_id)) {
             return false;
         }
+
 
         $resident   = $room->resident;
 
@@ -253,6 +256,7 @@ class Bill extends MY_Controller
             log_message('error', 'no-resident' . $room->number);
             return false;
         }
+
 
 //        var_dump($dataCheckoutYear);
 //        var_dump($dataCheckoutMonth);
@@ -269,67 +273,67 @@ class Bill extends MY_Controller
 
             if($rent>0){
                 $numberRoom = Ordermodel::newNumber();
-                $this->newBill($room, $resident,Ordermodel::PAYTYPE_ROOM, $rent, $numberRoom, $year, $month, $payDate, 0);
-//            var_dump($rentOrder->toArray());exit;
+                $rentOrder=$this->newBill($room, $resident,Ordermodel::PAYTYPE_ROOM, $rent, $numberRoom, $year, $month, $payDate, 0);
+            var_dump($rentOrder->toArray());exit;
             }
 
-            if($property){
+            if($property>0){
                 $numberProperty = Ordermodel::newNumber();
                 $this->newBill($room, $resident,Ordermodel::PAYTYPE_MANAGEMENT, $property, $numberProperty, $year, $month, $payDate, 0);
 
             }
 
-            return true;
-        }
+        }else{
 
-        $orders     = $room->orders->where('resident_id', $resident->id);
-        $unpaid     = $orders->whereIn('status', Ordermodel::unpaidStatuses());
-        $paid       = $orders->whereIn('status', Ordermodel::paidStatuses());
+            $orders     = $room->orders->where('resident_id', $resident->id);
+            $unpaid     = $orders->whereIn('status', Ordermodel::unpaidStatuses());
+            $paid       = $orders->whereIn('status', Ordermodel::paidStatuses());
 
-        if ($unpaid->count()) {
-            $number = $unpaid->first()->number;
-        } else {
-            $number = Ordermodel::newNumber();
-        }
-
-        $rentPaid       = $paid->where('type', Ordermodel::PAYTYPE_ROOM)->sum('money');
-        $managementPaid = $paid->where('type', Ordermodel::PAYTYPE_MANAGEMENT)->sum('money');
-
-        $bills = [
-            Ordermodel::PAYTYPE_ROOM        => [
-                'price' => $resident->real_rent_money,
-                'id'    => 0,
-            ],
-            Ordermodel::PAYTYPE_MANAGEMENT  => [
-                'price' => $resident->real_property_costs,
-                'id'    => 0,
-            ],
-        ];
-
-        if ($room->devices->count()) {
-            $bills[Ordermodel::PAYTYPE_DEVICE] = [
-                'price' => $room->devices->sum('money'),
-                'id'    => $room->devices->first()->id,
-            ];
-        }
-
-        foreach ($bills as $type => $bill) {
-            $moneyPaid  = $paid->where('type', $type)->sum('money');
-            $moneyToPay = ceil($bill['price'] - $moneyPaid);
-            if (1 >= $moneyToPay) {
-                continue;
+            if ($unpaid->count()) {
+                $number = $unpaid->first()->number;
+            } else {
+                $number = Ordermodel::newNumber();
             }
 
-            $unpaidOrder = $unpaid->where('type', $type)->first();
+            $rentPaid       = $paid->where('type', Ordermodel::PAYTYPE_ROOM)->sum('money');
+            $managementPaid = $paid->where('type', Ordermodel::PAYTYPE_MANAGEMENT)->sum('money');
 
-            if (count($unpaidOrder)) {
-                $unpaidOrder->update([
-                    'money' => $moneyToPay,
-                    'paid'  => $moneyToPay,
-                    'status' => Ordermodel::STATE_GENERATED,
-                ]);
-            } else {
-                $this->newBill($room, $resident, $type, $moneyToPay, $number, $year, $month, $payDate, $bill['id']);
+            $bills = [
+                Ordermodel::PAYTYPE_ROOM        => [
+                    'price' => $resident->real_rent_money,
+                    'id'    => 0,
+                ],
+                Ordermodel::PAYTYPE_MANAGEMENT  => [
+                    'price' => $resident->real_property_costs,
+                    'id'    => 0,
+                ],
+            ];
+
+            if ($room->devices->count()) {
+                $bills[Ordermodel::PAYTYPE_DEVICE] = [
+                    'price' => $room->devices->sum('money'),
+                    'id'    => $room->devices->first()->id,
+                ];
+            }
+
+            foreach ($bills as $type => $bill) {
+                $moneyPaid  = $paid->where('type', $type)->sum('money');
+                $moneyToPay = ceil($bill['price'] - $moneyPaid);
+                if (1 >= $moneyToPay) {
+                    continue;
+                }
+
+                $unpaidOrder = $unpaid->where('type', $type)->first();
+
+                if (count($unpaidOrder)) {
+                    $unpaidOrder->update([
+                        'money' => $moneyToPay,
+                        'paid'  => $moneyToPay,
+                        'status' => Ordermodel::STATE_GENERATED,
+                    ]);
+                } else {
+                    $this->newBill($room, $resident, $type, $moneyToPay, $number, $year, $month, $payDate, $bill['id']);
+                }
             }
         }
 
