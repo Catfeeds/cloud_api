@@ -190,6 +190,7 @@ class Bill extends MY_Controller
         $payDate = Ordermodel::calcPayDate($year, $month);
         try {
             DB::beginTransaction();
+            $a=0;
             $c=Roomunionmodel::with([
                 'resident',
                 'orders'    => function ($query) use ($month, $year) {
@@ -275,17 +276,17 @@ class Bill extends MY_Controller
             $rent       = ceil($resident->real_rent_money * ($endTime->day - $startDay + 1) / $daysOfMonth);
             $property   = ceil($resident->real_property_costs * ($endTime->day - $startDay + 1) / $daysOfMonth);
 
-            if($rent>0){
+//            if($rent>0){
                 $numberRoom = Ordermodel::newNumber();
                 $rentOrder=$this->newBill($room, $resident,Ordermodel::PAYTYPE_ROOM, $rent, $numberRoom, $year, $month, $payDate, 0);
 //            var_dump($rentOrder->toArray());exit;
-            }
+//            }
 
-            if($property>0){
+//            if($property>0){
                 $numberProperty = Ordermodel::newNumber();
                 $this->newBill($room, $resident,Ordermodel::PAYTYPE_MANAGEMENT, $property, $numberProperty, $year, $month, $payDate, 0);
 
-            }
+//            }
 
         }else{
 
