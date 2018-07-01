@@ -232,16 +232,16 @@ class Meter extends MY_Controller
         $type       = $this->checkAndGetReadingType($type);
         $sheetArray   = $this->uploadOssSheet();
         $data       = $this->checkAndGetInputData($sheetArray,$store_id);
-        if(!empty($data['error'])){
+        /*if(!empty($data['error'])){
             $this->api_res(10052,['error'=>$data['error']]);
-            return;
-        }
+           // return;
+        }*/
 
         $c  = $this->writeReading($data, $type);
-        if(!empty($c['error'])){
+       /* if(!empty($c['error'])){
             $this->api_res(10051,['error'=>$c['error']]);
-            //return;
-        }
+           // return;
+        }*/
 
         $this->api_res(0);
     }
@@ -252,7 +252,6 @@ class Meter extends MY_Controller
     private function writeReading($data = [], $type)
     {
         $transfers = [];
-
         $error  = [];
 
         foreach ($data as $item) {
@@ -266,6 +265,7 @@ class Meter extends MY_Controller
 
             //新读数
             if ($transfer && $transfer->confirmed) {
+
                 $transfer->last_reading = $transfer->this_reading;
                 $transfer->confirmed    = !$transfer->confirmed;
             } elseif (!$transfer) {
