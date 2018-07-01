@@ -233,13 +233,11 @@ class Meter extends MY_Controller
             $this->api_res(10052,['error'=>$data['error']]);
            // return;
         }*/
-
         $c  = $this->writeReading($data, $type);
        /* if(!empty($c['error'])){
             $this->api_res(10051,['error'=>$c['error']]);
            // return;
         }*/
-
         $this->api_res(0);
     }
 
@@ -259,7 +257,6 @@ class Meter extends MY_Controller
                 $error['error'][]   = '错误：房间 ' . $room->number . ' 新导入读数低于上次记录!';
                 continue;
             }
-
             //新读数
             if ($transfer && $transfer->confirmed) {
 
@@ -273,7 +270,6 @@ class Meter extends MY_Controller
                 $transfer->last_reading = $item['read'];
                 $transfer->type         = $type;
             }
-
             $transfer->weight = $item['weight'];
             $transfer->this_reading = $item['read'];
             $transfers[]    = $transfer;
@@ -281,11 +277,9 @@ class Meter extends MY_Controller
         if(!empty($error)){
             return $error;
         }
-
         foreach ($transfers as $transfer) {
             $transfer->save();
         }
-
         return true;
     }
 
@@ -299,11 +293,8 @@ class Meter extends MY_Controller
         $buildings  = $store->building;
         $buildCount = count($buildings);
         $building   = $buildings->first();
-
         $data   = [];
-
         $error  = '';
-
         foreach ($sheetArray as $key => $item)  {
             if (0 == $key || !$item[0] || !$item[1]) continue;
 
@@ -313,7 +304,6 @@ class Meter extends MY_Controller
                 $error  = '请检查房间：' . $item[1] . '的表读数';
                 return ['error'=>$error];
             }
-
             if (1 < $buildCount) {
                 if (!isset($item[3])) {
                     $error  = '请检查楼幢 id';
@@ -324,28 +314,20 @@ class Meter extends MY_Controller
             } else {
                 $buildingId = $building->id;
             }
-
             $room   = $rooms->where('number', strtoupper($item[1]))->where('building_id', $buildingId)->first();
-
             if (!$room) {
-
                 $error  = '未找到房间：' ."$item[1]";
                 return ['error'=>$error];
             }
-
             $weight = isset($item[4]) ? (int) $item[4] : 100;
-
             if (!$weight) {
                 $weight = 100;
             } elseif (100 < $weight || 0 > $weight) {
-
                 $error  = '请检查房间：' . $item[1] . '的均摊比例';
                 return ['error'=>$error];
             }
-
             $data[] = ['read' => $read, 'room' => $room, 'weight' => $weight];
         }
-
         return $data;
     }
 
@@ -361,13 +343,11 @@ class Meter extends MY_Controller
         ])) {
             throw new Exception('表计类型值不正确！');
         }
-
         return $type;
     }
 
 
     private function uploadOssSheet(){
-
         $url    = $this->input->post('url');
         $f_open = fopen($url,'r');
         $file_name  = APPPATH.'cache/test.xlsx';
@@ -381,7 +361,6 @@ class Meter extends MY_Controller
 
     }
 
-
     /**
      * 处理文件的上传
      */
@@ -391,15 +370,12 @@ class Meter extends MY_Controller
             'allowed_types' => 'xls|xlsx',
             'max_size'  => 40*1024,
         ]);
-
         if(!$this->excel->do_upload('file')){
-
             $this->api_res(1004,array('error' => $this->excel->display_errors('','')));
             return;
         }else {
             //var_dump($this->excel->excel);
             $sheet  = $this->excel->excel->getActiveSheet();
-
         }
         return ($sheet->toArray());
     }
@@ -408,13 +384,13 @@ class Meter extends MY_Controller
      * 输出水电表excel模板
      */
     public function outputTemplate(){
-//
-//        $spreadsheet    = new Spreadsheet();
-//        $sheet  = $spreadsheet->getActiveSheet();
-//        $data   = ['序号','房间号','起始读数','楼幢ID','均摊百分比'];
-//        $sheet->fromArray($data,null,'A1');
-//        $writer = new Xlsx($spreadsheet);
-//
+
+        $spreadsheet    = new Spreadsheet();
+        $sheet  = $spreadsheet->getActiveSheet();
+        $data   = ['序号','房间号','起始读数','楼幢ID','均摊百分比'];
+        $sheet->fromArray($data,null,'A1');
+        $writer = new Xlsx($spreadsheet);
+
         header("Pragma: public");
         header("Expires: 0");
         header("Cache-Control:must-revalidate, post-check=0, pre-check=0");
@@ -425,11 +401,11 @@ class Meter extends MY_Controller
         header('Content-Disposition:attachment;filename="meterReadingTemplate.xlsx"');
         header("Content-Transfer-Encoding:binary");
 
-        $file=file_get_contents('http://api.boss.strongberry.cn/水电读数导入模板.xlsx');
-
-        echo $file;
-//        $writer->save('php://output');
-//        $this->api_res(0,['url'=>'http://api.boss.strongberry.com/水电读数导入模板.xlsx']);
+//        $file=file_get_contents('http://api.boss.strongberry.cn/水电读数导入模板.xlsx');
+//
+//        echo $file;
+        $writer->save('php://output');
+//      $this->api_res(0,['url'=>'http://api.boss.strongberry.com/水电读数导入模板.xlsx']);
     }
 
 }
