@@ -206,6 +206,7 @@ class Bill extends MY_Controller
                     Roomunionmodel::STATE_ARREARS,
                 ])->count();
             $this->api_res(0,['count'=>$c]);
+            return;
 //                ->chunk(100, function ($rooms) use ($year, $month, $payDate) {
 //                    foreach ($rooms as $room) {
 //
