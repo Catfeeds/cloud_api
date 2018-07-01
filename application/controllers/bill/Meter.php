@@ -240,7 +240,7 @@ class Meter extends MY_Controller
         $c  = $this->writeReading($data, $type);
         if(!empty($c['error'])){
             $this->api_res(10051,['error'=>$c['error']]);
-            return;
+            //return;
         }
 
         $this->api_res(0);
@@ -266,7 +266,6 @@ class Meter extends MY_Controller
 
             //新读数
             if ($transfer && $transfer->confirmed) {
-
                 $transfer->last_reading = $transfer->this_reading;
                 $transfer->confirmed    = !$transfer->confirmed;
             } elseif (!$transfer) {
