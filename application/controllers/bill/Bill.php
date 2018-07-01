@@ -204,15 +204,16 @@ class Bill extends MY_Controller
                 ->whereIn('status', [
                     Roomunionmodel::STATE_RENT,
                     Roomunionmodel::STATE_ARREARS,
-                ])->count();
-            $this->api_res(0,['count'=>$c]);
-            return;
-//                ->chunk(100, function ($rooms) use ($year, $month, $payDate) {
-//                    foreach ($rooms as $room) {
-//
-//                        $this->queryAndGenerateOrders($room, $year, $month, $payDate);
-//                    }
-//                });
+                ])
+//                ])->count();
+//            $this->api_res(0,['count'=>$c]);
+//            return;
+                ->chunk(100, function ($rooms) use ($year, $month, $payDate) {
+                    foreach ($rooms as $room) {
+
+                        $this->queryAndGenerateOrders($room, $year, $month, $payDate);
+                    }
+                });
 
             DB::commit();
         } catch (Exception $e) {
