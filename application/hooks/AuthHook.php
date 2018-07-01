@@ -52,7 +52,7 @@ class AuthHook {
             'demo/test/test1',
 
             //'mini/resident/checkroomunion',
-            //'mini/resident/checkin',
+//            'mini/resident/checkin',
 //            'mini/resident/destory',
             //'mini/resident/showqrcode',
 //            'mini/resident/reservation',

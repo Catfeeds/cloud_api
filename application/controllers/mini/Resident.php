@@ -237,36 +237,57 @@ class Resident extends MY_Controller
                 'field' => 'room_id',
                 'label' => '房间号',
                 'rules' => 'required|trim',
+                'errors' => array(
+                    'required' => '请填写%s',
+                ),
             ),
             array(
                 'field' => 'begin_time',
                 'label' => '开始时间',
                 'rules' => 'required|trim',
+                'errors' => array(
+                    'required' => '请填写%s',
+                ),
             ),
             array(
                 'field' => 'people_count',
                 'label' => '入住人数',
                 'rules' => 'required|trim|integer',
+                'errors' => array(
+                    'required' => '请填写%s',
+                    'integer' => '%s必须是一个整数',
+                ),
             ),
             array(
                 'field' => 'contract_time',
                 'label' => '合同时长',
                 'rules' => 'required|trim|integer',
+                'errors' => array(
+                    'required' => '请填写%s',
+                    'integer' => '%s必须是一个整数',
+                ),
             ),
             array(
                 'field' => 'discount_id',
                 'label' => '折扣id',
                 'rules' => 'trim|integer',
+                'errors' => array(
+                    'integer' => '请选择正确的%s',
+                ),
             ),
             array(
                 'field' => 'rent_type',
                 'label' => '出租类型',
                 'rules' => 'trim|required|in_list[LONG,SHORT]',
+                'errors' => array(
+                    'required' => '请填写%s',
+                    'integer' => '请选择正确的%s',
+                ),
             ),
             array(
                 'field' => 'real_rent_money',
                 'label' => '实际租金',
-                'rules' => 'trim|numeric|integer',
+                'rules' => 'trim|numeric|required',
             ),
             array(
                 'field' => 'real_property_costs',
@@ -282,21 +303,37 @@ class Resident extends MY_Controller
                 'field' => 'pay_frequency',
                 'label' => '付款周期',
                 'rules' => 'trim|numeric|required',
+                'errors' => array(
+                    'required' => '请选择%s',
+                    'numeric' => '请选择正确的%s',
+                ),
             ),
             array(
                 'field' => 'deposit_money',
                 'label' => '押金',
                 'rules' => 'trim|numeric|required',
+                'errors' => array(
+                    'required' => '请选择%s',
+                    'numeric' => '请填写正确的%s',
+                ),
             ),
             array(
                 'field' => 'deposit_month',
                 'label' => '押金月份',
                 'rules' => 'trim|integer|required',
+                'errors' => array(
+                    'required' => '请选择%s',
+                    'integer' => '请选择正确的%s',
+                ),
             ),
             array(
                 'field' => 'tmp_deposit',
                 'label' => '其他押金',
                 'rules' => 'trim|numeric|required',
+                'errors' => array(
+                    'required' => '请填写%s',
+                    'integer' => '请选择正确的%s',
+                ),
             ),
             array(
                 'field' => 'remark',
@@ -307,51 +344,86 @@ class Resident extends MY_Controller
                 'field' => 'name',
                 'label' => '住户名称',
                 'rules' => 'required|trim',
+                'errors' => array(
+                    'required' => '请填写%s',
+                ),
             ),
             array(
                 'field' => 'phone',
                 'label' => '手机号',
                 'rules' => 'required|trim|max_length[13]|numeric',
+                'errors' => array(
+                    'required' => '请填写%s',
+                    'max_length' => '请检查手机号',
+                    'numeric'    => '请检查手机号',
+                ),
             ),
             array(
                 'field' => 'card_type',
                 'label' => '证件类型',
                 'rules' => 'required|trim|in_list[0,1,2,6,A,B,C,E,F,P,BL]',
+                'errors' => array(
+                    'required' => '请填写%s',
+                    'in_list'    => '请选择正确的证件类型',
+                ),
             ),
             array(
                 'field' => 'card_number',
                 'label' => '证件号码',
                 'rules' => 'required|trim',
+                'errors' => array(
+                    'required' => '请填写%s',
+                ),
             ),
             array(
                 'field' => 'alternative',
                 'label' => '紧急联系人',
                 'rules' => 'required|trim|max_length[13]',
+                'errors' => array(
+                    'required' => '请填写%s',
+                    'max_length' => '请检查%s',
+                ),
             ),
             array(
                 'field' => 'alter_phone',
                 'label' => '联系方式',
                 'rules' => 'required|trim|numeric',
+                'errors' => array(
+                    'required' => '请填写%s',
+                    'numeric'  => '请填写正确的联系方式',
+                ),
             ),
             array(
                 'field' => 'address',
                 'label' => '通讯地址',
                 'rules' => 'required|trim',
+                'errors' => array(
+                    'required' => '请填写%s',
+                ),
             ),
             array(
                 'field' => 'card_one',
                 'label' => '证件照1',
                 'rules' => 'required|trim',
+                'errors' => array(
+                    'required' => '请上传%s',
+                ),
             ),
             array(
                 'field' => 'card_two',
                 'label' => '证件照2',
                 'rules' => 'required|trim',
+                'errors' => array(
+                    'required' => '请上传%s',
+                ),
             ),
             array(
                 'field' => 'card_three',
                 'label' => '证件照3',
                 'rules' => 'required|trim',
+                'errors' => array(
+                    'required' => '请上传%s',
+                ),
             ),
             /*array(
                 'field' => 'name_two',
@@ -892,27 +964,44 @@ class Resident extends MY_Controller
             array(
                 'field' => 'room_id',
                 'label' => '房间id',
-                'rules' => 'required|trim|integer'
+                'rules' => 'required|trim|integer',
+                'errors' => array(
+                    'required' => '请选择房间',
+                ),
             ),
             array(
                 'field' => 'name',
                 'label' => '用户姓名',
-                'rules' => 'required|trim|max_length[32]'
+                'rules' => 'required|trim|max_length[32]',
+                'errors' => array(
+                    'required' => '请填写%s',
+                ),
             ),
             array(
                 'field' => 'phone',
                 'label' => '用户手机号码',
-                'rules' => 'required|trim|max_length[11]'
+                'rules' => 'required|trim|max_length[11]',
+                'errors' => array(
+                    'required' => '请填写%s',
+                    'max_length' => '请检查%s'
+                ),
             ),
             array(
                 'field' => 'book_money',
                 'label' => '定金',
-                'rules' => 'required|trim|numeric'
+                'rules' => 'required|trim|numeric',
+                'errors' => array(
+                    'required' => '请填写%s',
+                    'numeric' => '请填写正确的%s'
+                ),
             ),
             array(
                 'field' => 'book_time',
                 'label' => '订房日期',
-                'rules' => 'required|trim'
+                'rules' => 'required|trim',
+                'errors' => array(
+                    'required' => '请填写%s',
+                ),
             ),
             array(
                 'field' => 'remark',
