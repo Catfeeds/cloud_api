@@ -50,21 +50,21 @@ class Utility extends MY_Controller
                 $this->api_res(0,['list'=>[]]);
                 return;
             }else{
-                $utility = Meterreadingtransfermodel::where($where)->whereIn('room_id',$room_ids)->orderBy('updated_at', 'DESC')
+                $utility = Meterreadingtransfermodel::where($where)->whereIn('room_id',$room_ids)
                     ->with('store', 'building', 'roomunion')->take(PAGINATE)->skip($offset)
                     ->get($filed)->map(function($s){
                         switch ($s->type){
                             case 'ELECTRIC_METER':
                                 $s->diff = number_format($s->this_reading-$s->last_reading,2);
-                                $s->price= number_format($s->diff*$s->store->electricity_price,2);
+                                $s->price= number_format(floatval($s->diff)*floatval($s->store->hot_water_price),2);
                                 break;
                             case 'COLD_WATER_METER':
                                 $s->diff = number_format($s->this_reading-$s->last_reading,2);
-                                $s->price= number_format($s->diff*$s->store->water_price,2);
+                                $s->price= number_format(floatval($s->diff)*floatval($s->store->hot_water_price),2);
                                 break;
                             case 'HOT_WATER_METER':
                                 $s->diff = number_format($s->this_reading-$s->last_reading,2);
-                                $s->price= number_format($s->diff*$s->store->hot_water_price,2);
+                                $s->price= number_format(floatval($s->diff)*floatval($s->store->hot_water_price),2);
                                 break;
                             default :
                                 $s->diff = number_format($s->this_reading-$s->last_reading,2);
@@ -80,21 +80,22 @@ class Utility extends MY_Controller
                 $this->api_res(0,['list'=>[]]);
                 return;
             }else{
-                $utility = Meterreadingtransfermodel::where($where)->orderBy('updated_at', 'DESC')
+                $utility = Meterreadingtransfermodel::where($where)
+                   // ->orderBy('store_id')->orderBy('room_id')
                     ->with('store', 'building', 'roomunion')->take(PAGINATE)->skip($offset)
                     ->get($filed)->map(function($s){
                         switch ($s->type){
                             case 'ELECTRIC_METER':
                                 $s->diff = number_format($s->this_reading-$s->last_reading,2);
-                                $s->price= number_format($s->diff*$s->store->electricity_price,2);
+                                $s->price= number_format(floatval($s->diff)*floatval($s->store->hot_water_price),2);
                                 break;
                             case 'COLD_WATER_METER':
                                 $s->diff = number_format($s->this_reading-$s->last_reading,2);
-                                $s->price= number_format($s->diff*$s->store->water_price,2);
+                                $s->price= number_format(floatval($s->diff)*floatval($s->store->hot_water_price),2);
                                 break;
                             case 'HOT_WATER_METER':
                                 $s->diff = number_format($s->this_reading-$s->last_reading,2);
-                                $s->price= number_format($s->diff*$s->store->hot_water_price,2);
+                                $s->price= number_format(floatval($s->diff)*floatval($s->store->hot_water_price),2);
                                 break;
                             default :
                                 $s->diff = number_format($s->this_reading-$s->last_reading,2);
@@ -121,15 +122,15 @@ class Utility extends MY_Controller
                 switch ($s->type){
                     case 'ELECTRIC_METER':
                         $s->diff = number_format($s->this_reading-$s->last_reading,2);
-                        $s->price= number_format(floatval($s->diff)*$s->store->electricity_price,2);
+                        $s->price= number_format(floatval($s->diff)*floatval($s->store->hot_water_price),2);
                         break;
                     case 'COLD_WATER_METER':
                         $s->diff = number_format($s->this_reading-$s->last_reading,2);
-                        $s->price= number_format($s->diff*$s->store->water_price,2);
+                        $s->price= number_format(floatval($s->diff)*floatval($s->store->hot_water_price),2);
                         break;
                     case 'HOT_WATER_METER':
                         $s->diff = number_format($s->this_reading-$s->last_reading,2);
-                        $s->price= number_format($s->diff*$s->store->hot_water_price,2);
+                        $s->price= number_format(floatval($s->diff)*floatval($s->store->hot_water_price),2);
                         break;
                     default :
                         $s->diff = number_format($s->this_reading-$s->last_reading,2);
