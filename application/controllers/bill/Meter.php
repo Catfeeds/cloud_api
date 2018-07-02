@@ -231,7 +231,7 @@ class Meter extends MY_Controller
 
         $data       = $this->checkAndGetInputData($sheetArray,$store_id);
 
-        var_dump($data);exit;
+//        var_dump($data);exit;
 
 
         /*if(!empty($data['error'])){
@@ -281,10 +281,11 @@ class Meter extends MY_Controller
             $transfer->weight = $item['weight'];
             $transfer->this_reading = $item['read'];
             $transfers[]    = $transfer;
-        if(!empty($error)){
+        /*if(!empty($error)){
             return $error;
-        }
+        }*/
         foreach ($transfers as $transfer) {
+            log_message('error',1);
             $transfer->save();
         }
         return true;
