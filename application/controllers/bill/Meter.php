@@ -228,7 +228,10 @@ class Meter extends MY_Controller
         $store_id   = $this->input->post('store_id');
         $type       = $this->checkAndGetReadingType($type);
         $sheetArray   = $this->uploadOssSheet();
+
         $data       = $this->checkAndGetInputData($sheetArray,$store_id);
+
+        var_dump($data);exit;
         /*if(!empty($data['error'])){
             $this->api_res(10052,['error'=>$data['error']]);
            // return;
