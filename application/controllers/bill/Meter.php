@@ -238,10 +238,10 @@ class Meter extends MY_Controller
         }*/
 
         $c  = $this->writeReading($data, $type);
-        if(!empty($c['error'])){
+        /*if(!empty($c['error'])){
             $this->api_res(10051,['error'=>$c['error']]);
             return;
-        }
+        }*/
 
         $this->api_res(0);
     }
@@ -281,9 +281,9 @@ class Meter extends MY_Controller
             $transfer->this_reading = $item['read'];
             $transfers[]    = $transfer;
         }
-        if(!empty($error)){
+        /*if(!empty($error)){
             return $error;
-        }
+        }*/
 
         foreach ($transfers as $transfer) {
             $transfer->save();
