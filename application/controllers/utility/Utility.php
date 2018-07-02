@@ -112,6 +112,7 @@ class Utility extends MY_Controller
                     })->toArray();
             }
         }
+        
         $this->api_res(0, ['list'=>$utility,'count'=>$count]);
     }
 
