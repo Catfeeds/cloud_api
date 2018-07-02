@@ -177,4 +177,35 @@ class Utility extends MY_Controller
         header("Content-Transfer-Encoding:binary");
         $writer->save('php://output');
     }
+
+    /**
+     * 修改水電讀數
+     */
+    public function updateNumber()
+    {
+        $this->load->model('meterreadingtransfermodel');
+        $post = $this->input->post(null,true);
+        if (isset($post['id'])){
+            $id = intval($post['id']);
+            $reading = Meterreadingtransfermodel::find($id)->first();
+            if(isset($post['this_reading'])){
+                $this_reading = floatval($post['this_reading']);
+                $reading->this_reading = $this_reading;
+            }
+            if(isset($post['last_reading'])){
+                $last_reading = floatval($post['last_reading']);
+                $reading->last_reading = $last_reading;
+            }
+            $reading->save();
+            $this->api_res(0);
+        }else{
+            $this->api_res(1002);
+        }
+    }
 }
+
+
+
+
+
+
