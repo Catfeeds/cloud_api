@@ -174,7 +174,7 @@ class Bill extends MY_Controller
     {
         $input  = $this->input->post(null,true);
         $store_id   = $input['store_id'];
-        $year       = $this->checkAndGetYear($input['year'],false);;
+        $year       = $this->checkAndGetYear($input['year'],false);
         $month      = $this->checkAndGetMonth($input['month'],false);
 
         if (empty($month) || empty($year)) {

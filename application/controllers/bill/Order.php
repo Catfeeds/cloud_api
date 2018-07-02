@@ -67,7 +67,7 @@ class Order extends MY_Controller
             return;
         }
 
-        $orders = Ordermodel::with('store','roomunion','resident','employee')
+        $orders = Ordermodel::with(['store','roomunion','resident','employee'])
             ->where(function ($query) use ($search){
                 $query->orWhereHas('resident',function($query) use($search){
                     $query->where('name','like',"%$search%");
