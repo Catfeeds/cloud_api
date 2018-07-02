@@ -963,27 +963,44 @@ class Resident extends MY_Controller
             array(
                 'field' => 'room_id',
                 'label' => '房间id',
-                'rules' => 'required|trim|integer'
+                'rules' => 'required|trim|integer',
+                'errors' => array(
+                    'required' => '请选择房间',
+                ),
             ),
             array(
                 'field' => 'name',
                 'label' => '用户姓名',
-                'rules' => 'required|trim|max_length[32]'
+                'rules' => 'required|trim|max_length[32]',
+                'errors' => array(
+                    'required' => '请填写%s',
+                ),
             ),
             array(
                 'field' => 'phone',
                 'label' => '用户手机号码',
-                'rules' => 'required|trim|max_length[11]'
+                'rules' => 'required|trim|max_length[11]',
+                'errors' => array(
+                    'required' => '请填写%s',
+                    'max_length' => '请检查%s'
+                ),
             ),
             array(
                 'field' => 'book_money',
                 'label' => '定金',
-                'rules' => 'required|trim|numeric'
+                'rules' => 'required|trim|numeric',
+                'errors' => array(
+                    'required' => '请填写%s',
+                    'numeric' => '请填写正确的%s'
+                ),
             ),
             array(
                 'field' => 'book_time',
                 'label' => '订房日期',
-                'rules' => 'required|trim'
+                'rules' => 'required|trim',
+                'errors' => array(
+                    'required' => '请填写%s',
+                ),
             ),
             array(
                 'field' => 'remark',
