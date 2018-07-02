@@ -239,7 +239,7 @@ class AuthHook {
 //            'resident/resident/contract',
 //            'resident/resident/bill',
 //            'sellcontrol/sellcontrol/details',
-            'utility/utility/listutility',
+//            'utility/utility/listutility',
             'utility/utility/listutility1',
 //            'utility/utility/updatenumber',
 
