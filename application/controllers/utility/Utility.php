@@ -51,7 +51,7 @@ class Utility extends MY_Controller
                 return;
             }else{
                 $utility = Meterreadingtransfermodel::where($where)->whereIn('room_id',$room_ids)
-                    ->orderBy('store_id')->orderBy('number')
+                    ->orderBy('store_id')->orderBy('room_id')
                     ->with('store', 'building', 'roomunion')->take(PAGINATE)->skip($offset)
                     ->get($filed)->map(function($s){
                         switch ($s->type){
