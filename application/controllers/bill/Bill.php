@@ -265,6 +265,19 @@ class Bill extends MY_Controller
 //        var_dump($dataCheckoutYear);
 //        var_dump($dataCheckoutMonth);
 //        exit;
+        $orders     = $room->orders->where('resident_id', $resident->id);
+        $unpaid     = $orders->whereIn('status', Ordermodel::unpaidStatuses());
+        $paid       = $orders->whereIn('status', Ordermodel::paidStatuses());
+
+        if ($unpaid->count()) {
+            $number = $unpaid->first()->number;
+        } else {
+            $number = Ordermodel::newNumber();
+        }
+
+        $rentPaid       = $paid->where('type', Ordermodel::PAYTYPE_ROOM)->sum('money');
+        $managementPaid = $paid->where('type', Ordermodel::PAYTYPE_MANAGEMENT)->sum('money');
+
 
         if($year==$dataCheckoutYear && $month==$dataCheckoutMonth)
         {
@@ -276,31 +289,18 @@ class Bill extends MY_Controller
             $property   = ceil($resident->real_property_costs * ($endTime->day - $startDay + 1) / $daysOfMonth);
 
             if($rent>0){
-                $numberRoom = Ordermodel::newNumber();
+                $numberRoom = $number;
                 $rentOrder=$this->newBill($room, $resident,Ordermodel::PAYTYPE_ROOM, $rent, $numberRoom, $year, $month, $payDate, 0);
 //            var_dump($rentOrder->toArray());exit;
             }
 
             if($property>0){
-                $numberProperty = Ordermodel::newNumber();
+                $numberProperty = $number;
                 $this->newBill($room, $resident,Ordermodel::PAYTYPE_MANAGEMENT, $property, $numberProperty, $year, $month, $payDate, 0);
 
             }
 
         }else{
-
-            $orders     = $room->orders->where('resident_id', $resident->id);
-            $unpaid     = $orders->whereIn('status', Ordermodel::unpaidStatuses());
-            $paid       = $orders->whereIn('status', Ordermodel::paidStatuses());
-
-            if ($unpaid->count()) {
-                $number = $unpaid->first()->number;
-            } else {
-                $number = Ordermodel::newNumber();
-            }
-
-            $rentPaid       = $paid->where('type', Ordermodel::PAYTYPE_ROOM)->sum('money');
-            $managementPaid = $paid->where('type', Ordermodel::PAYTYPE_MANAGEMENT)->sum('money');
 
             $bills = [
                 Ordermodel::PAYTYPE_ROOM        => [
