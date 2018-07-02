@@ -57,15 +57,15 @@ class Utility extends MY_Controller
                         switch ($s->type){
                             case 'ELECTRIC_METER':
                                 $s->diff = number_format($s->this_reading-$s->last_reading,2);
-                                $s->price= number_format($s->diff*$s->store->electricity_price,2);
+                                $s->price= number_format(floatval($s->diff)*$s->store->electricity_price,2);
                                 break;
                             case 'COLD_WATER_METER':
                                 $s->diff = number_format($s->this_reading-$s->last_reading,2);
-                                $s->price= number_format($s->diff*$s->store->water_price,2);
+                                $s->price= number_format(floatval($s->diff)*$s->store->water_price,2);
                                 break;
                             case 'HOT_WATER_METER':
                                 $s->diff = number_format($s->this_reading-$s->last_reading,2);
-                                $s->price= number_format($s->diff*$s->store->hot_water_price,2);
+                                $s->price= number_format(floatval($s->diff)*$s->store->hot_water_price,2);
                                 break;
                             default :
                                 $s->diff = number_format($s->this_reading-$s->last_reading,2);
@@ -88,15 +88,15 @@ class Utility extends MY_Controller
                         switch ($s->type){
                             case 'ELECTRIC_METER':
                                 $s->diff = number_format($s->this_reading-$s->last_reading,2);
-                                $s->price= number_format($s->diff*$s->store->electricity_price,2);
+                                $s->price= number_format(floatval($s->diff)*$s->store->electricity_price,2);
                                 break;
                             case 'COLD_WATER_METER':
                                 $s->diff = number_format($s->this_reading-$s->last_reading,2);
-                                $s->price= number_format($s->diff*$s->store->water_price,2);
+                                $s->price= number_format(floatval($s->diff)*$s->store->water_price,2);
                                 break;
                             case 'HOT_WATER_METER':
                                 $s->diff = number_format($s->this_reading-$s->last_reading,2);
-                                $s->price= number_format($s->diff*$s->store->hot_water_price,2);
+                                $s->price= number_format(floatval($s->diff)*$s->store->hot_water_price,2);
                                 break;
                             default :
                                 $s->diff = number_format($s->this_reading-$s->last_reading,2);
@@ -127,11 +127,11 @@ class Utility extends MY_Controller
                         break;
                     case 'COLD_WATER_METER':
                         $s->diff = number_format($s->this_reading-$s->last_reading,2);
-                        $s->price= number_format($s->diff*$s->store->water_price,2);
+                        $s->price= number_format(floatval($s->diff)*$s->store->water_price,2);
                         break;
                     case 'HOT_WATER_METER':
                         $s->diff = number_format($s->this_reading-$s->last_reading,2);
-                        $s->price= number_format($s->diff*$s->store->hot_water_price,2);
+                        $s->price= number_format(floatval($s->diff)*$s->store->hot_water_price,2);
                         break;
                     default :
                         $s->diff = number_format($s->this_reading-$s->last_reading,2);
