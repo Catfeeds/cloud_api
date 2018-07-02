@@ -1,5 +1,6 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+use Carbon\Carbon;
 /**
  * Author:      chenkk<cooook@163.com>
  * Date:        2018/5/24
@@ -37,7 +38,7 @@ class Residentct extends MY_Controller
         $current_page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
         $pre_page = isset($post['pre_page']) ? intval($post['pre_page']) : 15;//当前页显示条数
         $offset = $pre_page * ($current_page - 1);
-        $field = ['id', 'name', 'room_id', 'customer_id','status'];
+        $field = ['id', 'name', 'room_id', 'customer_id','status','end_time'];
 
         $total = Residentmodel::where('status','NORMAL')->whereIn('store_id', $store_ids)->count();
         $total_pages = ceil($total / $pre_page);//总页数
@@ -47,7 +48,13 @@ class Residentct extends MY_Controller
             return;
         }
         $category = Residentmodel::with('roomunion','customer','contract')->where('status','NORMAL')->whereIn('store_id', $store_ids)->take($pre_page)->skip($offset)
-            ->orderBy('id', 'desc')->get($field)->toArray();
+            ->orderBy('id', 'desc')->get($field)
+            ->map(function ($res){
+                $data   = $res->toArray();
+                $data['days_left']  = Carbon::now()->startOfDay()->diffIndays($res->end_time, false);
+                return $data;
+            })
+            ->toArray();
         $this->api_res(0, ['total' => $total, 'pre_page' => $pre_page, 'current_page' => $current_page,
             'total_pages' => $total_pages, 'data' => $category]);
     }
