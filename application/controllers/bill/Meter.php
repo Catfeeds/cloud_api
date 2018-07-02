@@ -231,6 +231,8 @@ class Meter extends MY_Controller
 
         $data       = $this->checkAndGetInputData($sheetArray,$store_id);
 
+        var_dump($data);exit;
+
 
         /*if(!empty($data['error'])){
             $this->api_res(10052,['error'=>$data['error']]);
@@ -299,20 +301,20 @@ class Meter extends MY_Controller
         $buildCount = count($buildings);
         $building   = $buildings->first();
         $data   = [];
-        $error  = '';
+        $error  = [];
         foreach ($sheetArray as $key => $item)  {
             if (0 == $key || !$item[0] || !$item[1]) continue;
 
             $read   = trim($item[2]);
 
             if (!is_numeric($read) || 0 > $read || 1e8 < $read) {
-                $error  = '请检查房间：' . $item[1] . '的表读数';
-                return ['error'=>$error];
+                $error[] = '请检查房间：' . $item[1] . '的表读数';
+                continue;
             }
             if (1 < $buildCount) {
                 if (!isset($item[3])) {
-                    $error  = '请检查楼幢 id';
-                    return ['error'=>$error];
+                    $error[]  = '请检查楼幢 id';
+                    continue;
                 }
 
                 $buildingId = (int) trim($item[3]);
@@ -321,17 +323,17 @@ class Meter extends MY_Controller
             }
             $room   = $rooms->where('number', strtoupper($item[1]))->where('building_id', $buildingId)->first();
             if (!$room) {
-                $error  = '未找到房间：' ."$item[1]";
-                return ['error'=>$error];
+                $error[]  = '未找到房间：' ."$item[1]";
+                continue;
             }
             $weight = isset($item[4]) ? (int) $item[4] : 100;
             if (!$weight) {
                 $weight = 100;
             } elseif (100 < $weight || 0 > $weight) {
-                $error  = '请检查房间：' . $item[1] . '的均摊比例';
-                return ['error'=>$error];
+                $error[]  = '请检查房间：' . $item[1] . '的均摊比例';
+                continue;
             }
-            $data[] = ['read' => $read, 'room' => $room, 'weight' => $weight];
+            $data[] = ['read' => $read, 'room' => $room, 'weight' => $weight,'error'=>$error];
         }
         return $data;
     }
