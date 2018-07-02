@@ -50,7 +50,8 @@ class Utility extends MY_Controller
                 $this->api_res(0,['list'=>[]]);
                 return;
             }else{
-                $utility = Meterreadingtransfermodel::where($where)->whereIn('room_id',$room_ids)->orderBy('updated_at', 'DESC')
+                $utility = Meterreadingtransfermodel::where($where)->whereIn('room_id',$room_ids)
+                    ->orderBy('store_id')->orderBy('number')
                     ->with('store', 'building', 'roomunion')->take(PAGINATE)->skip($offset)
                     ->get($filed)->map(function($s){
                         switch ($s->type){
@@ -80,7 +81,8 @@ class Utility extends MY_Controller
                 $this->api_res(0,['list'=>[]]);
                 return;
             }else{
-                $utility = Meterreadingtransfermodel::where($where)->orderBy('updated_at', 'DESC')
+                $utility = Meterreadingtransfermodel::where($where)
+                    ->orderBy('store_id')->orderBy('room_id')
                     ->with('store', 'building', 'roomunion')->take(PAGINATE)->skip($offset)
                     ->get($filed)->map(function($s){
                         switch ($s->type){
