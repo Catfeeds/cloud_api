@@ -197,7 +197,7 @@ class Utility extends MY_Controller
         $post = $this->input->post(null,true);
         if (isset($post['id'])){
             $id = intval($post['id']);
-            $reading = Meterreadingtransfermodel::find($id)->first();
+            $reading = Meterreadingtransfermodel::find($id);
             if(isset($post['this_reading'])){
                 $this_reading = floatval($post['this_reading']);
                 $reading->this_reading = $this_reading;
