@@ -46,7 +46,7 @@ class Sheet extends MY_Controller{
 
 //        var_dump($_SERVER);exit;
 
-        $url    = $this->input->post('url');
+       /* $url    = $this->input->post('url');
         $f_open = fopen($url,'r');
         $file_name  = APPPATH.'cache/test.xlsx';
         file_put_contents(APPPATH.'cache/test.xlsx',$f_open);
@@ -59,7 +59,7 @@ class Sheet extends MY_Controller{
         exit;
 
         var_dump($_FILES);exit;
-
+*/
         $config = [
             'allowed_types' => 'xls|xlsx',
             'max_size'  => 40*1024,
@@ -71,16 +71,45 @@ class Sheet extends MY_Controller{
             $this->api_res(1004,array('error' => $this->excel->display_errors('','')));
         }else {
             //var_dump($this->excel->excel);
-//            $sheet  = $this->excel->excel->getActiveSheet();
-            $sheet  = $this->excel->excel->getSheetByName('Sheet2');
-            $sheetArray = $sheet->toArray('A1','G1');
-            var_dump($sheetArray);
+            $sheet  = $this->excel->excel->getActiveSheet();
+//            $sheet  = $this->excel->excel->getSheetByName('Sheet2');
+            $sheetArray = $sheet->toArray();
+
+//            var_dump($sheetArray);exit;
+
+            $this->load->model('roomunionmodel');
+            $this->load->model('roomtypemodel');
+            foreach ($sheetArray as $key=>$one){
+
+                if($key==0){
+                    continue;
+                }
+
+                $roomTyoeId = Roomtypemodel::where('name',$one[1])->first()->id;
+
+                $building_id    = $this->input->post('b_id');
+                $building_name    = $this->input->post('b_name');
+
+                $roomunion  = new Roomunionmodel();
+
+                $roomunion->number  = $one[0];
+                $roomunion->building_id = $building_id;
+                $roomunion->building_name = $building_name;
+                $roomunion->store_id = 12;
+                $roomunion->rent_price  = $one[4];
+                $roomunion->room_type_id    = $roomTyoeId;
+                $roomunion->save();
+            }
 //            $row    = $sheet->getHighestRow();
 //            var_dump($row);
 
            // $oss_path   = $this->excel->data()['oss_path'];
            // $this->api_res(0,['file_url'=>config_item('cdn_path').$oss_path]);
+
+
         }
+
+        echo 1;
 
 
 

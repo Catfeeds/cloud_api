@@ -60,7 +60,7 @@ class AuthHook {
 //            'mini/resident/listresident',
 //            'mini/resident/unconfirm',
 //            'mini/resident/bookingtocheckin',
-//            'mini/resident/renew',
+            'mini/resident/renew',
 //            'mini/checkout/listcheckout',
 //            'mini/checkout/store',
 //            'mini/checkout/submitforapproval',

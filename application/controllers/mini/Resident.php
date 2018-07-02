@@ -1238,7 +1238,8 @@ class Resident extends MY_Controller
             $this->api_res(1002,['error'=>$this->form_first_error($field)]);
             return;
         }
-        $store_id   = $this->employee->store_id;
+//        $store_id   = $this->employee->store_id;
+        $store_id   = 1;
         $this->load->model('residentmodel');
         $resident   = Residentmodel::where(['store_id'=>$store_id])->findOrFail($input['resident_id']);
         $this->load->model('roomunionmodel');
@@ -1278,7 +1279,8 @@ class Resident extends MY_Controller
             DB::beginTransaction();
             $newResident                        = new Residentmodel();
             $newResident->fill($orgInfo);
-            $newResident->employee_id           = $this->employee->id;
+//            $newResident->employee_id           = $this->employee->id;
+            $newResident->employee_id           = 99;
             $newResident->room_id               = $input['room_id'];
             $newResident->begin_time            = $input['begin_time'];
             $newResident->end_time              = $this->residentmodel->contractEndDate($input['begin_time'], $input['contract_time']);
