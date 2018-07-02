@@ -21,7 +21,7 @@ class Contract extends MY_Controller{
         $input  = $this->input->post(null,true);
         $page   = (int)(isset($input['page'])?$input['page']:1);
         $per_page   = (int)(isset($input['per_page'])?$input['per_page']:PAGINATE);
-        $offset = ($page-1)*PAGINATE;
+        $offset = ($page-1)*$per_page;
         $where['store_id']=$this->employee->store_id;
 //        $where['store_id']=1;
 //        isset($input['room_number'])?$where['number']=$input['room_number']:null;
