@@ -105,32 +105,27 @@ class Home extends MY_Controller
         $result_out     = Billmodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->where('type','output')->sum('money');
         $result['month']['total']['all'] = $result_input-$result_out;
 
-        $sequence_numbers = [];
-        $sequence_number = Billmodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->get(['sequence_number'])->toArray();
-        if (!empty($sequence_number)){
-            foreach ($sequence_number as $key=>$value){
-                array_push($sequence_numbers,$sequence_number[$key]['sequence_number']);
-            }
+
         //月报表住宿服务费实收
             $result['month']['total']['server'] = Ordermodel::whereIn('store_id', $store_ids)
-                ->whereIn('sequence_number',$sequence_numbers)->where('type','ROOM')
+                ->where('sequence_number','<>','')->where('type','ROOM')
                 ->whereBetween('created_at', $date_m)
                 ->sum('paid');
         //月报表物业服务费实收
             $result['month']['total']['management'] = Ordermodel::whereIn('store_id', $store_ids)
-                ->whereIn('sequence_number',$sequence_numbers)->where('type', 'MANAGEMENT')
+                ->where('sequence_number','<>','')->where('type', 'MANAGEMENT')
                 ->whereBetween('created_at', $date_m)
                 ->sum('paid');
             //月报表水电服务费实收
             $result['month']['total']['utility'] = Ordermodel::whereIn('store_id', $store_ids)
-                ->whereIn('sequence_number',$sequence_numbers)
-                ->whereBetween('created_at', $date_m)->where('type', 'UTILITY')
+                ->where('sequence_number','<>','')->where('type', 'UTILITY')
+                ->whereBetween('created_at', $date_m)
                 ->sum('money');
             //月报表其他服务费实收
             $result['month']['total']['other'] = $result['month']['total']['all']- $result['month']['total']['server']-$result['month']['total']['management']-$result['month']['total']['utility'];
             $result['month']['total']['other'] = number_format($result['month']['total']['other'], 2);
 
-        }
+
 
 
         //住户增
