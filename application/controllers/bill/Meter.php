@@ -275,7 +275,9 @@ class Meter extends MY_Controller
                 $transfer->store_id     = $room->store_id;
                 $transfer->last_reading = $item['read'];
                 $transfer->type         = $type;
-            }
+            }/*else{
+                $transfer->last_reading = $transfer->this_reading;
+            }*/
 
             $transfer->weight = $item['weight'];
             $transfer->this_reading = $item['read'];
