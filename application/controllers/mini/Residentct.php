@@ -108,6 +108,9 @@ class Residentct extends MY_Controller
         $id   = isset($post['id'])?$post['id']:null;
 
         $resident = Residentmodel::with('customer','contract','roomunion')->find($id)->toArray();
+        $resident['card_one']   = $this->fullAliossUrl($resident['card_one']);
+        $resident['card_two']   = $this->fullAliossUrl($resident['card_two']);
+        $resident['card_three']   = $this->fullAliossUrl($resident['card_three']);
         $resident['begin_time'] = date('Y-m-d',strtotime($resident['begin_time']));
         $resident['end_time'] = date('Y-m-d',strtotime($resident['end_time']));
 
