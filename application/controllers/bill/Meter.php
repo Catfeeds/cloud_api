@@ -231,17 +231,17 @@ class Meter extends MY_Controller
 
         $data       = $this->checkAndGetInputData($sheetArray,$store_id);
 
-        var_dump($data);exit;
+
         /*if(!empty($data['error'])){
             $this->api_res(10052,['error'=>$data['error']]);
            // return;
         }*/
 
         $c  = $this->writeReading($data, $type);
-       /* if(!empty($c['error'])){
+        if(!empty($c['error'])){
             $this->api_res(10051,['error'=>$c['error']]);
-           // return;
-        }*/
+            return;
+        }
 
         $this->api_res(0);
     }
