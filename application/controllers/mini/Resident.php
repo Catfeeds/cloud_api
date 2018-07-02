@@ -354,7 +354,7 @@ class Resident extends MY_Controller
                 'rules' => 'required|trim|max_length[13]|numeric',
                 'errors' => array(
                     'required' => '请填写%s',
-                    'max_length'    => '请检查手机号',
+                    'max_length' => '请检查手机号',
                     'numeric'    => '请检查手机号',
                 ),
             ),
@@ -381,6 +381,7 @@ class Resident extends MY_Controller
                 'rules' => 'required|trim|max_length[13]',
                 'errors' => array(
                     'required' => '请填写%s',
+                    'max_length' => '请检查%s',
                 ),
             ),
             array(
@@ -389,7 +390,7 @@ class Resident extends MY_Controller
                 'rules' => 'required|trim|numeric',
                 'errors' => array(
                     'required' => '请填写%s',
-                    'numeric'   =>'请填写正确的联系方式',
+                    'numeric'  => '请填写正确的联系方式',
                 ),
             ),
             array(
