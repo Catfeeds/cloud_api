@@ -241,6 +241,7 @@ class AuthHook {
 //            'sellcontrol/sellcontrol/details',
 //            'utility/utility/listutility',
             'utility/utility/listutility1',
+//            'utility/utility/updatenumber',
 
         );
 //        if(ENVIRONMENT !=='production')
