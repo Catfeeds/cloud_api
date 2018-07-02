@@ -275,17 +275,18 @@ class Meter extends MY_Controller
                 $transfer->last_reading = $item['read'];
                 $transfer->type         = $type;
             }
-        }/*else{
+        /*else{
                 $transfer->last_reading = $transfer->this_reading;
             }*/
             $transfer->weight = $item['weight'];
             $transfer->this_reading = $item['read'];
             $transfers[]    = $transfer;
+        }
         /*if(!empty($error)){
             return $error;
         }*/
         foreach ($transfers as $transfer) {
-            log_message('error',1);
+
             $transfer->save();
         }
         return true;
