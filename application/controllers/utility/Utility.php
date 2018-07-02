@@ -55,22 +55,19 @@ class Utility extends MY_Controller
                     ->get($filed)->map(function($s){
                         switch ($s->type){
                             case 'ELECTRIC_METER':
-                                $s->diff = number_format($s->this_reading-$s->last_reading,2);
-                                $s->price= number_format($s->diff*$s->store->electricity_price,2);
-//                                $s->price= number_format(floatval($s->diff)*floatval($s->store->hot_water_price),2);
+                                $s->diff = number_format($s->this_reading-$s->last_reading,2,'.','');
+                                $s->price= number_format($s->diff*$s->store->electricity_price,2,'.','');
                                 break;
                             case 'COLD_WATER_METER':
-                                $s->diff = number_format($s->this_reading-$s->last_reading,2);
-                                $s->price= number_format($s->diff*$s->store->water_price,2);
-//                                $s->price= number_format(floatval($s->diff)*floatval($s->store->hot_water_price),2);
+                                $s->diff = number_format($s->this_reading-$s->last_reading,2,'.','');
+                                $s->price= number_format($s->diff*$s->store->water_price,2,'.','');
                                 break;
                             case 'HOT_WATER_METER':
-                                $s->diff = number_format($s->this_reading-$s->last_reading,2);
-//                                $s->price= number_format(floatval($s->diff)*floatval($s->store->hot_water_price),2);
-                                $s->price= number_format($s->diff*$s->store->hot_water_price,2);
+                                $s->diff = number_format($s->this_reading-$s->last_reading,2,'.','');
+                                $s->price= number_format($s->diff*$s->store->hot_water_price,2,'.','');
                                 break;
                             default :
-                                $s->diff = number_format($s->this_reading-$s->last_reading,2);
+                                $s->diff = number_format($s->this_reading-$s->last_reading,2,'.','');
                                 $s->price= 0;
                                 break;
                         }
@@ -89,22 +86,19 @@ class Utility extends MY_Controller
                     ->get($filed)->map(function($s){
                         switch ($s->type){
                             case 'ELECTRIC_METER':
-                                $s->diff = number_format($s->this_reading-$s->last_reading,2);
-                                $s->price= number_format($s->diff*$s->store->electricity_price,2);
-//                                $s->price= number_format(floatval($s->diff)*floatval($s->store->hot_water_price),2);
+                                $s->diff = number_format($s->this_reading-$s->last_reading,2,'.','');
+                                $s->price= number_format($s->diff*$s->store->electricity_price,2,'.','');
                                 break;
                             case 'COLD_WATER_METER':
-                                $s->diff = number_format($s->this_reading-$s->last_reading,2);
-                                $s->price= number_format($s->diff*$s->store->water_price,2);
-//                                $s->price= number_format(floatval($s->diff)*floatval($s->store->hot_water_price),2);
+                                $s->diff = number_format($s->this_reading-$s->last_reading,2,'.','');
+                                $s->price= number_format($s->diff*$s->store->water_price,2,'.','');
                                 break;
                             case 'HOT_WATER_METER':
-                                $s->diff = number_format($s->this_reading-$s->last_reading,2);
-                                $s->price= number_format($s->diff*$s->store->hot_water_price,2);
-//                                $s->price= number_format(floatval($s->diff)*floatval($s->store->hot_water_price),2);
+                                $s->diff = number_format($s->this_reading-$s->last_reading,2,'.','');
+                                $s->price= number_format($s->diff*$s->store->hot_water_price,2,'.','');
                                 break;
                             default :
-                                $s->diff = number_format($s->this_reading-$s->last_reading,2);
+                                $s->diff = number_format($s->this_reading-$s->last_reading,2,'.','');
                                 $s->price= 0;
                                 break;
                         }
@@ -112,7 +106,6 @@ class Utility extends MY_Controller
                     })->toArray();
             }
         }
-        
         $this->api_res(0, ['list'=>$utility,'count'=>$count]);
     }
 
@@ -128,22 +121,22 @@ class Utility extends MY_Controller
             ->get($filed)->map(function($s){
                 switch ($s->type){
                     case 'ELECTRIC_METER':
-                        $s->diff = number_format($s->this_reading-$s->last_reading,2);
-                        $s->price= number_format(floatval($s->diff)*$s->store->electricity_price,2);
+                        $s->diff = number_format($s->this_reading-$s->last_reading,2,'.','');
+                        $s->price= number_format($s->diff*$s->store->electricity_price,2,'.','');
 //                        $s->price= number_format(floatval($s->diff)*floatval($s->store->hot_water_price),2);
                         break;
                     case 'COLD_WATER_METER':
-                        $s->diff = number_format($s->this_reading-$s->last_reading,2);
-                        $s->price= number_format($s->diff*$s->store->water_price,2);
+                        $s->diff = number_format($s->this_reading-$s->last_reading,2,'.','');
+                        $s->price= number_format($s->diff*$s->store->water_price,2,'.','');
 //                        $s->price= number_format(floatval($s->diff)*floatval($s->store->hot_water_price),2);
                         break;
                     case 'HOT_WATER_METER':
-                        $s->diff = number_format($s->this_reading-$s->last_reading,2);
-                        $s->price= number_format($s->diff*$s->store->hot_water_price,2);
+                        $s->diff = number_format($s->this_reading-$s->last_reading,2,'.','');
+                        $s->price= number_format($s->diff*$s->store->hot_water_price,2,'.','');
 //                        $s->price= number_format(floatval($s->diff)*floatval($s->store->hot_water_price),2);
                         break;
                     default :
-                        $s->diff = number_format($s->this_reading-$s->last_reading,2);
+                        $s->diff = number_format($s->this_reading-$s->last_reading,2,'.','');
                         $s->price= 0;
                         break;
                 }
