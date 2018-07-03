@@ -18,6 +18,11 @@ $config['time_zone']    = date_default_timezone_get();
 //梵响数据系统相关文件的整理配置
 */
 
+$config['wechat_base_url'] = 'web.strongberry.cn/';
+
+//住户公众号模板消息ID
+$config['tmplmsg_customer_paynotice']   = 'YCDMkeid2YzQo-kHt9QiU2nsT9LcjzUos-FrI-oBk3A';
+
 //微信开放平台网页授权的信息
 $config['wx_web_appid']     = 'wx75fd74e2316b2355';
 $config['wx_web_secret']    = '70fa3a7fe658be97552788fc764f5434';
@@ -81,3 +86,5 @@ $config['wx_employee_appid']     = 'wx3f45803d56359770';
 $config['wx_employee_secret']    = 'c988ed5fba2a02b66efa9dd1130ce580';
 $config['wx_employee_token']     = 'PDH4f7Bgpk7agQ5y4vLVlPgdIdJPhE';
 $config['wx_employee_aes_key']   = 'NRgcvwQZX2soZSB9dq1yX0bmEz2JF1ppcS5Gjb2Bm5i';
+
+
