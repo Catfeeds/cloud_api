@@ -79,7 +79,9 @@ class Order extends MY_Controller
             })
             ->where($where)
             ->whereIn('status',$status)
-            ->orderBy('created_at','DESC')->offset($offset)->limit(PAGINATE)
+            ->orderBy('created_at','DESC')
+            ->orderBy('room_id','ASC')
+            ->offset($offset)->limit(PAGINATE)
             ->get()->toArray();
 
 
