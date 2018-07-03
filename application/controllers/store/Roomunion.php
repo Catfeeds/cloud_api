@@ -185,7 +185,7 @@ class Roomunion extends MY_Controller
             return;
         }
         $this->load->model('roomunionmodel');
-        $buildings  = Roomunionmodel::select(['store_id','building_id','building_name'])->groupBy('building_id')->get();
+        $buildings  = Roomunionmodel::where($where)->select(['store_id','building_id','building_name'])->groupBy('building_id')->get();
         $this->api_res(0,['buildings'=>$buildings]);
     }
 
