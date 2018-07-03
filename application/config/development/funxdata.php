@@ -21,7 +21,7 @@ $config['time_zone']    = date_default_timezone_get();
 $config['wechat_base_url'] = 'web.strongberry.cn/';
 
 //住户公众号模板消息ID
-$config['tmplmsg_customer_paynotice']   = 'YCDMkeid2YzQo-kHt9QiU2nsT9LcjzUos-FrI-oBk3A';
+$config['tmplmsg_customer_paynotice']   = 'UAKRkFEhbxo7vMrnWYkx6iK9jqqObhYKUEFLcJ50kK0';
 
 //微信开放平台网页授权的信息
 $config['wx_web_appid']     = 'wx75fd74e2316b2355';
