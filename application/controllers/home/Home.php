@@ -105,11 +105,11 @@ class Home extends MY_Controller
         $result_out     = Billmodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->where('type','output')->sum('money');
         $result['month']['total']['all'] = $result_input-$result_out;
         //月报表住宿服务费实收
-        $result['month']['total']['server'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->where('type', 'ROOM')->sum('paid');
+        $result['month']['total']['server'] = Billmodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->where('type', 'ROOM')->sum('money');
         //月报表物业服务费实收
-        $result['month']['total']['management'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->where('type', 'MANAGEMENT')->sum('paid');
+        $result['month']['total']['management'] = Billmodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->where('type', 'MANAGEMENT')->sum('money');
         //月报表水电服务费实收
-        $result['month']['total']['utility'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->where('type', 'UTILITY')->sum('paid');
+        $result['month']['total']['utility'] = Billmodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->where('type', 'UTILITY')->sum('money');
         //月报表其他服务费实收
         $result['month']['total']['other'] = $result['month']['total']['all']- $result['month']['total']['server']-$result['month']['total']['management']-$result['month']['total']['utility'];
         $result['month']['total']['other'] = number_format($result['month']['total']['other'], 2);
