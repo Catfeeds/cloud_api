@@ -358,6 +358,11 @@ class Order extends MY_Controller
                     ->where('status', Ordermodel::STATE_GENERATED)
                     ->update(['status'=> Ordermodel::STATE_PENDING]);
 
+                if(0==$customer->subscribe)
+                {
+                    log_message('error',$resident_id.'未关注公众号，未推送账单');
+                    continue;
+                }
                 $app->notice->uses(config_item('tmplmsg_customer_paynotice'))
                     ->withUrl(config_item('wechat_base_url') . '#/myBill')
                     ->andData([
