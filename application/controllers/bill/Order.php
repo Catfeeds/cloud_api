@@ -329,13 +329,15 @@ class Order extends MY_Controller
      */
     public function push()
     {
-        $input = $this->input->post('store_id');
+        $input = $this->input->post(null,true);
         $store_id = $input['store_id'];
         $this->load->model('ordermodel');
         $this->load->model('residentmodel');
         $this->load->model('customermodel');
         $unPushOrders = Ordermodel::where('store_id', $store_id)
             ->where('status', Ordermodel::STATE_GENERATED)->get()->groupBy('resident_id');
+
+//        var_dump($unPushOrders->toArray());exit;
         $this->load->helper('common');
         $app = new Application(getWechatCustomerConfig());
         foreach ($unPushOrders as $resident_id => $orders) {
@@ -354,7 +356,7 @@ class Order extends MY_Controller
                 DB::beginTransaction();
                 $orders = Ordermodel::where('resident_id', $resident_id)
                     ->where('status', Ordermodel::STATE_GENERATED)
-                    ->update('status', Ordermodel::STATE_PENDING);
+                    ->update(['status'=> Ordermodel::STATE_PENDING]);
                 $app->notice->uses(config_item('tmplmsg_customer_paynotice'))
                     ->withUrl(config_item('wechat_base_url') . '#/myBill')
                     ->andData([
@@ -366,11 +368,13 @@ class Order extends MY_Controller
                     ->andReceiver($customer->openid)
                     ->send();
                 DB::commit();
+
             } catch (Exception $e) {
                 DB::rollBack();
                 throw $e;
             }
         }
+        $this->api_res(0);
     }
 
     public function notify()
