@@ -357,6 +357,7 @@ class Order extends MY_Controller
                 $orders = Ordermodel::where('resident_id', $resident_id)
                     ->where('status', Ordermodel::STATE_GENERATED)
                     ->update(['status'=> Ordermodel::STATE_PENDING]);
+
                 $app->notice->uses(config_item('tmplmsg_customer_paynotice'))
                     ->withUrl(config_item('wechat_base_url') . '#/myBill')
                     ->andData([
@@ -367,6 +368,7 @@ class Order extends MY_Controller
                     ])
                     ->andReceiver($customer->openid)
                     ->send();
+                log_message('error',$resident_id.'推送成功');
                 DB::commit();
 
             } catch (Exception $e) {
