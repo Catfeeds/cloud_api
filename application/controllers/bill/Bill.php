@@ -224,7 +224,7 @@ class Bill extends MY_Controller
         $this->api_res(0);
     }
 
-    public function testa(){
+/*    public function testa(){
         $year   = 2018;
         $month   = 7;
         $input  = $this->input->post(null,true);
@@ -364,7 +364,7 @@ class Bill extends MY_Controller
             }
         }
 
-    }
+    }*/
 
     /**
      * 查询数据库并生成当月账单
@@ -547,8 +547,8 @@ class Bill extends MY_Controller
             'money'         => $money,
             'paid'          => $money,
             'room_id'       => $room->id,
-            'employee_id'   => 99,
-//            'employee_id'   => $this->employee->id,
+//            'employee_id'   => 99,
+            'employee_id'   => $this->employee->id,
             'store_id'      => $room->store_id,
             'room_type_id'  => $room->room_type_id,
             'deal'          => Ordermodel::DEAL_UNDONE,

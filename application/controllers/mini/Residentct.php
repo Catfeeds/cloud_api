@@ -48,7 +48,9 @@ class Residentct extends MY_Controller
             return;
         }
         $category = Residentmodel::with('roomunion','customer','contract')->where('status','NORMAL')->whereIn('store_id', $store_ids)->take($pre_page)->skip($offset)
-            ->orderBy('id', 'desc')->get($field)
+            ->orderBy('end_time','ASC')
+            ->orderBy('room_id', 'ASC')
+            ->get($field)
             ->map(function ($res){
                 $data   = $res->toArray();
                 $data['days_left']  = Carbon::now()->startOfDay()->diffIndays($res->end_time, false);

@@ -339,8 +339,7 @@ class Checkout extends MY_Controller
                 } else {
                     $higherPriceDays    = max(0, $checkoutDate->day - $resident->begin_time->day + 1);
                     $daysLastMonth      = $resident->begin_time->copy()->endOfMonth()->day;
-                    $rent               = $resident->real_rent_money -
-                        ceil(($daysLastMonth - $resident->begin_time->day + 1) * $resident->real_rent_money / $daysLastMonth);
+                    $rent               = $resident->real_rent_money - ceil(($daysLastMonth - $resident->begin_time->day + 1) * $resident->real_rent_money / $daysLastMonth);
                     $property           = $resident->real_property_costs - ceil(($daysLastMonth - $resident->begin_time->day + 1) * $resident->real_property_costs / $daysLastMonth);
 
                     //这里用的是房租现在的单价, 可能会存在一些问题

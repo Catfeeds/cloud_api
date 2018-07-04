@@ -56,9 +56,9 @@ class Order extends MY_Controller
                         $query->where('name','like',"%$search%");
                     })->orWhereHas('roomunion',function($query) use($search){
                         $query->where('number','like',"%$search%");
-                    })->orWhereHas('employee',function($query) use($search){
+                    })/*->orWhereHas('employee',function($query) use($search){
                         $query->where('name','like',"%$search%");
-                    });
+                    })*/;
                 })
                 ->where($where)
                 ->whereIn('status',$status)
@@ -75,9 +75,9 @@ class Order extends MY_Controller
                     $query->where('name','like',"%$search%");
                 })->orWhereHas('roomunion',function($query) use($search){
                     $query->where('number','like',"%$search%");
-                })->orWhereHas('employee',function($query) use($search){
+                })/*->orWhereHas('employee',function($query) use($search){
                     $query->where('name','like',"%$search%");
-                });
+                })*/;
             })
             ->where($where)
             ->whereIn('status',$status)
