@@ -30,18 +30,33 @@ class Contract extends MY_Controller
         $where = [];
         if(!empty($post['store_id'])){$where['store_id'] = intval($post['store_id']);};
         if(!empty($post['status'])){$where['status'] = trim($post['status']);};
-        if(!empty($post['contract_id'])){$where['contract_id'] = trim($post['contract_id']);};
+        $resident_ids = [];
+        if(!empty($post['contract_id'])){
+            $name = trim($post['contract_id']);
+            $resident_id = Residentmodel::where('name','like','%'.$name.'%')->get(['id'])->toArray();
+            if (isset($resident_id)){
+                foreach ($resident_id as $key=>$value){
+                    array_push($resident_ids,$resident_id[$key]['id']);
+                }
+            }
+        }else{
+            $resident_id = Residentmodel::get(['id'])->toArray();
+            if (isset($resident_id)){
+                foreach ($resident_id as $key=>$value){
+                    array_push($resident_ids,$resident_id[$key]['id']);
+                }
+            }
+        }
         if(!empty($post['begin_time'])){$bt=$post['begin_time'];}else{$bt = date('Y-m-d H:i:s',0);};
         if(!empty($post['end_time'])){$et=$post['end_time'];}else{$et = date('Y-m-d H:i:s',time());};
-
-        $count = ceil(Contractmodel::where($where)->whereBetween('created_at',[$bt,$et])->count()/PAGINATE);
+        $count = ceil(Contractmodel::where($where)->whereIn('resident_id',$resident_ids)->whereBetween('created_at',[$bt,$et])->count()/PAGINATE);
         if ($page>$count||$page<1){
             $this->api_res(0,['list'=>[]]);
             return;
         }else{
             $order = Contractmodel::where($where)
                 ->with('employee')->with('resident')->with('store')->with('roomunion')
-                ->whereBetween('created_at',[$bt,$et])
+                ->whereBetween('created_at',[$bt,$et])->whereIn('resident_id',$resident_ids)
                 ->take(PAGINATE)->skip($offset)
                 ->orderBy('id','desc')->get($filed)->toArray();
         }
