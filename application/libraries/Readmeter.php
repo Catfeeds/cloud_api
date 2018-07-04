@@ -61,7 +61,7 @@ class Readmeter //extends //MY_Controller
 
         return collect($readings)->map(function ($reading, $sn) use ($devices) {
             $device = $devices->where('serial_number', $sn)->first();
-            $this->recordUtilityTransfer($device, $reading);
+            //$this->recordUtilityTransfer($device, $reading);
             $this->recordMeterReading($device, $reading);
         });
     }
