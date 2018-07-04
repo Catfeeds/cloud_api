@@ -16,7 +16,7 @@ class test extends MY_Controller
     {
         parent::__construct();
 //        exit;
-        $this->store_id=5;
+        $this->store_id=$this->input->post('store_id');
     }
 
     public function test1(){
@@ -59,7 +59,9 @@ class test extends MY_Controller
 //        var_dump($rooms->toArray());
 
         $data = $this->calcEndTimeResidentMoney($rooms,$year,$month,$payDate);
-        $this->dataToExcel($data);
+
+        $this->api_res(0);
+//        $this->dataToExcel($data);
 //        $this->api_res(0,$data);
     }
     //计算本月到期应付的金额
@@ -168,6 +170,7 @@ class test extends MY_Controller
         }
 
         $this->dataToExcel($data);
+
 //        $this->api_res(0,$data);
 
 
