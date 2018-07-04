@@ -28,7 +28,7 @@ class Contract extends MY_Controller
         $offset= PAGINATE * ($page - 1);
         $filed = ['id','contract_id','resident_id','room_id','type','created_at','status','employee_id','store_id'];
         $where = [];
-        var_dump($this->employee->store_id);
+        var_dump($this->employee->store_id.'23123134546');
         if(!empty($post['store_id'])){$where['store_id'] = intval($post['store_id']);};
         if(!empty($post['status'])){$where['status'] = trim($post['status']);};
         $resident_ids = [];
