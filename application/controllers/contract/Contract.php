@@ -31,8 +31,6 @@ class Contract extends MY_Controller
         if(!empty($post['store_id'])){$where['store_id'] = intval($post['store_id']);};
         if(!empty($post['status'])){$where['status'] = trim($post['status']);};
         $resident_ids = [];
-        $store_ids = $this->employee->store_id;
-        var_dump($store_ids);
         if(!empty($post['contract_id'])){
             $name = trim($post['contract_id']);
             $resident_id = Residentmodel::where('name','like','%'.$name.'%')->get(['id'])->toArray();
