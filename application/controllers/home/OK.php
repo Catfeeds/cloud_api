@@ -8,7 +8,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
  * Time:        19:48
  * Describe:
  */
-class test extends MY_Controller
+class Ok extends MY_Controller
 {
     protected $store_id;
 
@@ -208,7 +208,7 @@ class test extends MY_Controller
         return $order;
     }
 
-        public function testa(){
+    public function testa(){
         $year   = 2018;
         $month   = 7;
         $input  = $this->input->post(null,true);
