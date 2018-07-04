@@ -139,6 +139,7 @@ class AuthHook {
 //            'store/community/showcommunity',
 //
 //            'store/room/adddot',
+            'bill/order/push',
 //            'store/room/addunion',
 //
 //            'service/servicetype/listservicetype',
