@@ -28,7 +28,6 @@ class Contract extends MY_Controller
         $offset= PAGINATE * ($page - 1);
         $filed = ['id','contract_id','resident_id','room_id','type','created_at','status','employee_id','store_id'];
         $where = [];
-        //$store_ids = $this->employee->id;
         if(!empty($post['store_id'])){$where['store_id'] = intval($post['store_id']);};
         if(!empty($post['status'])){$where['status'] = trim($post['status']);};
         $resident_ids = [];
@@ -50,14 +49,13 @@ class Contract extends MY_Controller
         }
         if(!empty($post['begin_time'])){$bt=$post['begin_time'];}else{$bt = date('Y-m-d H:i:s',0);};
         if(!empty($post['end_time'])){$et=$post['end_time'];}else{$et = date('Y-m-d H:i:s',time());};
-        $count = ceil(Contractmodel::where($where)->whereIn('resident_id',$resident_ids)->whereBetween('created_at',[$bt,$et])->count()/PAGINATE);
+        $count = ceil(Contractmodel::where($where)/*->whereIn('resident_id',$resident_ids)*/->whereBetween('created_at',[$bt,$et])->count()/PAGINATE);
         if ($page>$count||$page<1){
             $this->api_res(0,['list'=>[]]);
             return;
         }else{
-            //var_dump($resident_ids);
             $order = Contractmodel::with('employee')->with('resident')->with('store')->with('roomunion')
-                    ->where($where)->whereIn('resident_id',$resident_ids)
+                    ->where($where)/*->whereIn('resident_id',$resident_ids)*/
                     ->whereBetween('created_at',[$bt,$et])->get($filed)
                     ->take(PAGINATE)->skip($offset)->toArray();
         }
