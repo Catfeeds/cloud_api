@@ -16,7 +16,36 @@ class Renew extends MY_Controller
     //通过房间号获取住户信息
     public function getResidentByRoom()
     {
+        $input  = $this->input->post(null,true);
+        $room_number    = $input['room_number'];
+        $status   = $input['status'];
+//        $store_id   = $this->employee->store_id;
+        $store_id   = 1;
+        $this->load->model('roomunionmodel');
+        $this->load->model('residentmodel');
+        $where  = [
+            'store_id'=>$store_id,
+            'number'=>$room_number,
+        ];
 
+        $room   = Roomunionmodel::with('resident')
+            ->where($where)
+            ->first();
+        if(empty($room))
+        {
+            $this->api_res(1007);
+            return;
+        }
+        if(empty($room->resident)){
+            $this->api_res(10035);
+            return;
+        }
+
+    }
+
+    //续租列表
+    public function listRenew()
+    {
 
     }
 
