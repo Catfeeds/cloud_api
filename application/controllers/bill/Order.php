@@ -335,7 +335,10 @@ class Order extends MY_Controller
         $this->load->model('residentmodel');
         $this->load->model('customermodel');
         $unPushOrders = Ordermodel::where('store_id', $store_id)
-            ->where('status', Ordermodel::STATE_GENERATED)->get()->groupBy('resident_id');
+            ->where('status', Ordermodel::STATE_GENERATED)
+            ->where('year',2018)
+            ->where('month',7)
+            ->get()->groupBy('resident_id');
 
 //        var_dump($unPushOrders->toArray());exit;
         $this->load->helper('common');
