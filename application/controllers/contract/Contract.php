@@ -39,7 +39,14 @@ class Contract extends MY_Controller
                     array_push($resident_ids,$resident_id[$key]['id']);
                 }
             }
-        };
+        }else{
+            $resident_id = Residentmodel::get(['id'])->toArray();
+            if (isset($resident_id)){
+                foreach ($resident_id as $key=>$value){
+                    array_push($resident_ids,$resident_id[$key]['id']);
+                }
+            }
+        }
         if(!empty($post['begin_time'])){$bt=$post['begin_time'];}else{$bt = date('Y-m-d H:i:s',0);};
         if(!empty($post['end_time'])){$et=$post['end_time'];}else{$et = date('Y-m-d H:i:s',time());};
         $count = ceil(Contractmodel::where($where)->whereIn('resident_id',$resident_ids)->whereBetween('created_at',[$bt,$et])->count()/PAGINATE);
