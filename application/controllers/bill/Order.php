@@ -361,19 +361,21 @@ class Order extends MY_Controller
                 if(0==$customer->subscribe)
                 {
                     log_message('error',$resident_id.'未关注公众号，未推送账单');
-                    continue;
+
+                }else{
+                    $app->notice->uses(config_item('tmplmsg_customer_paynotice'))
+                        ->withUrl(config_item('wechat_base_url') . '#/myBill')
+                        ->andData([
+                            'first' => '温馨提示, 您有未支付的账单, 如已支付, 请忽略！',
+                            'keyword1' => $amount . '元',
+                            'keyword2' => '请尽快缴费！',
+                            'remark' => '如有疑问，请与工作人员联系',
+                        ])
+                        ->andReceiver($customer->openid)
+                        ->send();
+                    log_message('error',$resident_id.'推送成功');
                 }
-                $app->notice->uses(config_item('tmplmsg_customer_paynotice'))
-                    ->withUrl(config_item('wechat_base_url') . '#/myBill')
-                    ->andData([
-                        'first' => '温馨提示, 您有未支付的账单, 如已支付, 请忽略！',
-                        'keyword1' => $amount . '元',
-                        'keyword2' => '请尽快缴费！',
-                        'remark' => '如有疑问，请与工作人员联系',
-                    ])
-                    ->andReceiver($customer->openid)
-                    ->send();
-                log_message('error',$resident_id.'推送成功');
+
                 DB::commit();
 
             } catch (Exception $e) {
