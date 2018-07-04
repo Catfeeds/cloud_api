@@ -61,7 +61,7 @@ class Contract extends MY_Controller
                     ->where($where)->whereIn('resident_id',$resident_ids)
                     ->whereBetween('created_at',[$bt,$et])
                     ->take(PAGINATE)->skip($offset)->get($filed)->toArray();
-                    var_dump($order);
+                    //var_dump($order);
         }
         $this->api_res(0,['list'=>$order,'count'=>$count]);
     }
