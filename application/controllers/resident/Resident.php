@@ -215,9 +215,9 @@ class Resident extends MY_Controller
 
         //未支付的列表
         $unpaid    = $resident->orders()
-            ->where('status',Ordermodel::STATE_PENDING)
-            ->orderBy('year','ASC')
-            ->orderBy('month','ASC')
+            ->whereIn('status',[Ordermodel::STATE_PENDING,Ordermodel::STATE_GENERATED,Ordermodel::STATE_AUDITED])
+            ->orderBy('year','DESC')
+            ->orderBy('month','DESC')
             ->get()
             ->map(function($order){
                 $order->date    = $order->year.'-'.$order->month;
