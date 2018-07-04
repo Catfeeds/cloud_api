@@ -62,7 +62,7 @@ class Contract extends MY_Controller
                     ->take(PAGINATE)->skip($offset)->get($filed)->toArray();
                     //var_dump($order);
         }
-        $this->api_res(0,['list'=>$order,'count'=>$count,$this->employee->store_id]);
+        $this->api_res(0,['list'=>$order,'count'=>$count]);
     }
 
     /**
