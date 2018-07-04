@@ -55,6 +55,7 @@ class Contract extends MY_Controller
             $this->api_res(0,['list'=>[]]);
             return;
         }else{
+            var_dump(1);
             $order = Contractmodel::with('employee')->with('resident')->with('store')->with('roomunion')
                 ->where($where)->where('store_id',$store_ids)
                 ->whereBetween('created_at',[$bt,$et])->where('resident_id',$resident_ids)
