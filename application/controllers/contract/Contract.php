@@ -28,7 +28,7 @@ class Contract extends MY_Controller
         $offset= PAGINATE * ($page - 1);
         $filed = ['id','contract_id','resident_id','room_id','type','created_at','status','employee_id','store_id'];
         $where = [];
-        $store_ids = $this->employee->id;
+        //$store_ids = $this->employee->id;
         if(!empty($post['store_id'])){$where['store_id'] = intval($post['store_id']);};
         if(!empty($post['status'])){$where['status'] = trim($post['status']);};
         $resident_ids = [];
@@ -55,7 +55,7 @@ class Contract extends MY_Controller
             $this->api_res(0,['list'=>[]]);
             return;
         }else{
-            var_dump(1);
+            var_dump($resident_ids);
             $order = Contractmodel::with('employee')->with('resident')->with('store')->with('roomunion')
                 ->where($where)
                 ->whereBetween('created_at',[$bt,$et])//->where('resident_id',$resident_ids)
