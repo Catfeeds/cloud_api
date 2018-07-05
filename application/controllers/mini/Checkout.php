@@ -159,8 +159,15 @@ class Checkout extends MY_Controller
             return;
         }
 
+        $resident   = Residentmodel::find($checkout->resident_id);
+        $begin_time     = $resident->begin_time->format('Y-m-d');
+        $end_time      = $resident->end_time->format('Y-m-d');
+        $resident   = $resident->toArray();
+        $resident['begin_time'] = $begin_time;
+        $resident['end_time']   = $end_time;
+
         $data['checkout']=$checkout->toArray();
-        $data['resident']=Residentmodel::find($checkout->resident_id)->toArray();
+        $data['resident']=$resident;
         $data['room']=Roomunionmodel::find($checkout->room_id)->toArray();
         $data['orders']=Ordermodel::where('resident_id',$checkout->resident_id)->where('sequence_number','')->get()->toArray();
 

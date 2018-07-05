@@ -29,8 +29,27 @@ class Contract extends MY_Controller{
         $this->load->model('residentmodel');
         $this->load->model('roomunionmodel');
         $this->load->model('contractmodel');
+
+        if(isset($input['room_number'])){
+            $room_ids   = Roomunionmodel::where('number',$input['room_number'])
+                ->where('store_id',$this->employee->store_id)
+                ->get()
+                ->map(function($a){
+                    return $a->id;
+                });
+        }else{
+            $room_ids   = Roomunionmodel::where('store_id',$this->employee->store_id)
+                ->get()
+                ->map(function($a){
+                    return $a->id;
+                });
+        }
+
+//        var_dump($room_ids);exit;
+
         $rooms  = Residentmodel::with('roomunion')
             ->where($where)
+            ->whereIn('room_id',$room_ids)
             ->whereIn('status',['NOT_PAY','PRE_RESERVE'])
             ->orderBy('updated_at','ASC')
             ->offset($offset)
