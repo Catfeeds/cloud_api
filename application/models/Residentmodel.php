@@ -92,7 +92,7 @@ use Carbon\Carbon;
          'data' => 'array',
      ];
 
-     protected $hidden  = ['created_at'];
+//     protected $hidden  = ['created_at'];
 
      //住户的房间信息
      public function roomunion(){
