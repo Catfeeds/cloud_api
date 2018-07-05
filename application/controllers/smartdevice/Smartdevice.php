@@ -90,22 +90,23 @@ class Smartdevice extends MY_Controller
         $offset         = PAGINATE*($page-1);
 
         $id     = empty($post['id'])?null:trim($post['id']);
+        $room_id= empty($post['room_id'])?null:trim($post['room_id']);
         $type   = empty($post['type'])?null:trim($post['type']);
         if(!empty($post['begin_time'])){$bt=$post['begin_time'];}else{$bt = date('Y-m-d H:i:s',0);};
         if(!empty($post['end_time'])){$et=$post['end_time'];}else{$et = date('Y-m-d H:i:s',time());};
         if($type == 'LOCK'){
             $this->load->model('smartlockrecordmodel');
-            $count  = ceil(Smartlockrecordmodel::count()/PAGINATE);
+            $count  = ceil(Smartlockrecordmodel::where('smart_device_id',$id)->whereBetween('updated_at',[$bt,$et])->count()/PAGINATE);
             $filed  = ['smart_device_type','unlock_person','unlock_way','updated_at'];
             $record = Smartlockrecordmodel::where('smart_device_id',$id)
                                             ->whereBetween('updated_at',[$bt,$et])
                                             ->take(PAGINATE)->skip($offset)
                                             ->orderBy('id','desc')->get($filed)->toArray();
         }else{
-            $this->load->model('smartdevicerecordmodel');
-            $count  = ceil(Smartdevicerecordmodel::count()/PAGINATE);
+            $this->load->model('meterreadingmodel');
+            $count  = ceil(Meterreadingmodel::count()/PAGINATE);
             $filed  = ['smart_device_type','last_reading','this_reading','updated_at'];
-            $record = Smartdevicerecordmodel::where('smart_device_id',$id)
+            $record = Meterreadingmodel::where('room_id',$room_id)->where('type',$type)
                                             ->whereBetween('updated_at',[$bt,$et])
                                             ->take(PAGINATE)->skip($offset)
                                             ->orderBy('id','desc')->get($filed)->toArray();
