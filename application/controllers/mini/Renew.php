@@ -20,8 +20,8 @@ class Renew extends MY_Controller
         $input  = $this->input->post(null,true);
         $room_number    = $input['room_number'];
 //        $status   = $input['status'];
-//        $store_id   = $this->employee->store_id;
-        $store_id   = 1;
+        $store_id   = $this->employee->store_id;
+//        $store_id   = 1;
         $this->load->model('roomunionmodel');
         $this->load->model('residentmodel');
         $where  = [

@@ -94,8 +94,8 @@ class AuthHook {
             //'mini/order/pay',
             //'mini/owner/showdetail',
 
-            'mini/renew/getresidentbyroom',
-            'mini/renew/getrenewroomstatus',
+//            'mini/renew/getresidentbyroom',
+//            'mini/renew/getrenewroomstatus',
 
 
             'mini/rerequire/getendtimerooms',
