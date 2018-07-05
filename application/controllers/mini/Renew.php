@@ -1,5 +1,6 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+use Carbon\Carbon;
 /**
  * Author:      zjh<401967974@qq.com>
  * Date:        2018/7/4 0004
@@ -19,8 +20,8 @@ class Renew extends MY_Controller
         $input  = $this->input->post(null,true);
         $room_number    = $input['room_number'];
 //        $status   = $input['status'];
-        $store_id   = $this->employee->store_id;
-//        $store_id   = 1;
+//        $store_id   = $this->employee->store_id;
+        $store_id   = 1;
         $this->load->model('roomunionmodel');
         $this->load->model('residentmodel');
         $where  = [
@@ -40,6 +41,9 @@ class Renew extends MY_Controller
             $this->api_res(10035);
             return;
         }
+
+        $room->resident->contract_begin_time = $room->resident->begin_time->format('Y-m-d');
+        $room->resident->contract_begin_time = $room->resident->end_time->format('Y-m-d');
 
         $this->api_res(0,['renew'=>$room]);
 
