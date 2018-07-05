@@ -329,6 +329,8 @@ class Order extends MY_Controller
      */
     public function push()
     {
+        $year   = 2018;
+        $month  = 7;
         $input = $this->input->post(null,true);
         $store_id = $input['store_id'];
         $this->load->model('ordermodel');
@@ -336,8 +338,8 @@ class Order extends MY_Controller
         $this->load->model('customermodel');
         $unPushOrders = Ordermodel::where('store_id', $store_id)
             ->where('status', Ordermodel::STATE_GENERATED)
-            ->where('year',2018)
-            ->where('month',7)
+            ->where('year',$year)
+            ->where('month',$month)
             ->get()->groupBy('resident_id');
 
 //        var_dump($unPushOrders->toArray());exit;
@@ -359,10 +361,11 @@ class Order extends MY_Controller
                 DB::beginTransaction();
                 $orders = Ordermodel::where('resident_id', $resident_id)
                     ->where('status', Ordermodel::STATE_GENERATED)
+                    ->where('year',$year)
+                    ->where('month',$month)
                     ->update(['status'=> Ordermodel::STATE_PENDING]);
 
-                if(0==$customer->subscribe)
-                {
+                if(0==$customer->subscribe) {
                     log_message('error',$resident_id.'未关注公众号，未推送账单');
 
                 }else{
