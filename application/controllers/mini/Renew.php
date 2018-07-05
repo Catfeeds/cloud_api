@@ -18,9 +18,9 @@ class Renew extends MY_Controller
     {
         $input  = $this->input->post(null,true);
         $room_number    = $input['room_number'];
-        $status   = $input['status'];
-//        $store_id   = $this->employee->store_id;
-        $store_id   = 1;
+//        $status   = $input['status'];
+        $store_id   = $this->employee->store_id;
+//        $store_id   = 1;
         $this->load->model('roomunionmodel');
         $this->load->model('residentmodel');
         $where  = [
@@ -36,10 +36,12 @@ class Renew extends MY_Controller
             $this->api_res(1007);
             return;
         }
-        if(empty($room->resident)){
+        if(empty($room->resident) || $room->status!=Roomunionmodel::STATE_RENT){
             $this->api_res(10035);
             return;
         }
+
+        $this->api_res(0,[$room]);
 
     }
 
