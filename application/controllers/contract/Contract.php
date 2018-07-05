@@ -87,7 +87,6 @@ class Contract extends MY_Controller
             ->with('employee')->with('resident')->with('store')->with('roomunion')
             ->take(PAGINATE)->skip($offset)
             ->orderBy('id','desc')->get($filed)->toArray();
-
         $this->api_res(0,$order);
     }
 

@@ -223,7 +223,7 @@ class AuthHook {
 //            'contract/operation/booking',
 //            'contract/operation/book',
            //'contract/resident/resident',
-            'contract/contract/showcontract',
+//            'contract/contract/showcontract',
 //
 //
 //            'activity/activity/listactivity',
