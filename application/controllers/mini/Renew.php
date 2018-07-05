@@ -120,8 +120,8 @@ class Renew extends MY_Controller
         $this->load->model('ordermodel');
         $this->load->model('customermodel');
         $rooms  = Roomunionmodel::with(['resident'=>function($q){
-            $q->where('status',Residentmodel::STATE_RENEWAL);
-        },'customer'])
+            $q->with('customer')->where('status',Residentmodel::STATE_RENEWAL);
+        }])
             ->where($where)
             ->get()
             ->where('resident.data.renewal','>',0)
