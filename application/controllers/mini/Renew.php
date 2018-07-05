@@ -64,6 +64,7 @@ class Renew extends MY_Controller
         ];
         $this->load->model('roomunionmodel');
         $this->load->model('residentmodel');
+        $this->load->model('ordermodel');
 
         //1.找到该住户所在的房间
         $org_room   = Roomunionmodel::with('resident')
