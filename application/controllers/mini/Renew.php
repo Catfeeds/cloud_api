@@ -43,7 +43,7 @@ class Renew extends MY_Controller
         }
 
         $room->resident->contract_begin_time = $room->resident->begin_time->format('Y-m-d');
-        $room->resident->contract_begin_time = $room->resident->end_time->format('Y-m-d');
+        $room->resident->contract_end_time = $room->resident->end_time->format('Y-m-d');
 
         $this->api_res(0,['renew'=>$room]);
 
