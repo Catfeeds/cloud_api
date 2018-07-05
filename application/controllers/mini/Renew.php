@@ -120,12 +120,12 @@ class Renew extends MY_Controller
         $this->load->model('ordermodel');
         $this->load->model('customermodel');
         $rooms  = Roomunionmodel::with(['resident'=>function($q){
-            $q->with('customer')->where('status',Residentmodel::STATE_RENEWAL);
+            $q->with('customer')
+                ->where('status',Residentmodel::STATE_NOTPAY)
+                ->where('type',Residentmodel::TYPE_RENEWAL);
         }])
             ->where($where)
-            ->get()
-            ->where('resident.data.renewal','>',0)
-        ;
+            ->get();
 
         $a  = [];
         foreach ($rooms as $room){
@@ -135,10 +135,19 @@ class Renew extends MY_Controller
     }
 
     /**
-     * 取消办理
+     * 取消办理续租
      */
     public function destroy()
     {
+        $input  = $this->input->post(null,true);
+        $resident_id    = $input['resident_id'];
+        $this->load->model('residentmodel');
+        $this->load->model('roomunionmodel');
+        $this->load->model('ordermodel');
+        $resident   = Residentmodel::find($resident_id);
+
+
+
 
     }
 
@@ -157,8 +166,8 @@ class Renew extends MY_Controller
             $this->api_res(1002,['error'=>$this->form_first_error($field)]);
             return;
         }
-//        $store_id   = $this->employee->store_id;
-        $store_id   = 1;
+        $store_id   = $this->employee->store_id;
+//        $store_id   = 1;
         $this->load->model('residentmodel');
         $resident   = Residentmodel::where(['store_id'=>$store_id])->findOrFail($input['resident_id']);
         $this->load->model('roomunionmodel');
@@ -222,7 +231,8 @@ class Renew extends MY_Controller
             $newResident->deposit_money         = max($resident->deposit_money, $input['deposit_money']);
             $newResident->tmp_deposit           = max($resident->tmp_deposit, $input['tmp_deposit']);
 //            $newResident->special_term          = $input['special_term'];
-            $newResident->status                = Residentmodel::STATE_RENEWAL;
+            $newResident->status                = Residentmodel::STATE_NOTPAY;
+            $newResident->type                  = Residentmodel::TYPE_RENEWAL;
             $newResident->data                  = [
                 'org_resident_id'   => $resident->id,
                 'renewal'           => [

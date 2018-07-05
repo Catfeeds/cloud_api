@@ -36,6 +36,9 @@ use Carbon\Carbon;
      const RENTTYPE_SHORT    = 'SHORT';
      const RENTTYPE_LONG     = 'LONG';
 
+     const TYPE_FIRST   = 'FIRST'; //首次入住住户
+     const TYPE_RENEWAL   = 'RENEWAL'; //续租住户
+
 
      protected $table   = 'boss_resident';
 
