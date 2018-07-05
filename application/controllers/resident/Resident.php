@@ -29,7 +29,6 @@ class Resident extends MY_Controller
         $where = [];
         if(!empty($post['store_id'])){$where['store_id'] = intval($post['store_id']);};
         if(!empty($post['name'])){$where['name'] = trim($post['name']);};
-
         $count = $count = ceil(Residentmodel::where($where)->count()/PAGINATE);
         if ($page>$count||$page<1){
             $this->api_res(0,['list'=>[]]);
@@ -91,17 +90,12 @@ class Resident extends MY_Controller
         $resident   = Residentmodel::findOrFail($id);
         $customer   = Customermodel::findOrFail($customer_id);
         $resident->fill($post);
-
         $card_one  = $this->splitAliossUrl($post['card_one']);
         $resident->card_one=$card_one;
-
         $card_two  = $this->splitAliossUrl($post['card_two']);
-
         $resident->card_two=$card_two;
-
         $card_three  = $this->splitAliossUrl($post['card_three']);
         $resident->card_three=$card_three;
-
         $customer->gender = $post['gender'];
         $customer->save();
         if($resident->save())
@@ -208,11 +202,9 @@ class Resident extends MY_Controller
      */
     public function getResidentOrder()
     {
-
         $this->load->model('ordermodel');
         $resident_id    = $this->input->post('resident_id',true);
         $resident   = Residentmodel::findOrFail($resident_id);
-
         //未支付的列表
         $unpaid    = $resident->orders()
             ->whereIn('status',[Ordermodel::STATE_PENDING,Ordermodel::STATE_GENERATED,Ordermodel::STATE_AUDITED])
@@ -223,22 +215,18 @@ class Resident extends MY_Controller
                 $order->date    = $order->year.'-'.$order->month;
                 return $order;
             });
-
         $paid    = $resident->orders()
             ->whereIn('status',[Ordermodel::STATE_CONFIRM,Ordermodel::STATE_COMPLETED])
-            ->orderBy('year','ASC')
-            ->orderBy('month','ASC')
+            ->orderBy('year','DESC')
+            ->orderBy('month','DESC')
             ->get()
             ->map(function($order){
                 $order->date    = $order->year.'-'.$order->month;
                 return $order;
-            })
-        ;
-
+            });
         $unpaid_money   = $unpaid->sum('money');
         $paid_money     = $paid->sum('money');
         $discount_money     = $paid->sum('discount_money');
-
         $unpaid   = $unpaid->groupBy('date')->map(function($unpaid){
             $a  = [];
             $a['orders']    = $unpaid->toArray();
@@ -254,7 +242,6 @@ class Resident extends MY_Controller
             return $a;
         });
         $this->api_res(0,compact('unpaid_money','paid_money','discount_money','unpaid','paid'));
-
     }
 
 
