@@ -125,6 +125,7 @@ class Roomunionmodel extends Basemodel{
             ->select('id','room_id','resident_id','type','status');
     }
 
+
 //    public function utilities()
 //    {
 //        return $this->hasMany(Utilitymodel::class, 'room_id');

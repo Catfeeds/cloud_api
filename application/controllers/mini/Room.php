@@ -1,5 +1,6 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+use Illuminate\Database\Capsule\Manager as DB;
 /**
  * Author:      hfq<1326432154@qq.com>
  * Date:        2018/5/23
@@ -17,6 +18,19 @@ class Room extends MY_Controller
 
     /**
      * 展示房间列表
+     *
+    select u.`id`, u.`layer`, u.`status`, u.`number`, u.`room_type_id`
+    from `boss_room_union` as u
+
+    inner join `boss_order` as oo
+    on u.`id` = oo.`room_id`
+
+
+
+    where (u.`store_id` = 8) and u.`deleted_at` is null
+    and oo.`status` in ('GENERATE', 'AUDITED', 'PENDING')
+    and oo.`deleted_at` is null
+    order by u.`number` asc
      */
     public function listRoom()
     {
@@ -27,12 +41,24 @@ class Room extends MY_Controller
         if(!empty($post['building_id'])){$where['building_id'] = intval($post['building_id']);};
         if(!empty($post['status'])){$status = $post['status'];}else{$status = null;};
         $where['store_id']  = $this->employee->store_id;
+//        $where['store_id']  = 1;
 
         $filed      = ['id','layer','status','number','room_type_id'];
         $this->load->model('roomtypemodel');
         if ($status == 'ARREARS'){
+           /* $room   =  DB::select("select u.`id`, u.`layer`, u.`status`, u.`number`, u.`room_type_id` ".
+                " from `boss_room_union` as u ".
+                " inner join `boss_order` as oo ".
+                "              on u.`id` = oo.`room_id`  ".
+                " where (u.`store_id` = ?) and u.`deleted_at` is null  ".
+                "          and oo.`status` in ('GENERATE', 'AUDITED', 'PENDING')  ".
+                "         and oo.`deleted_at` is null ".
+                " order by u.`number` asc ",[8]);*/
+
             $room = Roomunionmodel::with('room_type')->with('order')//->with('due')
-                ->where($where)->whereHas('order')->orderBy('number','ASC')
+                ->where($where)
+                ->whereHas('order')
+                ->orderBy('number','ASC')
                 ->get($filed)->groupBy('layer')
                 ->map(function ($room){
                     $roominfo = $room->toArray();

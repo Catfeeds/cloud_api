@@ -107,21 +107,22 @@ class Renew extends MY_Controller
     public function listRenew()
     {
         $input  = $this->input->post(null,true);
-        $page   = $input['page'];
-        $per_page   = $input['per_page'];
-        $number     = $input['room_number'];
+//        $page   = $input['page'];
+//        $store_id   = 1;
+        $store_id   = $this->employee->store_id;
+//        $per_page   = $input['per_page'];
+        $where  = ['store_id'=>$store_id];
+        empty($input['room_number'])?:$where['number']=$input['room_number'];
         $this->load->model('roomunionmodel');
         $this->load->model('residentmodel');
         $this->load->model('ordermodel');
-        $rooms  = Roomunionmodel::with('resident',function($resident){
-            if(isset($resident->data['renewal'])){
-                return $resident;
-            }else{
-                return false;
-            }
-        })
-
-            ->get();
+        $rooms  = Roomunionmodel::with(['resident'=>function($q){
+            $q->where('status',Residentmodel::STATE_RENEWAL);
+        }])
+            ->where($where)
+            ->get()
+            ->where('resident.data.renewal','>',0)
+        ;
         $this->api_res(0,$rooms);
 
     }
@@ -206,7 +207,7 @@ class Renew extends MY_Controller
             $newResident->deposit_money         = max($resident->deposit_money, $input['deposit_money']);
             $newResident->tmp_deposit           = max($resident->tmp_deposit, $input['tmp_deposit']);
 //            $newResident->special_term          = $input['special_term'];
-            $newResident->status                = Residentmodel::STATE_NOTPAY;
+            $newResident->status                = Residentmodel::STATE_RENEWAL;
             $newResident->data                  = [
                 'org_resident_id'   => $resident->id,
                 'renewal'           => [
