@@ -75,8 +75,9 @@ class Operation extends MY_Controller
         $filed  = ['id','contract_id','resident_id','room_id','status'];
         $operation = Contractmodel::where('id',$serial)->with('room')->with('residents')->get($filed)
             ->map(function ($s){
-                $s->residents->begin_time = date('Y-m-d',strtotime($s->residents->begin_time));
-                $s->residents->end_time = date('Y-m-d',strtotime($s->residents->end_time));
+                var_dump($s->residents->begin_time);
+                $s->residents->begin_time   = date('Y-m-d',strtotime($s->residents->begin_time));
+                $s->residents->end_time     = date('Y-m-d',strtotime($s->residents->end_time));
                 return $s;
             });
         $this->api_res(0,['info'=>$operation]);
