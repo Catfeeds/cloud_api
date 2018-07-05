@@ -97,7 +97,7 @@ class AuthHook {
 //            'mini/renew/getresidentbyroom',
 //            'mini/renew/getrenewroomstatus',
 //            'mini/renew/renew',
-            'mini/renew/listrenew',
+//            'mini/renew/listrenew',
 
 
             'mini/rerequire/getendtimerooms',
@@ -216,7 +216,7 @@ class AuthHook {
             //'mini/server/listserver',
             //'mini/server/limitcontract',
 //            'mini/server/serverstatus',
-            //'mini/room/listroom',
+//            'mini/room/listroom',
 //            'mini/room/detailsroom',
 //            'mini/room/building',
 //            'mini/room/countroom',

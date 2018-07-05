@@ -354,6 +354,11 @@ class Order extends MY_Controller
             $customer = $resident->customer;
             if (empty($customer)) {
                 log_message('error', $resident_id . '没有用户customer信息');
+                $orders = Ordermodel::where('resident_id', $resident_id)
+                    ->where('status', Ordermodel::STATE_GENERATED)
+                    ->where('year',$year)
+                    ->where('month',$month)
+                    ->update(['status'=> Ordermodel::STATE_PENDING]);
                 continue;
             }
             $amount = $orders->sum('money');
