@@ -61,6 +61,7 @@ class Contract extends MY_Controller
                     ->map(function ($s){
                         $s->begin_time  = date('Y-m-d',strtotime($s->created_at->toDateTimeString()));
                         $s->end_time    = date('Y-m-d',strtotime($s->resident->end_time));
+                        return $s;
                     })->toArray();
         }
         $this->api_res(0,['list'=>$order,'count'=>$count]);
