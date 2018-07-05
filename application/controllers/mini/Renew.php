@@ -103,7 +103,9 @@ class Renew extends MY_Controller
 
 
 
-    //续租列表
+    /**
+     * 续租列表
+     */
     public function listRenew()
     {
         $input  = $this->input->post(null,true);
@@ -116,14 +118,27 @@ class Renew extends MY_Controller
         $this->load->model('roomunionmodel');
         $this->load->model('residentmodel');
         $this->load->model('ordermodel');
+        $this->load->model('customermodel');
         $rooms  = Roomunionmodel::with(['resident'=>function($q){
-            $q->where('status',Residentmodel::STATE_RENEWAL);
+            $q->with('customer')->where('status',Residentmodel::STATE_RENEWAL);
         }])
             ->where($where)
             ->get()
             ->where('resident.data.renewal','>',0)
         ;
-        $this->api_res(0,$rooms);
+
+        $a  = [];
+        foreach ($rooms as $room){
+            $a[]  = $room;
+        }
+        $this->api_res(0,$a);
+    }
+
+    /**
+     * 取消办理
+     */
+    public function destroy()
+    {
 
     }
 
