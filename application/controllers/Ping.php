@@ -14,10 +14,15 @@ class Ping extends MY_Controller
     {
         parent::__construct();
         $this->load->model('companymodel');
+        $this->load->library('m_redis');
     }
 
     public function index(){
         $count = Companymodel::count();
         echo $count;
+        
+        $this->m_redis->redis->set('FUNXDATA:TEST:KEY','123456');
+        echo $this->m_redis->redis->get('FUNXDATA:TEST:KEY');
+        $this->m_redis->redis->del('FUNXDATA:TEST:KEY');
     }
 }
