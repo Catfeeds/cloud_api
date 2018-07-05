@@ -100,14 +100,6 @@ class Renew extends MY_Controller
     }
 
 
-    /**
-     * 办理续租
-     */
-    public function store()
-    {
-
-    }
-
 
     //续租列表
     public function listRenew()
@@ -120,7 +112,6 @@ class Renew extends MY_Controller
      */
     public function renew()
     {
-
         $field  = [
             'room_id','begin_time','people_count','contract_time','discount_id','first_pay_money',
             'deposit_money','deposit_month','tmp_deposit','rent_type','pay_frequency',
@@ -241,7 +232,6 @@ class Renew extends MY_Controller
         }
 
         $this->api_res(0,['resident_id'=>$newResident->id]);
-
     }
 
     /**
