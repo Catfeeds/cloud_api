@@ -106,6 +106,23 @@ class Renew extends MY_Controller
     //续租列表
     public function listRenew()
     {
+        $input  = $this->input->post(null,true);
+        $page   = $input['page'];
+        $per_page   = $input['per_page'];
+        $number     = $input['room_number'];
+        $this->load->model('roomunionmodel');
+        $this->load->model('residentmodel');
+        $this->load->model('ordermodel');
+        $rooms  = Roomunionmodel::with('resident',function($resident){
+            if(isset($resident->data['renewal'])){
+                return $resident;
+            }else{
+                return false;
+            }
+        })
+
+            ->get();
+        $this->api_res(0,$rooms);
 
     }
 
@@ -124,8 +141,8 @@ class Renew extends MY_Controller
             $this->api_res(1002,['error'=>$this->form_first_error($field)]);
             return;
         }
-        $store_id   = $this->employee->store_id;
-//        $store_id   = 1;
+//        $store_id   = $this->employee->store_id;
+        $store_id   = 1;
         $this->load->model('residentmodel');
         $resident   = Residentmodel::where(['store_id'=>$store_id])->findOrFail($input['resident_id']);
         $this->load->model('roomunionmodel');
@@ -168,7 +185,9 @@ class Renew extends MY_Controller
             $newResident->employee_id           = $this->employee->id;
             $newResident->store_id              = $this->employee->store_id;
             $newResident->company_id            = $this->employee->company_id;
-//            $newResident->employee_id           = 99;
+//            $newResident->employee_id           = 1;
+//            $newResident->store_id              = 1;
+//            $newResident->company_id            = 1;
             $newResident->room_id               = $input['room_id'];
             $newResident->begin_time            = $input['begin_time'];
             $newResident->end_time              = $this->residentmodel->contractEndDate($input['begin_time'], $input['contract_time']);

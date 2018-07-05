@@ -1227,6 +1227,7 @@ class Resident extends MY_Controller
      */
     public function renew()
     {
+        exit;
 
         $field  = [
             'room_id','begin_time','people_count','contract_time','discount_id','first_pay_money',

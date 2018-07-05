@@ -96,6 +96,8 @@ class AuthHook {
 
 //            'mini/renew/getresidentbyroom',
 //            'mini/renew/getrenewroomstatus',
+//            'mini/renew/renew',
+            'mini/renew/listrenew',
 
 
             'mini/rerequire/getendtimerooms',

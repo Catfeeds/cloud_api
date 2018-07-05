@@ -14,6 +14,7 @@ class test extends MY_Controller
 
     public function __construct()
     {
+        exit;
         parent::__construct();
 //        exit;
         $this->store_id=$this->input->post('store_id');
