@@ -50,6 +50,57 @@ class Renew extends MY_Controller
     }
 
     /**
+     * 获取续租的房间状态，如果不换房那么状态应该是RENT 否则应该是BLANK
+     */
+    public function getRenewRoomStatus()
+    {
+        $input  = $this->input->post(null,true);
+        $room_number    = $input['room_number'];
+        $resident_id    = $input['resident_id'];
+        $store_id       = $this->employee->store_id;
+        $where  = [
+            'number'    => $room_number,
+            'store_id'  => $store_id,
+        ];
+        $this->load->model('roomunionmodel');
+        $this->load->model('residentmodel');
+
+        //1.找到该住户所在的房间
+        $org_room   = Roomunionmodel::with('resident')
+            ->where('resident_id',$resident_id)
+            ->first();
+
+        if(empty($org_room) || empty($org_room->resident || $org_room->status!=Roomunionmodel::STATE_RENT)){
+            $this->api_res(10036);
+            return;
+        }
+
+        //检测住户是否有未完成账单
+        if($this->checkUnfinishedBills($org_room->resident)){
+            $this->api_res(10023);
+            return;
+        }
+
+        //需要入住的房间
+        $room   = Roomunionmodel::with('resident')->where($where)->first();
+        if(!$room){
+            $this->api_res(1007);
+            return;
+        }
+
+        //如果不是在原房间续租
+        if($room->id    != $org_room->id)
+        {
+            if($room->status!=Roomunionmodel::STATE_BLANK){
+                $this->api_res(10010);
+                return;
+            }
+        }
+        $this->api_res(0,['data'=>$room]);
+    }
+
+
+    /**
      * 办理续租
      */
     public function store()
@@ -191,6 +242,25 @@ class Renew extends MY_Controller
 
         $this->api_res(0,['resident_id'=>$newResident->id]);
 
+    }
+
+    /**
+     * 查询住户是否有未完成的账单
+     */
+    private function checkUnfinishedBills($resident)
+    {
+        $query  = $resident->orders()->whereIn('status', [
+            Ordermodel::STATE_PENDING,
+            Ordermodel::STATE_AUDITED,
+            Ordermodel::STATE_GENERATED,
+            Ordermodel::STATE_CONFIRM,
+        ]);
+
+        if ($query->exists()) {
+            return false;
+        }
+
+        return true;
     }
 
     private function validateRenewRequest()
