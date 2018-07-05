@@ -336,4 +336,33 @@ class Renew extends MY_Controller
         );
     }
 
+    /**
+     * 办理入住时, 将房间状态更新为占用状态
+     */
+    public function occupiedByResident($room, $resident, $status = Roomunionmodel::STATE_OCCUPIED)
+    {
+        if (!in_array($room->status, [Roomunionmodel::STATE_RESERVE, Roomunionmodel::STATE_BLANK])) {
+
+            throw new \Exception('房间当前状态无法办理!');
+        }
+
+        if (Roomunionmodel::STATE_RESERVE == $room->status AND $room->resident_id != $resident->id) {
+
+            throw new \Exception('该房间已经被其他人预约了!');
+        }
+
+        if (!in_array($status, [Roomunionmodel::STATE_OCCUPIED, Roomunionmodel::STATE_RESERVE])) {
+
+            throw new \Exception('status 参数不合法!');
+        }
+
+        return $room->update([
+            'status'        => $status,
+            'resident_id'   => $resident->id,
+            'begin_time'    => $resident->begin_time,
+            'end_time'      => $resident->end_time,
+            'people_count'  => $resident->people_count ? : 0,
+        ]);
+    }
+
 }
