@@ -24,7 +24,7 @@ class Contractmodel extends Basemodel {
     //签署人
     public function resident()
     {
-        return $this->belongsTo(Residentmodel::class,'resident_id')->select('id','name','end_time');
+        return $this->belongsTo(Residentmodel::class,'resident_id')->select('id','name','end_time','begin_time');
     }
 
     public function emp()

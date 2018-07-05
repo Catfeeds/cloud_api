@@ -59,7 +59,7 @@ class Contract extends MY_Controller
                     ->whereBetween('created_at',[$bt,$et])
                     ->take(PAGINATE)->skip($offset)->get($filed)
                     ->map(function ($s){
-                        //$s->begin_time  = date('Y-m-d',strtotime($s->created_at->toDateTimeString()));
+                        $s->begin_time  = date('Y-m-d',strtotime($s->resident->begin_time));
                         $s->end_time    = date('Y-m-d',strtotime($s->resident->end_time));
                         return $s;
                     })->toArray();
