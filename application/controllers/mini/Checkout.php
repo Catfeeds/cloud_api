@@ -160,9 +160,11 @@ class Checkout extends MY_Controller
         }
 
         $resident   = Residentmodel::find($checkout->resident_id);
-        $resident->begin_time     = $resident->begin_time->format('Y-m-d');
-        $resident->end_time      = $resident->end_time->format('Y-m-d');
-        $resident->toArray();
+        $begin_time     = $resident->begin_time->format('Y-m-d');
+        $end_time      = $resident->end_time->format('Y-m-d');
+        $resident   = $resident->toArray();
+        $resident['begin_time'] = $begin_time;
+        $resident['end_time']   = $end_time;
 
         $data['checkout']=$checkout->toArray();
         $data['resident']=$resident;
