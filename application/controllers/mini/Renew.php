@@ -78,7 +78,7 @@ class Renew extends MY_Controller
         }
 
         //检测住户是否有未完成账单
-        if($this->checkUnfinishedBills($org_room->resident)){
+        if(!$this->checkUnfinishedBills($org_room->resident)){
             $this->api_res(10023);
             return;
         }
