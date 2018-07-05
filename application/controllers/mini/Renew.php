@@ -290,12 +290,12 @@ class Renew extends MY_Controller
             array(
                 'field' => 'real_rent_money',
                 'label' => '实际租金',
-                'rules' => 'trim|required|integer',
+                'rules' => 'trim|required|numeric',
             ),
             array(
                 'field' => 'real_property_costs',
                 'label' => '实际物业费',
-                'rules' => 'trim|integer|required',
+                'rules' => 'trim|integer|numeric',
             ),
             array(
                 'field' => 'first_pay_money',
