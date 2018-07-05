@@ -41,7 +41,7 @@ class Renew extends MY_Controller
             return;
         }
 
-        $this->api_res(0,[$room]);
+        $this->api_res(0,['renew'=>$room]);
 
     }
 
