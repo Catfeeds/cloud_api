@@ -44,9 +44,8 @@ class Contract extends MY_Controller{
                     return $a->id;
                 });
         }
-        if(empty($room_ids)){
-            $room_ids   = [];
-        }
+
+        var_dump($room_ids);exit;
 
         $rooms  = Residentmodel::with('roomunion')
             ->where($where)
