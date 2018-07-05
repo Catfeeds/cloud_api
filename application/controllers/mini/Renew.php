@@ -341,7 +341,7 @@ class Renew extends MY_Controller
      */
     public function occupiedByResident($room, $resident, $status = Roomunionmodel::STATE_OCCUPIED)
     {
-        if (!in_array($room->status, [Roomunionmodel::STATE_RESERVE, Roomunionmodel::STATE_BLANK])) {
+        /*if (!in_array($room->status, [Roomunionmodel::STATE_RESERVE, Roomunionmodel::STATE_BLANK])) {
 
             throw new \Exception('房间当前状态无法办理!');
         }
@@ -354,7 +354,7 @@ class Renew extends MY_Controller
         if (!in_array($status, [Roomunionmodel::STATE_OCCUPIED, Roomunionmodel::STATE_RESERVE])) {
 
             throw new \Exception('status 参数不合法!');
-        }
+        }*/
 
         return $room->update([
             'status'        => $status,
