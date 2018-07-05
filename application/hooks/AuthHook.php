@@ -24,7 +24,8 @@ class AuthHook {
         //格式2 类/方法
         //注意，所有url统一用小写，不要大写
         $authArr = array(
-           'mini/login/gettoken',
+            'ping/index',
+            'mini/login/gettoken',
             'mini/login/handleloginstatus',
             'account/login/login',
             'bill/bill/test',
@@ -223,7 +224,7 @@ class AuthHook {
 //            'contract/operation/booking',
 //            'contract/operation/book',
            //'contract/resident/resident',
-            'contract/contract/showcontract',
+//            'contract/contract/showcontract',
 //
 //
 //            'activity/activity/listactivity',
