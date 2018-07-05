@@ -186,7 +186,7 @@ class Renew extends MY_Controller
             $newResident->deposit_month         = max($resident->deposit_month, $input['deposit_month']);
             $newResident->deposit_money         = max($resident->deposit_money, $input['deposit_money']);
             $newResident->tmp_deposit           = max($resident->tmp_deposit, $input['tmp_deposit']);
-            $newResident->special_term          = $input['special_term'];
+//            $newResident->special_term          = $input['special_term'];
             $newResident->status                = Residentmodel::STATE_NOTPAY;
             $newResident->data                  = [
                 'org_resident_id'   => $resident->id,
