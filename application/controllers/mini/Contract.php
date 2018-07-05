@@ -45,7 +45,7 @@ class Contract extends MY_Controller{
                 });
         }
 
-        var_dump($room_ids);exit;
+//        var_dump($room_ids);exit;
 
         $rooms  = Residentmodel::with('roomunion')
             ->where($where)
