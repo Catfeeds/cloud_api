@@ -342,16 +342,16 @@ class Renew extends MY_Controller
 
             //重置原房间状态
             //应该先把原房间改为占用？(取消办理)
-            $resident->roomunion->update(
+            /*`$resident->roomunion->update(
                 [
 //                    'status'        => Roomunionmodel::STATE_BLANK,
                     'status'        => Roomunionmodel::STATE_OCCUPIED,
                     'people_count'  => 0,
                     'resident_id'   => 0,
                 ]
-            );
+            );*/
 
-            $resident->status   = Residentmodel::STATE_NORMAL;
+//            $resident->status   = Residentmodel::STATE_NORMAL;
 //            $resident->status   = Residentmodel::STATE_RENEWAL;
             $resident->data     = ['new_resident_id'=>$newResident->id];
 

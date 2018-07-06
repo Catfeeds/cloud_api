@@ -306,13 +306,11 @@ class Ordermodel extends Basemodel{
                 $query->where('resident_id','>',0);
             })*/
             ->whereNotIn('status', [Ordermodel::STATE_AUDITED, Ordermodel::STATE_GENERATED])
+            ->where(function($query){})
             ->orderBy('status', 'ASC')
             ->orderBy('room_id', 'ASC')
             ->orderBy('updated_at', 'DESC')
             ->get()
-            /*->where('resident_id',function($query){
-                if($query->roomunion->resident_id)
-            })*/
             ->groupBy('room_id');
 
         $pagination     = [
