@@ -114,17 +114,20 @@ class Renew extends MY_Controller
         $store_id   = $this->employee->store_id;
 //        $per_page   = $input['per_page'];
         $where  = ['store_id'=>$store_id];
-        empty($input['room_number'])?:$where['number']=$input['room_number'];
+//        empty($input['room_number'])?:$where['number']=$input['room_number'];
         $this->load->model('roomunionmodel');
         $this->load->model('residentmodel');
         $this->load->model('ordermodel');
         $this->load->model('customermodel');
         $rooms  = Roomunionmodel::with(['resident'=>function($q){
-            $q->with('customer')
-                ->where('status',Residentmodel::STATE_NOTPAY)
-                ->where('type',Residentmodel::TYPE_RENEWAL);
+            $q->with('customer');
+
         }])
             ->where($where)
+            ->whereHas('resident',function($a){
+                $a->where('status',Residentmodel::STATE_NOTPAY)
+                    ->where('type',Residentmodel::TYPE_RENEWAL);
+            })
             ->get();
 
         $a  = [];
@@ -144,10 +147,96 @@ class Renew extends MY_Controller
         $this->load->model('residentmodel');
         $this->load->model('roomunionmodel');
         $this->load->model('ordermodel');
+        $this->load->model('couponmodel');
+        $this->load->model('contractmodel');
         $resident   = Residentmodel::find($resident_id);
+        $room   = $resident->roomunion;
+        //判断resident是不是续租，并且未支付，并且没有已经支付的账单
+        if($resident->type!==Residentmodel::TYPE_RENEWAL || $resident->status!=Residentmodel::STATE_NOTPAY)
+        {
+            $this->api_res(10024);
+            return;
+        }
 
+        $paidOrders = $this->getResidentPaidOrders($resident);
+        if($paidOrders){
 
+            $this->api_res(10015);
+            return;
+        }
 
+        $org_resident_id    = $resident->data['org_resident_id'];
+        $org_resident   = Residentmodel::find($org_resident_id);
+        $org_room   = Residentmodel::find($org_resident_id);
+
+        try{
+            DB::beginTransaction();
+            if($org_resident->end_time>Carbon::now()){
+                $org_resident->update(
+                    ['status'=>Residentmodel::STATE_NORMAL]
+                );
+                $room->update(
+                    [
+                        'status'    => Roomunionmodel::STATE_BLANK,
+                        'resident_id'   =>0,
+                        'people_count'  =>0
+                    ]
+                );
+                $org_room->update(
+                    [
+                        'status'    => Roomunionmodel::STATE_RENT,
+                        'resident_id'   =>$org_resident_id,
+                        'people_count'  =>$org_resident->people_count
+                        ]
+                );
+                $resident->orders()->delete();
+                $resident->coupons()->delete();
+                $resident->contract()->delete();
+                $resident->remark   = $this->employee->id.'员工取消办理续租';
+                $resident->save();
+                $resident->delete();
+            }else{
+                $room->update(
+                    [
+                        'status'    => Roomunionmodel::STATE_BLANK,
+                        'resident_id'   =>0,
+                        'people_count'  =>0
+                    ]
+                );
+                $org_room->update(
+                    [
+                        'status'    => Roomunionmodel::STATE_BLANK,
+                        'resident_id'   =>0,
+                        'people_count'  =>0
+                    ]
+                );
+                $resident->orders()->delete();
+                $resident->coupons()->delete();
+                $resident->contract()->delete();
+                $resident->remark   = $this->employee->id.'员工取消办理续租';
+                $resident->save();
+                $resident->delete();
+            }
+            DB::commit();
+        }catch (Exception $e){
+            DB::rollBack();
+            throw $e;
+        }
+
+        $this->api_res(0);
+    }
+
+    /**
+     * 获取住户已经支付的账单
+     */
+    private function getResidentPaidOrders($resident){
+
+        $orders =$resident->orders()
+            ->whereIn('status',[Ordermodel::STATE_CONFIRM,Ordermodel::STATE_COMPLETED])
+            ->get()
+            ->toArray();
+
+        return $orders;
 
     }
 
@@ -230,13 +319,17 @@ class Renew extends MY_Controller
             $newResident->deposit_month         = max($resident->deposit_month, $input['deposit_month']);
             $newResident->deposit_money         = max($resident->deposit_money, $input['deposit_money']);
             $newResident->tmp_deposit           = max($resident->tmp_deposit, $input['tmp_deposit']);
+            $newResident->rent_price           = $roomunion->rent_price;
+            $newResident->property_price           = $roomunion->property_price;
 //            $newResident->special_term          = $input['special_term'];
             $newResident->status                = Residentmodel::STATE_NOTPAY;
             $newResident->type                  = Residentmodel::TYPE_RENEWAL;
             $newResident->data                  = [
                 'org_resident_id'   => $resident->id,
                 'renewal'           => [
-                    'delt_other_deposit'    => max(0, $input['tmp_deposit'] - $resident->tmp_deposit),
+                    'org_other_deposit'     => $resident->tmp_deposit,
+                    'org_rent_deposit'      => $resident->deposit_money,
+                    'delt_other_deposit'    => max(0, ceil($input['tmp_deposit'] - $resident->tmp_deposit)),
                     'delt_rent_deposit'     => max(0, ceil($input['deposit_money'] - $resident->deposit_money)),
                 ],
             ];
@@ -248,20 +341,23 @@ class Renew extends MY_Controller
 //            }
 
             //重置原房间状态
+            //应该先把原房间改为占用？(取消办理)
             $resident->roomunion->update(
                 [
-                    'status'        => Roomunionmodel::STATE_BLANK,
+//                    'status'        => Roomunionmodel::STATE_BLANK,
+                    'status'        => Roomunionmodel::STATE_OCCUPIED,
                     'people_count'  => 0,
                     'resident_id'   => 0,
                 ]
             );
 
-            $resident->status   = Residentmodel::STATE_RENEWAL;
+            $resident->status   = Residentmodel::STATE_NORMAL;
+//            $resident->status   = Residentmodel::STATE_RENEWAL;
             $resident->data     = ['new_resident_id'=>$newResident->id];
 
             $c=$resident->save();
 
-            //原住户信息是否需要更新下 比如end_time
+            //原住户信息是否需要更新下 比如end_time，不需要
 
             $b=$this->occupiedByResident($roomunion, $newResident);
 
