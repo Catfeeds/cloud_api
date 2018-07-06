@@ -148,6 +148,7 @@ class Renew extends MY_Controller
         $this->load->model('roomunionmodel');
         $this->load->model('ordermodel');
         $this->load->model('couponmodel');
+        $this->load->model('contractmodel');
         $resident   = Residentmodel::find($resident_id);
         $room   = $resident->roomunion;
         //判断resident是不是续租，并且未支付，并且没有已经支付的账单
@@ -190,6 +191,7 @@ class Renew extends MY_Controller
                 );
                 $resident->orders()->delete();
                 $resident->coupons()->delete();
+                $resident->contract()->delete();
                 $resident->remark   = $this->employee->id.'员工取消办理续租';
                 $resident->save();
                 $resident->delete();
@@ -210,6 +212,7 @@ class Renew extends MY_Controller
                 );
                 $resident->orders()->delete();
                 $resident->coupons()->delete();
+                $resident->contract()->delete();
                 $resident->remark   = $this->employee->id.'员工取消办理续租';
                 $resident->save();
                 $resident->delete();
