@@ -147,6 +147,7 @@ class Renew extends MY_Controller
         $this->load->model('residentmodel');
         $this->load->model('roomunionmodel');
         $this->load->model('ordermodel');
+        $this->load->model('couponmodel');
         $resident   = Residentmodel::find($resident_id);
         $room   = $resident->roomunion;
         //判断resident是不是续租，并且未支付，并且没有已经支付的账单
@@ -157,9 +158,6 @@ class Renew extends MY_Controller
         }
 
         $paidOrders = $this->getResidentPaidOrders($resident);
-
-        //var_dump($paidOrders);exit;
-
         if($paidOrders){
 
             $this->api_res(10015);
@@ -167,27 +165,62 @@ class Renew extends MY_Controller
         }
 
         $org_resident_id    = $resident->data['org_resident_id'];
-
+        $org_resident   = Residentmodel::find($org_resident_id);
+        $org_room   = Residentmodel::find($org_resident_id);
 
         try{
-            DB::beginTrascation();
-
-
-            DB::rollBack();
-//            DB::commit();
+            DB::beginTransaction();
+            if($org_resident->end_time>Carbon::now()){
+                $org_resident->update(
+                    ['status'=>Residentmodel::STATE_NORMAL]
+                );
+                $room->update(
+                    [
+                        'status'    => Roomunionmodel::STATE_BLANK,
+                        'resident_id'   =>0,
+                        'people_count'  =>0
+                    ]
+                );
+                $org_room->update(
+                    [
+                        'status'    => Roomunionmodel::STATE_RENT,
+                        'resident_id'   =>$org_resident_id,
+                        'people_count'  =>$org_resident->people_count
+                        ]
+                );
+                $resident->orders()->delete();
+                $resident->coupons()->delete();
+                $resident->remark   = $this->employee->id.'员工取消办理续租';
+                $resident->save();
+                $resident->delete();
+            }else{
+                $room->update(
+                    [
+                        'status'    => Roomunionmodel::STATE_BLANK,
+                        'resident_id'   =>0,
+                        'people_count'  =>0
+                    ]
+                );
+                $org_room->update(
+                    [
+                        'status'    => Roomunionmodel::STATE_BLANK,
+                        'resident_id'   =>0,
+                        'people_count'  =>0
+                    ]
+                );
+                $resident->orders()->delete();
+                $resident->coupons()->delete();
+                $resident->remark   = $this->employee->id.'员工取消办理续租';
+                $resident->save();
+                $resident->delete();
+            }
+            DB::commit();
         }catch (Exception $e){
             DB::rollBack();
             throw $e;
         }
 
-        //DB
-
-        //根据原住户的end_time 判断是不是还原房间状态为rent 是否还原住户状态，添加data 取消办理
-
-        //删除新住户 和新住户的合同 以及账单
-
-        //取消成功
-
+        $this->api_res(0);
     }
 
     /**
@@ -306,7 +339,8 @@ class Renew extends MY_Controller
             //应该先把原房间改为占用？(取消办理)
             $resident->roomunion->update(
                 [
-                    'status'        => Roomunionmodel::STATE_BLANK,
+//                    'status'        => Roomunionmodel::STATE_BLANK,
+                    'status'        => Roomunionmodel::STATE_OCCUPIED,
                     'people_count'  => 0,
                     'resident_id'   => 0,
                 ]
