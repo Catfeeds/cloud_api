@@ -114,17 +114,20 @@ class Renew extends MY_Controller
         $store_id   = $this->employee->store_id;
 //        $per_page   = $input['per_page'];
         $where  = ['store_id'=>$store_id];
-        empty($input['room_number'])?:$where['number']=$input['room_number'];
+//        empty($input['room_number'])?:$where['number']=$input['room_number'];
         $this->load->model('roomunionmodel');
         $this->load->model('residentmodel');
         $this->load->model('ordermodel');
         $this->load->model('customermodel');
         $rooms  = Roomunionmodel::with(['resident'=>function($q){
-            $q->with('customer')
-                ->where('status',Residentmodel::STATE_NOTPAY)
-                ->where('type',Residentmodel::TYPE_RENEWAL);
+            $q->with('customer');
+
         }])
             ->where($where)
+            ->whereHas('resident',function($a){
+                $a->where('status',Residentmodel::STATE_NOTPAY)
+                    ->where('type',Residentmodel::TYPE_RENEWAL);
+            })
             ->get();
 
         $a  = [];
@@ -309,7 +312,8 @@ class Renew extends MY_Controller
                 ]
             );
 
-            $resident->status   = Residentmodel::STATE_RENEWAL;
+            $resident->status   = Residentmodel::STATE_NORMAL;
+//            $resident->status   = Residentmodel::STATE_RENEWAL;
             $resident->data     = ['new_resident_id'=>$newResident->id];
 
             $c=$resident->save();
