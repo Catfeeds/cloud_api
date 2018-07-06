@@ -309,8 +309,8 @@ class Ordermodel extends Basemodel{
             ->orderBy('status', 'ASC')
             ->orderBy('room_id', 'ASC')
             ->orderBy('updated_at', 'DESC')
-            ->get()
-            ->where('resident.id','roomunion.resident_id');
+            ->get();
+//            ->where('resident.id','roomunion.resident_id');
             var_dump($orders->toArray());exit;
             //->groupBy('room_id');
 
