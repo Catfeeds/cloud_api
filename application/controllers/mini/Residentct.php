@@ -38,7 +38,7 @@ class Residentct extends MY_Controller
         $current_page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
         $pre_page = isset($post['pre_page']) ? intval($post['pre_page']) : 15;//当前页显示条数
         $offset = $pre_page * ($current_page - 1);
-        $field = ['id', 'name', 'room_id', 'customer_id','status','end_time'];
+        $field = ['id', 'name', 'room_id', 'customer_id','status','begin_time','end_time'];
 
         $total = Residentmodel::where('status','NORMAL')->whereIn('store_id', $store_ids)->count();
         $total_pages = ceil($total / $pre_page);//总页数
@@ -54,6 +54,8 @@ class Residentct extends MY_Controller
             ->map(function ($res){
                 $data   = $res->toArray();
                 $data['days_left']  = Carbon::now()->startOfDay()->diffIndays($res->end_time, false);
+                $data['begin_time']  = $res->begin_time->format('Y-m-d');
+                $data['end_time']  = $res->begin_time->format('Y-m-d');
                 return $data;
             })
             ->toArray();
