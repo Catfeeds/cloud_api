@@ -183,7 +183,7 @@ class AuthHook {
 //            'shop/goodsorder/detail',
 //
 //            'smartdevice/smartdevice/listsmartdevice',
-            'smartdevice/smartdevice/record',
+            //'smartdevice/smartdevice/record',
 //            'smartdevice/smartdevice/test',
 //            'smartdevice/smartdevice/getallrecord',
 //            'smartdevice/readmeter/handle',
