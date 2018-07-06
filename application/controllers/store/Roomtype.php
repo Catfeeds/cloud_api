@@ -33,28 +33,21 @@ class Roomtype extends MY_Controller
             });
             $count  = ceil((Roomtypemodel::with('store')
                     ->whereIn('store_id',$store_ids)
-                    ->whereIn('store_id',$ableStoreIds)
                     ->where($where)->count())/PAGINATE);
             if($page>$count){
                 $this->api_res(0,['count'=>$count,'list'=>[]]);
                 return;
             }
-            $roomtypes = Roomtypemodel::with('store')->whereIn('store_id',$store_ids)
-                ->whereIn('store_id',$ableStoreIds)
-                ->where($where)->offset($offset)->limit(PAGINATE)->orderBy('id','desc')->get($field);
+            $roomtypes = Roomtypemodel::with('store')->whereIn('store_id',$store_ids)->where($where)->offset($offset)->limit(PAGINATE)->orderBy('id','desc')->get($field);
             $this->api_res(0,['count'=>$count,'list'=>$roomtypes]);
             return;
         }
-        $count  = ceil((Roomtypemodel::with('store')->where($where)
-                ->whereIn('store_id',$ableStoreIds)
-                ->count())/PAGINATE);
+        $count  = ceil((Roomtypemodel::with('store')->where($where)->count())/PAGINATE);
         if($page>$count){
             $this->api_res(0,['count'=>$count,'list'=>[]]);
             return;
         }
-        $roomtypes = Roomtypemodel::with('store')
-            ->whereIn('store_id',$ableStoreIds)
-            ->where($where)->offset($offset)->limit(PAGINATE)->orderBy('id','desc')->get($field);
+        $roomtypes = Roomtypemodel::with('store')->where($where)->offset($offset)->limit(PAGINATE)->orderBy('id','desc')->get($field);
         $this->api_res(0,['count'=>$count,'list'=>$roomtypes]);
     }
 
