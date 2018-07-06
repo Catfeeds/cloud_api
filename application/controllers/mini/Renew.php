@@ -145,9 +145,59 @@ class Renew extends MY_Controller
         $this->load->model('roomunionmodel');
         $this->load->model('ordermodel');
         $resident   = Residentmodel::find($resident_id);
+        $room   = $resident->roomunion;
+        //判断resident是不是续租，并且未支付，并且没有已经支付的账单
+        if($resident->type!==Residentmodel::TYPE_RENEWAL || $resident->status!=Residentmodel::STATE_NOTPAY)
+        {
+            $this->api_res(10024);
+            return;
+        }
+
+        $paidOrders = $this->getResidentPaidOrders($resident);
+
+        //var_dump($paidOrders);exit;
+
+        if($paidOrders){
+
+            $this->api_res(10015);
+            return;
+        }
+
+        $org_resident_id    = $resident->data['org_resident_id'];
 
 
+        try{
+            DB::beginTrascation();
 
+
+            DB::rollBack();
+//            DB::commit();
+        }catch (Exception $e){
+            DB::rollBack();
+            throw $e;
+        }
+
+        //DB
+
+        //根据原住户的end_time 判断是不是还原房间状态为rent 是否还原住户状态，添加data 取消办理
+
+        //删除新住户 和新住户的合同 以及账单
+
+        //取消成功
+
+    }
+
+    /**
+     * 获取住户已经支付的账单
+     */
+    private function getResidentPaidOrders($resident){
+
+        $orders =$resident->orders()
+            ->whereIn('status',[Ordermodel::STATE_CONFIRM,Ordermodel::STATE_COMPLETED])
+            ->get()
+            ->toArray();
+
+        return $orders;
 
     }
 
@@ -230,6 +280,8 @@ class Renew extends MY_Controller
             $newResident->deposit_month         = max($resident->deposit_month, $input['deposit_month']);
             $newResident->deposit_money         = max($resident->deposit_money, $input['deposit_money']);
             $newResident->tmp_deposit           = max($resident->tmp_deposit, $input['tmp_deposit']);
+            $newResident->rent_price           = $roomunion->rent_price;
+            $newResident->property_price           = $roomunion->property_price;
 //            $newResident->special_term          = $input['special_term'];
             $newResident->status                = Residentmodel::STATE_NOTPAY;
             $newResident->type                  = Residentmodel::TYPE_RENEWAL;
@@ -248,6 +300,7 @@ class Renew extends MY_Controller
 //            }
 
             //重置原房间状态
+            //应该先把原房间改为占用？(取消办理)
             $resident->roomunion->update(
                 [
                     'status'        => Roomunionmodel::STATE_BLANK,
@@ -261,7 +314,7 @@ class Renew extends MY_Controller
 
             $c=$resident->save();
 
-            //原住户信息是否需要更新下 比如end_time
+            //原住户信息是否需要更新下 比如end_time，不需要
 
             $b=$this->occupiedByResident($roomunion, $newResident);
 
