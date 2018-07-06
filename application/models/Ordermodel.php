@@ -310,9 +310,10 @@ class Ordermodel extends Basemodel{
             ->orderBy('room_id', 'ASC')
             ->orderBy('updated_at', 'DESC')
             ->get()
-            ->where('resident_id','roomunion.resident_id');
-            var_dump($orders->toArray());exit;
-            //->groupBy('room_id');
+            /*->where('resident_id',function($query){
+                if($query->roomunion->resident_id)
+            })*/
+            ->groupBy('room_id');
 
         $pagination     = [
             'total'         => $orders->count(),
