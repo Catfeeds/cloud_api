@@ -301,7 +301,7 @@ class Ordermodel extends Basemodel{
 
         $orders     = $query
             ->with('resident')
-            ->whereHas('resident')
+//            ->whereHas('resident')
             /*->whereHas('roomunion',function ($query){
                 $query->where('resident_id','>',0);
             })*/
@@ -310,7 +310,7 @@ class Ordermodel extends Basemodel{
             ->orderBy('room_id', 'ASC')
             ->orderBy('updated_at', 'DESC')
             ->get()
-            ->where('resident_id','roomunion.resident_id')
+            ->where('resident.id','roomunion.resident_id')
             ->groupBy('room_id');
 
         $pagination     = [
