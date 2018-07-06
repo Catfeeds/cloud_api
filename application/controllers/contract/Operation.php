@@ -30,8 +30,7 @@ class Operation extends MY_Controller
         $post           = $this->input->post(NULL,true);
         $page           = empty($post['page'])?1:intval($post['page']);
         $offset         = PAGINATE*($page-1);
-        $count  = ceil(Contractmodel::count()/PAGINATE);
-        var_dump($count);
+        $count          = ceil(Contractmodel::count()/PAGINATE);
         $where          = [];
         if(!empty($post['store_id'])){$where['id']  = $post['store_id'];}
         if(!empty($post['status'])){$stat=$post['status'];}else{$stat = [
@@ -75,7 +74,6 @@ class Operation extends MY_Controller
         $filed  = ['id','contract_id','resident_id','room_id','status'];
         $operation = Contractmodel::where('id',$serial)->with('room')->with('residents')->get($filed)
             ->map(function ($s){
-                //var_dump($s->residents->begin_time);
                 $s->begin_time   = date('Y-m-d',strtotime($s->residents->begin_time->toDateTimeString()));
                 $s->end_time     = date('Y-m-d',strtotime($s->residents->end_time->toDateTimeString()));
                 return $s;
