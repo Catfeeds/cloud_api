@@ -167,7 +167,7 @@ class Renew extends MY_Controller
 
         $org_resident_id    = $resident->data['org_resident_id'];
         $org_resident   = Residentmodel::find($org_resident_id);
-        $org_room   = Residentmodel::find($org_resident_id);
+        $org_room       = $org_resident->roomunion;
 
         try{
             DB::beginTransaction();
