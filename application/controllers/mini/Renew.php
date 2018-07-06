@@ -324,7 +324,9 @@ class Renew extends MY_Controller
             $newResident->data                  = [
                 'org_resident_id'   => $resident->id,
                 'renewal'           => [
-                    'delt_other_deposit'    => max(0, $input['tmp_deposit'] - $resident->tmp_deposit),
+                    'org_other_deposit'     => $resident->tmp_deposit,
+                    'org_rent_deposit'      => $resident->deposit_money,
+                    'delt_other_deposit'    => max(0, ceil($input['tmp_deposit'] - $resident->tmp_deposit)),
                     'delt_rent_deposit'     => max(0, ceil($input['deposit_money'] - $resident->deposit_money)),
                 ],
             ];
