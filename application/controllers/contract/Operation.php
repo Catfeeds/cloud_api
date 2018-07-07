@@ -71,7 +71,7 @@ class Operation extends MY_Controller
         $this->load->model('activitymodel');
         $post   = $this->input->post(NULL,true);
         $serial = $post['id'];
-        $filed  = ['id','contract_id','resident_id','room_id','status'];
+        $filed  = ['id','contract_id','resident_id','room_id','status','view_url'];
         $operation = Contractmodel::where('id',$serial)->with('room')->with('residents')->get($filed)
             ->map(function ($s){
                 $s->begin_time   = date('Y-m-d',strtotime($s->residents->begin_time->toDateTimeString()));
