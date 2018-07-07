@@ -199,5 +199,27 @@ class Operation extends MY_Controller
 //        }
     }
 
+    /**
+     * 上传合同扫描的pdf
+     */
+    public function uploadPdfContract(){
+        $this->load->model('contractmodel');
+        $input  = $this->input->post(null,true);
+        $url    = isset($input['url'])?$input['url']:'';
+        $contract_id    = $input['contract_id'];
+        $contract   = Contractmodel::find($contract_id);
+        if(!$contract){
+            $this->api_res(10017);
+            return;
+        }
+        $contract->download_url = $url;
+        $contract->view_url = $url;
+        if($contract->save()){
+            $this->api_res(0);
+        }else{
+            $this->api_res(1009);
+        }
+    }
+
 
 }
