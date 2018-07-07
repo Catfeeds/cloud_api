@@ -77,11 +77,7 @@ class Renew extends MY_Controller
             return;
         }
 
-        //检测住户是否有未完成账单
-        if(!$this->checkUnfinishedBills($org_room->resident)){
-            $this->api_res(10023);
-            return;
-        }
+
 
         //需要入住的房间
         $room   = Roomunionmodel::with('resident')->where($where)->first();
@@ -93,11 +89,20 @@ class Renew extends MY_Controller
         //如果不是在原房间续租
         if($room->id    != $org_room->id)
         {
-            if($room->status!=Roomunionmodel::STATE_BLANK){
+            $this->api_res(10037);
+            return;
+            /*if($room->status!=Roomunionmodel::STATE_BLANK){
                 $this->api_res(10010);
                 return;
-            }
+            }*/
         }
+
+        //检测住户是否有未完成账单
+        if(!$this->checkUnfinishedBills($org_room->resident)){
+            $this->api_res(10023);
+            return;
+        }
+
         $this->api_res(0,$room);
     }
 
