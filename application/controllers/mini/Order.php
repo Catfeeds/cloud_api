@@ -454,8 +454,12 @@ class Order extends MY_Controller
                 //dispatch(new EndChangeRoomStuff($resident));
             } elseif (isset($resident->data['renewal'])) {
                 //do something to handle renew stuff
+                $old_resident_id   = $resident->data['org_resident_id'];
+                Residentmodel::find($old_resident_id)->roomunion()->update(['status'=>Roomunionmodel::STATE_BLANK]);
                 $room->update(['status' => Roomunionmodel::STATE_RENT]);
                 $resident->update(['status'=>Residentmodel::STATE_NORMAL]);
+
+
 
             } else {
                 log_message('error',1);

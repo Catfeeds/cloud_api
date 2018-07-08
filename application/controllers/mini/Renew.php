@@ -77,11 +77,7 @@ class Renew extends MY_Controller
             return;
         }
 
-        //检测住户是否有未完成账单
-        if(!$this->checkUnfinishedBills($org_room->resident)){
-            $this->api_res(10023);
-            return;
-        }
+
 
         //需要入住的房间
         $room   = Roomunionmodel::with('resident')->where($where)->first();
@@ -93,11 +89,20 @@ class Renew extends MY_Controller
         //如果不是在原房间续租
         if($room->id    != $org_room->id)
         {
-            if($room->status!=Roomunionmodel::STATE_BLANK){
+            $this->api_res(10037);
+            return;
+            /*if($room->status!=Roomunionmodel::STATE_BLANK){
                 $this->api_res(10010);
                 return;
-            }
+            }*/
         }
+
+        //检测住户是否有未完成账单
+        if(!$this->checkUnfinishedBills($org_room->resident)){
+            $this->api_res(10023);
+            return;
+        }
+
         $this->api_res(0,$room);
     }
 
@@ -167,11 +172,12 @@ class Renew extends MY_Controller
 
         $org_resident_id    = $resident->data['org_resident_id'];
         $org_resident   = Residentmodel::find($org_resident_id);
-        $org_room   = Residentmodel::find($org_resident_id);
+        $org_room       = $org_resident->roomunion;
 
         try{
             DB::beginTransaction();
             if($org_resident->end_time>Carbon::now()){
+
                 $org_resident->update(
                     ['status'=>Residentmodel::STATE_NORMAL]
                 );
@@ -351,8 +357,8 @@ class Renew extends MY_Controller
                 ]
             );
 
-            $resident->status   = Residentmodel::STATE_NORMAL;
-//            $resident->status   = Residentmodel::STATE_RENEWAL;
+//            $resident->status   = Residentmodel::STATE_NORMAL;
+            $resident->status   = Residentmodel::STATE_RENEWAL;
             $resident->data     = ['new_resident_id'=>$newResident->id];
 
             $c=$resident->save();

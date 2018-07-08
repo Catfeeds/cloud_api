@@ -301,8 +301,13 @@ class Ordermodel extends Basemodel{
 
         $orders     = $query
             ->with('resident')
-            ->whereHas('resident')
+            ->whereHas('resident_room')
+//            ->whereHas('resident')
+            /*->whereHas('roomunion',function ($query){
+                $query->where('resident_id','>',0);
+            })*/
             ->whereNotIn('status', [Ordermodel::STATE_AUDITED, Ordermodel::STATE_GENERATED])
+            ->where(function($query){})
             ->orderBy('status', 'ASC')
             ->orderBy('room_id', 'ASC')
             ->orderBy('updated_at', 'DESC')
@@ -428,6 +433,10 @@ class Ordermodel extends Basemodel{
     public function coupon()
     {
         return $this->hasOne(Couponmodel::class, 'order_id');
+    }
+
+    public function resident_room(){
+        return $this->hasOne(Roomunionmodel::class,'resident_id','resident_id');
     }
 
     /**

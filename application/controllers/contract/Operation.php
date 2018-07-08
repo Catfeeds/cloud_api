@@ -71,7 +71,7 @@ class Operation extends MY_Controller
         $this->load->model('activitymodel');
         $post   = $this->input->post(NULL,true);
         $serial = $post['id'];
-        $filed  = ['id','contract_id','resident_id','room_id','status'];
+        $filed  = ['id','contract_id','resident_id','room_id','status','view_url'];
         $operation = Contractmodel::where('id',$serial)->with('room')->with('residents')->get($filed)
             ->map(function ($s){
                 $s->begin_time   = date('Y-m-d',strtotime($s->residents->begin_time->toDateTimeString()));
@@ -197,6 +197,28 @@ class Operation extends MY_Controller
 //        }else{
 //            $this->api_res(1009);
 //        }
+    }
+
+    /**
+     * 上传合同扫描的pdf
+     */
+    public function uploadPdfContract(){
+        $this->load->model('contractmodel');
+        $input  = $this->input->post(null,true);
+        $url    = isset($input['url'])?$input['url']:'';
+        $contract_id    = $input['contract_id'];
+        $contract   = Contractmodel::find($contract_id);
+        if(!$contract){
+            $this->api_res(10017);
+            return;
+        }
+        $contract->download_url = $url;
+        $contract->view_url = $url;
+        if($contract->save()){
+            $this->api_res(0);
+        }else{
+            $this->api_res(1009);
+        }
     }
 
 
