@@ -257,11 +257,11 @@ class Bill extends MY_Controller
         var_dump($store);
         $filename   = date('Y-m-d-H:i:s').'导出'.$begin.'_'.$end.'_流水数据.xlsx';
         $filepath   = './temp/'.$filename;
-        $this->load->library('Excel');
-        $phpexcel   = $this->createPHPExcel($filename);
+        /*$phpexcel   = $this->createPHPExcel($filename);
         $this->setExcelTitle($phpexcel, $store, $begin, $end);
-        $this->setExcelFirstRow($phpexcel);
+        $this->setExcelFirstRow($phpexcel);*/
 
+        $phpexcel = new Spreadsheet();
         $sheet = $phpexcel->getActiveSheet();
         $sheet->fromArray($bill,null,'A2');
         $writer = new Xlsx($phpexcel);
@@ -280,7 +280,6 @@ class Bill extends MY_Controller
 
     private function createPHPExcel($filename)
     {
-        $phpexcel = new Spreadsheet();
         $phpexcel->getProperties()
                 ->setCreator('梵响互动')
                 ->setLastModifiedBy('梵响互动')
