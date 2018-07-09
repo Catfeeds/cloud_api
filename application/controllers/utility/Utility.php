@@ -116,11 +116,11 @@ class Utility extends MY_Controller
         $this->load->model('buildingmodel');
         $this->load->model('roomunionmodel');
         //if(!empty($post['store_id'])){$where['store_id'] = intval($post['store_id']);}
-        var_dump($this->employee->store_ids);
+        //var_dump($this->employee->store_ids);
         $store_ids = explode(',',$this->employee->store_ids);
-        var_dump($store_ids);
+        //var_dump($store_ids);
         $filed  = ['id','store_id','building_id','room_id','type','last_reading','last_time','this_reading','updated_at'];
-        $utility = Meterreadingtransfermodel::orderBy('store_id')
+        $utility = Meterreadingtransfermodel::whereIn('store_id',$store_ids)->orderBy('store_id')
             ->with('store', 'building', 'roomunion')
             ->get($filed)->map(function($s){
                 switch ($s->type){
