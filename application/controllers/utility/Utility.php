@@ -30,8 +30,8 @@ class Utility extends MY_Controller
         $page  = !empty($post['page'])?intval($post['page']):1;
         $offset= PAGINATE * ($page - 1);
         $where      = [];
+        $store_ids = explode(',',$this->employee->store_ids);
         if(!empty($post['building_id'])){$where['building_id'] = intval($post['building_id']);};
-
         if(!empty($post['store_id'])){$where['store_id'] = intval($post['store_id']);}
         if(!empty($post['status'])){$where['confirmed'] = intval($post['status']);}
         if(!empty($post['type'])){$where['type'] = $post['type'];}
@@ -39,7 +39,7 @@ class Utility extends MY_Controller
         $room_ids = [];
         if(!empty($post['number'])){
             $number = trim($post['number']);
-            $room_id = Roomunionmodel::where('number',$number)->get(['id'])->toArray();
+            $room_id = Roomunionmodel::where('number',$number)->whereIn('store_id',$store_ids)->get(['id'])->toArray();
             if ($room_id){
                 foreach ($room_id as $key=>$value){
                     array_push($room_ids,$room_id[$key]['id']);
