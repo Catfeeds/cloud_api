@@ -39,18 +39,18 @@ class Utility extends MY_Controller
         $room_ids = [];
         if(!empty($post['number'])){
             $number = trim($post['number']);
-            $room_id = Roomunionmodel::where('number',$number)->get(['id'])->toArray();
+            $room_id = Roomunionmodel::where('number',$number)->whereIn('store_id',$store_ids)->get(['id'])->toArray();
             if ($room_id){
                 foreach ($room_id as $key=>$value){
                     array_push($room_ids,$room_id[$key]['id']);
                 }
             }
-            $count  = ceil(Meterreadingtransfermodel::where($where)->whereIn('room_id',$room_ids)->count()/PAGINATE);
+            $count  = ceil(Meterreadingtransfermodel::where($where)->whereIn('store_id',$store_ids)->whereIn('room_id',$room_ids)->count()/PAGINATE);
             if ($page>$count||$page<1){
                 $this->api_res(0,['list'=>[]]);
                 return;
             }else{
-                $utility = Meterreadingtransfermodel::where($where)->whereIn('room_id',$room_ids)
+                $utility = Meterreadingtransfermodel::where($where)->whereIn('store_id',$store_ids)->whereIn('room_id',$room_ids)
                     ->with('store', 'building', 'roomunion')->take(PAGINATE)->skip($offset)
                     ->get($filed)->map(function($s){
                         switch ($s->type){
@@ -75,13 +75,12 @@ class Utility extends MY_Controller
                     })->toArray();
             }
         }else{
-            $count  = ceil(Meterreadingtransfermodel::where($where)->count()/PAGINATE);
+            $count  = ceil(Meterreadingtransfermodel::where($where)->whereIn('store_id',$store_ids)->count()/PAGINATE);
             if ($page>$count||$page<1){
                 $this->api_res(0,['list'=>[]]);
                 return;
             }else{
-                $utility = Meterreadingtransfermodel::where($where)
-                   // ->orderBy('store_id')->orderBy('room_id')
+                $utility = Meterreadingtransfermodel::where($where)->whereIn('store_id',$store_ids)
                     ->with('store', 'building', 'roomunion')->take(PAGINATE)->skip($offset)
                     ->get($filed)->map(function($s){
                         switch ($s->type){
