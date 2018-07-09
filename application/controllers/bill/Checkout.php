@@ -27,15 +27,18 @@ class Checkout extends MY_Controller
         $page   = isset($input['page'])?$input['page']:1;
         $offset = ($page-1)*PAGINATE;
         $where  = [];
+        $store_ids = explode(',',$this->employee->store_ids);
         empty($input['store_id'])?:$where['store_id']=$input['store_id'];
         empty($input['type'])?:$where['type']=$input['type'];
 
         $query   = Checkoutmodel::with('roomunion','store','resident')
-            ->where($where);
+            ->where($where)->whereIn('store_id',$store_ids);
 
         if(!empty($input['search']))
         {
-            $room_ids    = Roomunionmodel::where('number',$input['search'])->get()->map(function($q){
+            $room_ids    = Roomunionmodel::where('number',$input['search'])
+                ->whereIn('store_id',$store_ids)
+                ->get()->map(function($q){
                 return $q->id;
             });
             $query  = $query->whereIn('room_id',$room_ids);
