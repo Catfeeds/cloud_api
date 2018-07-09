@@ -36,7 +36,7 @@ class Checkout extends MY_Controller
             $room_ids    = Roomunionmodel::where('number',$input['search'])->get()->map(function($q){
                 return $q->id;
             });
-            $query  = $query->whereIn('store_id',$store_ids)->whereIn('room_id',$room_ids);
+            $query  = $query->whereIn('room_id',$room_ids);
         }
         $total_page = ceil(($query->count())/PAGINATE);
         $list   = $query->orderBy('created_at','DESC')
