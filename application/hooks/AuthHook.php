@@ -47,7 +47,7 @@ class AuthHook {
 //            //
 //            'bill/bill/listbill',
 //            'bill/bill/showbill',
-//            'bill/bill/billexcel',
+//            'bill/bill/downloadbill',
 
 //            'account/login/login',
 //            'account/login/listmenu',

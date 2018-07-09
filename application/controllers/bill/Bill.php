@@ -167,30 +167,17 @@ class Bill extends MY_Controller
     }
 
     /**
-     * 导出流水
+     * 流水数据
      */
-    public function billExcel()
+    public function billArray($store_id,$begin,$end)
     {
-        $post = $this->input->post(null,true);
-        $store_id   = trim($post['store_id']);
-        $begin      = empty($post['begin_time'])?date('Y-m-d H:i:s',0):trim($post['begin_time']);
-        $end        = empty($post['end_time'])?date('Y-m-d H:i:s',time()):trim($post['end_time']);
-        $filed      = ['id','store_id','employee_id','resident_id','room_id', 'money','type','pay_type',
-                        'pay_date','status','sequence_number','remark'];
-        if (!isset($post['store_id'])||empty($post['store_id'])){
-            $this->api_res(1002,[]);
-            return;
-        }
-        $this->load->model('billmodel');
-        $this->load->model('roomunionmodel');
-        $this->load->model('storemodel');
-        $this->load->model('residentmodel');
-        $this->load->model('employeemodel');
-        $bill = Billmodel::with(['roomunion_s','store_s','resident_s','employee_s','order'])
-                ->where('store_id',$store_id)
-                ->whereBetween('pay_date',[$begin,$end])->orderBy('pay_date','DESC')
-                ->get($filed)->toArray();
-        $bill_excel = [];
+        $filed  = ['id','store_id','employee_id','resident_id','room_id', 'money','type','pay_type',
+                    'pay_date','status','sequence_number','remark'];
+        $bill   = Billmodel::with(['roomunion_s','store_s','resident_s','employee_s','order'])
+                    ->where('store_id',$store_id)
+                    ->whereBetween('pay_date',[$begin,$end])->orderBy('pay_date','DESC')
+                    ->get($filed)->toArray();
+        $bill_array = [];
         foreach ($bill as $key=>$value){
             $res = [];
             $res['pay_date']    = $bill[$key]['pay_date'];
@@ -242,40 +229,98 @@ class Bill extends MY_Controller
                     }
                 }
             }
-            $bill_excel[]       = $res;
+            $bill_array[] = $res;
         }
-        //var_dump($bill_excel);
-        $this->api_res(0,$bill_excel);
-        $objPHPExcel    = new Spreadsheet();
-        $sheet  = $objPHPExcel->getActiveSheet();
-        $i = 1;
-        $objPHPExcel->getActiveSheet()->setCellValue('A'.$i , '支付时间');
-        $objPHPExcel->getActiveSheet()->setCellValue('B'.$i , '房间号');
-        $objPHPExcel->getActiveSheet()->setCellValue('C'.$i , '住户姓名');
-        $objPHPExcel->getActiveSheet()->setCellValue('D'.$i , '支付总金额');
-        $objPHPExcel->getActiveSheet()->setCellValue('E'.$i , '支付方式');
-        $objPHPExcel->getActiveSheet()->setCellValue('F'.$i , '房租');
-        $objPHPExcel->getActiveSheet()->setCellValue('G'.$i , '物业');
-        $objPHPExcel->getActiveSheet()->setCellValue('H'.$i , '住宿押金');
-        $objPHPExcel->getActiveSheet()->setCellValue('I'.$i , '其他押金');
-        $objPHPExcel->getActiveSheet()->setCellValue('J'.$i , '水费');
-        $objPHPExcel->getActiveSheet()->setCellValue('K'.$i , '热水费');
-        $objPHPExcel->getActiveSheet()->setCellValue('L'.$i , '电费');
-        $objPHPExcel->getActiveSheet()->setCellValue('M'.$i , '退租');
-        $objPHPExcel->getActiveSheet()->setCellValue('N'.$i , '其它费用');
-        $objPHPExcel->getActiveSheet()->setCellValue('O'.$i , '备注');
-        $sheet->fromArray($bill_excel,null,'A2');
-        $writer = new Xlsx($objPHPExcel);
+        return $bill_array;
+    }
+
+
+    public function downloadBill()
+    {
+        $post = $this->input->post(null,true);
+        $store_id   = trim($post['store_id']);
+        $begin      = empty($post['begin_time'])?date('Y-m-d H:i:s',0):trim($post['begin_time']);
+        $end        = empty($post['end_time'])?date('Y-m-d H:i:s',time()):trim($post['end_time']);
+        if (!isset($post['store_id'])||empty($post['store_id'])){
+            $this->api_res(1002,[]);
+            return;
+        }
+        $this->load->model('billmodel');
+        $this->load->model('roomunionmodel');
+        $this->load->model('storemodel');
+        $this->load->model('residentmodel');
+        $this->load->model('employeemodel');
+        $bill = $this->billArray($store_id,$begin,$end);
+
+        $store = Storemodel::where('store',$store_id)->get(['name']);
+        $store = $store->name;
+        $filename   = date('Y-m-d-H:i:s').'导出'.$begin.'_'.$end.'_流水数据.xlsx';
+        $filepath   = './temp/'.$filename;
+        $this->load->library('Excel');
+        $phpexcel   = $this->createPHPExcel($filename);
+        $this->setExcelTitle($phpexcel, $store, $begin, $end);
+        $this->setExcelFirstRow($phpexcel);
+
+        $sheet = $phpexcel->getActiveSheet();
+        $sheet->fromArray($bill,null,'A2');
+        $writer = new Xlsx($phpexcel);
         header("Pragma: public");
         header("Expires: 0");
         header("Cache-Control:must-revalidate, post-check=0, pre-check=0");
         header("Content-Type:application/force-download");
         header("Content-Type:application/vnd.ms-excel");
         header("Content-Type:application/octet-stream");
-        header("Content-Type:application/download");
-        header('Content-Disposition:attachment;filename="流水表.xlsx"');
+        header("Content-Type:application/download");;
+        header('Content-Disposition:attachment;filename="meterReadingTemplate.xlsx"');
         header("Content-Transfer-Encoding:binary");
-        $writer->save('php://output');
+        $writer->save($filepath);
+
+    }
+
+    private function createPHPExcel($filename)
+    {
+        $phpexcel = new Spreadsheet();
+        $phpexcel->getProperties()
+                ->setCreator('梵响互动')
+                ->setLastModifiedBy('梵响互动')
+                ->setTitle($filename)
+                ->setSubject($filename)
+                ->setDescription($filename)
+                ->setKeywords($filename)
+                ->setCategory($filename);
+        $phpexcel->setActiveSheetIndex(0);
+        return $phpexcel;
+    }
+
+    private function setExcelTitle(Spreadsheet $phpexcel, $store, $start, $end)
+    {
+        $phpexcel->getActiveSheet()
+            ->mergeCells('A1:N2')
+            ->setCellValue('A1',"$store.'订单流水统计'.$start.'-'.$end")
+            ->getStyle('A1:D4')
+            ->getAlignment()
+            ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER)
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $phpexcel->getActiveSheet()->getCell('A1')->getStyle()->getFont()->setSize(16);
+    }
+
+    private function setExcelFirstRow(Spreadsheet $phpexcel)
+    {
+        $phpexcel->getActiveSheet() ->setCellValue('A' , '支付时间')
+                                    ->setCellValue('B' , '房间号')
+                                    ->setCellValue('C' , '住户姓名')
+                                    ->setCellValue('D' , '支付总金额')
+                                    ->setCellValue('E' , '支付方式')
+                                    ->setCellValue('F' , '房租')
+                                    ->setCellValue('G' , '物业')
+                                    ->setCellValue('H' , '住宿押金')
+                                    ->setCellValue('I' , '其他押金')
+                                    ->setCellValue('J' , '水费')
+                                    ->setCellValue('K' , '热水费')
+                                    ->setCellValue('L' , '电费')
+                                    ->setCellValue('M' , '退租')
+                                    ->setCellValue('N' , '其它费用')
+                                    ->setCellValue('O' , '备注');
     }
 
     /********************************************生成账单******************************************/
