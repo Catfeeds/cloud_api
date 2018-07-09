@@ -30,6 +30,7 @@ class Bill extends MY_Controller
         $page   = isset($input['page'])?$input['page']:1;
         $where  = [];
         empty($input['store_id'])?:$where['store_id']=$input['store_id'];
+        $store_ids = explode(',',$this->employee->store_ids);
         $start_date = empty($input['start_date'])?'1970-01-01':$input['start_date'];
         $end_date   = empty($input['end_date'])?'2030-12-12':$input['end_date'];
         $search     = empty($input['search'])?'':$input['search'];
@@ -41,7 +42,7 @@ class Bill extends MY_Controller
 
         $bills  = Billmodel::with(['roomunion','store','resident','employee'])
             ->offset($offset)->limit(PAGINATE)
-            ->where($where)
+            ->where($where)->whereIn('store_id',$store_ids)
             ->whereBetween('pay_date',[$start_date,$end_date])
             ->orderBy('sequence_number','desc')
             ->where(function($query) use ($search){
@@ -60,7 +61,7 @@ class Bill extends MY_Controller
             });
 
         $billnumber  = Billmodel::with(['roomunion','store','resident','employee'])
-            ->where($where)
+            ->where($where)->whereIn('store_id',$store_ids)
             ->whereBetween('pay_date',[$start_date,$end_date])
             ->where(function($query) use ($search){
                 $query->orWhereHas('resident',function($query) use($search){
