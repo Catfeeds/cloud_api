@@ -30,8 +30,8 @@ class Utility extends MY_Controller
         $page  = !empty($post['page'])?intval($post['page']):1;
         $offset= PAGINATE * ($page - 1);
         $where      = [];
+        $store_ids = explode(',',$this->employee->store_ids);
         if(!empty($post['building_id'])){$where['building_id'] = intval($post['building_id']);};
-
         if(!empty($post['store_id'])){$where['store_id'] = intval($post['store_id']);}
         if(!empty($post['status'])){$where['confirmed'] = intval($post['status']);}
         if(!empty($post['type'])){$where['type'] = $post['type'];}
@@ -39,18 +39,18 @@ class Utility extends MY_Controller
         $room_ids = [];
         if(!empty($post['number'])){
             $number = trim($post['number']);
-            $room_id = Roomunionmodel::where('number',$number)->get(['id'])->toArray();
+            $room_id = Roomunionmodel::where('number',$number)->whereIn('store_id',$store_ids)->get(['id'])->toArray();
             if ($room_id){
                 foreach ($room_id as $key=>$value){
                     array_push($room_ids,$room_id[$key]['id']);
                 }
             }
-            $count  = ceil(Meterreadingtransfermodel::where($where)->whereIn('room_id',$room_ids)->count()/PAGINATE);
+            $count  = ceil(Meterreadingtransfermodel::where($where)->whereIn('store_id',$store_ids)->whereIn('room_id',$room_ids)->count()/PAGINATE);
             if ($page>$count||$page<1){
                 $this->api_res(0,['list'=>[]]);
                 return;
             }else{
-                $utility = Meterreadingtransfermodel::where($where)->whereIn('room_id',$room_ids)
+                $utility = Meterreadingtransfermodel::where($where)->whereIn('store_id',$store_ids)->whereIn('room_id',$room_ids)
                     ->with('store', 'building', 'roomunion')->take(PAGINATE)->skip($offset)
                     ->get($filed)->map(function($s){
                         switch ($s->type){
@@ -75,13 +75,12 @@ class Utility extends MY_Controller
                     })->toArray();
             }
         }else{
-            $count  = ceil(Meterreadingtransfermodel::where($where)->count()/PAGINATE);
+            $count  = ceil(Meterreadingtransfermodel::where($where)->whereIn('store_id',$store_ids)->count()/PAGINATE);
             if ($page>$count||$page<1){
                 $this->api_res(0,['list'=>[]]);
                 return;
             }else{
-                $utility = Meterreadingtransfermodel::where($where)
-                   // ->orderBy('store_id')->orderBy('room_id')
+                $utility = Meterreadingtransfermodel::where($where)->whereIn('store_id',$store_ids)
                     ->with('store', 'building', 'roomunion')->take(PAGINATE)->skip($offset)
                     ->get($filed)->map(function($s){
                         switch ($s->type){
@@ -115,6 +114,7 @@ class Utility extends MY_Controller
         $this->load->model('storemodel');
         $this->load->model('buildingmodel');
         $this->load->model('roomunionmodel');
+        //$store_ids = explode(',',$this->employee->store_ids);
         $filed  = ['id','store_id','building_id','room_id','type','last_reading','last_time','this_reading','updated_at'];
         $utility = Meterreadingtransfermodel::orderBy('store_id')
             ->with('store', 'building', 'roomunion')
@@ -123,17 +123,14 @@ class Utility extends MY_Controller
                     case 'ELECTRIC_METER':
                         $s->diff = number_format($s->this_reading-$s->last_reading,2,'.','');
                         $s->price= number_format($s->diff*$s->store->electricity_price,2,'.','');
-//                        $s->price= number_format(floatval($s->diff)*floatval($s->store->hot_water_price),2);
                         break;
                     case 'COLD_WATER_METER':
                         $s->diff = number_format($s->this_reading-$s->last_reading,2,'.','');
                         $s->price= number_format($s->diff*$s->store->water_price,2,'.','');
-//                        $s->price= number_format(floatval($s->diff)*floatval($s->store->hot_water_price),2);
                         break;
                     case 'HOT_WATER_METER':
                         $s->diff = number_format($s->this_reading-$s->last_reading,2,'.','');
                         $s->price= number_format($s->diff*$s->store->hot_water_price,2,'.','');
-//                        $s->price= number_format(floatval($s->diff)*floatval($s->store->hot_water_price),2);
                         break;
                     default :
                         $s->diff = number_format($s->this_reading-$s->last_reading,2,'.','');
@@ -156,6 +153,8 @@ class Utility extends MY_Controller
             $res['updated_at'] = $utility[$key]['updated_at'];
             $newUtility[]   = $res;
         }
+        $this->api_res(0,$newUtility);
+
         $objPHPExcel    = new Spreadsheet();
         $sheet  = $objPHPExcel->getActiveSheet();
         $i = 1;

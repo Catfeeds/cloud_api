@@ -3,6 +3,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 use Carbon\Carbon;
 use EasyWeChat\Foundation\Application;
 use Illuminate\Database\Capsule\Manager as DB;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 /**
  * Author:      zjh<401967974@qq.com>
  * Date:        2018/5/29 0029
@@ -28,6 +30,7 @@ class Bill extends MY_Controller
         $page   = isset($input['page'])?$input['page']:1;
         $where  = [];
         empty($input['store_id'])?:$where['store_id']=$input['store_id'];
+        $store_ids = explode(',',$this->employee->store_ids);
         $start_date = empty($input['start_date'])?'1970-01-01':$input['start_date'];
         $end_date   = empty($input['end_date'])?'2030-12-12':$input['end_date'];
         $search     = empty($input['search'])?'':$input['search'];
@@ -39,7 +42,7 @@ class Bill extends MY_Controller
 
         $bills  = Billmodel::with(['roomunion','store','resident','employee'])
             ->offset($offset)->limit(PAGINATE)
-            ->where($where)
+            ->where($where)->whereIn('store_id',$store_ids)
             ->whereBetween('pay_date',[$start_date,$end_date])
             ->orderBy('sequence_number','desc')
             ->where(function($query) use ($search){
@@ -58,7 +61,7 @@ class Bill extends MY_Controller
             });
 
         $billnumber  = Billmodel::with(['roomunion','store','resident','employee'])
-            ->where($where)
+            ->where($where)->whereIn('store_id',$store_ids)
             ->whereBetween('pay_date',[$start_date,$end_date])
             ->where(function($query) use ($search){
                 $query->orWhereHas('resident',function($query) use($search){
@@ -163,7 +166,162 @@ class Bill extends MY_Controller
         $this->api_res(0,$list);
     }
 
+    /**
+     * 流水数据
+     */
+    public function billArray($store_id,$begin,$end)
+    {
+        $filed  = ['id','store_id','employee_id','resident_id','room_id', 'money','type','pay_type',
+                    'pay_date','status','sequence_number','remark'];
+        $bill   = Billmodel::with(['roomunion_s','store_s','resident_s','employee_s','order'])
+                    ->where('store_id',$store_id)
+                    ->whereBetween('pay_date',[$begin,$end])->orderBy('pay_date','DESC')
+                    ->get($filed)->toArray();
+        $bill_array = [];
+        foreach ($bill as $key=>$value){
+            $res = [];
+            $res['pay_date']    = $bill[$key]['pay_date'];
+            $res['number']      = $bill[$key]['roomunion_s']['number'];
+            $res['resident']    = $bill[$key]['resident_s']['name'];
+            $res['money']       = $bill[$key]['money'];
+            $res['pay_type']    = $bill[$key]['pay_type'];
+            $res['ROOM_money']          = '';
+            $res['MANAGEMENT_money']    = '';
+            $res['DEPOSIT_R_money']     = '';
+            $res['DEPOSIT_O_money']     = '';
+            $res['WATER_money']         = '';
+            $res['HOT_WATER_money']     = '';
+            $res['ELECTRICITY_money']   = '';
+            $res['REFUND_money']        = '';
+            $res['other_money']         = '';
+            $res['remark']              = $bill[$key]['remark'];;
 
+            if(!empty($bill[$key]['order'])){
+                $order = $bill[$key]['order'];
+                $res['other_money'] = 0;
+                foreach ($order as $key_o=>$value_o){
+                    if($order[$key_o]['type']=='ROOM'){
+                        $res['ROOM_money'] = $order[$key_o]['paid'];
+                    }
+                    elseif($order[$key_o]['type']=='MANAGEMENT'){
+                        $res['MANAGEMENT_money'] = $order[$key_o]['paid'];
+                    }
+                    elseif($order[$key_o]['type']=='DEPOSIT_R'){
+                        $res['DEPOSIT_R_money'] = $order[$key_o]['paid'];
+                    }
+                    elseif($order[$key_o]['type']=='DEPOSIT_O'){
+                        $res['DEPOSIT_O_money'] = $order[$key_o]['paid'];
+                    }
+                    elseif($order[$key_o]['type']=='WATER'){
+                        $res['WATER_money'] = $order[$key_o]['paid'];
+                    }
+                    elseif($order[$key_o]['type']=='HOT_WATER'){
+                        $res['HOT_WATER_money'] = $order[$key_o]['paid'];
+                    }
+                    elseif($order[$key_o]['type']=='ELECTRICITY'){
+                        $res['ELECTRICITY_money'] = $order[$key_o]['paid'];
+                    }
+                    elseif($order[$key_o]['type']=='REFUND'){
+                        $res['REFUND_money'] = $order[$key_o]['paid'];
+                    }
+                    else{
+                        $res['other_money'] += $order[$key_o]['paid'];
+                    }
+                }
+            }
+            $bill_array[] = $res;
+        }
+        return $bill_array;
+    }
+
+
+    public function downloadBill()
+    {
+        $post = $this->input->post(null,true);
+        $store_id   = trim($post['store_id']);
+        $begin      = empty($post['begin_time'])?date('Y-m-d H:i:s',0):trim($post['begin_time']);
+        $end        = empty($post['end_time'])?date('Y-m-d H:i:s',time()):trim($post['end_time']);
+        if (!isset($post['store_id'])||empty($post['store_id'])){
+            $this->api_res(1002,[]);
+            return;
+        }
+        $this->load->model('billmodel');
+        $this->load->model('roomunionmodel');
+        $this->load->model('storemodel');
+        $this->load->model('residentmodel');
+        $this->load->model('employeemodel');
+        $bill = $this->billArray($store_id,$begin,$end);
+
+        $store = Storemodel::where('id',$store_id)->get(['name']);
+        $store = $store->name;
+        var_dump($store);
+        $filename   = date('Y-m-d-H:i:s').'导出'.$begin.'_'.$end.'_流水数据.xlsx';
+        $filepath   = './temp/'.$filename;
+        /*$phpexcel   = $this->createPHPExcel($filename);
+        $this->setExcelTitle($phpexcel, $store, $begin, $end);
+        $this->setExcelFirstRow($phpexcel);*/
+
+        $phpexcel = new Spreadsheet();
+        $sheet = $phpexcel->getActiveSheet();
+        $sheet->fromArray($bill,null,'A2');
+        $writer = new Xlsx($phpexcel);
+        header("Pragma: public");
+        header("Expires: 0");
+        header("Cache-Control:must-revalidate, post-check=0, pre-check=0");
+        header("Content-Type:application/force-download");
+        header("Content-Type:application/vnd.ms-excel");
+        header("Content-Type:application/octet-stream");
+        header("Content-Type:application/download");;
+        header('Content-Disposition:attachment;filename="meterReadingTemplate.xlsx"');
+        header("Content-Transfer-Encoding:binary");
+        $writer->save($filepath);
+
+    }
+
+    private function createPHPExcel($filename)
+    {
+        $phpexcel->getProperties()
+                ->setCreator('梵响互动')
+                ->setLastModifiedBy('梵响互动')
+                ->setTitle($filename)
+                ->setSubject($filename)
+                ->setDescription($filename)
+                ->setKeywords($filename)
+                ->setCategory($filename);
+        $phpexcel->setActiveSheetIndex(0);
+        return $phpexcel;
+    }
+
+    private function setExcelTitle(Spreadsheet $phpexcel, $store, $start, $end)
+    {
+        $phpexcel->getActiveSheet()
+            ->mergeCells('A1:N2')
+            ->setCellValue('A1',"$store.'订单流水统计'.$start.'-'.$end")
+            ->getStyle('A1:D4')
+            ->getAlignment()
+            ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER)
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $phpexcel->getActiveSheet()->getCell('A1')->getStyle()->getFont()->setSize(16);
+    }
+
+    private function setExcelFirstRow(Spreadsheet $phpexcel)
+    {
+        $phpexcel->getActiveSheet() ->setCellValue('A' , '支付时间')
+                                    ->setCellValue('B' , '房间号')
+                                    ->setCellValue('C' , '住户姓名')
+                                    ->setCellValue('D' , '支付总金额')
+                                    ->setCellValue('E' , '支付方式')
+                                    ->setCellValue('F' , '房租')
+                                    ->setCellValue('G' , '物业')
+                                    ->setCellValue('H' , '住宿押金')
+                                    ->setCellValue('I' , '其他押金')
+                                    ->setCellValue('J' , '水费')
+                                    ->setCellValue('K' , '热水费')
+                                    ->setCellValue('L' , '电费')
+                                    ->setCellValue('M' , '退租')
+                                    ->setCellValue('N' , '其它费用')
+                                    ->setCellValue('O' , '备注');
+    }
 
     /********************************************生成账单******************************************/
 
@@ -562,10 +720,4 @@ class Bill extends MY_Controller
         $order->save();
         return $order;
     }
-
-
-
-
-
-
 }

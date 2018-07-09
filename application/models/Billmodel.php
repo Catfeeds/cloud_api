@@ -17,11 +17,24 @@ class Billmodel extends Basemodel
 
         return $this->belongsTo(Roomunionmodel::class,'room_id');
     }
+    public function roomunion_s()
+    {
+
+        return $this->belongsTo(Roomunionmodel::class,'room_id')
+            ->select('id','number');
+    }
+
 
     public function store()
     {
 
         return $this->belongsTo(Storemodel::class,'store_id');
+    }
+    public function store_s()
+    {
+
+        return $this->belongsTo(Storemodel::class,'store_id')
+            ->select('id','name');
     }
 
     public function resident()
@@ -29,11 +42,27 @@ class Billmodel extends Basemodel
 
         return $this->belongsTo(Residentmodel::class,'resident_id');
     }
+    public function resident_s()
+    {
+
+        return $this->belongsTo(Residentmodel::class,'resident_id')
+            ->select('id','name');
+    }
 
     public function employee()
     {
-
         return $this->belongsTo(Employeemodel::class,'employee_id');
+    }
+    public function employee_s()
+    {
+        return $this->belongsTo(Employeemodel::class,'employee_id')
+            ->select('id','name');
+    }
+
+    public function order()
+    {
+        return $this->hasMany(Ordermodel::class,'sequence_number','sequence_number')
+                ->select('id','sequence_number','paid','type','year','month');
     }
 
     /**

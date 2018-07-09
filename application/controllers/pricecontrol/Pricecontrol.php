@@ -28,18 +28,20 @@ class Pricecontrol extends MY_Controller
         $offset= PAGINATE * ($page - 1);
         $filed = ['id','store_id','building_id','number','room_type_id','rent_price','property_price','updated_at'];
         $where = [];
+        $store_ids = explode(',',$this->employee->store_ids);
         if(!empty($post['store_id'])){$where['store_id'] = intval($post['store_id']);};
         if(!empty($post['building_id'])){$where['building_id'] = intval($post['building_id']);};
         if(!empty($post['number'])){$where['number'] = trim($post['number']);};
 
-        $count = $count = ceil(Roomunionmodel::where($where)->count()/PAGINATE);
+        $count = $count = ceil(Roomunionmodel::where($where)->whereIn('store_id',$store_ids)->count()/PAGINATE);
         if ($page>$count||$page<1){
             $this->api_res(0,['list'=>[]]);
             return;
         }else {
             $price = Roomunionmodel::with('store_s')->with('building_s')->with('room_type')
-                ->where($where)->take(PAGINATE)
-                ->skip($offset)->get($filed)->map(function ($s){
+                ->where($where)->whereIn('store_id',$store_ids)
+                ->take(PAGINATE)->skip($offset)->get($filed)
+                ->map(function ($s){
                     $s->updated = date('Y-m-d',strtotime($s->updated_at->toDateTimeString()));
                     return $s;
                 })->toArray();

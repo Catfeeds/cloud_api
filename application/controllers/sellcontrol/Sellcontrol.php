@@ -22,6 +22,7 @@ class Sellcontrol extends MY_Controller
         $this->load->model('ordermodel');
         $post = $this->input->post(null,true);
         $where      = [];
+        $store_ids = explode(',',$this->employee->store_ids);
         if(!empty($post['building_id'])){$where['building_id'] = intval($post['building_id']);};
         if(!empty($post['status'])){$where['status'] = trim($post['status']);};
         if(!empty($post['store_id'])){$where['store_id'] = intval($post['store_id']);}
@@ -34,28 +35,28 @@ class Sellcontrol extends MY_Controller
             switch ($days){
                 case 1:
                     $time = [date('Y-m-d H:i:s',strtotime('-10 day',time())),date('Y-m-d H:i:s',time())];
-                    $list = $roomunion->room_details($where,$filed,$time);
+                    $list = $roomunion->room_details($where,$filed,$time,$store_ids);
                     break;
                 case 2:
                     $time = [date('Y-m-d H:i:s',strtotime('-20 day',time())),date('Y-m-d H:i:s',strtotime('-10 day',time()))];
-                    $list = $roomunion->room_details($where,$filed,$time);
+                    $list = $roomunion->room_details($where,$filed,$time,$store_ids);
                     break;
                 case 3;
                     $time = [date('Y-m-d H:i:s',strtotime('-30 day',time())),date('Y-m-d H:i:s',strtotime('-20 day',time()))];
-                    $list = $roomunion->room_details($where,$filed,$time);
+                    $list = $roomunion->room_details($where,$filed,$time,$store_ids);
                     break;
                 case 4:
                     $time = [date('Y-m-d H:i:s',0),date('Y-m-d H:i:s',time())];
-                    $list = $roomunion->room_details($where,$filed,$time);
+                    $list = $roomunion->room_details($where,$filed,$time,$store_ids);
                     break;
                 default:
                     $time = [date('Y-m-d H:i:s',0),date('Y-m-d H:i:s',time())];
-                    $list = $roomunion->room_details($where,$filed,$time);
+                    $list = $roomunion->room_details($where,$filed,$time,$store_ids);
                     break;
             }
         }else{
             $time = [date('Y-m-d H:i:s',0),date('Y-m-d H:i:s',time())];
-            $list = $roomunion->room_details($where,$filed,$time);
+            $list = $roomunion->room_details($where,$filed,$time,$store_ids);
         }
         $this->api_res(0,$list);
     }
