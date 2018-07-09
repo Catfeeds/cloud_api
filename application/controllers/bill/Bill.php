@@ -244,7 +244,6 @@ class Bill extends MY_Controller
             }
             $bill_excel[]       = $res;
         }
-        $this->api_res(0,$bill_excel);
         $objPHPExcel    = new Spreadsheet();
         $sheet  = $objPHPExcel->getActiveSheet();
         $i = 1;
@@ -271,8 +270,9 @@ class Bill extends MY_Controller
         header("Content-Type:application/force-download");
         header("Content-Type:application/vnd.ms-excel");
         header("Content-Type:application/octet-stream");
-        header("Content-Type:application/download");;
-        header('Content-Disposition:attachment;filename="meterReadingTemplate.xlsx"');
+        header("Content-Type:application/download");
+        header('Content-Type:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition:attachment;filename="流水表.xlsx"');
         header("Content-Transfer-Encoding:binary");
         $writer->save('php://output');
     }

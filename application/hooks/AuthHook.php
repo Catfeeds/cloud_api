@@ -47,7 +47,7 @@ class AuthHook {
 //            //
 //            'bill/bill/listbill',
 //            'bill/bill/showbill',
-//            'bill/bill/billexcel',
+            'bill/bill/billexcel',
 
 //            'account/login/login',
 //            'account/login/listmenu',
@@ -256,7 +256,7 @@ class AuthHook {
 //            'resident/resident/bill',
 //            'sellcontrol/sellcontrol/details',
 //            'utility/utility/listutility',
-//            'utility/utility/listutility1',
+            'utility/utility/listutility1',
 //            'utility/utility/updatenumber',
 
         );

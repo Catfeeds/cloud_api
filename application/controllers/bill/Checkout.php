@@ -73,7 +73,7 @@ class Checkout extends MY_Controller
         $data['room']=Roomunionmodel::find($checkout->room_id)->toArray();
         $orders =   Ordermodel::where('resident_id',$checkout->resident_id)->where('sequence_number','')->get();
         $data['orders'] =   $orders->toArray();
-        $data['countmoney'] = number_format($orders->sum('money'),2);
+        $data['countmoney'] = number_format($orders->sum('money'),2,'.','');
         $data['paymoney']   =   $data['resident']['tmp_deposit']+$data['resident']['deposit_money']-$data['countmoney'];
 
         $this->api_res(0,$data);
