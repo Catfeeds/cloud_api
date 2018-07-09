@@ -28,7 +28,7 @@ class Resident extends MY_Controller
         $filed = ['id','name','customer_id','phone','room_id','card_number','created_at','status'];
         $where = [];
         $store_ids = explode(',',$this->employee->store_ids);
-        var_dump($store_ids);
+        //var_dump($store_ids);
         if(!empty($post['store_id'])){$where['store_id'] = intval($post['store_id']);};
         if(!empty($post['name'])){$where['name'] = trim($post['name']);};
         $count = $count = ceil(Residentmodel::where($where)->whereIn('store_id',$store_ids)->count()/PAGINATE);
