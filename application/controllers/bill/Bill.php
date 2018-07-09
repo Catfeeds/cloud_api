@@ -275,7 +275,7 @@ class Bill extends MY_Controller
         header("Content-Type:application/download");
         header('Content-Disposition:attachment;filename="流水表.xlsx"');
         header("Content-Transfer-Encoding:binary");
-        $writer->writeToStdOut();
+        $writer->save('php://output');
     }
 
     /********************************************生成账单******************************************/
