@@ -153,7 +153,7 @@ class Utility extends MY_Controller
             $res['updated_at'] = $utility[$key]['updated_at'];
             $newUtility[]   = $res;
         }
-        //$this->api_res(0,$newUtility);
+        $this->api_res(0,$newUtility);
 
         $objPHPExcel    = new Spreadsheet();
         $sheet  = $objPHPExcel->getActiveSheet();
