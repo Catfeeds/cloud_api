@@ -115,25 +115,24 @@ class Utility extends MY_Controller
         $this->load->model('storemodel');
         $this->load->model('buildingmodel');
         $this->load->model('roomunionmodel');
+        if(!empty($post['store_id'])){$where['store_id'] = intval($post['store_id']);}
+        var_dump($this->employee->store_ids);
         $filed  = ['id','store_id','building_id','room_id','type','last_reading','last_time','this_reading','updated_at'];
-        $utility = Meterreadingtransfermodel::orderBy('store_id')
+        $utility = Meterreadingtransfermodel::where($where)->orderBy('store_id')
             ->with('store', 'building', 'roomunion')
             ->get($filed)->map(function($s){
                 switch ($s->type){
                     case 'ELECTRIC_METER':
                         $s->diff = number_format($s->this_reading-$s->last_reading,2,'.','');
                         $s->price= number_format($s->diff*$s->store->electricity_price,2,'.','');
-//                        $s->price= number_format(floatval($s->diff)*floatval($s->store->hot_water_price),2);
                         break;
                     case 'COLD_WATER_METER':
                         $s->diff = number_format($s->this_reading-$s->last_reading,2,'.','');
                         $s->price= number_format($s->diff*$s->store->water_price,2,'.','');
-//                        $s->price= number_format(floatval($s->diff)*floatval($s->store->hot_water_price),2);
                         break;
                     case 'HOT_WATER_METER':
                         $s->diff = number_format($s->this_reading-$s->last_reading,2,'.','');
                         $s->price= number_format($s->diff*$s->store->hot_water_price,2,'.','');
-//                        $s->price= number_format(floatval($s->diff)*floatval($s->store->hot_water_price),2);
                         break;
                     default :
                         $s->diff = number_format($s->this_reading-$s->last_reading,2,'.','');
@@ -156,7 +155,9 @@ class Utility extends MY_Controller
             $res['updated_at'] = $utility[$key]['updated_at'];
             $newUtility[]   = $res;
         }
-        $objPHPExcel    = new Spreadsheet();
+
+
+        /*$objPHPExcel    = new Spreadsheet();
         $sheet  = $objPHPExcel->getActiveSheet();
         $i = 1;
         $objPHPExcel->getActiveSheet()->setCellValue('A'.$i , '门店');
@@ -179,7 +180,7 @@ class Utility extends MY_Controller
         header("Content-Type:application/download");;
         header('Content-Disposition:attachment;filename="meterReadingTemplate.xlsx"');
         header("Content-Transfer-Encoding:binary");
-        $writer->save('php://output');
+        $writer->save('php://output');*/
     }
 
     /**

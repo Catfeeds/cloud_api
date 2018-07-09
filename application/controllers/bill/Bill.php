@@ -672,10 +672,4 @@ class Bill extends MY_Controller
         $order->save();
         return $order;
     }
-
-
-
-
-
-
 }
