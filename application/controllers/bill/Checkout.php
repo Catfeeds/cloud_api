@@ -29,8 +29,8 @@ class Checkout extends MY_Controller
         $where  = [];
         empty($input['store_id'])?:$where['store_id']=$input['store_id'];
         empty($input['type'])?:$where['type']=$input['type'];
-
-        $query   = Checkoutmodel::with('roomunion','store','resident')
+        $store_ids = explode(',',$this->employee->store_ids);
+        $query   = Checkoutmodel::with('roomunion','store','resident')->whereIn('store_id',$store_ids)
             ->where($where);
 
         if(!empty($input['search']))
