@@ -30,7 +30,7 @@ class Resident extends MY_Controller
         $store_ids = explode(',',$this->employee->store_ids);
         if(!empty($post['store_id'])){$where['store_id'] = intval($post['store_id']);};
         $name = trim($post['name']);
-        $count = $count = ceil(Residentmodel::whereIn('store_id',$store_ids)->where($where)->count()/PAGINATE);
+        $count = $count = ceil(Residentmodel::whereIn('store_id',$store_ids)->where($where)->where('name','like','%'.$name.'%')->count()/PAGINATE);
         if ($page>$count||$page<1){
             $this->api_res(0,['list'=>[]]);
             return;
