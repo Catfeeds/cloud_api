@@ -21,8 +21,8 @@ class Checkout extends MY_Controller
     }
 
     //退房账单列表
-    public function list(){
-
+    public function list()
+    {
         $input  = $this->input->post(null,true);
         $page   = isset($input['page'])?$input['page']:1;
         $offset = ($page-1)*PAGINATE;
@@ -30,26 +30,18 @@ class Checkout extends MY_Controller
         $store_ids = explode(',',$this->employee->store_ids);
         empty($input['store_id'])?:$where['store_id']=$input['store_id'];
         empty($input['type'])?:$where['type']=$input['type'];
-
-        $query   = Checkoutmodel::with('roomunion','store','resident')
-            ->where($where)->whereIn('store_id',$store_ids);
-
+        $query   = Checkoutmodel::with('roomunion','store','resident')->where($where);
         if(!empty($input['search']))
         {
-            $room_ids    = Roomunionmodel::where('number',$input['search'])
-                ->get()->map(function($q){
+            $room_ids    = Roomunionmodel::where('number',$input['search'])->get()->map(function($q){
                 return $q->id;
             });
-            $query  = $query->whereIn('room_id',$room_ids);
+            $query  = $query->whereIn('store_id',$store_ids)->whereIn('room_id',$room_ids);
         }
-
         $total_page = ceil(($query->count())/PAGINATE);
-
         $list   = $query->orderBy('created_at','DESC')
-            ->offset($offset)
-            ->limit(PAGINATE)
-            ->get();
-
+                        ->offset($offset)->limit(PAGINATE)
+                        ->get();
         $this->api_res(0,['checkouts'=>$list,'total_page'=>$total_page]);
     }
 
