@@ -27,7 +27,7 @@ class Resident extends MY_Controller
         $offset= PAGINATE * ($page - 1);
         $filed = ['id','name','customer_id','phone','room_id','card_number','created_at','status'];
         $where = [];
-        $store_ids = [9,10,12,5,8,6];//explode(',',$this->employee->store_ids);
+        $store_ids = explode(',',$this->employee->store_ids);
         if(!empty($post['store_id'])){$where['store_id'] = intval($post['store_id']);};
         if(!empty($post['name'])){$where['name'] = trim($post['name']);};
         var_dump($where);
