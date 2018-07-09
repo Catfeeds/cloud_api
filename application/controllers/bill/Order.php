@@ -26,9 +26,9 @@ class Order extends MY_Controller
     {
         $input  = $this->input->post(null,true);
         $where  = [];
+        $store_ids = explode(',',$this->employee->store_ids);
         empty($input['store_id'])?:$where['store_id']=$input['store_id'];
         empty($input['type'])?:$where['type']=$input['type'];
-
         empty($input['year'])?:$where['year']=$input['year'];
         empty($input['month'])?:$where['month']=$input['month'];
         $search = empty($input['search'])?'':$input['search'];
@@ -51,6 +51,7 @@ class Order extends MY_Controller
         $this->load->model('employeemodel');
 
         $count  = ceil((Ordermodel::with('store','roomunion','resident','employee')
+                ->whereIn('store_id',$store_ids)
                 ->where(function ($query) use ($search){
                     $query->orWhereHas('resident',function($query) use($search){
                         $query->where('name','like',"%$search%");
@@ -70,6 +71,7 @@ class Order extends MY_Controller
         }
 
         $orders = Ordermodel::with(['store','roomunion','resident','employee'])
+            ->whereIn('store_id',$store_ids)
             ->where(function ($query) use ($search){
                 $query->orWhereHas('resident',function($query) use($search){
                     $query->where('name','like',"%$search%");
@@ -98,10 +100,6 @@ class Order extends MY_Controller
         $orders = Ordermodel::get()->toArray();
 
         var_dump($orders);
-
-
-
-
     }
 
     private function createPHPExcel($filename)
