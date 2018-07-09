@@ -274,7 +274,8 @@ class Bill extends MY_Controller
         header('Content-Type:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition:attachment;filename="流水表.xlsx"');
         header("Content-Transfer-Encoding:binary");
-        $writer->save('php://output');
+        //$writer->save('php://output');
+        $writer->save('流水表.xlsx');
     }
 
     /********************************************生成账单******************************************/
