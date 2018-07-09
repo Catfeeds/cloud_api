@@ -38,7 +38,7 @@ class Resident extends MY_Controller
 
         $room_id    = $room->id;
         if($room->status!=$status){
-            $this->api_res(10010);
+            $this->api_res(10034);
             return;
         }
         $data["room_id"]=$room_id;
