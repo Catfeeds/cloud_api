@@ -37,7 +37,6 @@ class Checkout extends MY_Controller
         if(!empty($input['search']))
         {
             $room_ids    = Roomunionmodel::where('number',$input['search'])
-                ->whereIn('store_id',$store_ids)
                 ->get()->map(function($q){
                 return $q->id;
             });
