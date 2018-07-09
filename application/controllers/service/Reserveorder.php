@@ -29,24 +29,24 @@ class Reserveorder extends MY_Controller
 
         if(!empty($post['store_id'])){$where['store_id']=intval($post['store_id']);}
         if(!empty($post['visit_type'])){$where['visit_by']=trim($post['visit_type']);}
-
+        $store_ids = explode(',',$this->employee->store_ids);
         if(empty($where)){
-            $count   = ceil(Reserveordermodel::count()/PAGINATE);
+            $count   = ceil(Reserveordermodel::whereIn('store_id',$store_ids)->count()/PAGINATE);
             if ($page>$count||$page<1){
                 $this->api_res(0,['list'=>[]]);
                 return;
             }else{
-                $reserve = Reserveordermodel::with('employee')
+                $reserve = Reserveordermodel::whereIn('store_id',$store_ids)->with('employee')
                                             ->take(PAGINATE)->skip($offset)
                                             ->orderBy('id','desc')->get($filed)->toArray();
             }
         }else{
-            $count   = ceil(Reserveordermodel::where($where)->count()/PAGINATE);
+            $count   = ceil(Reserveordermodel::where($where)->whereIn('store_id',$store_ids)->count()/PAGINATE);
             if ($page>$count||$page<1){
                 $this->api_res(0,['list'=>[]]);
                 return;
             }else{
-                $reserve = Reserveordermodel::with('employee')->where($where)
+                $reserve = Reserveordermodel::with('employee')->whereIn('store_id',$store_ids)->where($where)
                                             ->take(PAGINATE)->skip($offset)
                                             ->orderBy('id','desc')->get($filed)->toArray();
             }

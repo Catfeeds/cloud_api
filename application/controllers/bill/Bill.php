@@ -244,6 +244,7 @@ class Bill extends MY_Controller
             }
             $bill_excel[]       = $res;
         }
+        $this->api_res(0,$bill_excel);
         $objPHPExcel    = new Spreadsheet();
         $sheet  = $objPHPExcel->getActiveSheet();
         $i = 1;

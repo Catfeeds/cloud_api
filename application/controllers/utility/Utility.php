@@ -114,9 +114,9 @@ class Utility extends MY_Controller
         $this->load->model('storemodel');
         $this->load->model('buildingmodel');
         $this->load->model('roomunionmodel');
-        $store_ids = explode(',',$this->employee->store_ids);
+        //$store_ids = explode(',',$this->employee->store_ids);
         $filed  = ['id','store_id','building_id','room_id','type','last_reading','last_time','this_reading','updated_at'];
-        $utility = Meterreadingtransfermodel::whereIn('store_id',$store_ids)->orderBy('store_id')
+        $utility = Meterreadingtransfermodel::orderBy('store_id')
             ->with('store', 'building', 'roomunion')
             ->get($filed)->map(function($s){
                 switch ($s->type){
@@ -153,9 +153,9 @@ class Utility extends MY_Controller
             $res['updated_at'] = $utility[$key]['updated_at'];
             $newUtility[]   = $res;
         }
-        $this->api_res(0,$newUtility);
+        //$this->api_res(0,$newUtility);
 
-        /*$objPHPExcel    = new Spreadsheet();
+        $objPHPExcel    = new Spreadsheet();
         $sheet  = $objPHPExcel->getActiveSheet();
         $i = 1;
         $objPHPExcel->getActiveSheet()->setCellValue('A'.$i , '门店');
@@ -178,7 +178,7 @@ class Utility extends MY_Controller
         header("Content-Type:application/download");;
         header('Content-Disposition:attachment;filename="meterReadingTemplate.xlsx"');
         header("Content-Transfer-Encoding:binary");
-        $writer->save('php://output');*/
+        $writer->save('php://output');
     }
 
     /**
