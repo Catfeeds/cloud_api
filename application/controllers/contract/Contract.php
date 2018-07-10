@@ -93,6 +93,5 @@ class Contract extends MY_Controller
             ->orderBy('id','desc')->get($filed)->toArray();
         $this->api_res(0,$order);
     }
-
 }
 
