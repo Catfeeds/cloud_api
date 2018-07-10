@@ -234,17 +234,16 @@ class Bill extends MY_Controller
         return $bill_array;
     }
 
-
-    public function downloadBill()
+    public function billexcel()
     {
         $post = $this->input->post(null,true);
-        $store_id   = trim($post['store_id']);
+        $store_id   = 1;//trim($post['store_id']);
         $begin      = empty($post['begin_time'])?date('Y-m-d H:i:s',0):trim($post['begin_time']);
         $end        = empty($post['end_time'])?date('Y-m-d H:i:s',time()):trim($post['end_time']);
-        if (!isset($post['store_id'])||empty($post['store_id'])){
+        /*if (!isset($post['store_id'])||empty($post['store_id'])){
             $this->api_res(1002,[]);
             return;
-        }
+        }*/
         $this->load->model('billmodel');
         $this->load->model('roomunionmodel');
         $this->load->model('storemodel');
@@ -252,30 +251,41 @@ class Bill extends MY_Controller
         $this->load->model('employeemodel');
         $bill = $this->billArray($store_id,$begin,$end);
 
-        $store = Storemodel::where('id',$store_id)->get(['name']);
-        $store = $store->name;
-        var_dump($store);
-        $filename   = date('Y-m-d-H:i:s').'导出'.$begin.'_'.$end.'_流水数据.xlsx';
-        $filepath   = './temp/'.$filename;
+        /*$store = Storemodel::where('id',$store_id)->get(['name'])->toArray();
+        $store = $store[0]['name'];*/
+        $filename   = date('Y-m-d-H:i:s').'导出'.$begin.'  _  '.$end.'_流水数据.Xlsx';
+        //$filepath   = './temp/'.$filename;
         /*$phpexcel   = $this->createPHPExcel($filename);
         $this->setExcelTitle($phpexcel, $store, $begin, $end);
         $this->setExcelFirstRow($phpexcel);*/
 
         $phpexcel = new Spreadsheet();
         $sheet = $phpexcel->getActiveSheet();
+        $phpexcel->getActiveSheet() ->setCellValue('A1' , '支付时间')
+                                    ->setCellValue('B1' , '房间号')
+                                    ->setCellValue('C1' , '住户姓名')
+                                    ->setCellValue('D1' , '支付总金额')
+                                    ->setCellValue('E1' , '支付方式')
+                                    ->setCellValue('F1' , '房租')
+                                    ->setCellValue('G1' , '物业')
+                                    ->setCellValue('H1' , '住宿押金')
+                                    ->setCellValue('I1' , '其他押金')
+                                    ->setCellValue('J1' , '水费')
+                                    ->setCellValue('K1' , '热水费')
+                                    ->setCellValue('L1' , '电费')
+                                    ->setCellValue('M1' , '退租')
+                                    ->setCellValue('N1' , '其它费用')
+                                    ->setCellValue('O1' , '备注');
         $sheet->fromArray($bill,null,'A2');
-        $writer = new Xlsx($phpexcel);
+        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($phpexcel, 'Xlsx');
         header("Pragma: public");
         header("Expires: 0");
-        header("Cache-Control:must-revalidate, post-check=0, pre-check=0");
         header("Content-Type:application/force-download");
-        header("Content-Type:application/vnd.ms-excel");
-        header("Content-Type:application/octet-stream");
-        header("Content-Type:application/download");;
-        header('Content-Disposition:attachment;filename="meterReadingTemplate.xlsx"');
         header("Content-Transfer-Encoding:binary");
-        $writer->save($filepath);
-
+        header('Cache-Control: max-age=0');
+        header("Content-Disposition:attachment;filename=$filename");
+        $writer->save('php://output');
+        exit;
     }
 
     private function createPHPExcel($filename)
@@ -322,7 +332,7 @@ class Bill extends MY_Controller
                                     ->setCellValue('N' , '其它费用')
                                     ->setCellValue('O' , '备注');
     }
-
+ 
     /********************************************生成账单******************************************/
 
     /**
