@@ -310,7 +310,7 @@ class Ordermodel extends Basemodel{
             ->where(function($query){})
             ->orderBy('status', 'ASC')
 //            ->orderBy('room_id', 'ASC')
-            ->orderBy('updated_at', 'DESC')
+            ->orderBy('updated_at', 'ASC')
             ->get()
             ->groupBy('room_id');
 
