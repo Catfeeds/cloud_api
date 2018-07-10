@@ -309,7 +309,7 @@ class Ordermodel extends Basemodel{
             ->whereNotIn('status', [Ordermodel::STATE_AUDITED, Ordermodel::STATE_GENERATED])
             ->where(function($query){})
             ->orderBy('status', 'ASC')
-            ->orderBy('room_id', 'ASC')
+//            ->orderBy('room_id', 'ASC')
             ->orderBy('updated_at', 'DESC')
             ->get()
             ->groupBy('room_id');
