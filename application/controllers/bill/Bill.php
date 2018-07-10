@@ -278,8 +278,8 @@ class Bill extends MY_Controller
         header("Content-Transfer-Encoding:binary");
         header('Cache-Control: max-age=0');
         header("Content-Disposition:attachment;filename=$filename");
-        //$writer->save('php://output');
-        echo iconv('utf-8', 'gbk//TRANSLIT', $filename);
+        $writer->save('php://output');
+        //echo $filename;
         exit;
     }
 
