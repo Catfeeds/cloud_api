@@ -25,55 +25,46 @@ class Smartdevice extends MY_Controller
     {
         $this->load->model('storemodel');
         $this->load->model('roomunionmodel');
-        $post           = $this->input->post(NULL,true);
-        $page           = empty($post['page'])?1:intval($post['page']);
-        $offset         = PAGINATE*($page-1);
+        $post       = $this->input->post(NULL,true);
+        $page       = empty($post['page'])?1:intval($post['page']);
+        $offset     = PAGINATE*($page-1);
+        $where      = [];
+        $store_ids  = explode(',',$this->employee->store_ids);
 
-        $where          = [];
-        $condition      = [];
-        $store_ids = explode(',',$this->employee->store_ids);
-        if(!empty($post['city'])){$where['city']    = $post['city'];}
-        if(!empty($post['store_id'])){$where['id']  = $post['store_id'];}
+        if(!empty($post['store_id'])){$where['id']  = intval($post['store_id']);}
+        if(!empty($post['device_type'])){$where['type'] = trim($post['device_type']);}
 
-        if(!empty($post['room_number'])) {
-            $room_number = trim($post['room_number']);
-            $room_id = Roomunionmodel::where('number',$room_number)->get(['id'])->toArray();
-            if($room_id){
-                $condition['room_id']      = $room_id;
-            }else{
-                $this->api_res(0,['list'=>[]]);
-                return ;
+        if (!empty($post['room_number'])){
+            $number = trim($post['room_number']);
+            $room_id= Roomunionmodel::where('number','like',"$number%")->get(['id'])->toArray();
+            $room_ids = [];
+            if($room_id) {
+                foreach ($room_id as $key => $value) {
+                    array_push($room_ids, $room_id[$key]['id']);
+                }
             }
-        }
-        if ($where){
-            $store_id = Storemodel::where($where)->get(['id'])->toArray();
-            $condition['store_id'] = $store_id;
-        }
-
-        if (!empty($post['device_type'])){$condition['type'] = $post['device_type'];}
-        $filed = ['id','room_id','store_id','type','supplier'];
-        if($condition){
-            $count          = ceil(Smartdevicemodel::where($condition)->whereIn('store_id',$store_ids)->count()/PAGINATE);
+            $filed  = ['id','room_id','store_id','type','supplier'];
+            $count  = ceil(Smartdevicemodel::where($where)->whereIn('store_id',$store_ids)->whereIn('room_id',$room_ids)->count()/PAGINATE);
             if ($page>$count||$page<1){
                 $this->api_res(0,['list'=>[]]);
                 return ;
             }else{
-                $device = Smartdevicemodel::where($condition)->whereIn('store_id',$store_ids)->with(['room'=>function($query){
+                $device = Smartdevicemodel::where($where)->whereIn('store_id',$store_ids)->whereIn('room_id',$room_ids)->with(['room'=>function($query){
                     $query->with('store');
                 }])->take(PAGINATE)->skip($offset)
-                   ->orderBy('id','desc')->get($filed)->toArray();
+                    ->orderBy('id','desc')->get($filed)->toArray();
             }
-
         }else{
-            $count = ceil(Smartdevicemodel::whereIn('store_id',$store_ids)->count()/PAGINATE);
+            $filed  = ['id','room_id','store_id','type','supplier'];
+            $count  = ceil(Smartdevicemodel::where($where)->whereIn('store_id',$store_ids)->count()/PAGINATE);
             if ($page>$count||$page<1){
                 $this->api_res(0,['list'=>[]]);
                 return ;
-            }else {
-                $device = Smartdevicemodel::whereIn('store_id',$store_ids)->with(['room'=>function($query){
+            }else{
+                $device = Smartdevicemodel::where($where)->whereIn('store_id',$store_ids)->with(['room'=>function($query){
                     $query->with('store');
                 }])->take(PAGINATE)->skip($offset)
-                   ->orderBy('id', 'desc')->get($filed)->toArray();
+                    ->orderBy('id','desc')->get($filed)->toArray();
             }
         }
         $this->api_res(0,['list'=>$device,'count'=>$count]);
