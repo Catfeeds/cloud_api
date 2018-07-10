@@ -82,4 +82,5 @@ class Contractmodel extends Basemodel {
         return $this->belongsTo(Residentmodel::class,'resident_id')->select('id','begin_time','book_money');
     }
 
+
 }
