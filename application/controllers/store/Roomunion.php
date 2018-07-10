@@ -202,6 +202,7 @@ class Roomunion extends MY_Controller
         $page   = isset($post['page'])?intval(strip_tags(trim($post['page']))):1;
         $offset = PAGINATE*($page-1);
         $where  = [];
+        $store_id = explode(',',$this->employee->store_ids);
         (isset($post['store_id'])&&!empty($post['store_id']))?$where['boss_room_union.store_id']=intval(strip_tags(trim($post['store_id']))):null;
         (isset($post['building_id'])&&!empty($post['building_id']))?$where['boss_room_union.building_id']=intval(strip_tags(trim($post['building_id']))):null;
         $search   = isset($post['search'])?$post['search']:'';
@@ -218,6 +219,7 @@ class Roomunion extends MY_Controller
             }
             $rooms  = Roomunionmodel::leftJoin('boss_store','boss_store.id','=','boss_room_union.store_id')
                 ->leftJoin('boss_room_type','boss_room_type.id','=','boss_room_union.room_type_id')
+                ->whereIn('store_id',$store_id)
                 ->select($field)->offset($offset)->limit(PAGINATE)->orderBy('boss_room_union.id')
                 ->whereIn('boss_room_union.store_id',$store_ids)->where($where)
                 ->orWhere(function($query) use ($search){
@@ -228,13 +230,14 @@ class Roomunion extends MY_Controller
             return;
         }
 
-        $count  = ceil(Roomunionmodel::where($where)->count()/PAGINATE);
+        $count  = ceil(Roomunionmodel::where($where)->whereIn('store_id',$store_id)->count()/PAGINATE);
         if($page>$count){
             $this->api_res(0,['count'=>$count,'rooms'=>[]]);
             return;
         }
         $rooms  = Roomunionmodel::leftJoin('boss_store','boss_store.id','=','boss_room_union.store_id')
             ->leftJoin('boss_room_type','boss_room_type.id','=','boss_room_union.room_type_id')
+            ->whereIn('store_id',$store_id)
             ->select($field)->offset($offset)->limit(PAGINATE)->orderBy('boss_room_union.id')
             ->where($where)
             ->get();
