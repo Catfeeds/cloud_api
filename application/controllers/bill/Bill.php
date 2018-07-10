@@ -237,13 +237,13 @@ class Bill extends MY_Controller
     public function billexcel()
     {
         $post = $this->input->post(null,true);
-        $store_id   = 1;//trim($post['store_id']);
+        $store_id   = trim($post['store_id']);
         $begin      = empty($post['begin_time'])?date('Y-m-d H:i:s',0):trim($post['begin_time']);
         $end        = empty($post['end_time'])?date('Y-m-d H:i:s',time()):trim($post['end_time']);
-        /*if (!isset($post['store_id'])||empty($post['store_id'])){
+        if (!isset($post['store_id'])||empty($post['store_id'])){
             $this->api_res(1002,[]);
             return;
-        }*/
+        }
         $this->load->model('billmodel');
         $this->load->model('roomunionmodel');
         $this->load->model('storemodel');
