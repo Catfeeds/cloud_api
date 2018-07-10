@@ -31,6 +31,7 @@ class Smartdevice extends MY_Controller
 
         $where          = [];
         $condition      = [];
+        $store_ids = explode(',',$this->employee->store_ids);
         if(!empty($post['city'])){$where['city']    = $post['city'];}
         if(!empty($post['store_id'])){$where['id']  = $post['store_id'];}
 
@@ -52,29 +53,27 @@ class Smartdevice extends MY_Controller
         if (!empty($post['device_type'])){$condition['type'] = $post['device_type'];}
         $filed = ['id','room_id','store_id','type','supplier'];
         if($condition){
-            $count          = ceil(Smartdevicemodel::where($condition)->count()/PAGINATE);
+            $count          = ceil(Smartdevicemodel::where($condition)->whereIn('store_id',$store_ids)->count()/PAGINATE);
             if ($page>$count||$page<1){
                 $this->api_res(0,['list'=>[]]);
                 return ;
             }else{
-                $device = Smartdevicemodel::where($condition)->with(['room'=>function($query){
+                $device = Smartdevicemodel::where($condition)->whereIn('store_id',$store_ids)->with(['room'=>function($query){
                     $query->with('store');
-                }])
-                                            ->take(PAGINATE)->skip($offset)
-                                            ->orderBy('id','desc')->get($filed)->toArray();
+                }])->take(PAGINATE)->skip($offset)
+                   ->orderBy('id','desc')->get($filed)->toArray();
             }
 
         }else{
-            $count = ceil(Smartdevicemodel::count()/PAGINATE);
+            $count = ceil(Smartdevicemodel::whereIn('store_id',$store_ids)->count()/PAGINATE);
             if ($page>$count||$page<1){
                 $this->api_res(0,['list'=>[]]);
                 return ;
             }else {
-                $device = Smartdevicemodel::with(['room'=>function($query){
+                $device = Smartdevicemodel::whereIn('store_id',$store_ids)->with(['room'=>function($query){
                     $query->with('store');
-                }])
-                                            ->take(PAGINATE)->skip($offset)
-                                            ->orderBy('id', 'desc')->get($filed)->toArray();
+                }])->take(PAGINATE)->skip($offset)
+                   ->orderBy('id', 'desc')->get($filed)->toArray();
             }
         }
         $this->api_res(0,['list'=>$device,'count'=>$count]);
