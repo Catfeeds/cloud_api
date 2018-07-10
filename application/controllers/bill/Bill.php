@@ -251,13 +251,7 @@ class Bill extends MY_Controller
         $this->load->model('employeemodel');
         $bill = $this->billArray($store_id,$begin,$end);
 
-        /*$store = Storemodel::where('id',$store_id)->get(['name'])->toArray();
-        $store = $store[0]['name'];*/
         $filename   = date('Y-m-d-H:i:s').'导出'.$begin.'  _  '.$end.'_流水数据.Xlsx';
-        //$filepath   = './temp/'.$filename;
-        /*$phpexcel   = $this->createPHPExcel($filename);
-        $this->setExcelTitle($phpexcel, $store, $begin, $end);
-        $this->setExcelFirstRow($phpexcel);*/
 
         $phpexcel = new Spreadsheet();
         $sheet = $phpexcel->getActiveSheet();
@@ -280,7 +274,7 @@ class Bill extends MY_Controller
         $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($phpexcel, 'Xlsx');
         header("Pragma: public");
         header("Expires: 0");
-        header("Content-Type:application/force-download");
+        header("Content-Type:application/vnd.ms-excel");
         header("Content-Transfer-Encoding:binary");
         header('Cache-Control: max-age=0');
         header("Content-Disposition:attachment;filename=$filename");
