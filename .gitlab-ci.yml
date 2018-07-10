@@ -1,0 +1,7 @@
+before_script:
+  - echo "before start."
+
+deploy:
+  script:
+    - echo "hello"
+    - curl -XPOST http://120.79.181.154/boss.jsp
