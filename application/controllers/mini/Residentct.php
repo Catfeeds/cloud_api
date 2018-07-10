@@ -55,7 +55,7 @@ class Residentct extends MY_Controller
                 $data   = $res->toArray();
                 $data['days_left']  = Carbon::now()->startOfDay()->diffIndays($res->end_time, false);
                 $data['begin_time']  = $res->begin_time->format('Y-m-d');
-                $data['end_time']  = $res->begin_time->format('Y-m-d');
+                $data['end_time']  = $res->end_time->format('Y-m-d');
                 return $data;
             })
             ->toArray();
