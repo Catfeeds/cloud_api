@@ -250,9 +250,7 @@ class Bill extends MY_Controller
         $this->load->model('residentmodel');
         $this->load->model('employeemodel');
         $bill = $this->billArray($store_id,$begin,$end);
-
-        $filename   = date('Y-m-d-H:i:s').'导出'.$begin.'  _  '.$end.'_流水数据.Xlsx';
-
+        $filename   = date('Y-m-d-H:i:s').'导出'.$begin.' _ '.$end.'_流水数据.Xlsx';
         $phpexcel = new Spreadsheet();
         $sheet = $phpexcel->getActiveSheet();
         $phpexcel->getActiveSheet() ->setCellValue('A1' , '支付时间')
@@ -279,7 +277,6 @@ class Bill extends MY_Controller
         header('Cache-Control: max-age=0');
         header("Content-Disposition:attachment;filename=$filename");
         $writer->save('php://output');
-        //echo $filename;
         exit;
     }
 
