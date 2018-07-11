@@ -155,6 +155,7 @@ class AuthHook {
 //
 //            'store/room/adddot',
             'bill/order/push',
+            'bill/order/notify',
 //            'store/room/addunion',
 //
 //            'service/servicetype/listservicetype',
