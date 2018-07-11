@@ -29,14 +29,25 @@ class Resident extends MY_Controller
         $where = [];
         $store_ids = explode(',',$this->employee->store_ids);
         if(!empty($post['store_id'])){$where['store_id'] = intval($post['store_id']);};
-        $name = trim($post['name']);
-        $count = $count = ceil(Residentmodel::whereIn('store_id',$store_ids)->where($where)->where('name','like','%'.$name.'%')->count()/PAGINATE);
+        if(!empty($post['name'])){$search = trim($post['name']);}else{$search = '';};
+        $count = $count = ceil(Residentmodel::whereIn('store_id',$store_ids)
+                ->where($where)->where(function($query) use ($search){
+                    $query->orwhere('name','like',"%$search%")
+                    ->orWhereHas('roomunion',function($query) use($search){
+                            $query->where('number','like',"%$search%");
+                    });
+                })->count()/PAGINATE);
         if ($page>$count||$page<1){
             $this->api_res(0,['list'=>[]]);
             return;
         }else {
-            $resident = Residentmodel::with('room')->with('customer_s')->whereIn('store_id',$store_ids)->where($where)
-                    ->where('name','like','%'.$name.'%')->orderBy('created_at','DESC')
+            $resident = Residentmodel::with('room')->with('customer_s')->whereIn('store_id',$store_ids)
+                ->where($where)->where(function($query) use ($search){
+                    $query->orwhere('name','like',"%$search%")
+                        ->orWhereHas('roomunion',function($query) use($search){
+                            $query->where('number','like',"%$search%");
+                        });
+                })->orderBy('created_at','DESC')
                     ->take(PAGINATE)->skip($offset)->get($filed)
                     ->map(function ($s){
                         $s->room->store_name = (Storemodel::where('id',$s->room->store_id)->get(['name']))[0]['name'];
