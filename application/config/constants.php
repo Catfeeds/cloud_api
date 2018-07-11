@@ -85,13 +85,15 @@ defined('EXIT__AUTO_MIN')      OR define('EXIT__AUTO_MIN', 9); // lowest automat
 defined('EXIT__AUTO_MAX')      OR define('EXIT__AUTO_MAX', 125); // highest automatically-assigned error code
 
 //定义请求数据的方法
-define('IS_POST',strtolower($_SERVER["REQUEST_METHOD"]) == 'post');//判断是否是post方法
-define('IS_GET',strtolower($_SERVER["REQUEST_METHOD"]) == 'get');//判断是否是get方法
-define('IS_OPTIONS',strtolower($_SERVER["REQUEST_METHOD"]) == 'options');//判断是否是post方法
-define('IS_AJAX',isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');//判断是否是ajax请求
+if (!is_cli()){
+	define('IS_POST',strtolower($_SERVER["REQUEST_METHOD"]) == 'post');//判断是否是post方法
+	define('IS_GET',strtolower($_SERVER["REQUEST_METHOD"]) == 'get');//判断是否是get方法
+	define('IS_OPTIONS',strtolower($_SERVER["REQUEST_METHOD"]) == 'options');//判断是否是post方法
+	define('IS_AJAX',isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');//判断是否是ajax请求
+}
 
 //自定义常量
-define('WXID','openid');    //验证用户的用到的微信标识 （openid/unionid）
+define('WXID','unionid');    //验证用户的用到的微信标识 （openid/unionid）
 
 define('SMSTEXT','【火花草莓社区】您的验证码是'); //发送短信的文本内容
 
@@ -102,6 +104,13 @@ define('USERINFO','FUNXDATA:BOSS:USER:INFO:');      //用户信息
 define('COMPANYINFO','FUNXDATA:BOSS:COMPANY:INFO:'); //公司信息
 define('COMPANYPRIVILEGE','FUNXDATA:BOSS:COMPANY:PRIVILEGE:'); //公司权限
 
+define('DANBYTOKEN','FUNXDATA:BOSS:DANBY:TOKEN');
+
 
 //分页
 define('PAGINATE',10);          //分页页码
+
+//微信生成带参数的二维码 前缀
+define('QRCODERESIDENT',101);          //办理用户入住
+define('PRIVILEGE_IDS_ONE',range(1,9)); //一级权限分类ids
+define('PRIVILEGE_IDS_THREE',range(10,36)); //三级权限分类父ids

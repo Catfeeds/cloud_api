@@ -12,7 +12,14 @@ class Storemodel extends Basemodel{
 
     protected $table    = 'boss_store';
 
-    protected $hidden   = ['created_at','updated_at','deleted_at'];
+    protected $fillable = [
+        'rent_type','status','name','theme','province','city','district','address', 'contact_user',
+        'contact_phone','counsel_phone','counsel_time','describe','history','shop','relax','bus',
+    ];
+
+    protected $casts    = ['images'=>'array'];
+
+    protected $hidden   = ['updated_at','deleted_at'];
 
     //门店所管辖的楼栋
     public function building(){
@@ -37,5 +44,24 @@ class Storemodel extends Basemodel{
 
         return $this->hasMany(Roommodel::class,'store_id');
     }
+
+    /**
+     * 该公寓所拥有的活动
+     */
+    public function activities()
+    {
+        return $this->belongsToMany(Activitymodel::class, 'boss_store_activity', 'store_id', 'activity_id');
+    }
+
+//    public function coupontypes()
+//    {
+//        return $this->belongsToMany(Activitymodel::class, 'boss_activity_coupontype', 'activity_id', 'coupontype_id');
+//    }
+    public function contracts()
+    {
+        return $this->hasMany(Contractmodel::class, 'store_id');
+    }
+
+
 
 }

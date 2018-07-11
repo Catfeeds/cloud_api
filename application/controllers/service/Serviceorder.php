@@ -17,53 +17,49 @@ class Serviceorder extends MY_Controller
     /**
      * 返回服务订单列表
      */
-    public function index()
+    public function listServiceorder()
     {
+        $this->load->model('storemodel');
+        $this->load->model('servicetypemodel');
         $post       = $this->input->post(NULL,true);
-        $where      = array();
-        $filed      = ['id','sequence_number','store_id','room_id','estimate_money','pay_money','status','deal'];
+        $where      = [];
+        $filed      = ['id','sequence_number','store_id','room_id','estimate_money','pay_money','service_id','status','deal'];
+        $page       = isset($post['page'])?intval($post['page']):1;
+        $offset     = PAGINATE*($page-1);
 
-        if(isset($post['store_id'])){$where['store_id']=$post['store_id'];}
-        if(isset($post['service_id'])){$where['service_type_id']=$post['service_id'];}
-        if(isset($post['begin_time'])){$bt=$post['begin_time'];}else{$bt = date('Y-m-d H:i:s',0);};
-        if(isset($post['end_time'])){$et=$post['end_time'];}else{$et = date('Y-m-d H:i:s',time());};
+        if(!empty($post['store_id'])){$where['store_id']=intval($post['store_id']);}
+        if(!empty($post['service_id'])){$where['service_id']=intval($post['service_id']);}
+        if(!empty($post['service_id'])){$where['service_id']=intval($post['service_id']);}
+        if(!empty($post['begin_time'])){$bt=$post['begin_time'];}else{$bt = date('Y-m-d H:i:s',0);};
+        if(!empty($post['end_time'])){$et=$post['end_time'];}else{$et = date('Y-m-d H:i:s',time());};
 
         if(empty($where)){
-            $order = Serviceordermodel::whereBetween('created_at',[$bt,$et])->get($filed);
-            $this->api_res(0,$order);
-            return;
+            $count = ceil(Serviceordermodel::whereBetween('created_at',[$bt,$et])->count()/PAGINATE);
+            if ($page>$count||$page<1){
+                $this->api_res(0,['list'=>[]]);
+                return;
+            }else{
+                $order = Serviceordermodel::with('store')->with('serviceType')
+                                            ->whereBetween('created_at',[$bt,$et])
+                                            ->take(PAGINATE)->skip($offset)
+                                            ->orderBy('id','desc')->get($filed);
+            }
+
+        }else{
+            $count      = ceil(Serviceordermodel::where($where)->whereBetween('created_at',[$bt,$et])
+                                                        ->count()/PAGINATE);
+            if ($page>$count||$page<1){
+                $this->api_res(0,['list'=>[]]);
+                return;
+            }else {
+                $order = Serviceordermodel::with('serviceType')->with('store')
+                                            ->where($where)->whereBetween('created_at', [$bt, $et])
+                                            ->take(PAGINATE)->skip($offset)
+                                            ->orderBy('id', 'desc')
+                                            ->get($filed)->toArray();
+            }
         }
-        $order = Serviceordermodel::where($where)->whereBetween('created_at',[$bt,$et])->get($filed);
-        $this->api_res(0,$order);
-    }
-
-    /**
-     * 城市列表
-     */
-    public function getCity()
-    {
-        $this->load->model('storemodel');
-        $filed      = ['city'];
-        $city       = Storemodel::get($filed);
-        $this->api_res(0,$city);
-    }
-
-    /**
-     * 公寓列表
-     */
-    public function getStore()
-    {
-        $this->load->model('storemodel');
-        $filed      = ['id','name'];
-        $post       = $this->input->post(NULL,true);
-
-        if (isset($post['city'])){
-            $store  = Storemodel::where('city',$post['city'])->get($filed);
-            $this->api_res(0,$store);
-            return;
-        }
-        $store      = Storemodel::get($filed);
-        $this->api_res(0,$store);
+        $this->api_res(0,['list'=>$order,'count'=>$count]);
     }
 
     /**
@@ -82,10 +78,12 @@ class Serviceorder extends MY_Controller
      */
     public function getDetail()
     {
+        $this->load->model('storemodel');
         $post   = $this->input->post(NULL,true);
         $id     = $post['id'];
-        $filed  = ['sequence_number','store_id','room_id','estimate_money','pay_money','status','deal'];
-        $order  = Serviceordermodel::where('id',$id)->get([$filed]);
+        $filed  = ['number','sequence_number','store_id','room_id','name','estimate_money','pay_money','status','deal'];
+        $order  = Serviceordermodel::with('store')->where('id',$id)->get($filed)->toArray();
         $this->api_res(0,$order);
     }
+
 }

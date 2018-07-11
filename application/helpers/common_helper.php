@@ -1,92 +1,72 @@
 <?php
-
+defined('BASEPATH') OR exit('No direct script access allowed');
 /**
- * 获取后台管理的url
+ * Author:      zjh<401967974@qq.com>
+ * Date:        2018/5/22 0022
+ * Time:        17:26
+ * Describe:
  */
-function admin_url($value = '')
-{
-    return rtrim(ADMIN_URL, '/').'/'.trim($value, '/');
-}
-
-/**
- * 获取用户微信端的url
- */
-function wechat_url($value = '')
-{
-    return rtrim(WECHAT_URL, '/').'/'.trim($value, '/');
-}
-
-/**
- * 获取员工微信端的url
- */
-function employee_url($value = '')
-{
-    return rtrim(EMPLOYEE_URL, '/').'/'.trim($value, '/');
-}
-
-function upyun_url($value = '')
-{
-    return rtrim(UPYUN_URL, '/').'/'.trim($value, '/');
-}
-
-/**
- * 获取员工端微信的配置
- */
-function getEmployeeWechatConfig($debug = true)
-{
-    return array(
+function getWechatCustomerConfig(){
+    $debug  = (ENVIRONMENT!=='development'?false:true);
+    return [
         'debug'     => $debug,
-        'app_id'    => EMPLOYEE_WECHAT_APPID,
-        'secret'    => EMPLOYEE_WECHAT_SECRET,
-        'token'     => EMPLOYEE_WECHAT_TOKEN,
-        'aes_key'   => EMPLOYEE_WECHAT_AES_KEY,
+        'app_id'    => config_item('wx_map_appid'),
+        'secret'    => config_item('wx_map_secret'),
+        'token'     => config_item('wx_map_token'),
+        'aes_key'   => config_item('wx_map_aes_key'),
         'log' => [
             'level' => 'debug',
-            'file'  => APPPATH.'cache/wechat.log',
-        ],
-        'oauth' => [
-            'scopes'   => [EMPLOYEE_WECHAT_OAUTH_SCOPES],
-            'callback' => site_url('callback'),
-        ],
-        'payment' => [
-            'merchant_id'        => '',
-            'key'                => '',
-            'cert_path'          => '',
-            'key_path'           => '',
+            'file'  => APPPATH.'cache/wechatCustomer.log',
         ],
         'guzzle' => [
             'timeout' => 3.0,
         ]
-    );
+    ];
 }
 
 /**
- * 获取客户端微信配置
+ * 小程序配置信息
  */
-function getCustomerWechatConfig($debug = true)
+function getMiniWechatConfig()
 {
-    return array(
+    $debug  = (ENVIRONMENT!=='development'?false:true);
+    return[
+        'mini_program'  =>  [
+            'debug'     => $debug,
+            'app_id'        => config_item('miniAppid'),
+            'secret'        => config_item('miniSecret'),
+            'token'         => config_item('miniToken'),
+            'aes_key'       => config_item('miniAes_key'),
+            'log' => [
+                'level' => 'debug',
+                'file'  => APPPATH.'cache/wechatCustomer.log',
+            ],
+            'guzzle' => [
+                'timeout' => 3.0,
+            ]
+        ],
+    ];
+}
+
+/**
+ * 员工公众号
+ */
+function getWechatEmployeeConfig()
+{
+    $debug  = (ENVIRONMENT!=='development'?false:true);
+    return [
         'debug'     => $debug,
-        'app_id'    => CUSTOMER_WECHAT_APPID,
-        'secret'    => CUSTOMER_WECHAT_SECRET,
-        'token'     => CUSTOMER_WECHAT_TOKEN,
-        'aes_key'   => CUSTOMER_WECHAT_AES_KEY,
+        'app_id'    => config_item('wx_employee_appid'),
+        'secret'    => config_item('wx_employee_secret'),
+        'token'     => config_item('wx_employee_token'),
+        'aes_key'   => config_item('wx_employee_aes_key'),
         'log' => [
             'level' => 'debug',
-            'file'  => APPPATH.'cache/wechat.log',
-        ],
-        'oauth' => [
-            'scopes'   => [CUSTOMER_WECHAT_OAUTH_SCOPES],
-            'callback' => site_url('callback'),
-        ],
-        'payment' => [
-            'merchant_id'   => CUSTOMER_WECHAT_PAYMENT_MERCHANT_ID,
-            'key'           => CUSTOMER_WECHAT_PAYMENT_KEY,
-            'cert_path'     => CUSTOMER_WECHAT_PAYMENT_CERT_PATH,
-            'key_path'      => CUSTOMER_WECHAT_PAYMENT_KEY_PATH,
+            'file'  => APPPATH.'cache/wechatEmployee.log',
         ],
         'guzzle' => [
             'timeout' => 3.0,
         ]
-    );
+    ];
+
 }

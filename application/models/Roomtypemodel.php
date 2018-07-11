@@ -11,7 +11,14 @@ class Roomtypemodel extends Basemodel{
 
     protected $table    = 'boss_room_type';
 
-    protected $hidden   = '';
+    protected $fillable = [
+        'store_id','name','feature','area','room_number','hall_number','toilet_number','provides',
+        'toward','description','images',
+        ];
+
+    protected $casts    = ['images'=>'array'];
+
+    protected $hidden   = ['created_at','updated_at','deleted_at'];
 
     //房型的合同模板
     public function contracttemplate(){
@@ -19,9 +26,13 @@ class Roomtypemodel extends Basemodel{
         return $this->hasMany(Contracttemplatemodel::class,'room_type_id');
     }
 
+    //房型的门店
+    public function store(){
+        return $this->belongsTo(Storemodel::class,'store_id')->select('id','name','city');
+    }
+
     //房型的房间
     public function room(){
-
         return $this->hasMany(Roommodel::class,'room_type_id');
     }
 

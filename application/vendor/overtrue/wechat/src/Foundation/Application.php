@@ -266,7 +266,7 @@ class Application extends Container
                 $logFile,
                 $this['config']->get('log.level', Logger::WARNING),
                 true,
-                $this['config']->get('log.permission', null))
+                $this['config']->get('log.employee', null))
             );
         }
 

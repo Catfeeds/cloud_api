@@ -16,7 +16,7 @@ class M_jwt
     }
 
     //生成jwt token 字符串
-    public function generateJwtToken($fxid=0){
+    public function generateJwtToken($bxid=0,$company_id=0){
        
             $key    = config_item('jwt_key');
             $alg    = config_item('jwt_alg');
@@ -25,13 +25,13 @@ class M_jwt
             $token = array(
                 "iss" => config_item('jwt_iss'),
                 "exp" => config_item('jwt_exp'),
+//                "exp" => (time()+5),
                 "nbf" => config_item('jwt_nbf'),
-                "bxid" => $fxid  //自添加字段，租户ID
+                "bxid" => $bxid,  //自添加字段，
+                "company_id"    =>$company_id
             );
 
             return JWT::encode($token, $key);
-          
-       
     }
 
     /**
@@ -44,7 +44,5 @@ class M_jwt
             $alg    = config_item('jwt_alg');
 
             return $decoded= JWT::decode($token, $key, array($alg));
-         
-
     }
 }

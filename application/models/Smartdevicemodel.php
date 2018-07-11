@@ -1,4 +1,3 @@
-
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 /**
@@ -12,6 +11,13 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class Smartdevicemodel extends Basemodel{
 
     protected $table    = 'boss_smart_device';
+    protected $hidden   = ['created_at','updated_at','deleted_at'];
 
-    protected $hidden   = [];
+    public function room(){
+        return $this->belongsTo(Roomunionmodel::class,'room_id')->select('id','layer','number','store_id','building_name');
+    }
+
+    public function store(){
+        return $this->belongsTo(Storemodel::class,'store_id')->select('id');
+    }
 }

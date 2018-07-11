@@ -13,4 +13,9 @@ class Customermodel extends Basemodel{
     protected $table    = 'boss_customer';
 
     protected $hidden   = [];
+
+    public function coupons(){
+
+        return $this->hasMany(Couponmodel::class,'customer_id');
+    }
 }

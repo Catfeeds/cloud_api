@@ -9,7 +9,7 @@
  */
 namespace org\bovigo\vfs\example;
 /**
- * Example showing correct file permission support introduced with 0.7.0.
+ * Example showing correct file employee support introduced with 0.7.0.
  */
 class FilePermissionsExample
 {
