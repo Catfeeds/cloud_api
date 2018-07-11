@@ -15,7 +15,7 @@ class Residentct extends MY_Controller
         parent::__construct();
         $this->load->model('residentmodel');
         $this->load->model('employeemodel');
-        $this->load->model('Contractmodel');
+        $this->load->model('contractmodel');
         $this->load->model('roomunionmodel');
         $this->load->model('customermodel');
         $this->load->model('smartdevicemodel');
@@ -68,46 +68,46 @@ class Residentct extends MY_Controller
      */
     public function searchResident()
     {
-        $post   = $this->input->post(null,true);
-        $store_ids[0]   = $this->employee->store_id;
-        if (!$store_ids) {
-            $this->api_res(1007, ['error' => '没有找到门店']);
+        $field = ['id', 'name', 'room_id', 'customer_id','status','begin_time','end_time'];
+        $input  = $this->input->post(null,true);
+        $store_id   = $this->employee->store_id;
+//        $store_id   = 1;
+        $number = $input['number'];
+
+        $room   = Roomunionmodel::where('number',$number)
+            ->where('store_id',$store_id)
+            ->where('status',Roomunionmodel::STATE_RENT)
+            ->first();
+        if(empty($room)){
+            $this->api_res(0, ['total' => 0, 'pre_page' => 0, 'current_page' => 0,
+                'total_pages' => 0, 'data' => []]);
             return;
         }
 
-        $field = ['id', 'name', 'room_id', 'customer_id','status'];
-        $current_page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
-        $pre_page = isset($post['pre_page']) ? intval($post['pre_page']) : 10;//当前页显示条数
-        $offset = $pre_page * ($current_page - 1);
-
-        $number = isset($post['number'])?$post['number']:null;
-        if (!$number) {
-            $this->api_res(1009,['error'=>'未指定房间号']);
+        $resident   = $room->resident()
+            ->with(['roomunion' => function ($query) {
+                $query->select('id', 'number');
+            }])
+            ->with(['customer' => function ($query) {
+                $query->select('id', 'avatar');
+            }])
+            ->select($field)
+            ->get()
+            ->map(function($resident){
+                $res   = $resident->toArray();
+                $res['days_left']  = Carbon::now()->startOfDay()->diffIndays($resident->end_time, false);
+                $res['begin_time'] = $resident->begin_time->format('Y-m-d');
+                $res['end_time']   = $resident->end_time->format('Y-m-d');
+                return $res;
+            })
+            ->toArray();
+        if(empty($resident)){
+            $this->api_res(0, ['total' => 0, 'pre_page' => 0, 'current_page' => 0,
+                'total_pages' => 0, 'data' => []]);
             return;
         }
-        $total = Roomunionmodel::whereIn('store_id', $store_ids)->where('number', $number)->count();
-        $total_pages = ceil($total / $pre_page);//总页数
-        if ($current_page > $total_pages) {
-            $this->api_res(0, ['total' => $total, 'pre_page' => $pre_page, 'current_page' => $current_page,
-                'total_pages' => $total_pages, 'data' => []]);
-            return;
-        }
-
-        $room_ids = Roomunionmodel::whereIn('store_id', $store_ids)
-            ->where('number', $number)->get(['id'])->map(function ($r) {
-                return $r->id;
-            });
-        if (!$room_ids) {
-            $this->api_res(1009);
-        }
-        $category = Residentmodel::with(['roomunion' => function ($query) {
-            $query->select('id', 'number');
-        }])->with(['customer' => function ($query) {
-            $query->select('id', 'avatar');
-        }])->whereIn('store_id', $store_ids)->whereIn('room_id',$room_ids)
-            ->take($pre_page)->skip($offset)->orderBy('id', 'desc')->get($field)->toArray();
-        $this->api_res(0, ['total' => $total, 'pre_page' => $pre_page, 'current_page' => $current_page,
-                                'total_pages' => $total_pages, 'data' => $category]);
+        $this->api_res(0, ['total' => 1, 'pre_page' => 1, 'current_page' => 1,
+                                'total_pages' => 1, 'data' => $resident]);
     }
 
     /**
