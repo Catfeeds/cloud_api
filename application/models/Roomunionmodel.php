@@ -190,11 +190,11 @@ class Roomunionmodel extends Basemodel{
     /*
      * 查询
      */
-    public function room_details($where,$filed,$time,$store_ids){
+    public function room_details($where,$filed,$time){
         $arrears_count = 0;
         $awhere = array_except($where,'status');
         $this->details = Roomunionmodel::with('room_type')->with('resident')->with('order')
-                        ->where($awhere)->whereIn('store_id',$store_ids)->whereBetween('updated_at',$time)
+                        ->where($awhere)->whereBetween('updated_at',$time)
                         ->get($filed)->groupBy('layer')
                         ->map(function ($s){
                             $s = $s->toArray();
@@ -208,36 +208,23 @@ class Roomunionmodel extends Basemodel{
                             $arrears_count += $count;
                             return [$s,'arrears_count'=>$arrears_count];
                         })->toArray();
-        $this->total_count    = Roomunionmodel::where($awhere)->whereBetween('updated_at',$time)->whereIn('store_id',$store_ids)->get($filed)->count();
-        $this->blank_count    = Roomunionmodel::where($awhere)->where('status','BLANK')->whereIn('store_id',$store_ids)->whereBetween('updated_at',$time)->get($filed)->count();
-        $this->reserve_count  = Roomunionmodel::where($awhere)->where('status','RESERVE')->whereIn('store_id',$store_ids)->whereBetween('updated_at',$time)->get($filed)->count();
-        $this->rent_count     = Roomunionmodel::where($awhere)->where('status','RENT')->whereIn('store_id',$store_ids)->whereBetween('updated_at',$time)->get($filed)->count();
+        $this->total_count    = Roomunionmodel::where($awhere)->whereBetween('updated_at',$time)->get($filed)->count();
+        $this->blank_count    = Roomunionmodel::where($awhere)->where('status','BLANK')->whereBetween('updated_at',$time)->get($filed)->count();
+        $this->reserve_count  = Roomunionmodel::where($awhere)->where('status','RESERVE')->whereBetween('updated_at',$time)->get($filed)->count();
+        $this->rent_count     = Roomunionmodel::where($awhere)->where('status','RENT')->whereBetween('updated_at',$time)->get($filed)->count();
         foreach ($this->details as $key=>$value){
-
             if(isset(($this->details)[$key]['arrears_count'])){
                 $arrears_count = ($this->details)[$key]['arrears_count'];
             }
-
         }
         $this->arrears_count  = $arrears_count;
-
-
-
         if(isset($where['status'])&&$where['status']=='ARREARS'){
-
             $this->details = Roomunionmodel::with('room_type')->with('resident')->with('order')
-                ->where($awhere)->whereIn('store_id',$store_ids)->whereBetween('updated_at',$time)->whereHas('order')
+                ->where($awhere)->whereBetween('updated_at',$time)->whereHas('order')
                 ->get($filed)->groupBy('layer')
                 ->map(function ($s){
                     $s = $s->toArray();
                     global $arrears_count;
-//                            $s['count']= 0;
-//                            foreach ($s as $key=>$value){
-//                                if (!empty($s[$key]['order'])){
-//                                    $s['count'] += 1;
-//                                }
-//                            }
-//                            $arrears_count += $s['count'];
                     $count=0;
                     foreach ($s as $key=>$value){
                         if (!empty($s[$key]['order'])){
@@ -247,35 +234,13 @@ class Roomunionmodel extends Basemodel{
                     $arrears_count += $count;
                     return [$s,'arrears_count'=>$arrears_count];
                 })->toArray();
-//                ->map(function ($s){
-//                    $s = $s->toArray();
-//                    global $arrears_count;
-//                    $count=0;
-//                    $arrears=[];
-//                    foreach ($s as $key=>$value){
-//                        if (!empty($s[$key]['order'])){
-//                            $count += 1;
-//                            $arrears[]    = $s;
-//                        }
-//                    }
-//                    $arrears_count += $count;
-//                    return [$s,'arrears_count'=>$arrears_count,'arrears'=>$arrears];
-//                })->toArray();
-
         }else{
             $this->details = Roomunionmodel::with('room_type')->with('resident')->with('order')
-                ->where($where)->whereIn('store_id',$store_ids)->whereBetween('updated_at',$time)
+                ->where($where)->whereBetween('updated_at',$time)
                 ->get($filed)->groupBy('layer')
                 ->map(function ($s){
                     $s = $s->toArray();
                     global $arrears_count;
-//                            $s['count']= 0;
-//                            foreach ($s as $key=>$value){
-//                                if (!empty($s[$key]['order'])){
-//                                    $s['count'] += 1;
-//                                }
-//                            }
-//                            $arrears_count += $s['count'];
                     $count=0;
                     foreach ($s as $key=>$value){
                         if (!empty($s[$key]['order'])){
@@ -286,7 +251,6 @@ class Roomunionmodel extends Basemodel{
                     return [$s,'arrears_count'=>$arrears_count];
                 })->toArray();
         }
-
         return $this;
     }
 
