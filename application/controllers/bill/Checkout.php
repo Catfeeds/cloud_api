@@ -29,9 +29,9 @@ class Checkout extends MY_Controller
         $where  = [];
         empty($input['store_id'])?:$where['store_id']=$input['store_id'];
         empty($input['type'])?:$where['type']=$input['type'];
-        //$store_ids = explode(',',$this->employee->store_ids);
-        $query   = Checkoutmodel::with('roomunion','store','resident')
-            ->where($where);
+        $store_ids  = explode(',',$this->employee->store_ids);
+        $query      = Checkoutmodel::with('roomunion','store','resident')
+            ->where($where)->whereIn('store_id',$store_ids);
 
         if(!empty($input['search']))
         {
@@ -41,7 +41,7 @@ class Checkout extends MY_Controller
             $query  = $query->whereIn('room_id',$room_ids);
         }
 
-        $total_page = ceil(($query->count())/PAGINATE);
+        $total_page = ceil(($query->whereIn('store_id',$store_ids)->count())/PAGINATE);
 
         $list   = $query->orderBy('created_at','DESC')
             ->offset($offset)

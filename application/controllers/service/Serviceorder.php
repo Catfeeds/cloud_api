@@ -29,35 +29,21 @@ class Serviceorder extends MY_Controller
 
         if(!empty($post['store_id'])){$where['store_id']=intval($post['store_id']);}
         if(!empty($post['service_id'])){$where['service_id']=intval($post['service_id']);}
-        if(!empty($post['service_id'])){$where['service_id']=intval($post['service_id']);}
         if(!empty($post['begin_time'])){$bt=$post['begin_time'];}else{$bt = date('Y-m-d H:i:s',0);};
         if(!empty($post['end_time'])){$et=$post['end_time'];}else{$et = date('Y-m-d H:i:s',time());};
-
-        if(empty($where)){
-            $count = ceil(Serviceordermodel::whereBetween('created_at',[$bt,$et])->count()/PAGINATE);
-            if ($page>$count||$page<1){
-                $this->api_res(0,['list'=>[]]);
-                return;
-            }else{
-                $order = Serviceordermodel::with('store')->with('serviceType')
-                                            ->whereBetween('created_at',[$bt,$et])
-                                            ->take(PAGINATE)->skip($offset)
-                                            ->orderBy('id','desc')->get($filed);
-            }
-
-        }else{
-            $count      = ceil(Serviceordermodel::where($where)->whereBetween('created_at',[$bt,$et])
-                                                        ->count()/PAGINATE);
-            if ($page>$count||$page<1){
-                $this->api_res(0,['list'=>[]]);
-                return;
-            }else {
-                $order = Serviceordermodel::with('serviceType')->with('store')
-                                            ->where($where)->whereBetween('created_at', [$bt, $et])
-                                            ->take(PAGINATE)->skip($offset)
-                                            ->orderBy('id', 'desc')
-                                            ->get($filed)->toArray();
-            }
+        $store_ids = explode(',',$this->employee->store_ids);
+        $count     = ceil(Serviceordermodel::where($where)->whereIn('id',$store_ids)
+                                ->whereBetween('created_at',[$bt,$et])->count()/PAGINATE);
+        if ($page>$count||$page<1){
+            $this->api_res(0,['list'=>[]]);
+            return;
+        }else {
+            $order = Serviceordermodel::with('serviceType')->with('store')
+                                        ->where($where)->whereIn('store_id',$store_ids)
+                                        ->whereBetween('created_at', [$bt, $et])
+                                        ->take(PAGINATE)->skip($offset)
+                                        ->orderBy('id', 'desc')
+                                        ->get($filed)->toArray();
         }
         $this->api_res(0,['list'=>$order,'count'=>$count]);
     }

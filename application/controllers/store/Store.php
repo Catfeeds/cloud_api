@@ -30,6 +30,7 @@ class Store extends MY_Controller
         empty($post['city'])?:$where['city']=$post['city'];
         empty($post['type'])?:$where['rent_type']=$post['type'];
         empty($post['status'])?:$where['status']=$post['status'];
+        $store_ids = explode(',',$this->employee->store_ids);
         $offset = PAGINATE*($page-1);
         $field  = ['id','name','city','rent_type','address','contact_user','counsel_phone','status','created_at'];
         $count  = ceil(Storemodel::where($where)->count()/PAGINATE);
@@ -40,7 +41,7 @@ class Store extends MY_Controller
             $this->api_res(0,['count'=>$count,'city'=>$cities,'type'=>$types,'status'=>$status,'list'=>[]]);
             return;
         }
-        $stores = Storemodel::offset($offset)->where($where)->limit(PAGINATE)->orderBy('id','asc')->get($field);
+        $stores = Storemodel::offset($offset)->where($where)->whereIn('id',$store_ids)->limit(PAGINATE)->orderBy('id','asc')->get($field);
         $this->api_res(0,['count'=>$count,'city'=>$cities,'type'=>$types,'status'=>$status,'list'=>$stores]);
     }
 
