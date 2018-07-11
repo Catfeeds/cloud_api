@@ -70,8 +70,8 @@ class Residentct extends MY_Controller
     {
         $field = ['id', 'name', 'room_id', 'customer_id','status','begin_time','end_time'];
         $input  = $this->input->post(null,true);
-//        $store_id   = $this->employee->store_id;
-        $store_id   = 1;
+        $store_id   = $this->employee->store_id;
+//        $store_id   = 1;
         $number = $input['number'];
 
         $room   = Roomunionmodel::where('number',$number)

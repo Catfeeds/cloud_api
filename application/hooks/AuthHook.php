@@ -130,7 +130,7 @@ class AuthHook {
 //            'store/template/gettemplate',
 //            'store/template/updatetemplate',
 //            'store/template/showtemplate',
-            'mini/residentct/searchresident',
+//            'mini/residentct/searchresident',
 
 //
 //            'store/roomdot/adddot',
