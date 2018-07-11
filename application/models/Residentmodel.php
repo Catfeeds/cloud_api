@@ -103,6 +103,11 @@ use Carbon\Carbon;
          return $this->belongsTo(Roomunionmodel::class,'room_id');
      }
 
+     public function rent_roomunion()
+     {
+         return $this->hasMany(Roomunionmodel::class,'resident_id');
+     }
+
 
      public function room(){
 

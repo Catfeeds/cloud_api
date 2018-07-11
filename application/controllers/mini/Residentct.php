@@ -47,7 +47,9 @@ class Residentct extends MY_Controller
                 'total_pages' => $total_pages, 'data' => []]);
             return;
         }
-        $category = Residentmodel::with('roomunion','customer','contract')->where('status','NORMAL')->whereIn('store_id', $store_ids)->take($pre_page)->skip($offset)
+        $category = Residentmodel::with('roomunion','customer','contract')
+            ->whereHas('rent_roomunion')
+            ->where('status','NORMAL')->whereIn('store_id', $store_ids)->take($pre_page)->skip($offset)
             ->orderBy('end_time','ASC')
             ->orderBy('room_id', 'ASC')
             ->get($field)
