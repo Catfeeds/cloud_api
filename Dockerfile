@@ -1,0 +1,17 @@
+FROM registry.cn-beijing.aliyuncs.com/wa/php-fpm
+
+MAINTAINER Chuanjian Wang <chuanjian@funxdata.com>
+
+WORKDIR /var/www/html
+
+ENV APPLICATION_ENV=development
+
+ADD application /var/www/html/application
+ADD public /var/www/html/public
+ADD system /var/www/html/system
+ADD composer.json /var/www/html/composer.json
+
+ADD hack/nginx.conf /etc/nginx/nginx.conf
+ADD hack/start.sh /start.sh
+
+CMD ["/start.sh"]

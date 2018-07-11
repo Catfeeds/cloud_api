@@ -50,9 +50,17 @@ class PreHook {
 
     private function check_data($arr, $v) {
         foreach ($arr as $key => $value) {
-            if (!is_array($key)) {$this->check($key, $v);} else { $this->check_data($key, $v);}
+            if (!is_array($key)) {
+                $this->check($key, $v);
+            } else {
+                $this->check_data($key, $v);
+            }
 
-            if (!is_array($value)) {$this->check($value, $v);} else { $this->check_data($value, $v);}
+            if (!is_array($value)) {
+                $this->check($value, $v);
+            } else {
+                $this->check_data($value, $v);
+            }
         }
     }
     private function check($str, $v) {
