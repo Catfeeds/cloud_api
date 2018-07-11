@@ -395,74 +395,58 @@ class Order extends MY_Controller
         $this->api_res(0);
     }
 
+    /**
+     * 向住户发送模板消息, 通知缴费
+     */
     public function notify()
     {
-        $residentIds    = $this->input->post('ids[]', true);
-        $year           = $this->checkAndGetYear();
-        $month          = $this->checkAndGetMonth();
-        $apartmentId    = $this->apartmentIdFilter();
-        $app            = new Application(getCustomerWechatConfig(false));
+        $input = $this->input->post(null,true);
+        $store_id   = $input['store_id'];
+        $this->load->helper('common');
+        $app = new Application(getWechatCustomerConfig());
         $failed         = [];
+        $this->load->model('ordermodel');
+        $this->load->model('residentmodel');
+        $this->load->model('customermodel');
+        $this->load->model('roomunionmodel');
+        $pendingOrders  = Ordermodel::where('store_id',$store_id)
+            ->where('status',Ordermodel::STATE_PENDING)
+            ->where('is_notify',0)
+            ->get()
+            ->groupBy('resident_id');
 
-        try {
-            if (!is_array($residentIds) || 0 == count($residentIds)) {
-                throw new Exception('请至少选择一笔账单！');
+        foreach ($pendingOrders as $resident_id =>$orders){
+            $resident   = Residentmodel::find($resident_id);
+            if (empty($resident)) {
+                log_message('error', $resident_id . '没有住户resident信息');
+                $failed[]         = $resident_id. '没有住户resident信息';
+                continue;
+            }
+            $customer   = $resident->customer;
+            if(empty($customer) || (0==$customer->subscribe)){
+                log_message('error', $resident_id . '没有用户customer信息或未关注');
+                $failed[]         = $resident_id. '没有用户customer信息或未关注';
+                continue;
             }
 
-            Ordermodel::with(['resident', 'room'])
-                ->whereIn('resident_id', $residentIds)
-                ->where('year', $year)
-                ->where('month', $month)
-                ->whereIn('status', Ordermodel::unpaidStatuses())
-                ->get()
-                ->groupBy('resident_id')->each(function ($items) use (&$failed, $app) {
-                    $resident = $items->first()->resident;
-                    $amount   = $items->sum('money');
+            $amount = $orders->sum('money');
 
-                    try {
-                        if (0 == $resident->customer_id) {
-                            throw new Exception('未关联微信帐号');
-                        }
-
-                        $customer = $resident->customer;
-
-                        if (0 == $customer->subscribe) {
-                            throw new Exception('未关注公众帐号');
-                        }
-                    } catch (Exception $e) {
-                        $reason = $e->getMessage();
-                        $room   = $items->first()->room;
-                        array_push($failed, "{$room->number} 房间 - {$resident->name} 由于 {$reason} 无法推送！");
-                        return true;
-                    }
-
-                    Ordermodel::whereIn('id', $items->pluck('id')->toArray())->update([
-                        'customer_id'   => $resident->customer_id,
-                        'status'        => Ordermodel::STATE_PENDING,
-                    ]);
-
-                    $app->notice->uses(TMPLMSG_CUSTOMER_PAYNOTICE)
-                        ->withUrl(wechat_url('order/status'))
-                        ->andData([
-                            'first'     => '温馨提示, 您有未支付的账单, 如已支付, 请忽略！',
-                            'keyword1'  => $amount.'元',
-                            'keyword2'  => '请尽快缴费！',
-                            'remark'    => '如有疑问，请与工作人员联系',
-                        ])
-                        ->andReceiver($customer->openid)
-                        ->send();
-                });
-        } catch (Exception $e) {
-            Util::error($e->getMessage());
+            $app->notice->uses(config_item('tmplmsg_customer_paynotice'))
+                ->withUrl(config_item('wechat_base_url') . '#/myBill')
+                ->andData([
+                    'first' => '温馨提示, 您有未支付的账单, 如已支付, 请忽略！',
+                    'keyword1' => $amount . '元',
+                    'keyword2' => '请尽快缴费！',
+                    'remark' => '如有疑问，请与工作人员联系',
+                ])
+                ->andReceiver($customer->openid)
+                ->send();
+            $resident->orders()
+                ->where('status',Ordermodel::STATE_PENDING)
+                ->where('is_notify',0)
+                ->update(['is_notify'=>1]);
+            log_message('error',$resident_id.'推送成功');
         }
-
-        if (count($failed)) {
-            log_message('error', json_encode($failed));
-            Util::error('error', ['info' => $failed]);
-        }
-
-        Util::success('发送成功!');
+        $this->api_res(0,['failed'=>$failed]);
     }
-
-
 }
