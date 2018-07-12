@@ -745,9 +745,9 @@ class Resident extends MY_Controller
                     $resident->orders()->delete();
                     //删除住户信息
                     $resident->delete();
+                    $resident->roomunion->update(['people_count'=>0,'resident_id'=>0,'status'=>Roomunionmodel::STATE_BLANK]);
                 }
             }
-            $resident->roomunion->update(['people_count'=>0,'resident_id'=>0,'status'=>Roomunionmodel::STATE_BLANK]);
             DB::commit();
             $this->api_res(0);
         }catch (Exception $e){
