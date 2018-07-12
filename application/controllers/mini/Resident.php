@@ -670,9 +670,9 @@ class Resident extends MY_Controller
             $this->api_res(10012);
             return;
         }
-        //检查房间状态是不是占用（new）
-        if($resident->roomunion->status!=Roomunionmodel::STATE_OCCUPIED){
-            $this->api_res(10013);
+        //检查房间状态是不是占用或预定
+        if(!in_array($resident->roomunion->status,[Roomunionmodel::STATE_OCCUPIED,Roomunionmodel::STATE_RESERVE])){
+            $this->api_res(10038);
             return;
         }
         //判断住户状态是不是 NOTPAY和RESERVE
@@ -728,6 +728,11 @@ class Resident extends MY_Controller
                         $this->load->model('couponmodel');
                         //清除优惠券
                         $resident->coupons()->delete();
+
+                        //清除合同
+                        $this->load->model('contractmodel');
+                        $resident->contract()->delete();
+
                         //清除订单
                         $resident->orders()->whereNotIn('status',[Ordermodel::STATE_CONFIRM,Ordermodel::STATE_COMPLETED])->delete();
                         $resident->status   = Residentmodel::STATE_RESERVE;
