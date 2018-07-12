@@ -431,9 +431,10 @@ class Employee extends MY_Controller
         $post = $this->input->post(null, true);
         if (isset($post['id']) && !empty($post['id'])) {
             $id = $post['id'];
-            $position = Employeemodel::find($id);
-            $position->status = 'DISABLE';
-            if($position->save()){
+            $id = explode(',',$id);
+            //var_dump($id);
+            $position = Employeemodel::whereIn('id',$id)->update(['status'=>'DISABLE']);
+            if($position){
                 $this->api_res(0,['message' => '员工已删除，请及时转移相关业务']);
                 return false;
             }else{

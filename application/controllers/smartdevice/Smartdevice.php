@@ -85,23 +85,26 @@ class Smartdevice extends MY_Controller
         if(!empty($post['begin_time'])){$bt=$post['begin_time'];}else{$bt = date('Y-m-d H:i:s',0);};
         if(!empty($post['end_time'])){$et=$post['end_time'];}else{$et = date('Y-m-d H:i:s',time());};
         if($type == 'LOCK'){
-            $this->load->model('smartlockrecordmodel');
-            $count  = ceil(Smartlockrecordmodel::where('smart_device_id',$id)->whereBetween('updated_at',[$bt,$et])->count()/PAGINATE);
-            $filed  = ['smart_device_type','unlock_person','unlock_way','updated_at'];
-            $record = Smartlockrecordmodel::where('smart_device_id',$id)
-                                            ->whereBetween('updated_at',[$bt,$et])
-                                            ->take(PAGINATE)->skip($offset)
-                                            ->orderBy('id','desc')->get($filed)->toArray();
+            $this->api_res(0,['list'=>[],'count'=>0]);
         }else{
             $this->load->model('meterreadingmodel');
-            $count  = ceil(Meterreadingmodel::count()/PAGINATE);
-            $filed  = ['smart_device_type','last_reading','this_reading','updated_at'];
+            $filed  = ['type','reading','created_at'];
+            $count_all = Meterreadingmodel::where('room_id',$room_id)->where('type',$type)
+                        ->whereBetween('updated_at',[$bt,$et])->get($filed)->count();
+            $count  = ceil($count_all/PAGINATE);
             $record = Meterreadingmodel::where('room_id',$room_id)->where('type',$type)
-                                            ->whereBetween('updated_at',[$bt,$et])
-                                            ->take(PAGINATE)->skip($offset)
-                                            ->orderBy('id','desc')->get($filed)->toArray();
+                        ->whereBetween('updated_at',[$bt,$et])
+                        ->orderBy('created_at','desc')
+                        ->get($filed)->map(function ($s){
+                            $s->this_reading = $s->reading;
+                            return $s;
+                        })->toArray();
+            for($i=0;$i<$count_all-1;$i++){
+                $record[$i]['last_reading'] = $record[$i+1]['reading'];
+            }
+            $record = array_chunk($record,10);
         }
-        $this->api_res(0,['list'=>$record,'count'=>$count]);
+        $this->api_res(0,['list'=>$record[$page-1],'count'=>$count]);
     }
 
     /**
