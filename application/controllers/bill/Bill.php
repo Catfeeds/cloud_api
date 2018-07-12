@@ -272,7 +272,7 @@ class Bill extends MY_Controller
         $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($phpexcel, 'Xlsx');
         header("Pragma: public");
         header("Expires: 0");
-        header("Content-Type:application/vnd.ms-excel");
+        header("Content-Type:application/octet-stream");
         header("Content-Transfer-Encoding:binary");
         header('Cache-Control: max-age=0');
         header("Content-Disposition:attachment;filename=$filename");
