@@ -728,6 +728,11 @@ class Resident extends MY_Controller
                         $this->load->model('couponmodel');
                         //清除优惠券
                         $resident->coupons()->delete();
+
+                        //清除合同
+                        $this->load->model('contractmodel');
+                        $resident->contract()->delete();
+
                         //清除订单
                         $resident->orders()->whereNotIn('status',[Ordermodel::STATE_CONFIRM,Ordermodel::STATE_COMPLETED])->delete();
                         $resident->status   = Residentmodel::STATE_RESERVE;
