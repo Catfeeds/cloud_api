@@ -116,9 +116,8 @@ class Activity extends MY_Controller
             }elseif(time()<strtotime($coupon['end_time']) && time()>strtotime($coupon['start_time'])){
                 $data[$coupon['id']]['status'] = 'Normal';
                     }
-            $data[$coupon['id']]['page'] = $page;
         }
-        $this->api_res(0,$data);
+        $this->api_res(0,['list'=>$data,'count'=>$post['page']]);
     }
     /*
      * 新增活动
