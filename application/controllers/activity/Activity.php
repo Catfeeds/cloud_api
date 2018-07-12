@@ -51,16 +51,19 @@ class Activity extends MY_Controller
         }elseif($store_id){
             $store_id = explode(',',$store_id);
             $activity_id1 = Storeactivitymodel::whereIn('store_id',$store_id)->get(['activity_id'])->toArray();
+
             foreach ($activity_id1 as $key=>$value){
                 $id_1[] = $value['activity_id'];
             }
-            $activity_id2 = Activitymodel::where('name','like','%'.$ac_name.'%')->whereIn($id_1)->get(['id'])->toArray();
+
+            $activity_id2 = Activitymodel::where('name','like','%'.$ac_name.'%')->where('activity_type', '!=', '0')
+                ->whereIn('id',$id_1)->get(['id'])->toArray();
             foreach ($activity_id2 as $id){
                 $id_2[] = $id['id'];
             }
             $id = $id_2;
         }else{
-            $activity_id2 = Activitymodel::where('name','like','%'.$ac_name.'%')->get(['id'])->toArray();
+            $activity_id2 = Activitymodel::where('name','like','%'.$ac_name.'%')->where('activity_type','!=','0')->get(['id'])->toArray();
             foreach ($activity_id2 as $id){
                 $id_2[] = $id['id'];
             }
@@ -81,7 +84,7 @@ class Activity extends MY_Controller
             $this->api_res(1007);
         }
         $data = array();
-        foreach($activity as $coupon){
+        foreach($activity as $key=>$coupon){
             $cou = unserialize($coupon['coupon_info']);
             $p = explode(',',$cou['prize']);
             $c = explode(',',$cou['count']);
@@ -94,30 +97,31 @@ class Activity extends MY_Controller
             $Lottery_number = Drawmodel::where('activity_id',$coupon['id'])->count();
             $lucky_draw = Drawmodel::where(['activity_id'=>$coupon['id'],'is_draw'=>'1'])->count();
             $employee_name = Employeemodel::where('id',$coupon['current_id'])->first(['name']);
-            $data[$coupon['id']]['id']=$coupon['id'];
-            $data[$coupon['id']]['user'] = $employee_name->name;
-            $data[$coupon['id']]['name']=$coupon['name'];
-            $data[$coupon['id']]['start_time']=$coupon['start_time'];
-            $data[$coupon['id']]['end_time']=$coupon['end_time'];
-            $data[$coupon['id']]['prize'] = $str;
+            $data[$key]['id']=$coupon['id'];
+            $data[$key]['user'] = $employee_name->name;
+            $data[$key]['name']=$coupon['name'];
+            $data[$key]['start_time']=$coupon['start_time'];
+            $data[$key]['end_time']=$coupon['end_time'];
+            $data[$key]['prize'] = $str;
             $limit= unserialize($coupon['limit']);
-            $data[$coupon['id']]['customer'] = $limit['com'];
-            $data[$coupon['id']]['limit'] = $limit['limit'];
-            $data[$coupon['id']]['participate'] = $participate;
-            $data[$coupon['id']]['Lottery_number'] = $Lottery_number;
-            $data[$coupon['id']]['lucky_draw'] = $lucky_draw;
-            $data[$coupon['id']]['url'] = $coupon['qrcode_url'];
+            $data[$key]['customer'] = $limit['com'];
+            $data[$key]['limit'] = $limit['limit'];
+            $data[$key]['participate'] = $participate;
+            $data[$key]['Lottery_number'] = $Lottery_number;
+            $data[$key]['lucky_draw'] = $lucky_draw;
+            $data[$key]['url'] = $coupon['qrcode_url'];
             if($coupon['activity_type'] == '-1'){
-                $data[$coupon['id']]['status'] = 'Lowerframe';
+                $data[$key]['status'] = 'Lowerframe';
             }elseif(time()<strtotime($coupon['start_time'])){
-                $data[$coupon['id']]['status'] = 'Notbeginning';
+                $data[$key]['status'] = 'Notbeginning';
             }elseif(time()>strtotime($coupon['end_time'])){
-                $data[$coupon['id']]['status'] = 'End';
+                $data[$key]['status'] = 'End';
             }elseif(time()<strtotime($coupon['end_time']) && time()>strtotime($coupon['start_time'])){
-                $data[$coupon['id']]['status'] = 'Normal';
+                $data[$key]['status'] = 'Normal';
                     }
         }
-        $this->api_res(0,['list'=>$data,'count'=>$post['page']]);
+
+        $this->api_res(0,['count'=>$page,'list'=>$data]);
     }
     /*
      * 新增活动
