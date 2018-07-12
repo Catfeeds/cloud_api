@@ -704,20 +704,50 @@ class Resident extends MY_Controller
                 }
             }else{
                 if ($this->hasPaidOrders($resident)) {
-                    log_message('error','住户已经有支付过的订单, 无法进行该操作！');
-                    $this->api_res(10015);
-                    return;
+                    //如果是预定的用户，已支付的订单里有且只有房租押金，并且房租押金等于定金金额的时候，才可以取消，取消的时候把该支付的订单的类型改为reserve
+                    if($resident->book_money>0){
+                        $book_money = $resident->book_money;
+                        $paidOrders = $resident->orders()
+                            ->whereIn('status',[Ordermodel::STATE_CONFIRM,Ordermodel::STATE_COMPLETED])
+                            ->get();
+                        if($paidOrders->count()>1){
+                            log_message('error','住户不止有一笔已经支付过的订单');
+                            $this->api_res(10015);
+                            return;
+                        }
+                        $sumPaid    = $paidOrders->sum('paid');
+                        if($book_money!=$sumPaid){
+                            log_message('error','总支付金额不等于定金金额，需要核实');
+                            $this->api_res(10015);
+                            return;
+                        }
+                        $resident->orders()
+                            ->whereIn('status',[Ordermodel::STATE_CONFIRM,Ordermodel::STATE_COMPLETED])
+                            ->update(['type'=>Ordermodel::PAYTYPE_RESERVE]);
+                        $resident->roomunion->update(['status'=>Roomunionmodel::STATE_RESERVE]);
+                        $this->load->model('couponmodel');
+                        //清除优惠券
+                        $resident->coupons()->delete();
+                        //清除订单
+                        $resident->orders()->whereNotIn('status',[Ordermodel::STATE_CONFIRM,Ordermodel::STATE_COMPLETED])->delete();
+                        $resident->status   = Residentmodel::STATE_RESERVE;
+                        $resident->save();
+                    }else{
+                        log_message('error','住户已经有支付过的订单, 无法进行该操作！');
+                        $this->api_res(10015);
+                        return;
+                    }
+                }else{
+                    $this->load->model('couponmodel');
+                    //清除优惠券
+                    $resident->coupons()->delete();
+                    //清除订单
+                    $resident->orders()->delete();
+                    //删除住户信息
+                    $resident->delete();
+                    $resident->roomunion->update(['people_count'=>0,'resident_id'=>0,'status'=>Roomunionmodel::STATE_BLANK]);
                 }
-                $this->load->model('couponmodel');
-                //清除优惠券
-                $resident->coupons()->delete();
-                //清除订单
-                $resident->orders()->delete();
-                //删除住户信息
-                $resident->delete();
-
             }
-            $resident->roomunion->update(['people_count'=>0,'resident_id'=>0,'status'=>Roomunionmodel::STATE_BLANK]);
             DB::commit();
             $this->api_res(0);
         }catch (Exception $e){

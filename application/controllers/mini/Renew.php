@@ -176,7 +176,7 @@ class Renew extends MY_Controller
 
         try{
             DB::beginTransaction();
-            if($org_resident->end_time>Carbon::now()){
+//            if($org_resident->end_time>Carbon::now()){
 
                 $org_resident->update(
                     ['status'=>Residentmodel::STATE_NORMAL]
@@ -201,7 +201,7 @@ class Renew extends MY_Controller
                 $resident->remark   = $this->employee->id.'员工取消办理续租';
                 $resident->save();
                 $resident->delete();
-            }else{
+            /*}else{
                 $room->update(
                     [
                         'status'    => Roomunionmodel::STATE_BLANK,
@@ -220,9 +220,10 @@ class Renew extends MY_Controller
                 $resident->coupons()->delete();
                 $resident->contract()->delete();
                 $resident->remark   = $this->employee->id.'员工取消办理续租';
+                $resident->status   = 'NORMAL';
                 $resident->save();
                 $resident->delete();
-            }
+            }*/
             DB::commit();
         }catch (Exception $e){
             DB::rollBack();
@@ -359,7 +360,9 @@ class Renew extends MY_Controller
 
 //            $resident->status   = Residentmodel::STATE_NORMAL;
             $resident->status   = Residentmodel::STATE_RENEWAL;
-            $resident->data     = ['new_resident_id'=>$newResident->id];
+            $data   = $resident->data;
+            $data['new_resident_id']    = $newResident->id;
+            $resident->data = $data;
 
             $c=$resident->save();
 
