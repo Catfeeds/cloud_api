@@ -220,6 +220,7 @@ class Renew extends MY_Controller
                 $resident->coupons()->delete();
                 $resident->contract()->delete();
                 $resident->remark   = $this->employee->id.'员工取消办理续租';
+                $resident->status   = 'NORMAL';
                 $resident->save();
                 $resident->delete();
             }*/
@@ -359,7 +360,9 @@ class Renew extends MY_Controller
 
 //            $resident->status   = Residentmodel::STATE_NORMAL;
             $resident->status   = Residentmodel::STATE_RENEWAL;
-            $resident->data     = ['new_resident_id'=>$newResident->id];
+            $data   = $resident->data;
+            $data['new_resident_id']    = $newResident->id;
+            $resident->data = $data;
 
             $c=$resident->save();
 
