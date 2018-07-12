@@ -1,6 +1,8 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 require_once APPPATH.'/libraries/Readmeter.php';
+require_once APPPATH.'/libraries/Danbaylock.php';
+require_once APPPATH.'/libraries/Yeeuulock.php';
 /**
  * Author:      hfq<1326432154@qq.com>
  * Date:        2018/6/10

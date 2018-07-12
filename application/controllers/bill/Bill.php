@@ -236,7 +236,7 @@ class Bill extends MY_Controller
 
     public function billexcel()
     {
-        $post = $this->input->post(null,true);
+        $post = $this->input->get(null,true);
         $store_id   = trim($post['store_id']);
         $begin      = empty($post['begin_time'])?date('Y-m-d H:i:s',0):trim($post['begin_time']);
         $end        = empty($post['end_time'])?date('Y-m-d H:i:s',time()):trim($post['end_time']);
@@ -272,7 +272,7 @@ class Bill extends MY_Controller
         $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($phpexcel, 'Xlsx');
         header("Pragma: public");
         header("Expires: 0");
-        header("Content-Type:application/vnd.ms-excel");
+        header("Content-Type:application/octet-stream");
         header("Content-Transfer-Encoding:binary");
         header('Cache-Control: max-age=0');
         header("Content-Disposition:attachment;filename=$filename");
