@@ -670,9 +670,9 @@ class Resident extends MY_Controller
             $this->api_res(10012);
             return;
         }
-        //检查房间状态是不是占用（new）
-        if($resident->roomunion->status!=Roomunionmodel::STATE_OCCUPIED){
-            $this->api_res(10013);
+        //检查房间状态是不是占用或预定
+        if(!in_array($resident->roomunion->status,[Roomunionmodel::STATE_OCCUPIED,Roomunionmodel::STATE_RESERVE])){
+            $this->api_res(10038);
             return;
         }
         //判断住户状态是不是 NOTPAY和RESERVE
