@@ -69,6 +69,7 @@ class Owner extends MY_Controller
         $field = ['id', 'name', 'start_date', 'end_date', 'customer_id', 'house_id'];
         $current_page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
         $pre_page = isset($post['pre_page']) ? intval($post['pre_page']) : 10;//当前页显示条数
+        $number = isset($post['number']) ? intval($post['number']) : '';//房间号
         $offset = $pre_page * ($current_page - 1);
         $this->load->model('employeemodel');
         $store_ids = Employeemodel::getMyStoreids();
@@ -96,7 +97,11 @@ class Owner extends MY_Controller
             $query->select('id', 'avatar');
         }])->with(['house' => function ($query) {
             $query->select('id', 'number');
-        }])->whereIn('house_id', $house_ids)->take($pre_page)
+        }])->where(function($query) use ($number){
+                $query->orWhereHas('roomunion',function($query) use($number){
+                $query->where('name','like',"%$number%");});
+            })
+            ->whereIn('house_id', $house_ids)->take($pre_page)
             ->skip($offset)->orderBy('id', 'desc')->get($field)->toArray();
         if (!$oweners) {
             $this->api_res(1002);
