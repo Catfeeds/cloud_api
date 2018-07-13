@@ -176,6 +176,7 @@ class Bill extends MY_Controller
         $bill   = Billmodel::with(['roomunion_s','store_s','resident_s','employee_s','order'])
                     ->where('store_id',$store_id)
                     ->whereBetween('pay_date',[$begin,$end])->orderBy('pay_date','DESC')
+                    ->orderBy('resident_id','DESC')
                     ->get($filed)->toArray();
         $bill_array = [];
         foreach ($bill as $key=>$value){
@@ -184,7 +185,7 @@ class Bill extends MY_Controller
             $res['number']      = $bill[$key]['roomunion_s']['number'];
             $res['resident']    = $bill[$key]['resident_s']['name'];
             $res['money']       = $bill[$key]['money'];
-            $res['pay_type']    = $bill[$key]['pay_type'];
+            $res['pay_type']    = $this->getBillPayType($bill[$key]['pay_type']);
             $res['ROOM_money']          = '';
             $res['MANAGEMENT_money']    = '';
             $res['DEPOSIT_R_money']     = '';
@@ -250,25 +251,18 @@ class Bill extends MY_Controller
         $this->load->model('residentmodel');
         $this->load->model('employeemodel');
         $bill = $this->billArray($store_id,$begin,$end);
+        $row = count($bill)+3;
         $filename   = date('Y-m-d-H:i:s').'导出'.$begin.' _ '.$end.'_流水数据.Xlsx';
+        $store = Storemodel::findOrFail($store_id);
+        $store = $store->name;
         $phpexcel = new Spreadsheet();
         $sheet = $phpexcel->getActiveSheet();
-        $phpexcel->getActiveSheet() ->setCellValue('A1' , '支付时间')
-                                    ->setCellValue('B1' , '房间号')
-                                    ->setCellValue('C1' , '住户姓名')
-                                    ->setCellValue('D1' , '支付总金额')
-                                    ->setCellValue('E1' , '支付方式')
-                                    ->setCellValue('F1' , '房租')
-                                    ->setCellValue('G1' , '物业')
-                                    ->setCellValue('H1' , '住宿押金')
-                                    ->setCellValue('I1' , '其他押金')
-                                    ->setCellValue('J1' , '水费')
-                                    ->setCellValue('K1' , '热水费')
-                                    ->setCellValue('L1' , '电费')
-                                    ->setCellValue('M1' , '退租')
-                                    ->setCellValue('N1' , '其它费用')
-                                    ->setCellValue('O1' , '备注');
-        $sheet->fromArray($bill,null,'A2');
+        $this->createPHPExcel($phpexcel,$filename);             //创建excel
+        $this->setExcelTitle($phpexcel,$store,$begin,$end);     //设置表头
+        $this->setExcelFirstRow($phpexcel);                     //设置各字段名称
+        $sheet->fromArray($bill,null,'A4');  //想excel中写入数据
+        $this->setExcelColumnWidth($phpexcel);                  //设置Excel每列宽度
+        $this->setAlignCenter($phpexcel,$row);                  //设置记录值居中
         $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($phpexcel, 'Xlsx');
         header("Pragma: public");
         header("Expires: 0");
@@ -280,11 +274,11 @@ class Bill extends MY_Controller
         exit;
     }
 
-    private function createPHPExcel($filename)
+    private function createPHPExcel(Spreadsheet $phpexcel,$filename)
     {
         $phpexcel->getProperties()
-                ->setCreator('梵响互动')
-                ->setLastModifiedBy('梵响互动')
+                ->setCreator('梵响数据')
+                ->setLastModifiedBy('梵响数据')
                 ->setTitle($filename)
                 ->setSubject($filename)
                 ->setDescription($filename)
@@ -297,34 +291,80 @@ class Bill extends MY_Controller
     private function setExcelTitle(Spreadsheet $phpexcel, $store, $start, $end)
     {
         $phpexcel->getActiveSheet()
-            ->mergeCells('A1:N2')
-            ->setCellValue('A1',"$store.'订单流水统计'.$start.'-'.$end")
-            ->getStyle('A1:D4')
+            ->mergeCells('A1:O2')
+            ->setCellValue('A1',"$store"."$start".' - '."$end".'流水统计')
+            ->getStyle("A1:O2")
             ->getAlignment()
             ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER)
             ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
         $phpexcel->getActiveSheet()->getCell('A1')->getStyle()->getFont()->setSize(16);
     }
 
-    private function setExcelFirstRow(Spreadsheet $phpexcel)
+    private function setAlignCenter(Spreadsheet $phpexcel, $row)
     {
-        $phpexcel->getActiveSheet() ->setCellValue('A' , '支付时间')
-                                    ->setCellValue('B' , '房间号')
-                                    ->setCellValue('C' , '住户姓名')
-                                    ->setCellValue('D' , '支付总金额')
-                                    ->setCellValue('E' , '支付方式')
-                                    ->setCellValue('F' , '房租')
-                                    ->setCellValue('G' , '物业')
-                                    ->setCellValue('H' , '住宿押金')
-                                    ->setCellValue('I' , '其他押金')
-                                    ->setCellValue('J' , '水费')
-                                    ->setCellValue('K' , '热水费')
-                                    ->setCellValue('L' , '电费')
-                                    ->setCellValue('M' , '退租')
-                                    ->setCellValue('N' , '其它费用')
-                                    ->setCellValue('O' , '备注');
+        $phpexcel->getActiveSheet()
+            ->getStyle("A3:N{$row}")
+            ->getAlignment()
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
     }
- 
+
+    private function setExcelFirstRow(Spreadsheet $phpexcel){
+        $phpexcel->getActiveSheet() ->setCellValue('A3' , '支付时间')
+                                    ->setCellValue('B3' , '房间号')
+                                    ->setCellValue('C3' , '住户姓名')
+                                    ->setCellValue('D3' , '支付总金额')
+                                    ->setCellValue('E3' , '支付方式')
+                                    ->setCellValue('F3' , '房租')
+                                    ->setCellValue('G3' , '物业')
+                                    ->setCellValue('H3' , '住宿押金')
+                                    ->setCellValue('I3' , '其他押金')
+                                    ->setCellValue('J3' , '水费')
+                                    ->setCellValue('K3' , '热水费')
+                                    ->setCellValue('L3' , '电费')
+                                    ->setCellValue('M3' , '退租')
+                                    ->setCellValue('N3' , '其它费用')
+                                    ->setCellValue('O3' , '备注');
+    }
+
+    private function setExcelColumnWidth(Spreadsheet $phpexcel)
+    {
+        $phpexcel->getActiveSheet()->getColumnDimension('A')->setWidth(22);
+        $phpexcel->getActiveSheet()->getColumnDimension('B')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('C')->setWidth(12);
+        $phpexcel->getActiveSheet()->getColumnDimension('D')->setWidth(12);
+        $phpexcel->getActiveSheet()->getColumnDimension('E')->setWidth(12);
+        $phpexcel->getActiveSheet()->getColumnDimension('F')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('G')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('H')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('I')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('J')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('K')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('L')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('M')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('N')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('O')->setWidth(20);
+    }
+
+    private function getBillPayType($payType)
+    {
+        switch ($payType) {
+            case Ordermodel::PAYWAY_JSAPI:
+                return '微信';
+                break;
+            case Ordermodel::PAYWAY_BANK:
+                return '刷卡';
+                break;
+            case Ordermodel::PAYWAY_ALIPAY:
+                return '支付宝';
+                break;
+            case Ordermodel::PAYWAY_DEPOSIT:
+                return '押金抵扣';
+                break;
+            default:
+                return '';
+                break;
+        }
+    }
     /********************************************生成账单******************************************/
 
     /**
