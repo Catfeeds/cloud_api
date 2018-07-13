@@ -224,6 +224,9 @@ class Contract extends MY_Controller{
         $this->load->library('fadada');
         $this->load->model('fddrecordmodel');
         $this->load->model('contractmodel');
+        $this->load->model('residentmodel');
+        $this->load->model('ordermodel');
+        $this->load->model('roomunionmodel');
 
         try {
             $contractId = trim($this->input->post('contract_id'));
@@ -270,7 +273,7 @@ class Contract extends MY_Controller{
 
             if (0 == $ordersUnhandled) {
                 $resident->update(['status' => Residentmodel::STATE_NORMAL]);
-                $resident->room->update(['status' => Roommodel::STATE_RENT]);
+                $resident->roomunion->update(['status' => Roommodel::STATE_RENT]);
             }
 
         } catch (Exception $e) {
