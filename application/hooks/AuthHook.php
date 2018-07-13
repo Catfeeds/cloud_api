@@ -53,7 +53,7 @@ class AuthHook {
 //            'account/login/listmenu',
             'demo/test/test1',
 
-            //'mini/resident/checkroomunion',
+//            'mini/resident/checkroomunion',
 //            'mini/resident/checkin',
 //            'mini/resident/destory',
             //'mini/resident/showqrcode',
