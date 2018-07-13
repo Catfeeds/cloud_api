@@ -17,7 +17,9 @@ $config['time_zone']    = date_default_timezone_get();
 /*
 //梵响数据系统相关文件的整理配置
 */
-
+$config['base_url'] = 'http://tapi.boss.funxdata.com/';
+//$config['base_url'] = 'http://api.boss.strongberry.cn/';
+$config['fdd_notify_url'] = 'http://tapi.boss.funxdata.com/mini/contract/notify';
 $config['wechat_base_url'] = 'web.strongberry.cn/';
 
 //住户公众号模板消息ID
@@ -67,6 +69,7 @@ $config['danbayPassword']   = 'a123456';
 $config['fadada_api_app_secret'] ='PMKQo0b3RCb911OaqmsGAFnw';
 $config['fadada_api_app_id'] ='400388';
 $config['fadada_customer_sign_key_word'] ='RESIDENT_SIGNATURE';
+$config['fadada_platform_sign_key_word']   = 'STRAWBERRY_SIGNATURE';
 $config['fadada_api_base_url'] ='https://testapi.fadada.com:8443/api/';
 
 $config['syncPerson_auto.api']  ='syncPerson_auto.api';

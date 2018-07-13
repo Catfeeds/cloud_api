@@ -207,6 +207,9 @@ class AuthHook {
 //            'mini/reserve/reservestatus',
 
 //            'mini/contract/listunsign',
+            'mini/contract/notify',
+            'mini/contract/autosign',
+            'mini/contract/archive',
 //
 //            'mini/visitrecord/visit',
 //            'mini/login/gettoken',

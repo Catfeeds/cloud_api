@@ -24,7 +24,7 @@ class Contractmodel extends Basemodel {
     //签署人
     public function resident()
     {
-        return $this->belongsTo(Residentmodel::class,'resident_id')->select('id','name','end_time','begin_time');
+        return $this->belongsTo(Residentmodel::class,'resident_id');
     }
 
     public function emp()
@@ -60,15 +60,14 @@ class Contractmodel extends Basemodel {
         return $this->belongsTo(Residentmodel::class,'resident_id')->select('id',
             'begin_time','end_time','refund_time','real_rent_money','pay_frequency','deposit_month','name_two','deposit_money');
     }
-//    //住户户信息
-//    public function resident(){
-//
-//        return $this->belongsTo(Residentmodel::class,'resident_id');
-//    }
 
-
-
-
+    /**
+     * 合同的签署交易记录
+     */
+    public function transactions()
+    {
+        return $this->hasMany(Fddrecordmodel::class, 'contract_id');
+    }
 
     //预定人信息
     public function bookresident()
