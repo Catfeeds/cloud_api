@@ -692,6 +692,7 @@ class Resident extends MY_Controller
                 $a  = $this->invalid($resident);
                 $b  = $this->invalidReserve($resident);
                 //更改房间状态为blank
+                $resident->roomunion->update(['people_count'=>0,'resident_id'=>0,'status'=>Roomunionmodel::STATE_BLANK]);
 
                 if($a &&($b || $b==0)){
 
@@ -739,6 +740,7 @@ class Resident extends MY_Controller
                         $resident->save();
                     }else{
                         log_message('error','住户已经有支付过的订单, 无法进行该操作！');
+                        DB::rollBack();
                         $this->api_res(10015);
                         return;
                     }
