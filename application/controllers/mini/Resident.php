@@ -47,12 +47,12 @@ class Resident extends MY_Controller
 
         if($status=='RENT'){
             $this->load->model('residentmodel');
-            $data['resident']=Residentmodel::WHERE('room_id',$room->id)->orderBy('end_time','DESC')->first();
+            $data['resident']=Residentmodel::WHERE('room_id',$room->id)->orderBy('end_time','DESC')->first()->toArray();
+            $data['resident']['begin_time']   = Carbon::parse($data['resident']['begin_time'])->format('Y-m-d');
+            $data['resident']['end_time']   = Carbon::parse($data['resident']['end_time'])->format('Y-m-d');
         }
 
         $this->api_res(0,$data);
-
-
     }
 
     /**
@@ -1111,12 +1111,13 @@ class Resident extends MY_Controller
                 ->pluck('resident_id')
                 ->toArray();
         }
-        $total_page = ceil(Residentmodel::where($where)->whereIn('id',$ids)->count()/$per_page);
+        $total_page = ceil(Residentmodel::where($where)->whereHas('rent_roomunion')->whereIn('id',$ids)->count()/$per_page);
         if($page>$total_page){
             $this->api_res(0,['total_page'=>$total_page,'current_page'=>$page,'per_page'=>$per_page,'residents'=>[]]);
             return;
         }
         $residents  = Residentmodel::with('roomunion')->where($where)->whereIn('id',$ids)
+            ->whereHas('rent_roomunion')
             ->offset(($page-1)*$per_page)->limit($per_page)
             ->orderBy('end_time', 'ASC')->orderBy('room_id', 'ASC')
             ->get();

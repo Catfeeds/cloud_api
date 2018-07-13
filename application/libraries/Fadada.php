@@ -40,11 +40,11 @@ class Fadada
     public function getCustomerCA($name, $phone, $id_card, $id_type = 0, $email = '')
     {
         try {
-            $id_mobile  = (new Crypt3des())::encrypt($id_card . '|' . $phone, FADADA_API_APP_SECRET);
+            $id_mobile  = (new Crypt3des())::encrypt($id_card . '|' . $phone, config_item('fadada_api_app_secret'));
             $url        = $this->getApiUrl('syncPerson_auto.api');
             $msgDigest  = array(
                 'md5'  => ['timestamp' => date('YmdHis'),],
-                'sha1' => [FADADA_API_APP_SECRET]
+                'sha1' => [config_item('fadada_api_app_secret')]
             );
             $reqData    = array(
                 'customer_name' => $name,
@@ -82,7 +82,7 @@ class Fadada
 
             $reqData    = ['contract_id' => $contractId];
             $msgDigest  = array(
-                'sha1' => [FADADA_API_APP_SECRET, $contractId],
+                'sha1' => [config_item('fadada_api_app_secret'), $contractId],
                 'md5'  => ['timestamp' => date('YmdHis')],
             );
 
@@ -99,7 +99,7 @@ class Fadada
      * 合同模板传输接口
      * 用于传输模板, 签署合同的时候, 基于模板生成相应的合同
      */
-    public function uploadTemplate($docUrl, string $templateId)
+    public function uploadTemplate($docUrl,  $templateId)
     {
         try {
             $url        = $this->getApiUrl('uploadtemplate.api');
@@ -110,7 +110,7 @@ class Fadada
             );
 
             $msgDigest  = array(
-                'sha1' => [FADADA_API_APP_SECRET, $templateId],
+                'sha1' => [config_item('fadada_api_app_secret'), $templateId],
                 'md5'  => ['timestamp' => date('YmdHis')],
             );
 
@@ -141,7 +141,7 @@ class Fadada
             );
 
             $msgDigest  = array(
-                'sha1'  => [FADADA_API_APP_SECRET, $templateId, $contractId],
+                'sha1'  => [config_item('fadada_api_app_secret'), $templateId, $contractId],
                 'md5'   => ['timestamp' => date('YmdHis')],
                 'other' => $parameterMap,
             );
@@ -172,7 +172,7 @@ class Fadada
     {
         try {
             $msgDigest  = array(
-                'sha1' => [FADADA_API_APP_SECRET, $customerId],
+                'sha1' => [config_item('fadada_api_app_secret'), $customerId],
                 'md5'  => [
                     'transaction_id' => $transactionId,
                     'timestamp'      => date('YmdHis'),
@@ -181,13 +181,13 @@ class Fadada
 
             $data = array(
                 'url'               => $this->getApiUrl('extsign.api'),
-                'app_id'            => FADADA_API_APP_ID,
+                'app_id'            => config_item('fadada_api_app_id'),
                 'timestamp'         => $msgDigest['md5']['timestamp'],
                 'transaction_id'    => $transactionId,
                 'contract_id'       => $contractId,
                 'customer_id'       => $customerId,
                 'doc_title'         => urlencode($docTitle),
-                'sign_keyword'      => FADADA_CUSTOMER_SIGN_KEY_WORD,
+                'sign_keyword'      => config_item('fadada_customer_sign_key_word'),
                 'return_url'        => $returnUrl,
                 'notify_url'        => $notifyUrl,
                 'msg_digest'        => $this->getMsgDigest($msgDigest),
@@ -223,7 +223,7 @@ class Fadada
             }
 
             $msgDigest  = array(
-                'sha1' => [FADADA_API_APP_SECRET, $customerId],
+                'sha1' => [config_item('fadada_api_app_secret'), $customerId],
                 'md5'  => [
                     'transaction_id' => $transactionId,
                     'timestamp'      => date('YmdHis'),
@@ -244,7 +244,7 @@ class Fadada
      */
     private function requestFdd($url, $option, array $msgDigestArr, $method = 'POST')
     {
-        $option['app_id']       = FADADA_API_APP_ID;
+        $option['app_id']       = config_item('fadada_api_app_id');
         $option['timestamp']    = $msgDigestArr['md5']['timestamp'];
         $option['msg_digest']   = $this->getMsgDigest($msgDigestArr);
 
@@ -263,7 +263,7 @@ class Fadada
      */
     private function getApiUrl($target)
     {
-        return FADADA_API_BASE_URL . $target;
+        return config_item('fadada_api_base_url') . $target;
     }
 
     /**
@@ -286,7 +286,7 @@ class Fadada
         $md5Str     = strtoupper(md5($md5Str));
         $sha1Str    = strtoupper(sha1($sha1Str));
 
-        $orgStr = FADADA_API_APP_ID . $md5Str . $sha1Str;
+        $orgStr = config_item('fadada_api_app_id') . $md5Str . $sha1Str;
 
         if (isset($msgDigestArr['other'])) {
             $orgStr .= $msgDigestArr['other'];

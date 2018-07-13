@@ -53,7 +53,7 @@ class AuthHook {
 //            'account/login/listmenu',
             'demo/test/test1',
 
-            //'mini/resident/checkroomunion',
+//            'mini/resident/checkroomunion',
 //            'mini/resident/checkin',
 //            'mini/resident/destory',
             //'mini/resident/showqrcode',
@@ -207,6 +207,9 @@ class AuthHook {
 //            'mini/reserve/reservestatus',
 
 //            'mini/contract/listunsign',
+            'mini/contract/notify',
+            'mini/contract/autosign',
+            'mini/contract/archive',
 //
 //            'mini/visitrecord/visit',
 //            'mini/login/gettoken',
