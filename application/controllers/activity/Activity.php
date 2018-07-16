@@ -136,7 +136,8 @@ class Activity extends MY_Controller
         array_pull($config, '0');
 
         if(!$this->validationText($config)){
-            $fieldarr = [ 'name', 'start_time', 'end_time','coupon_info','description','limit'];
+            $fieldarr = [ 'name', 'start_time', 'end_time','coupon_info','description','limit','one_prize',
+            'two_prize','three_prize'];
             $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
             return false;
         }
@@ -160,8 +161,8 @@ class Activity extends MY_Controller
         $activity['three_count'] = $post['three_count'];
         $activity['description'] = $post['description'];
         $activity['limit'] = serialize($limit);
-        $activity['current_id'] = CURRENT_ID;
-        $activity['share_img'] = $this->splitAliossUrl($post['images'],true);
+        $activity['current_id'] = 1;
+        $activity['share_img'] = $this->splitAliossUrl($post['images']);/*$this->splitAliossUrl($post['images'],true)*/;
         $activity['share_des'] = $post['share_des'];
         $activity['share_title'] = $post['share_title'];
         $activity['activity_type'] = 1;//tweb.funxdata.com/#/turntable
@@ -182,7 +183,7 @@ class Activity extends MY_Controller
         }
     }
     /*
-     * 刮刮乐活动
+     * 刮刮乐活动addScratch
      * */
     public function addScratch(){
         $post = $this->input->post(null,true);
@@ -192,11 +193,13 @@ class Activity extends MY_Controller
         //array_pull($config, '0');
 
         if(!$this->validationText($config)){
-            $fieldarr = [ 'name', 'start_time', 'end_time','coupon_info','description','limit'];
+            $fieldarr = [ 'name', 'start_time', 'end_time','coupon_info','description','limit','one_prize',
+                'two_prize','three_prize'];
             $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
             return false;
         }
         $arr = [$post['one_prize'],$post['two_prize'],$post['three_prize']];
+
         if (count($arr) != count(array_unique($arr))) {
             $this->api_res('11101');
             return false;
@@ -210,19 +213,17 @@ class Activity extends MY_Controller
         $activity['two_prize'] = $post['two_prize'];
         $activity['three_prize'] = $post['three_prize'];
         $activity['one_count'] = $post['one_count'];
+        $activity['coupon_info'] = $post['slogan'];
         $activity['two_count'] = $post['two_count'];
         $activity['three_count'] = $post['three_count'];
         $activity['description'] = $post['description'];
         $activity['limit'] = serialize($limit);
-        $activity['current_id'] = CURRENT_ID;
-        $activity['activity_type'] = 2;
-        $activity['share_img'] = $this->splitAliossUrl($post['images'],true);
+        $activity['current_id'] = 2;
+        $activity['share_img'] = $this->splitAliossUrl($post['images']);/*$this->splitAliossUrl($post['images'],true)*/;
         $activity['share_des'] = $post['share_des'];
         $activity['share_title'] = $post['share_title'];
-        $insertId = Activitymodel::getInsertId($activity);
-        $ac = Activitymodel::find($insertId );
-        $ac->qrcode_url ="tweb.funxdata.com/#/scraping?id=".$insertId."";
-        $ac->save();
+        $activity['activity_type'] = 1;//tweb.funxdata.com/#/turntable
+        $insertId = Activitymodel::insertGetId($activity);
         $store_id =explode(',', $post['store_id']);
         $ac = Activitymodel::find($insertId);
         $ac->qrcode_url ="tweb.funxdata.com/#/turntable?id=".$insertId."";
@@ -346,11 +347,11 @@ class Activity extends MY_Controller
                 'field' => 'two_prize',
                 'label' => '奖品2',
                 'rules' => 'trim|required',
+
             ),
             array(
                 'field' => 'three_prize',
                 'label' => '奖品3',
-
                 'rules' => 'trim|required',
             ),
         );
