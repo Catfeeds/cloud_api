@@ -20,7 +20,7 @@ $config['eloquent'] = array(
     'database'  => 'jindi',
 //    'database'  => 'strongberry_pms',
     'username'  => 'root',
-    'password'  => 'A23f@#53g3g2g',
+    'password'  => 'A23f@#53g3g2g=',
     'charset'   => 'utf8',
     'collation' => 'utf8_general_ci',
     'prefix'    => ''
