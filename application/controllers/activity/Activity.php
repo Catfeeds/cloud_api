@@ -1,6 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 use EasyWeChat\Foundation\Application;
+use Carbon\Carbon;
 /**
  * Author:      hfq<1326432154@qq.com>
  * Date:        2018/5/31
@@ -21,12 +22,12 @@ class Activity extends MY_Controller
     /*
      * 获取奖项
      * */
-    public function ActivityIni()
+    public function activityIni()
     {
         $this->load->model('coupontypemodel');
         $this->load->model('storemodel');
         $data['coupontype'] = Coupontypemodel::where('type','CASH')->get(['id','name']);
-        $data['stoer'] = Storemodel::get(['id','name','city']);
+        $data['store'] = Storemodel::get(['id','name','city']);
         if(!$data){
             $this->api_res(500);
         }else{
@@ -47,31 +48,34 @@ class Activity extends MY_Controller
         $ac_name = isset($post['activity_name'])?trim($post['activity_name']):null;
         $page   = isset($post['page'])?intval($post['page']):1;
         if((!$store_id)&&(!$ac_name)){
-            $id = null;
-        }elseif($store_id){
+            $id = 'NOT';
+        }elseif($store_id != null){
             $store_id = explode(',',$store_id);
             $activity_id1 = Storeactivitymodel::whereIn('store_id',$store_id)->get(['activity_id'])->toArray();
-
+            $id_1=[];
             foreach ($activity_id1 as $key=>$value){
                 $id_1[] = $value['activity_id'];
             }
-
-            $activity_id2 = Activitymodel::where('name','like','%'.$ac_name.'%')->where('activity_type', '!=', '0')
-                ->whereIn('id',$id_1)->get(['id'])->toArray();
+            $activity_id2 = Activitymodel::where('name','like','%'.$ac_name.'%')
+                ->whereIn('id',$id_1)->where('activity_type', '!=', '0')->get(['id'])->toArray();
+            $id_2=[];
             foreach ($activity_id2 as $id){
                 $id_2[] = $id['id'];
             }
             $id = $id_2;
         }else{
-            $activity_id2 = Activitymodel::where('name','like','%'.$ac_name.'%')->where('activity_type','!=','0')->get(['id'])->toArray();
+            $activity_id2 = Activitymodel::where('name','like','%'.$ac_name.'%')->where('activity_type','!=','0')
+                ->get(['id'])->toArray();
+            $id_2=[];
             foreach ($activity_id2 as $id){
                 $id_2[] = $id['id'];
             }
             $id = $id_2;
         }
         $offset = ($page-1)*PAGINATE;
-        $filed = ['id','name','start_time','end_time','description','coupon_info','limit','current_id','qrcode_url','activity_type'];
-        if($id == null) {
+        $filed = ['id','name','start_time','end_time','description','coupon_info','limit','current_id','qrcode_url','activity_type'
+        ,'one_prize','two_prize','three_prize'];
+        if($id == 'NOT') {
             $activity = Activitymodel::where('activity_type', '!=', '0')->take(PAGINATE)->skip($offset)
                 ->orderBy('end_time', 'desc')
                 ->get($filed)->ToArray();
@@ -85,9 +89,7 @@ class Activity extends MY_Controller
         }
         $data = array();
         foreach($activity as $key=>$coupon){
-            $cou = unserialize($coupon['coupon_info']);
-            $p = explode(',',$cou['prize']);
-            $c = explode(',',$cou['count']);
+            $p = [$coupon['one_prize'],$coupon['two_prize'],$coupon['three_prize']];
             $couponarr= Coupontypemodel::whereIn('id',$p)->get(['name'])->toArray();
             $str = '';
             foreach ($couponarr as $value){
@@ -100,8 +102,8 @@ class Activity extends MY_Controller
             $data[$key]['id']=$coupon['id'];
             $data[$key]['user'] = $employee_name->name;
             $data[$key]['name']=$coupon['name'];
-            $data[$key]['start_time']=$coupon['start_time'];
-            $data[$key]['end_time']=$coupon['end_time'];
+            $data[$key]['start_time']=date("Y-m-d H:i", strtotime($coupon['start_time']));
+            $data[$key]['end_time']=date("Y-m-d H:i", strtotime($coupon['end_time']));
             $data[$key]['prize'] = $str;
             $limit= unserialize($coupon['limit']);
             $data[$key]['customer'] = $limit['com'];
@@ -118,52 +120,62 @@ class Activity extends MY_Controller
                 $data[$key]['status'] = 'End';
             }elseif(time()<strtotime($coupon['end_time']) && time()>strtotime($coupon['start_time'])){
                 $data[$key]['status'] = 'Normal';
-                    }
+            }
         }
-
         $this->api_res(0,['count'=>$page,'list'=>$data]);
     }
     /*
      * 新增活动
      * 大转盘的活动
      * */
-    public function addTrntable(){
+        public function addTrntable(){
         $post = $this->input->post(null,true);
         $this->load->model('storeactivitymodel');
-          $config = $this->validation();
-          array_pull($config, '0');
-          if(!$this->validationText($config)){
-              $fieldarr = [ 'name', 'start_time', 'end_time','coupon_info','description','limit'];
-              $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
-              return false;
-          }
-        $coupon_info = ['prize'=> $post['prize'],
-                         'count'=> $post['count']];
+        $config = $this->validation();
+        array_pull($config, '0');
+        if(!$this->validationText($config)){
+            $fieldarr = [ 'name', 'start_time', 'end_time','coupon_info','description','limit'];
+            $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
+            return false;
+        }
+        $arr = [$post['one_prize'],$post['one_prize'],$post['one_prize']];
+        if (count($arr) != count(array_unique($arr))) {
+            $this->api_res('11101');
+            return false;
+        }
         $limit = ['com' => $post['customer'],
                    'limit' => $post['limit']];
         $activity['name'] = $post['name'];
         $activity['start_time'] = $post['start_time'];
         $activity['end_time'] = $post['end_time'];
-        $activity['coupon_info'] = serialize($coupon_info);
+        $activity['one_prize'] = $post['one_prize'];
+        $activity['two_prize'] = $post['two_prize'];
+        $activity['three_prize'] = $post['three_prize'];
+        $activity['one_count'] = $post['one_count'];
+        $activity['two_count'] = $post['two_count'];
+        $activity['three_count'] = $post['three_count'];
+        $activity['description'] = $post['description'];
         $activity['limit'] = serialize($limit);
         $activity['current_id'] = CURRENT_ID;
+        $activity['share_img'] = $this->splitAliossUrl($post['images'],true);
+        $activity['share_des'] = $post['share_des'];
+        $activity['share_title'] = $post['share_title'];
         $activity['activity_type'] = 1;//tweb.funxdata.com/#/turntable
-        $insertId = Activitymodel::getInsertId($activity);
-
-          $store_id =explode('', $post['store_id']);
-        $ac = new Activitymodel();
+        $insertId = Activitymodel::insertGetId($activity);
+          $store_id =explode(',', $post['store_id']);
+        $ac = Activitymodel::find($insertId);
         $ac->qrcode_url ="tweb.funxdata.com/#/turntable?id=".$insertId."";
         $ac->save();
-            foreach ($store_id as $value){
-                $data = ['store_id'=>$value, 'activity_id' => $insertId];
-                $store= Storeactivitymodel::insert($data);
-            }
+        foreach ($store_id as $value){
+            $data = ['store_id'=>$value, 'activity_id' => $insertId];
+            $store= Storeactivitymodel::insert($data);
+        }
 
-          if ($insertId && $store) {
-              $this->api_res(0);
-          } else {
-              $this->api_res(1009);
-          }
+        if ($insertId && $store) {
+            $this->api_res(0);
+        } else {
+            $this->api_res(1009);
+        }
     }
     /*
      * 刮刮乐活动
@@ -178,26 +190,42 @@ class Activity extends MY_Controller
             $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
             return false;
         }
-        $coupon_info = ['prize'=> $post['prize'],
-            'count'=> $post['count']];
+        $arr = [$post['one_prize'],$post['one_prize'],$post['one_prize']];
+        if (count($arr) != count(array_unique($arr))) {
+            $this->api_res('11101');
+            return false;
+        }
         $limit = ['com' => $post['customer'],
             'limit' => $post['limit']];
         $activity['name'] = $post['name'];
         $activity['start_time'] = $post['start_time'];
         $activity['end_time'] = $post['end_time'];
-        $activity['coupon_info'] = serialize($coupon_info);
+        $activity['one_prize'] = $post['one_prize'];
+        $activity['two_prize'] = $post['two_prize'];
+        $activity['three_prize'] = $post['three_prize'];
+        $activity['one_count'] = $post['one_count'];
+        $activity['two_count'] = $post['two_count'];
+        $activity['three_count'] = $post['three_count'];
+        $activity['description'] = $post['description'];
         $activity['limit'] = serialize($limit);
         $activity['current_id'] = CURRENT_ID;
         $activity['activity_type'] = 2;
+        $activity['share_img'] = $this->splitAliossUrl($post['images'],true);
+        $activity['share_des'] = $post['share_des'];
+        $activity['share_title'] = $post['share_title'];
         $insertId = Activitymodel::getInsertId($activity);
-        $ac = new Activitymodel();
+        $ac = Activitymodel::find($insertId );
         $ac->qrcode_url ="tweb.funxdata.com/#/scraping?id=".$insertId."";
         $ac->save();
         $store_id =explode(',', $post['store_id']);
+        $ac = Activitymodel::find($insertId);
+        $ac->qrcode_url ="tweb.funxdata.com/#/turntable?id=".$insertId."";
+        $ac->save();
         foreach ($store_id as $value){
             $data = ['store_id'=>$value, 'activity_id' => $insertId];
             $store= Storeactivitymodel::insert($data);
         }
+
         if ($insertId && $store) {
             $this->api_res(0);
         } else {
@@ -210,19 +238,51 @@ class Activity extends MY_Controller
      * */
     public function LowerActivity(){
         $post = $this->input->post(null,true);
-        $activity_id = isset($post['id'])?$post['id']:null;
+        $activity_id = empty($post['id'])?$post['id']:null;
         if($activity_id == null){
-            $this->api_res(500);
+            $this->api_res(1002);
             return false;
         }
-        $activity = Activitymodel::where('id',$activity_id);
+        $activity = Activitymodel::find($activity_id);
         $activity->activity_type = -1;
-
         if($activity->save()){
             $data=['status'=> 'Lowerframe'];
             $this->api_res(0,$data);
         }else{
             $this->api_res(500);
+        }
+    }
+
+   /*
+    * 生成活动二维码
+    * */
+    public function activityCode(){
+        $post = $this->input->post(null,true);
+        $id = isset($post['id'])?$post['id']:null;
+        if (!$id) {
+            $this->api_res(1002);
+            return false;
+        }
+        $this->load->helper('common');
+        $activity   = Activitymodel::find($id);
+        if(!$activity){
+            $this->api_res(1007);
+            return;
+        }
+        if($activity->activity_type== -1){
+            $this->api_res(11102);
+            return;
+        }
+        try{
+            $app        = new Application(getWechatCustomerConfig());
+            $qrcode     = $app->qrcode;
+            $result     = $qrcode->temporary($id, 6 * 24 * 3600);
+            $ticket     = $result->ticket;
+            $url        = $qrcode->url($ticket);
+            $this->api_res(0,['url'=>$url]);
+        }catch (Exception $e){
+            log_message('error',$e->getMessage());
+            throw $e;
         }
     }
 
@@ -263,6 +323,11 @@ class Activity extends MY_Controller
             array(
                 'field' => 'limit',
                 'label' => '抽奖限制',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'store_id',
+                'label' => '门店',
                 'rules' => 'trim|required',
             ),
         );
