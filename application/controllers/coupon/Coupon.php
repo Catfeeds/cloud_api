@@ -36,7 +36,7 @@ class Coupon extends MY_Controller
         }else{
             $coupon = Coupontypemodel::orderBy('created_at','DESC')
                 ->offset($offset)->limit(PAGINATE)->get($filed)->toArray();
-            print_r($coupon);die();
+            print_r($coupon);
             $this->api_res(0,['count'=>$count,'list'=>$coupon]);
         }
     }
