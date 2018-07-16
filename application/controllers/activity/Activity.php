@@ -101,7 +101,7 @@ class Activity extends MY_Controller
             $employee_name = Employeemodel::where('id',$coupon['current_id'])->first(['name']);
             $data[$key]['id']=$coupon['id'];
             $data[$key]['user'] = $employee_name->name;
-            $data[$key]['name']=$coupon['name'];
+            $data[$key]['name']=$coupon['coupon_info'];
             $data[$key]['start_time']=date("Y-m-d H:i", strtotime($coupon['start_time']));
             $data[$key]['end_time']=date("Y-m-d H:i", strtotime($coupon['end_time']));
             $data[$key]['prize'] = $str;
@@ -130,15 +130,18 @@ class Activity extends MY_Controller
      * */
         public function addTrntable(){
         $post = $this->input->post(null,true);
+
         $this->load->model('storeactivitymodel');
         $config = $this->validation();
         array_pull($config, '0');
+
         if(!$this->validationText($config)){
             $fieldarr = [ 'name', 'start_time', 'end_time','coupon_info','description','limit'];
             $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
             return false;
         }
-        $arr = [$post['one_prize'],$post['one_prize'],$post['one_prize']];
+        $arr = [$post['one_prize'],$post['two_prize'],$post['three_prize']];
+
         if (count($arr) != count(array_unique($arr))) {
             $this->api_res('11101');
             return false;
@@ -152,6 +155,7 @@ class Activity extends MY_Controller
         $activity['two_prize'] = $post['two_prize'];
         $activity['three_prize'] = $post['three_prize'];
         $activity['one_count'] = $post['one_count'];
+        $activity['coupon_info'] = $post['slogan'];
         $activity['two_count'] = $post['two_count'];
         $activity['three_count'] = $post['three_count'];
         $activity['description'] = $post['description'];
@@ -182,15 +186,17 @@ class Activity extends MY_Controller
      * */
     public function addScratch(){
         $post = $this->input->post(null,true);
+
         $this->load->model('storeactivitymodel');
         $config = $this->validation();
-        array_pull($config, '0');
+        //array_pull($config, '0');
+
         if(!$this->validationText($config)){
             $fieldarr = [ 'name', 'start_time', 'end_time','coupon_info','description','limit'];
             $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
             return false;
         }
-        $arr = [$post['one_prize'],$post['one_prize'],$post['one_prize']];
+        $arr = [$post['one_prize'],$post['two_prize'],$post['three_prize']];
         if (count($arr) != count(array_unique($arr))) {
             $this->api_res('11101');
             return false;
@@ -238,8 +244,8 @@ class Activity extends MY_Controller
      * */
     public function LowerActivity(){
         $post = $this->input->post(null,true);
-        $activity_id = empty($post['id'])?$post['id']:null;
-        if($activity_id == null){
+        $activity_id = isset($post['id'])?$post['id']:null;
+        if(!$activity_id){
             $this->api_res(1002);
             return false;
         }
@@ -303,7 +309,7 @@ class Activity extends MY_Controller
             array(
                 'field' => 'start_time',
                 'label' => '开始时间',
-                'rules' => 'trim|required',
+                'rules' => 'trim|required|max_length[255]',
             ),
             array(
                 'field' => 'end_time',
@@ -317,7 +323,7 @@ class Activity extends MY_Controller
             ),
             array(
                 'field' => 'description',
-                'label' => '开始时间',
+                'label' => '描述',
                 'rules' => 'trim|required|max_length[255]',
             ),
             array(
@@ -326,8 +332,25 @@ class Activity extends MY_Controller
                 'rules' => 'trim|required',
             ),
             array(
+
                 'field' => 'store_id',
                 'label' => '门店',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'one_prize',
+                'label' => '奖品1',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'two_prize',
+                'label' => '奖品2',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'three_prize',
+                'label' => '奖品3',
+
                 'rules' => 'trim|required',
             ),
         );
