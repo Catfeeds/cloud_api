@@ -298,4 +298,17 @@ class Login extends MY_Controller
     public  function getCurrentInfo(){
         $this->api_res(0,['employee'=>$this->employee]);
     }
+
+    /**
+     * 测试环境下登陆获取token
+     */
+    public function loginTest()
+    {
+        if(ENVIRONMENT!='production'){
+            $token  = $this->m_jwt->generateJwtToken(99,1);
+            $this->api_res(0,$token);
+        }else{
+            $this->api_res(500);
+        }
+    }
 }
