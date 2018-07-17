@@ -136,7 +136,7 @@ class Activity extends MY_Controller
         array_pull($config, '0');
 
         if(!$this->validationText($config)){
-            $fieldarr = [ 'name', 'start_time', 'end_time','coupon_info','description','limit','one_prize',
+            $fieldarr = [ 'name', 'start_time', 'end_time','slogan','description','limit','one_prize',
             'two_prize','three_prize'];
             $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
             return false;
@@ -161,7 +161,7 @@ class Activity extends MY_Controller
         $activity['three_count'] = $post['three_count'];
         $activity['description'] = $post['description'];
         $activity['limit'] = serialize($limit);
-        $activity['current_id'] = 1;
+        $activity['current_id'] = CURRENT_ID;
         $activity['share_img'] = $this->splitAliossUrl($post['images']);/*$this->splitAliossUrl($post['images'],true)*/;
         $activity['share_des'] = $post['share_des'];
         $activity['share_title'] = $post['share_title'];
@@ -190,10 +190,10 @@ class Activity extends MY_Controller
 
         $this->load->model('storeactivitymodel');
         $config = $this->validation();
-        //array_pull($config, '0');
-
+        array_pull($config, '0');
+        array_pull($config, '4');
         if(!$this->validationText($config)){
-            $fieldarr = [ 'name', 'start_time', 'end_time','coupon_info','description','limit','one_prize',
+            $fieldarr = [ 'name', 'start_time', 'end_time','description','limit','one_prize',
                 'two_prize','three_prize'];
             $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
             return false;
@@ -213,12 +213,11 @@ class Activity extends MY_Controller
         $activity['two_prize'] = $post['two_prize'];
         $activity['three_prize'] = $post['three_prize'];
         $activity['one_count'] = $post['one_count'];
-        $activity['coupon_info'] = $post['slogan'];
         $activity['two_count'] = $post['two_count'];
         $activity['three_count'] = $post['three_count'];
         $activity['description'] = $post['description'];
         $activity['limit'] = serialize($limit);
-        $activity['current_id'] = 2;
+        $activity['current_id'] = CURRENT_ID;
         $activity['share_img'] = $this->splitAliossUrl($post['images']);/*$this->splitAliossUrl($post['images'],true)*/;
         $activity['share_des'] = $post['share_des'];
         $activity['share_title'] = $post['share_title'];
@@ -232,7 +231,6 @@ class Activity extends MY_Controller
             $data = ['store_id'=>$value, 'activity_id' => $insertId];
             $store= Storeactivitymodel::insert($data);
         }
-
         if ($insertId && $store) {
             $this->api_res(0);
         } else {
@@ -318,7 +316,7 @@ class Activity extends MY_Controller
                 'rules' => 'trim|required',
             ),
             array(
-                'field' => 'coupon_info',
+                'field' => 'slogan',
                 'label' => '奖项',
                 'rules' => 'trim|required',
             ),
