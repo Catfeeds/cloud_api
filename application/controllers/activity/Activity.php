@@ -79,10 +79,14 @@ class Activity extends MY_Controller
             $activity = Activitymodel::where('activity_type', '!=', '0')->take(PAGINATE)->skip($offset)
                 ->orderBy('end_time', 'desc')
                 ->get($filed)->ToArray();
+            $activitycount = Activitymodel::where('activity_type', '!=', '0')->get()->count();
+            $count = ceil($activitycount/PAGINATE);
         }else{
             $activity = Activitymodel::where('activity_type', '!=', '0')->take(PAGINATE)->skip($offset)->whereIn('id', $id)
                 ->orderBy('end_time', 'desc')
                 ->get($filed)->ToArray();
+            $activitycount = Activitymodel::where('activity_type', '!=', '0')->get()->count();
+            $count = ceil($activitycount/PAGINATE);
         }
         if(!$activity){
             $this->api_res(1007);
@@ -122,7 +126,7 @@ class Activity extends MY_Controller
                 $data[$key]['status'] = 'Normal';
             }
         }
-        $this->api_res(0,['count'=>$page,'list'=>$data]);
+        $this->api_res(0,['count'=>$count,'list'=>$data]);
     }
     /*
      * 新增活动
@@ -134,8 +138,8 @@ class Activity extends MY_Controller
         $config = $this->validation();
         array_pull($config, '0');
         if(!$this->validationText($config)){
-            $fieldarr = [ 'name', 'start_time', 'end_time','slogan','description','limit','one_prize',
-            'two_prize','three_prize'];
+            $fieldarr = [ 'name', 'start_time', 'end_time','description','limit','one_prize','slogan',
+                'two_prize','three_prize','one_count', 'two_count','three_count','store_id','images','share_des','share_title'];
             $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
             return false;
         }
@@ -167,7 +171,11 @@ class Activity extends MY_Controller
         $insertId = Activitymodel::insertGetId($activity);
           $store_id =explode(',', $post['store_id']);
         $ac = Activitymodel::find($insertId);
+        if(ENVIRONMENT=='production'){
         $ac->qrcode_url ="tweb.funxdata.com/#/turntable?id=".$insertId."";
+        }else{
+        $ac->qrcode_url ="web.funxdata.com/#/turntable?id=".$insertId."";
+        }
         $ac->save();
         foreach ($store_id as $value){
             $data = ['store_id'=>$value, 'activity_id' => $insertId];
@@ -190,7 +198,7 @@ class Activity extends MY_Controller
         array_pull($config, '4');
         if(!$this->validationText($config)){
             $fieldarr = [ 'name', 'start_time', 'end_time','description','limit','one_prize',
-                'two_prize','three_prize'];
+                'two_prize','three_prize','one_count', 'two_count','three_count','store_id','images','share_des','share_title'];
             $this->api_res(1002,['error'=>$this->form_first_error($fieldarr)]);
             return false;
         }
@@ -220,7 +228,11 @@ class Activity extends MY_Controller
         $insertId = Activitymodel::insertGetId($activity);
         $store_id =explode(',', $post['store_id']);
         $ac = Activitymodel::find($insertId);
+        if(ENVIRONMENT=='production'){
         $ac->qrcode_url ="tweb.funxdata.com/#/turntable?id=".$insertId."";
+        }else{
+        $ac->qrcode_url ="web.funxdata.com/#/turntable?id=".$insertId."";
+        }
         $ac->save();
         foreach ($store_id as $value){
             $data = ['store_id'=>$value, 'activity_id' => $insertId];
@@ -278,8 +290,15 @@ class Activity extends MY_Controller
             $qrcode     = $app->qrcode;
             $result     = $qrcode->temporary($id, 6 * 24 * 3600);
             $ticket     = $result->ticket;
-            $url        = $qrcode->url($ticket);
-            $this->api_res(0,['url'=>$url]);
+            if($activity->activity_type== 1){
+                //转盘
+                $url        = $qrcode->TUurl($ticket);
+                $this->api_res(0,['url'=>$url]);
+            }elseif($activity->activity_type== 2){
+                //刮刮乐
+                $url        = $qrcode->SCurl($ticket);
+                $this->api_res(0,['url'=>$url]);
+            }
         }catch (Exception $e){
             log_message('error',$e->getMessage());
             throw $e;
@@ -347,6 +366,43 @@ class Activity extends MY_Controller
                 'label' => '奖品3',
                 'rules' => 'trim|required',
             ),
+            array(
+                'field' => 'one_count',
+                'label' => '奖品1num',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'two_count',
+                'label' => '奖品2num',
+                'rules' => 'trim|required',
+
+            ),
+            array(
+                'field' => 'three_count',
+                'label' => '奖品3num',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'images',
+                'label' => '分享图片',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'share_des',
+                'label' => '分享描述',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'share_title',
+                'label' => '分享标题',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'customer',
+                'label' => '用户限制',
+                'rules' => 'trim|required',
+            ),
+
         );
         return $config;
     }

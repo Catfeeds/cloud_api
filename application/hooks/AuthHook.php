@@ -280,7 +280,6 @@ class AuthHook {
 //            'utility/utility/listutility',
             'utility/utility/listutility1',
 //            'utility/utility/updatenumber',
-
         );
     }
 
