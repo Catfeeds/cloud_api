@@ -159,7 +159,7 @@ class Activity extends MY_Controller
         $activity['three_count'] = $post['three_count'];
         $activity['description'] = $post['description'];
         $activity['limit'] = serialize($limit);
-        $activity['current_id'] = CUEEENT_ID;
+        $activity['current_id'] = CURRENT_ID;
         $activity['share_img'] = $this->splitAliossUrl($post['images']);/*$this->splitAliossUrl($post['images'],true)*/;
         $activity['share_des'] = $post['share_des'];
         $activity['share_title'] = $post['share_title'];
@@ -212,7 +212,7 @@ class Activity extends MY_Controller
         $activity['three_count'] = $post['three_count'];
         $activity['description'] = $post['description'];
         $activity['limit'] = serialize($limit);
-        $activity['current_id'] = CUEEENT_ID;
+        $activity['current_id'] = CURRENT_ID;
         $activity['share_img'] = $this->splitAliossUrl($post['images']);/*$this->splitAliossUrl($post['images'],true)*/;
         $activity['share_des'] = $post['share_des'];
         $activity['share_title'] = $post['share_title'];
