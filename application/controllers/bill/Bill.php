@@ -372,6 +372,7 @@ class Bill extends MY_Controller
      */
     public function generate()
     {
+        exit;
         $input  = $this->input->post(null,true);
         $store_id   = $input['store_id'];
         $year       = $this->checkAndGetYear($input['year'],false);

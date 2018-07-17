@@ -12,39 +12,18 @@ class AuthHook {
 
     private $CI;
 
-    public function __construct()
-    {
+	public function __construct()
+  	{
         $this->CI = &get_instance();   //获取CI对象
     }
 
-    /**
-     * 生产环境的白名单
-     * 白名单内的不需要验证token
-     */
-    private function productionAuth()
+    public function isAuth()
     {
-        return [
-            'mini/login/gettoken',
-            'mini/login/handleloginstatus',
-            'account/login/login',
-            'bill/order/push',
-            'bill/order/notify',
-
-            'mini/contract/notify',
-            'mini/contract/autosign',
-            'mini/contract/archive',
-        ];
-    }
-
-    /**
-     * 测试环境白名单
-     * 白名单内的不需要验证token
-     */
-    private function developmentAuth()
-    {
-        return array(
-            'account/login/logintest',
-
+        //免登录白名单
+        //格式1 目录/类/方法
+        //格式2 类/方法
+        //注意，所有url统一用小写，不要大写
+        $authArr = array(
             'ping/index',
             'mini/login/gettoken',
             'mini/login/handleloginstatus',
@@ -55,7 +34,7 @@ class AuthHook {
 //            'demo/copy/transferimages',
             'demo/copy/run',
 //            'common/imageupload',
-//            'common/fileupload',
+            'common/fileupload',
 //            'bill/order/download',
 //
             'demo/sheet/index',
@@ -87,7 +66,10 @@ class AuthHook {
 //            'mini/checkout/approve',
 //            'mini/checkout/show',
 //            'mini/checkout/destroy',
+
 //            'mini/activity/showactivity',
+//
+
             //'home/home/home'
 //            'bill/meter/confirm',
 //            'bill/meter/import',
@@ -249,7 +231,7 @@ class AuthHook {
 //            'contract/operation/operationfind',
 //            'contract/operation/booking',
 //            'contract/operation/book',
-            //'contract/resident/resident',
+           //'contract/resident/resident',
 //            'contract/contract/showcontract',
 //
 //
@@ -282,66 +264,55 @@ class AuthHook {
 //            'utility/utility/updatenumber',
 
         );
-    }
+        /*if(ENVIRONMENT !=='production')
+        {
+            $authArr    = [
 
-    /**
-     * 是否验证token
-     */
-    public function isAuth()
-    {
-        $directory  = $this->CI->router->fetch_directory();
-        $class      = $this->CI->router->fetch_class();
-        $method     = $this->CI->router->fetch_method();
-        $full_path  = strtolower($directory . $class . '/' . $method);
-        try{
-            if(ENVIRONMENT=='production'){
-                $authArr    = $this->productionAuth();
-            }else{
-                $authArr    = $this->developmentAuth();
-            }
-            if(!in_array($full_path,$authArr)){
-                $this->auth($full_path);
-            }
-        }catch (Exception $e) {
-            header("Content-Type:application/json;charset=UTF-8");
-            echo json_encode(array('rescode' => 1001, 'resmsg' => 'token无效', 'data' => []));
-            exit;
-        }
-    }
-
-    /**
-     * @param $full_path
-     * 验证token的方法
-     */
-    public function auth($full_path)
-    {
-        $token  = $this->CI->input->get_request_header('token');
-        $decoded= $this->CI->m_jwt->decodeJwtToken($token);
-        $d_bxid = $decoded->bxid;
-        $d_company_id = $decoded->company_id;
-        define('CURRENT_ID', $d_bxid);
-        define('COMPANY_ID', $d_company_id);
-        $pre = substr(CURRENT_ID, 0, 2);
-        if ($pre == SUPERPRE) {
-            //super 拥有所有的权限
-            $this->CI->position = 'SUPER';
-        } else {
-            $this->CI->position = 'EMPLOYEE';
-            $this->CI->load->model('employeemodel');
-            $this->CI->employee = Employeemodel::where('bxid', CURRENT_ID)->first();
-        }
-        //操作记录测试
-        if (!$this->operationRecord($full_path)) {
-            header("Content-Type:application/json;charset=UTF-8");
-            echo json_encode(array('rescode' => 1012, 'resmsg' => '操作log出错', 'data' => []));
-            exit;
-        }
-        /*//权限匹配
-        if (!$this->privilegeMatch($directory, $class, $full_path)) {
-            header("Content-Type:application/json;charset=UTF-8");
-            echo json_encode(array('rescode' => 1011, 'resmsg' => '没有访问权限', 'data' => []));
-            exit;
+            ];
         }*/
+
+        $directory = $this->CI->router->fetch_directory();
+        $class = $this->CI->router->fetch_class();
+        $method = $this->CI->router->fetch_method();
+        $full_path = strtolower($directory . $class . '/' . $method);
+        // var_dump( $full_path );
+        if (!in_array($full_path, $authArr)) {
+            try {
+                $token = $this->CI->input->get_request_header('token');
+                $decoded = $this->CI->m_jwt->decodeJwtToken($token);
+                $d_bxid = $decoded->bxid;
+                $d_company_id = $decoded->company_id;
+                define('CURRENT_ID', $d_bxid);
+                define('COMPANY_ID', $d_company_id);
+
+                $pre = substr(CURRENT_ID, 0, 2);
+                if ($pre == SUPERPRE) {
+                    //super 拥有所有的权限
+                    $this->CI->position = 'SUPER';
+                } else {
+                    $this->CI->position = 'EMPLOYEE';
+                    $this->CI->load->model('employeemodel');
+                    $this->CI->employee = Employeemodel::where('bxid', CURRENT_ID)->first();
+                }
+
+                //操作记录测试
+                if (!$this->operationRecord($full_path)) {
+                    header("Content-Type:application/json;charset=UTF-8");
+                    echo json_encode(array('rescode' => 1012, 'resmsg' => '操作log出错', 'data' => []));
+                    exit;
+                }
+                /*//权限匹配
+                if (!$this->privilegeMatch($directory, $class, $full_path)) {
+                    header("Content-Type:application/json;charset=UTF-8");
+                    echo json_encode(array('rescode' => 1011, 'resmsg' => '没有访问权限', 'data' => []));
+                    exit;
+                }*/
+            } catch (Exception $e) {
+                header("Content-Type:application/json;charset=UTF-8");
+                echo json_encode(array('rescode' => 1001, 'resmsg' => 'token无效', 'data' => []));
+                exit;
+            }
+        }
     }
 
     public function privilegeMatch($full_path)
@@ -382,5 +353,4 @@ class AuthHook {
         }
         return true;
     }
-
 }

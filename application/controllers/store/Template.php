@@ -39,49 +39,46 @@ class Template extends MY_Controller
     /**
      * 添加模板
      */
-    public function addTemplate(){
+    public function addTemplate()
+    {
+        $this->load->library('fadada');
         $field  = ['name','type'];
         if(!$this->validationText($this->validateAdd())){
             $this->api_res(1002,['error'=>$this->form_first_error($field)]);
             return;
         }
-        $post   = $this->input->post(NULL,true);
-        //找到员工所在的门店id
-        $name   = isset($post['name'])?$post['name']:null;
+        $post       = $this->input->post(NULL,true);
+        $name       = isset($post['name'])?$post['name']:null;
         $rent_type  = isset($post['type'])?$post['type']:null;
+        $room_type_id   = empty($post['room_type_id'])?null:$post['room_type_id'];
         $file_url   = $post['file_url'];
-
-        /*$config   = [
-          'allowed_types'   => 'pdf',
-          'upload_path'     => 'temp',
-        ];
-        $this->load->library('upload',$config);
-
-        if (!$this->upload->do_upload('file'))
-        {
-            var_dump($this->upload->display_errors());exit;
-        }
-        $data   = $this->upload->data('full_path');*/
-        if(empty($name) || empty($rent_type)){
-            $this->api_res(1002);
-            return;
-        }
-        if(Contracttemplatemodel::where(['name'=>$name])->exists()){
+        $url        = $this->splitAliossUrl($file_url);
+        $store_id   = $this->employee->store_id;
+        $company_id = COMPANY_ID;
+        if(Contracttemplatemodel::where(['name'=>$name,'store_id'=>$store_id])->exists()){
             $this->api_res(1008);
             return;
         }
-       // var_dump($data);die();
-        $template   = new Contracttemplatemodel();
-        $template->name = $name;
-        $template->rent_type = $rent_type;
-        $template->url  = $this->splitAliossUrl($file_url);
-//        $template->url  = $data;
+        $templateId = date('YmdHis').mt_rand(10, 99);
+        $res    = $this->fadada->uploadTemplate($file_url, $templateId);
+        if (!$res) {
+            throw new Exception($this->fadada->showError());
+        }
+        $template               = new Contracttemplatemodel();
+        $template->name         = $name;
+        $template->rent_type    = $rent_type;
+        $template->url          = $url;
+        $template->contract_tpl_path    = $url;
+        $template->company_id   = $company_id;
+        $template->store_id     = $store_id;
+        $template->fdd_tpl_id   = $templateId;
         if($template->save()){
             $this->api_res(0);
         }else{
             $this->api_res(1009);
         }
     }
+
 
     /**
      * 删除模板
@@ -150,6 +147,7 @@ class Template extends MY_Controller
      * 编辑模板信息
      */
     public function updateTemplate(){
+        $this->load->library('fadada');
         $template_id    = $this->input->post('template_id',true);
         $field  = ['name','type'];
         if(!$template_id){
@@ -161,41 +159,22 @@ class Template extends MY_Controller
             return;
         }
         $post   = $this->input->post(NULL,true);
-        //找到员工所在的门店id
-        $name   = isset($post['name'])?$post['name']:null;
-        $rent_type   = isset($post['type'])?$post['type']:null;
-        $file_url   = isset($post['file_url'])?$post['file_url']:null;
-        if(empty($name) ||  empty($rent_type)){
-            $this->api_res(1002);
-            return;
+        $name       = isset($post['name'])?$post['name']:null;
+        $rent_type  = isset($post['type'])?$post['type']:null;
+        $file_url   = $post['file_url'];
+        $url        = $this->splitAliossUrl($file_url);
+
+        $templateId = date('YmdHis').mt_rand(10, 99);
+        $res    = $this->fadada->uploadTemplate($file_url, $templateId);
+        if (!$res) {
+            throw new Exception($this->fadada->showError());
         }
-       /* $config   = [
-            'allowed_types'   => 'pdf',
-            'upload_path'     => 'temp',
-        ];
-        $this->load->library('upload',$config);
-        if (!$this->upload->do_upload('file'))
-        {
-            var_dump($this->upload->display_errors());exit;
-        }
-        $data   = $this->upload->data('full_path');*/
-        //var_dump($data);die();
-        if(empty($name) || empty($rent_type)){
-            $this->api_res(1002);
-            return;
-        }
-//        if(Contracttemplatemodel::where(['name'=>$name])->exists()){
-//            $this->api_res(1008);
-//            return;
-//        }
-        $template   = Contracttemplatemodel::find($template_id);
-        if(!$template){
-            $this->api_res(1007);
-        }
-        $template->name = $name;
-        $template->rent_type = $rent_type;
-        $template->url  = $this->splitAliossUrl($file_url);
-//        $template->url  = $data;
+        $template               = Contracttemplatemodel::findOrFail($template_id);
+        $template->name         = $name;
+        $template->rent_type    = $rent_type;
+        $template->url          = $url;
+        $template->contract_tpl_path    = $url;
+        $template->fdd_tpl_id   = $templateId;
         if($template->save()){
             $this->api_res(0);
         }else{
