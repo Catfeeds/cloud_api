@@ -130,11 +130,9 @@ class Activity extends MY_Controller
      * */
         public function addTrntable(){
         $post = $this->input->post(null,true);
-
         $this->load->model('storeactivitymodel');
         $config = $this->validation();
         array_pull($config, '0');
-
         if(!$this->validationText($config)){
             $fieldarr = [ 'name', 'start_time', 'end_time','slogan','description','limit','one_prize',
             'two_prize','three_prize'];
@@ -144,24 +142,24 @@ class Activity extends MY_Controller
         $arr = [$post['one_prize'],$post['two_prize'],$post['three_prize']];
 
         if (count($arr) != count(array_unique($arr))) {
-            $this->api_res('11101');
+            $this->api_res(11101);
             return false;
         }
         $limit = ['com' => $post['customer'],
                    'limit' => $post['limit']];
-        $activity['name'] = $post['name'];
+        $activity['coupon_info'] = $post['name'];
         $activity['start_time'] = $post['start_time'];
         $activity['end_time'] = $post['end_time'];
         $activity['one_prize'] = $post['one_prize'];
         $activity['two_prize'] = $post['two_prize'];
         $activity['three_prize'] = $post['three_prize'];
         $activity['one_count'] = $post['one_count'];
-        $activity['coupon_info'] = $post['slogan'];
+        $activity['name'] = $post['slogan'];
         $activity['two_count'] = $post['two_count'];
         $activity['three_count'] = $post['three_count'];
         $activity['description'] = $post['description'];
         $activity['limit'] = serialize($limit);
-        $activity['current_id'] = CURRENT_ID;
+        $activity['current_id'] = CUEEENT_ID;
         $activity['share_img'] = $this->splitAliossUrl($post['images']);/*$this->splitAliossUrl($post['images'],true)*/;
         $activity['share_des'] = $post['share_des'];
         $activity['share_title'] = $post['share_title'];
@@ -175,7 +173,6 @@ class Activity extends MY_Controller
             $data = ['store_id'=>$value, 'activity_id' => $insertId];
             $store= Storeactivitymodel::insert($data);
         }
-
         if ($insertId && $store) {
             $this->api_res(0);
         } else {
@@ -187,7 +184,6 @@ class Activity extends MY_Controller
      * */
     public function addScratch(){
         $post = $this->input->post(null,true);
-
         $this->load->model('storeactivitymodel');
         $config = $this->validation();
         array_pull($config, '0');
@@ -199,14 +195,13 @@ class Activity extends MY_Controller
             return false;
         }
         $arr = [$post['one_prize'],$post['two_prize'],$post['three_prize']];
-
         if (count($arr) != count(array_unique($arr))) {
-            $this->api_res('11101');
+            $this->api_res(11101);
             return false;
         }
         $limit = ['com' => $post['customer'],
             'limit' => $post['limit']];
-        $activity['name'] = $post['name'];
+        $activity['coupon_info'] = $post['name'];
         $activity['start_time'] = $post['start_time'];
         $activity['end_time'] = $post['end_time'];
         $activity['one_prize'] = $post['one_prize'];
@@ -217,11 +212,11 @@ class Activity extends MY_Controller
         $activity['three_count'] = $post['three_count'];
         $activity['description'] = $post['description'];
         $activity['limit'] = serialize($limit);
-        $activity['current_id'] = CURRENT_ID;
+        $activity['current_id'] = CUEEENT_ID;
         $activity['share_img'] = $this->splitAliossUrl($post['images']);/*$this->splitAliossUrl($post['images'],true)*/;
         $activity['share_des'] = $post['share_des'];
         $activity['share_title'] = $post['share_title'];
-        $activity['activity_type'] = 1;//tweb.funxdata.com/#/turntable
+        $activity['activity_type'] = 2;//tweb.funxdata.com/#/turntable
         $insertId = Activitymodel::insertGetId($activity);
         $store_id =explode(',', $post['store_id']);
         $ac = Activitymodel::find($insertId);
@@ -317,7 +312,7 @@ class Activity extends MY_Controller
             ),
             array(
                 'field' => 'slogan',
-                'label' => '奖项',
+                'label' => '口号',
                 'rules' => 'trim|required',
             ),
             array(

@@ -66,10 +66,7 @@ class AuthHook {
 //            'mini/checkout/approve',
 //            'mini/checkout/show',
 //            'mini/checkout/destroy',
-              'activity/activity/addtrntable',
 //            'mini/activity/showactivity',
-//
-
             //'home/home/home'
 //            'bill/meter/confirm',
 //            'bill/meter/import',
