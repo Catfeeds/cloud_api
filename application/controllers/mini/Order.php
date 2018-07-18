@@ -455,12 +455,9 @@ class Order extends MY_Controller
             } elseif (isset($resident->data['renewal'])) {
                 //do something to handle renew stuff
                 $old_resident_id   = $resident->data['org_resident_id'];
-                Residentmodel::find($old_resident_id)->roomunion()->update(['status'=>Roomunionmodel::STATE_BLANK]);
-                $room->update(['status' => Roomunionmodel::STATE_RENT]);
+                Residentmodel::find($old_resident_id)->roomunion()->update(['status'=>Roomunionmodel::STATE_BLANK,'resident_id'=>0,'people_count'=>0]);
+                $resident->roomunion()->update(['status' => Roomunionmodel::STATE_RENT,'resident_id'=>$resident->id,'people_count'=>$resident->people_count]);
                 $resident->update(['status'=>Residentmodel::STATE_NORMAL]);
-
-
-
             } else {
                 log_message('error',1);
                 $resident->update(['status' => $residentNewStatus]);
