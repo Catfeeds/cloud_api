@@ -279,24 +279,20 @@ class Activity extends MY_Controller
         $activity   = Activitymodel::find($id);
         if(!$activity){
             $this->api_res(1007);
-            return;
+            return false;
         }
         if($activity->activity_type== -1){
             $this->api_res(11102);
-            return;
+            return false;
         }
         try{
-            $app        = new Application(getWechatCustomerConfig());
-            $qrcode     = $app->qrcode;
-            $result     = $qrcode->temporary($id, 6 * 24 * 3600);
-            $ticket     = $result->ticket;
             if($activity->activity_type== 1){
                 //转盘
-                $url        = $qrcode->TUurl($ticket);
+                $url = config_item('activity_url').'turntable?id='.$activity->id;
                 $this->api_res(0,['url'=>$url]);
             }elseif($activity->activity_type== 2){
                 //刮刮乐
-                $url        = $qrcode->SCurl($ticket);
+                $url = config_item('activity_url').'scraping?id='.$activity->id;
                 $this->api_res(0,['url'=>$url]);
             }
         }catch (Exception $e){

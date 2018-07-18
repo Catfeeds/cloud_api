@@ -38,12 +38,6 @@ class QRCode extends AbstractAPI
 
     const API_CREATE = 'https://api.weixin.qq.com/cgi-bin/qrcode/create';
     const API_SHOW = 'https://mp.weixin.qq.com/cgi-bin/showqrcode';
-    //测试
-    const textTU_SHOW = 'tweb.funxdata.com/#/turntable';
-    const textSC_SHOW = 'tweb.funxdata.com/#/scraping';
-    //线上
-    const On_lineTU_SHOW = 'web.funxdata.com/#/turntable';
-    const On_lineSC_SHOW = 'web.funxdata.com/#/scraping';
     /**
      * Create forever.
      *
@@ -120,23 +114,7 @@ class QRCode extends AbstractAPI
     {
         return self::API_SHOW."?ticket={$ticket}";
     }
-    public function TUurl($ticket)
-    {
-        if(ENVIRONMENT=='production'){
-         return self::textTU_SHOW."?id={$ticket}";
-    }else{
-         return self::On_lineTU_SHOW."?id={$ticket}";
-        }
 
-    }
-    public function SCurl($ticket)
-    {
-        if(ENVIRONMENT=='production'){
-            return self::textSC_SHOW."?id={$ticket}";
-        }else{
-            return self::On_lineSC_SHOW."?id={$ticket}";
-        }
-    }
     /**
      * Create a QRCode.
      *
