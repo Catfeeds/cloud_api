@@ -381,5 +381,4 @@ class AuthHook {
         }
         return true;
     }
-
 }
