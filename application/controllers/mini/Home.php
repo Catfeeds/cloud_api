@@ -52,7 +52,4 @@ class Home extends MY_Controller
     $this->api_res(0,$data);
 
     }
-
-
-
 }

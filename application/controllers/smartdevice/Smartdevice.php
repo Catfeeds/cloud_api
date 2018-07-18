@@ -77,15 +77,13 @@ class Smartdevice extends MY_Controller
     {
         $post   = $this->input->post(NULL,true);
         $page           = empty($post['page'])?1:trim($post['page']);
-        $offset         = PAGINATE*($page-1);
-
         $id     = empty($post['id'])?null:trim($post['id']);
         $room_id= empty($post['room_id'])?null:trim($post['room_id']);
         $type   = empty($post['type'])?null:trim($post['type']);
         if(!empty($post['begin_time'])){$bt=$post['begin_time'];}else{$bt = date('Y-m-d H:i:s',0);};
         if(!empty($post['end_time'])){$et=$post['end_time'];}else{$et = date('Y-m-d H:i:s',time());};
         if($type == 'LOCK'){
-            $this->api_res(0,['list'=>[],'count'=>0]);
+            $this->api_res(0,['list'=>[],'count'=>[]]);
         }else{
             $this->load->model('meterreadingmodel');
             $filed  = ['type','reading','created_at'];
@@ -103,8 +101,8 @@ class Smartdevice extends MY_Controller
                 $record[$i]['last_reading'] = $record[$i+1]['reading'];
             }
             $record = array_chunk($record,10);
+            $this->api_res(0,['list'=>$record[$page-1],'count'=>$count]);
         }
-        $this->api_res(0,['list'=>$record[$page-1],'count'=>$count]);
     }
 
     /**

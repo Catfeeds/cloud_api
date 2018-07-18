@@ -216,11 +216,12 @@ class Resident extends MY_Controller
      */
     public function getResidentOrder()
     {
+
         $this->load->model('ordermodel');
-        $resident_id    = $this->input->post('resident_id',true);
+        $resident_id= $this->input->post('resident_id',true);
         $resident   = Residentmodel::findOrFail($resident_id);
         //未支付的列表
-        $unpaid    = $resident->orders()
+        $unpaid     = $resident->orders()
             ->whereIn('status',[Ordermodel::STATE_PENDING,Ordermodel::STATE_GENERATED,Ordermodel::STATE_AUDITED])
             ->orderBy('year','DESC')
             ->orderBy('month','DESC')
@@ -238,28 +239,25 @@ class Resident extends MY_Controller
                 $order->date    = $order->year.'-'.$order->month;
                 return $order;
             });
-        $unpaid_money   = $unpaid->sum('money');
-        $paid_money     = $paid->sum('money');
-        $discount_money     = $paid->sum('discount_money');
-        $unpaid   = $unpaid->groupBy('date')->map(function($unpaid){
+        $unpaid_money   = number_format($unpaid->sum('money'), 2,'.','');
+        $paid_money     = number_format($paid->sum('money'), 2,'.','');
+        $discount_money = number_format($paid->sum('discount_money'), 2,'.','');
+        $unpaid = $unpaid->groupBy('date')->map(function($unpaid){
             $a  = [];
-            $a['orders']    = $unpaid->toArray();
-            $a['total_money']=$unpaid->sum('money');
+            $a['orders']        = $unpaid->toArray();
+            $a['total_money']   = number_format($unpaid->sum('money'), 2,'.','');
             return $a;
         });
         $paid   = $paid->groupBy('date')->map(function($paid){
             $a  = [];
-            $a['orders']    = $paid->toArray();
-            $a['total_money']=$paid->sum('money');
-            $a['total_paid']=$paid->sum('paid');
-            $a['discount_money']=$paid->sum('discount');
+            $a['orders']        = $paid->toArray();
+            $a['total_money']   = number_format($paid->sum('money'),2,'.','');
+            $a['total_paid']    = number_format($paid->sum('paid'),2,'.','');
+            $a['discount_money']= number_format($paid->sum('discount'),2,'.','');
             return $a;
         });
         $this->api_res(0,compact('unpaid_money','paid_money','discount_money','unpaid','paid'));
     }
-
-
-
 
     /**
      * @return mixed

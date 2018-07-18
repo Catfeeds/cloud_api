@@ -123,7 +123,7 @@ class Home extends MY_Controller
                 ->sum('money');
             //月报表其他服务费实收
             $result['month']['total']['other'] = $result['month']['total']['all']- $result['month']['total']['server']-$result['month']['total']['management']-$result['month']['total']['utility'];
-            $result['month']['total']['other'] = number_format($result['month']['total']['other'], 2);
+            $result['month']['total']['other'] = number_format($result['month']['total']['other'], 2,'.','');
 
 
 
