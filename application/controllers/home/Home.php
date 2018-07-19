@@ -56,14 +56,17 @@ class Home extends MY_Controller
         $this->load->model('billmodel');
         $this->load->model('residentmodel');
         $this->load->model('serviceordermodel');
+        $this->load->model('contractmodel');
 /**************************时间节点******************************/
         //当前时间节点之前的一天之内(只含当天)
-        $date_d = [date('Y-m-d', time())." 00:00:00", date('Y-m-d H:i:s', time())];
+        $date_d         = [date('Y-m-d', time())." 00:00:00", date('Y-m-d H:i:s', time())];
         //当前时间节点之前的一月之内(只含本月)
-        $date_m = [date('Y-m', time())."-00 00:00:00", date('Y-m-d H:i:s', time())];
+        $date_m         = [date('Y-m', time())."-00 00:00:00", date('Y-m-d H:i:s', time())];
         //当前时间节点之后的一月之内
-        $date_later_m = [date('Y-m-d H:i:s', time()),date('Y-m-d H:i:s', strtotime('+1month'))];
-        $store_ids = Employeemodel::getMyStoreids();
+        $date_later_m   = [date('Y-m-d H:i:s', time()),date('Y-m-d H:i:s', strtotime('+1month'))];
+
+        //权限下的门店信息
+        $store_ids      = Employeemodel::getMyStoreids();
 /******************************Home****************************/
         //预约来访
         $result['home']['count_visit']  = Reserveordermodel::where('status','WAIT')->whereIn('store_id', $store_ids)->count();
@@ -75,55 +78,57 @@ class Home extends MY_Controller
         $result['home']['count_bills']  = Ordermodel::whereIn('store_id', $store_ids)->whereIn('status', ['PENDING','AUDITED','GENERATE'])->count();
 /******************************日报表****************************/
         //预约看房数
-        $result['day']['view'] = Reserveordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)->count();
+        $result['day']['view']          = Reserveordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)->count();
         //新签住户数
-        $this->load->model('contractmodel');
-        $result['day']['sign'] = Contractmodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)->count();
+        $result['day']['sign']          = Contractmodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)->count();
         //应收
-        $result['day']['paymoney'] = Billmodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)->sum('money');
+        $result['day']['paymoney']      = Billmodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)->sum('money');
+        $result['day']['paymoney']      = number_format($result['day']['paymoney'],2,'.','');
         //实收
-        $result['day']['recmoney'] = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)->sum('money');
+        $result['day']['recmoney']      = Ordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)->sum('money');
+        $result['day']['recmoney']      = number_format($result['day']['recmoney'],2,'.','');
         //退租
-        $result['day']['checkout'] = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('refund_time', $date_d)->count();
+        $result['day']['checkout']      = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('refund_time', $date_d)->count();
         //维修订单
-        $result['day']['server'] = Serviceordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)->where('type', 'REPAIR')->count();
+        $result['day']['server']        = Serviceordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)->where('type', 'REPAIR')->count();
         //清洁订单
-        $result['day']['clean'] = Serviceordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)->where('type', 'CLEAN')->count();
+        $result['day']['clean']         = Serviceordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)->where('type', 'CLEAN')->count();
         //投诉（数据库中没有投诉字段，暂时处理成0）
-        $result['day']['complaint'] = 0;
+        $result['day']['complaint']     = 0;
 /******************************房源统计****************************/
         $this->load->model('roomunionmodel');
         //全部
-        $result['house']['all'] = Roomunionmodel::whereIn('store_id', $store_ids)->count();
+        $result['house']['all']         = Roomunionmodel::whereIn('store_id', $store_ids)->count();
         //已出租
-        $result['house']['use'] = Roomunionmodel::whereIn('store_id', $store_ids)->whereIn('status', ['RENT', 'ARREARS'])->count();
+        $result['house']['use']         = Roomunionmodel::whereIn('store_id', $store_ids)->whereIn('status', ['RENT', 'ARREARS'])->count();
         //空置
-        $result['house']['free'] = Roomunionmodel::whereIn('store_id', $store_ids)->where('status', 'BLANK')->count();
+        $result['house']['free']        = Roomunionmodel::whereIn('store_id', $store_ids)->where('status', 'BLANK')->count();
 /******************************月报表****************************/
         //月报表实收
-        $result_input   = Billmodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->where('type','input')->sum('money');
-        $result_out     = Billmodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->where('type','output')->sum('money');
-        $result['month']['total']['all'] = $result_input-$result_out;
-
-
+        $result_input                   = Billmodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->where('type','input')->sum('money');
+        $result_out                     = Billmodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_m)->where('type','output')->sum('money');
+        $result['month']['total']['all']= number_format($result_input-$result_out,2,'.','');
         //月报表住宿服务费实收
-            $result['month']['total']['server'] = Ordermodel::whereIn('store_id', $store_ids)
-                ->where('sequence_number','<>','')->where('type','ROOM')
-                ->whereBetween('created_at', $date_m)
-                ->sum('paid');
+        $result['month']['total']['server'] = Ordermodel::whereIn('store_id', $store_ids)
+            ->where('sequence_number','<>','')->where('type','ROOM')
+            ->whereBetween('created_at', $date_m)
+            ->sum('paid');
+        $result['month']['total']['server'] =number_format($result['month']['total']['server'],2,'.','');
         //月报表物业服务费实收
-            $result['month']['total']['management'] = Ordermodel::whereIn('store_id', $store_ids)
-                ->where('sequence_number','<>','')->where('type', 'MANAGEMENT')
-                ->whereBetween('created_at', $date_m)
-                ->sum('paid');
-            //月报表水电服务费实收
-            $result['month']['total']['utility'] = Ordermodel::whereIn('store_id', $store_ids)
-                ->where('sequence_number','<>','')->where('type', 'UTILITY')
-                ->whereBetween('created_at', $date_m)
-                ->sum('money');
-            //月报表其他服务费实收
-            $result['month']['total']['other'] = $result['month']['total']['all']- $result['month']['total']['server']-$result['month']['total']['management']-$result['month']['total']['utility'];
-            $result['month']['total']['other'] = number_format($result['month']['total']['other'], 2,'.','');
+        $result['month']['total']['management'] = Ordermodel::whereIn('store_id', $store_ids)
+            ->where('sequence_number','<>','')->where('type', 'MANAGEMENT')
+            ->whereBetween('created_at', $date_m)
+            ->sum('paid');
+        $result['month']['total']['management'] = number_format($result['month']['total']['management'],2,'.','');
+        //月报表水电服务费实收
+        $result['month']['total']['utility'] = Ordermodel::whereIn('store_id', $store_ids)
+            ->where('sequence_number','<>','')->where('type', 'UTILITY')
+            ->whereBetween('created_at', $date_m)
+            ->sum('money');
+        $result['month']['total']['utility'] = number_format($result['month']['total']['utility'],2,'.','');
+        //月报表其他服务费实收
+        $result['month']['total']['other'] = $result['month']['total']['all']- $result['month']['total']['server']-$result['month']['total']['management']-$result['month']['total']['utility'];
+        $result['month']['total']['other'] = number_format($result['month']['total']['other'], 2,'.','');
 
 
 
@@ -188,7 +193,6 @@ class Home extends MY_Controller
         } else {
             $result['month']['free']['all'] = 0;
         }*/
-
         $this->api_res(0, $result);
     }
 
