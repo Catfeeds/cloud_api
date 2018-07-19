@@ -23,33 +23,28 @@ class Home extends MY_Controller
      */
     public function lists()
     {
-
-        //获取首页提示信息
-        //未缴费订单
-        $store_id   = empty($this->employee->store_id)?'':$this->employee->store_id;
+        $post       = $this->input->post(null,true);
+        $store_id   = empty($post['store_id'])?'':trim($post['store_id']);
         if(empty($store_id)){
             $this->api_res(1006);
         }
-
-
-    $data['tipsnum']['order']=Ordermodel::where([
-        'store_id'=>$store_id
-    ])->where('status','PENDING')->groupBy('resident_id')->get()->count();
-    //缴费订单确认
-    $data['tipsnum']['sureorder']=Ordermodel::where([
-         'store_id'=>$store_id
-     ])->where('status','CONFIRM')->groupBy('resident_id')->get()->count();
-
-     //办理入住未完成
-    $data['tipsnum']['noorder']= Residentmodel::where([
-        'store_id'=>$store_id
-    ])->whereIn('status',['NOT_PAY'])->count();
-
-     //合同签约
-
-    $data['tipsnum']['contract']= Contractmodel::where('status','GENERATED')->count();
-
-    $this->api_res(0,$data);
-
+//获取首页提示信息
+        //未缴费订单
+        $data['tipsnum']['order'] = Ordermodel::where(['store_id'=>$store_id])
+            ->whereIn('status',['PENDING','GENERATE','AUDITED'])
+            ->groupBy('resident_id')
+            ->get()->count();
+        //缴费订单确认
+        $data['tipsnum']['sureorder'] = Ordermodel::where(['store_id'=>$store_id])
+            ->where('status','CONFIRM')
+            ->groupBy('resident_id')
+            ->get()->count();
+         //办理入住未完成
+        $data['tipsnum']['noorder'] = Residentmodel::where(['store_id'=>$store_id])
+            ->whereIn('status',['NOT_PAY'])
+            ->count();
+         //合同签约
+        $data['tipsnum']['contract']= Contractmodel::where('status','GENERATED')->count();
+        $this->api_res(0,$data);
     }
 }
