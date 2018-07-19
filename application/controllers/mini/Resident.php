@@ -750,6 +750,9 @@ class Resident extends MY_Controller
                     $resident->coupons()->delete();
                     //清除订单
                     $resident->orders()->delete();
+                    //清除合同
+                    $this->load->model('contractmodel');
+                    $resident->contract()->delete();
                     //删除住户信息
                     $resident->delete();
                     $resident->roomunion->update(['people_count'=>0,'resident_id'=>0,'status'=>Roomunionmodel::STATE_BLANK]);
