@@ -186,44 +186,43 @@ class Bill extends MY_Controller
             $res['resident']    = $bill[$key]['resident_s']['name'];
             $res['money']       = $bill[$key]['money'];
             $res['pay_type']    = $this->getBillPayType($bill[$key]['pay_type']);
-            $res['ROOM_money']          = '';
-            $res['MANAGEMENT_money']    = '';
-            $res['DEPOSIT_R_money']     = '';
-            $res['DEPOSIT_O_money']     = '';
-            $res['WATER_money']         = '';
-            $res['HOT_WATER_money']     = '';
-            $res['ELECTRICITY_money']   = '';
-            $res['REFUND_money']        = '';
-            $res['other_money']         = '';
+            $res['ROOM_money']          = 0;
+            $res['MANAGEMENT_money']    = 0;
+            $res['DEPOSIT_R_money']     = 0;
+            $res['DEPOSIT_O_money']     = 0;
+            $res['WATER_money']         = 0;
+            $res['HOT_WATER_money']     = 0;
+            $res['ELECTRICITY_money']   = 0;
+            $res['REFUND_money']        = 0;
+            $res['other_money']         = 0;
             $res['remark']              = $bill[$key]['remark'];;
-
             if(!empty($bill[$key]['order'])){
                 $order = $bill[$key]['order'];
                 $res['other_money'] = 0;
                 foreach ($order as $key_o=>$value_o){
                     if($order[$key_o]['type']=='ROOM'){
-                        $res['ROOM_money'] = $order[$key_o]['paid'];
+                        $res['ROOM_money'] += $order[$key_o]['paid'];
                     }
                     elseif($order[$key_o]['type']=='MANAGEMENT'){
-                        $res['MANAGEMENT_money'] = $order[$key_o]['paid'];
+                        $res['MANAGEMENT_money'] += $order[$key_o]['paid'];
                     }
                     elseif($order[$key_o]['type']=='DEPOSIT_R'){
-                        $res['DEPOSIT_R_money'] = $order[$key_o]['paid'];
+                        $res['DEPOSIT_R_money'] += $order[$key_o]['paid'];
                     }
                     elseif($order[$key_o]['type']=='DEPOSIT_O'){
-                        $res['DEPOSIT_O_money'] = $order[$key_o]['paid'];
+                        $res['DEPOSIT_O_money'] += $order[$key_o]['paid'];
                     }
                     elseif($order[$key_o]['type']=='WATER'){
-                        $res['WATER_money'] = $order[$key_o]['paid'];
+                        $res['WATER_money'] += $order[$key_o]['paid'];
                     }
                     elseif($order[$key_o]['type']=='HOT_WATER'){
-                        $res['HOT_WATER_money'] = $order[$key_o]['paid'];
+                        $res['HOT_WATER_money'] += $order[$key_o]['paid'];
                     }
                     elseif($order[$key_o]['type']=='ELECTRICITY'){
-                        $res['ELECTRICITY_money'] = $order[$key_o]['paid'];
+                        $res['ELECTRICITY_money'] += $order[$key_o]['paid'];
                     }
                     elseif($order[$key_o]['type']=='REFUND'){
-                        $res['REFUND_money'] = $order[$key_o]['paid'];
+                        $res['REFUND_money'] += $order[$key_o]['paid'];
                     }
                     else{
                         $res['other_money'] += $order[$key_o]['paid'];

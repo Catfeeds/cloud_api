@@ -31,7 +31,7 @@ class Home extends MY_Controller
 //获取首页提示信息
         //未缴费订单
         $data['tipsnum']['order'] = Ordermodel::where(['store_id'=>$store_id])
-            ->whereIn('status',['PENDING','GENERATE','AUDITED'])
+            ->where('status','PENDING')
             ->groupBy('resident_id')
             ->get()->count();
         //缴费订单确认
