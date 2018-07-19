@@ -44,7 +44,6 @@ class AuthHook {
     {
         return array(
             'account/login/logintest',
-
             'ping/index',
             'mini/login/gettoken',
             'mini/login/handleloginstatus',
