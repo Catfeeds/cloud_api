@@ -56,7 +56,7 @@ class Activity extends MY_Controller
             foreach ($activity_id1 as $key=>$value){
                 $id_1[] = $value['activity_id'];
             }
-            $activity_id2 = Activitymodel::where('name','like','%'.$ac_name.'%')
+            $activity_id2 = Activitymodel::where('coupon_type','like','%'.$ac_name.'%')
                 ->whereIn('id',$id_1)->where('activity_type', '!=', '0')->get(['id'])->toArray();
             $id_2=[];
             foreach ($activity_id2 as $id){
@@ -64,7 +64,7 @@ class Activity extends MY_Controller
             }
             $id = $id_2;
         }else{
-            $activity_id2 = Activitymodel::where('name','like','%'.$ac_name.'%')->where('activity_type','!=','0')
+            $activity_id2 = Activitymodel::where('coupon_type','like','%'.$ac_name.'%')->where('activity_type','!=','0')
                 ->get(['id'])->toArray();
             $id_2=[];
             foreach ($activity_id2 as $id){
@@ -172,9 +172,9 @@ class Activity extends MY_Controller
           $store_id =explode(',', $post['store_id']);
         $ac = Activitymodel::find($insertId);
         if(ENVIRONMENT=='production'){
-        $ac->qrcode_url ="tweb.funxdata.com/#/turntable?id=".$insertId."";
+        $ac->qrcode_url ="tweb.funxdata.com/%23/turntable?id=".$insertId."";
         }else{
-        $ac->qrcode_url ="web.funxdata.com/#/turntable?id=".$insertId."";
+        $ac->qrcode_url ="web.funxdata.com/%23/turntable?id=".$insertId."";
         }
         $ac->save();
         foreach ($store_id as $value){
@@ -229,9 +229,9 @@ class Activity extends MY_Controller
         $store_id =explode(',', $post['store_id']);
         $ac = Activitymodel::find($insertId);
         if(ENVIRONMENT=='production'){
-        $ac->qrcode_url ="tweb.funxdata.com/#/turntable?id=".$insertId."";
+        $ac->qrcode_url ="tweb.funxdata.com/%23/turntable?id=".$insertId."";
         }else{
-        $ac->qrcode_url ="web.funxdata.com/#/turntable?id=".$insertId."";
+        $ac->qrcode_url ="web.funxdata.com/%23/turntable?id=".$insertId."";
         }
         $ac->save();
         foreach ($store_id as $value){
