@@ -41,10 +41,22 @@ CREATE TABLE `boss_activity` (
   `start_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '开始时间',
   `end_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '结束时间',
   `created_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '创建时间',
+  `activity_type` enum('TRNTABLE','SCRATCH','NORMAL','LOWER') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'NORMAL' COMMENT '新活动的类型',
   `updated_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '更新时间',
   `deleted_at` datetime DEFAULT NULL,
+  `limit` varchar(255) COLLATE utf8_unicode_ci COMMENT '限制条件',
+  `employee_id` int(8) NOT NULL DEFAULT 0 COMMENT '员工id',
+  `one_prize` int(8) NOT NULL DEFAULT 0,
+  `one_count` int(8) NOT NULL DEFAULT 0,
+  `two_prize` int(8) NOT NULL DEFAULT 0,
+  `two_count` int(8) NOT NULL DEFAULT 0,
+  `three_prize` int(8) NOT NULL DEFAULT 0,
+  `three_count` int(8) NOT NULL DEFAULT 0,
+  `share_img` varchar(255) COLLATE utf8_unicode_ci,
+  `share_title` varchar(255) COLLATE utf8_unicode_ci,
+  `share_des` varchar(255) COLLATE utf8_unicode_ci,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=80 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=120 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -350,6 +362,23 @@ CREATE TABLE `boss_device` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=172 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+-- ----------------------------
+-- Table structure for boss_draw
+-- ----------------------------
+CREATE TABLE `boss_draw` (
+  `id` int(10) unsigned zerofill NOT NULL AUTO_INCREMENT,
+  `activity_id` int(11) NOT NULL DEFAULT 0 COMMENT '活动id',
+  `customer_id` int(11) NOT NULL DEFAULT 0 COMMENT '用户id',
+  `draw_time` datetime NOT NULL  DEFAULT '0000-00-00 00:00:00' COMMENT '抽奖时间',
+  `is_draw` tinyint(11) NOT NULL DEFAULT 0 COMMENT '是否中奖',
+  `prize_id` int(11) NOT NULL DEFAULT 0 COMMENT '奖品id',
+  `prize_name` varchar(255) NOT NULL DEFAULT '' COMMENT '奖品名称',
+  `created_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '创建时间',
+  `updated_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '更新时间',
+  `deleted_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=134 DEFAULT CHARSET=utf8;
 
 --
 -- Table structure for table `boss_employee`

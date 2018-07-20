@@ -57,7 +57,7 @@ class Activity extends MY_Controller
                 $id_1[] = $value['activity_id'];
             }
             $activity_id2 = Activitymodel::where('coupon_type','like','%'.$ac_name.'%')
-                ->whereIn('id',$id_1)->where('activity_type', '!=', '0')->get(['id'])->toArray();
+                ->whereIn('id',$id_1)->where('activity_type', '!=', 'NORMAL')->get(['id'])->toArray();
             $id_2=[];
             foreach ($activity_id2 as $id){
                 $id_2[] = $id['id'];
@@ -73,19 +73,19 @@ class Activity extends MY_Controller
             $id = $id_2;
         }
         $offset = ($page-1)*PAGINATE;
-        $filed = ['id','name','start_time','end_time','description','coupon_info','limit','current_id','qrcode_url','activity_type'
+        $filed = ['id','name','start_time','end_time','description','coupon_info','limit','employee_id','qrcode_url','activity_type'
         ,'one_prize','two_prize','three_prize'];
         if($id == 'NOT') {
-            $activity = Activitymodel::where('activity_type', '!=', '0')->take(PAGINATE)->skip($offset)
+            $activity = Activitymodel::where('activity_type', '!=', 'NORMAL')->take(PAGINATE)->skip($offset)
                 ->orderBy('end_time', 'desc')
                 ->get($filed)->ToArray();
-            $activitycount = Activitymodel::where('activity_type', '!=', '0')->get()->count();
+            $activitycount = Activitymodel::where('activity_type', '!=', 'NORMAL')->get()->count();
             $count = ceil($activitycount/PAGINATE);
         }else{
-            $activity = Activitymodel::where('activity_type', '!=', '0')->take(PAGINATE)->skip($offset)->whereIn('id', $id)
+            $activity = Activitymodel::where('activity_type', '!=', 'NORMAL')->take(PAGINATE)->skip($offset)->whereIn('id', $id)
                 ->orderBy('end_time', 'desc')
                 ->get($filed)->ToArray();
-            $activitycount = Activitymodel::where('activity_type', '!=', '0')->get()->count();
+            $activitycount = Activitymodel::where('activity_type', '!=', 'NORMAL')->get()->count();
             $count = ceil($activitycount/PAGINATE);
         }
         if(!$activity){
@@ -102,7 +102,7 @@ class Activity extends MY_Controller
             $participate = Drawmodel::where('activity_id',$coupon['id'])->orderby('costomer_id')->count();
             $Lottery_number = Drawmodel::where('activity_id',$coupon['id'])->count();
             $lucky_draw = Drawmodel::where(['activity_id'=>$coupon['id'],'is_draw'=>'1'])->count();
-            $employee_name = Employeemodel::where('id',$coupon['current_id'])->first(['name']);
+            $employee_name = Employeemodel::where('id',$coupon['employee_id'])->first(['name']);
             $data[$key]['id']=$coupon['id'];
             $data[$key]['user'] = $employee_name->name;
             $data[$key]['name']=$coupon['coupon_info'];
@@ -116,7 +116,7 @@ class Activity extends MY_Controller
             $data[$key]['Lottery_number'] = $Lottery_number;
             $data[$key]['lucky_draw'] = $lucky_draw;
             $data[$key]['url'] = $coupon['qrcode_url'];
-            if($coupon['activity_type'] == '-1'){
+            if($coupon['activity_type'] == 'LOWER'){
                 $data[$key]['status'] = 'Lowerframe';
             }elseif(time()<strtotime($coupon['start_time'])){
                 $data[$key]['status'] = 'Notbeginning';
@@ -163,11 +163,11 @@ class Activity extends MY_Controller
         $activity['three_count'] = $post['three_count'];
         $activity['description'] = $post['description'];
         $activity['limit'] = serialize($limit);
-        $activity['current_id'] = CURRENT_ID;
+        $activity['employee_id'] = CURRENT_ID;
         $activity['share_img'] = $this->splitAliossUrl($post['images']);/*$this->splitAliossUrl($post['images'],true)*/;
         $activity['share_des'] = $post['share_des'];
         $activity['share_title'] = $post['share_title'];
-        $activity['activity_type'] = 1;//tweb.funxdata.com/#/turntable
+        $activity['activity_type'] = 'TRNTABLE';//tweb.funxdata.com/#/turntable
         $insertId = Activitymodel::insertGetId($activity);
           $store_id =explode(',', $post['store_id']);
         $ac = Activitymodel::find($insertId);
@@ -220,11 +220,11 @@ class Activity extends MY_Controller
         $activity['three_count'] = $post['three_count'];
         $activity['description'] = $post['description'];
         $activity['limit'] = serialize($limit);
-        $activity['current_id'] = CURRENT_ID;
+        $activity['employee_id'] = CURRENT_ID;
         $activity['share_img'] = $this->splitAliossUrl($post['images']);/*$this->splitAliossUrl($post['images'],true)*/;
         $activity['share_des'] = $post['share_des'];
         $activity['share_title'] = $post['share_title'];
-        $activity['activity_type'] = 2;//tweb.funxdata.com/#/turntable
+        $activity['activity_type'] = 'SCRATCH';//tweb.funxdata.com/#/turntable
         $insertId = Activitymodel::insertGetId($activity);
         $store_id =explode(',', $post['store_id']);
         $ac = Activitymodel::find($insertId);
@@ -256,7 +256,7 @@ class Activity extends MY_Controller
             return false;
         }
         $activity = Activitymodel::find($activity_id);
-        $activity->activity_type = -1;
+        $activity->activity_type = 'LOWER';
         if($activity->save()){
             $data=['status'=> 'Lowerframe'];
             $this->api_res(0,$data);
@@ -281,7 +281,7 @@ class Activity extends MY_Controller
             $this->api_res(1007);
             return false;
         }
-        if($activity->activity_type== -1){
+        if($activity->activity_type== 'LOWER'){
             $this->api_res(11102);
             return false;
         }
