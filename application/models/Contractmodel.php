@@ -40,7 +40,7 @@ class Contractmodel extends Basemodel {
     //门店城市 店名
     public function store()
     {
-        return $this->belongsTo(Storemodel::class,'store_id')->select('id','city','name');
+        return $this->belongsTo(Storemodel::class,'store_id');
     }
     //建筑名 房号
     public function roomunion()
