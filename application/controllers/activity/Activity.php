@@ -57,14 +57,14 @@ class Activity extends MY_Controller
                 $id_1[] = $value['activity_id'];
             }
             $activity_id2 = Activitymodel::where('coupon_type','like','%'.$ac_name.'%')
-                ->whereIn('id',$id_1)->where('activity_type', '!=', 'NORMAL')->get(['id'])->toArray();
+                ->whereIn('id',$id_1)->where('activity_type', '!=', 'NORMAL')->where('activity_type', '!=', '')->get(['id'])->toArray();
             $id_2=[];
             foreach ($activity_id2 as $id){
                 $id_2[] = $id['id'];
             }
             $id = $id_2;
         }else{
-            $activity_id2 = Activitymodel::where('coupon_type','like','%'.$ac_name.'%')->where('activity_type','!=','0')
+            $activity_id2 = Activitymodel::where('coupon_type','like','%'.$ac_name.'%')->where('activity_type','!=','NORMAL')->where('activity_type', '!=', '')
                 ->get(['id'])->toArray();
             $id_2=[];
             foreach ($activity_id2 as $id){
@@ -74,18 +74,18 @@ class Activity extends MY_Controller
         }
         $offset = ($page-1)*PAGINATE;
         $filed = ['id','name','start_time','end_time','description','coupon_info','limit','employee_id','qrcode_url','activity_type'
-        ,'one_prize','two_prize','three_prize'];
+            ,'one_prize','two_prize','three_prize'];
         if($id == 'NOT') {
-            $activity = Activitymodel::where('activity_type', '!=', 'NORMAL')->take(PAGINATE)->skip($offset)
+            $activity = Activitymodel::where('activity_type', '!=', 'NORMAL')->where('activity_type', '!=', '')->take(PAGINATE)->skip($offset)
                 ->orderBy('end_time', 'desc')
                 ->get($filed)->ToArray();
-            $activitycount = Activitymodel::where('activity_type', '!=', 'NORMAL')->get()->count();
+            $activitycount = Activitymodel::where('activity_type', '!=', 'NORMAL')->where('activity_type', '!=', '')->get()->count();
             $count = ceil($activitycount/PAGINATE);
         }else{
-            $activity = Activitymodel::where('activity_type', '!=', 'NORMAL')->take(PAGINATE)->skip($offset)->whereIn('id', $id)
+            $activity = Activitymodel::where('activity_type', '!=', 'NORMAL')->where('activity_type', '!=', '')->take(PAGINATE)->skip($offset)->whereIn('id', $id)
                 ->orderBy('end_time', 'desc')
                 ->get($filed)->ToArray();
-            $activitycount = Activitymodel::where('activity_type', '!=', 'NORMAL')->get()->count();
+            $activitycount = Activitymodel::where('activity_type', '!=', 'NORMAL')->where('activity_type', '!=', '')->get()->count();
             $count = ceil($activitycount/PAGINATE);
         }
         if(!$activity){
@@ -132,7 +132,7 @@ class Activity extends MY_Controller
      * 新增活动
      * 大转盘的活动
      * */
-        public function addTrntable(){
+    public function addTrntable(){
         $post = $this->input->post(null,true);
         $this->load->model('storeactivitymodel');
         $config = $this->validation();
@@ -150,7 +150,7 @@ class Activity extends MY_Controller
             return false;
         }
         $limit = ['com' => $post['customer'],
-                   'limit' => $post['limit']];
+            'limit' => $post['limit']];
         $activity['coupon_info'] = $post['name'];
         $activity['start_time'] = $post['start_time'];
         $activity['end_time'] = $post['end_time'];
@@ -169,12 +169,12 @@ class Activity extends MY_Controller
         $activity['share_title'] = $post['share_title'];
         $activity['activity_type'] = 'TRNTABLE';//tweb.funxdata.com/#/turntable
         $insertId = Activitymodel::insertGetId($activity);
-          $store_id =explode(',', $post['store_id']);
+        $store_id =explode(',', $post['store_id']);
         $ac = Activitymodel::find($insertId);
         if(ENVIRONMENT=='production'){
-        $ac->qrcode_url ="tweb.funxdata.com/%23/turntable?id=".$insertId."";
+            $ac->qrcode_url ="tweb.funxdata.com/%23/turntable?id=".$insertId."";
         }else{
-        $ac->qrcode_url ="web.funxdata.com/%23/turntable?id=".$insertId."";
+            $ac->qrcode_url ="web.funxdata.com/%23/turntable?id=".$insertId."";
         }
         $ac->save();
         foreach ($store_id as $value){
@@ -229,9 +229,9 @@ class Activity extends MY_Controller
         $store_id =explode(',', $post['store_id']);
         $ac = Activitymodel::find($insertId);
         if(ENVIRONMENT=='production'){
-        $ac->qrcode_url ="tweb.funxdata.com/%23/turntable?id=".$insertId."";
+            $ac->qrcode_url ="tweb.funxdata.com/%23/turntable?id=".$insertId."";
         }else{
-        $ac->qrcode_url ="web.funxdata.com/%23/turntable?id=".$insertId."";
+            $ac->qrcode_url ="web.funxdata.com/%23/turntable?id=".$insertId."";
         }
         $ac->save();
         foreach ($store_id as $value){
@@ -265,9 +265,9 @@ class Activity extends MY_Controller
         }
     }
 
-   /*
-    * 生成活动二维码
-    * */
+    /*
+     * 生成活动二维码
+     * */
     public function activityCode(){
         $post = $this->input->post(null,true);
         $id = isset($post['id'])?$post['id']:null;
@@ -286,11 +286,11 @@ class Activity extends MY_Controller
             return false;
         }
         try{
-            if($activity->activity_type== 1){
+            if($activity->activity_type== 'TRNTABLE'){
                 //转盘
                 $url = config_item('activity_url').'turntable?id='.$activity->id;
                 $this->api_res(0,['url'=>$url]);
-            }elseif($activity->activity_type== 2){
+            }elseif($activity->activity_type== 'SCRATCH'){
                 //刮刮乐
                 $url = config_item('activity_url').'scraping?id='.$activity->id;
                 $this->api_res(0,['url'=>$url]);
