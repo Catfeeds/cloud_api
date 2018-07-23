@@ -44,50 +44,32 @@ class Activity extends MY_Controller
         $this->load->model('coupontypemodel');
         $this->load->model('drawmodel');
         $this->load->model('employeemodel');
-        $store_id = isset($post['store_id'])?trim($post['store_id']):null;
-        $ac_name = isset($post['activity_name'])?trim($post['activity_name']):null;
+        $this->load->model('storemodel');
+        $store = Storemodel::get(['id'])->toArray();
+        $result = array_column($store , 'id' );
+        $str_store = implode(',',$result);
+        $store_id = isset($post['store_id'])?trim($post['store_id']):$str_store;
+        $ac_name = isset($post['activity_name'])?trim($post['activity_name']):'';
         $page   = isset($post['page'])?intval($post['page']):1;
-        if((!$store_id)&&(!$ac_name)){
-            $id = 'NOT';
-        }elseif($store_id != null){
-            $store_id = explode(',',$store_id);
-            $activity_id1 = Storeactivitymodel::whereIn('store_id',$store_id)->get(['activity_id'])->toArray();
-            $id_1=[];
-            foreach ($activity_id1 as $key=>$value){
-                $id_1[] = $value['activity_id'];
-            }
-            $activity_id2 = Activitymodel::where('coupon_info','like','%'.$ac_name.'%')
-                ->whereIn('id',$id_1)->where('activity_type', '!=', 'NORMAL')->where('activity_type', '!=', '')->get(['id'])->toArray();
-            $id_2=[];
-            foreach ($activity_id2 as $id){
-                $id_2[] = $id['id'];
-            }
-            $id = $id_2;
-        }else{
-            $activity_id2 = Activitymodel::where('coupon_info','like','%'.$ac_name.'%')->where('activity_type','!=','NORMAL')->where('activity_type', '!=', '')
-                ->get(['id'])->toArray();
-            $id_2=[];
-            foreach ($activity_id2 as $id){
-                $id_2[] = $id['id'];
-            }
-            $id = $id_2;
-        }
+        $store_id = explode(',',$store_id);
         $offset = ($page-1)*PAGINATE;
         $filed = ['id','name','start_time','end_time','description','coupon_info','limit','employee_id','qrcode_url','activity_type'
             ,'one_prize','two_prize','three_prize'];
-        if($id == 'NOT') {
-            $activity = Activitymodel::where('activity_type', '!=', 'NORMAL')->where('activity_type', '!=', '')->take(PAGINATE)->skip($offset)
-                ->orderBy('end_time', 'desc')
-                ->get($filed)->ToArray();
-            $activitycount = Activitymodel::where('activity_type', '!=', 'NORMAL')->where('activity_type', '!=', '')->get()->count();
-            $count = ceil($activitycount/PAGINATE);
-        }else{
-            $activity = Activitymodel::where('activity_type', '!=', 'NORMAL')->where('activity_type', '!=', '')->take(PAGINATE)->skip($offset)->whereIn('id', $id)
-                ->orderBy('end_time', 'desc')
-                ->get($filed)->ToArray();
-            $activitycount = Activitymodel::where('activity_type', '!=', 'NORMAL')->where('activity_type', '!=', '')->get()->count();
-            $count = ceil($activitycount/PAGINATE);
-        }
+            $activity = Activitymodel::where('activity_type', '!=', 'NORMAL')->where('activity_type', '!=', '')
+                ->where('coupon_info','like',"%$ac_name%")->take(PAGINATE)->skip($offset)
+                ->orderBy('end_time', 'desc')->where(function($query) use ($store_id){
+                    $query->orWhereHas('store',function($query) use($store_id){
+                        $query->whereIN('store_id',$store_id);
+                    });
+                })->get($filed)->ToArray();
+        $count = Activitymodel::where('activity_type', '!=', 'NORMAL')->where('activity_type', '!=', '')
+            ->where('coupon_info','like',"%$ac_name%")->take(PAGINATE)->skip($offset)
+            ->orderBy('end_time', 'desc')->where(function($query) use ($store_id){
+                $query->orWhereHas('store',function($query) use($store_id){
+                    $query->whereIN('store_id',$store_id);
+                });
+            })->count();
+            $count = ceil($count/PAGINATE);
         if(!$activity){
             $this->api_res(1007);
         }

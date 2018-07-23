@@ -67,6 +67,9 @@ class Activitymodel extends Basemodel
             Activitymodel::TYPE_DISCOUNT,
         ];
     }
-
+    public function store()
+    {
+        return $this->belongsTo(Storeactivitymodel::class, 'id','activity_id');
+    }
 
 }
