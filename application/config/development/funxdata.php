@@ -13,7 +13,7 @@
 */
 date_default_timezone_set('Asia/ShangHai');
 $config['time_zone']    = date_default_timezone_get();
-
+$config['web_domain'] = 'tweb.funxdata.com';
 /*
 //梵响数据系统相关文件的整理配置
 */
@@ -21,7 +21,6 @@ $config['base_url'] = 'http://tapi.boss.funxdata.com/';
 //$config['base_url'] = 'http://api.boss.strongberry.cn/';
 $config['fdd_notify_url'] = 'http://tapi.boss.funxdata.com/mini/contract/notify';
 $config['wechat_base_url'] = 'web.strongberry.cn/';
-$config['activity_url'] = 'tweb.funxdata.com/#/';
 
 //住户公众号模板消息ID
 //1.缴费提醒
