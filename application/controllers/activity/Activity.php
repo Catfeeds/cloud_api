@@ -274,11 +274,11 @@ class Activity extends MY_Controller
         try{
             if($activity->activity_type== 'TRNTABLE'){
                 //转盘
-                $url = config_item('web_domain').'/23%/turntable/'.$activity->id;
+                $url = config_item('web_domain').'/#/turntable/'.$activity->id;
                 $this->api_res(0,['url'=>$url]);
             }elseif($activity->activity_type== 'SCRATCH'){
                 //刮刮乐
-                $url = config_item('web_domain').'/23%/scraping/'.$activity->id;
+                $url = config_item('web_domain').'/#/scraping/'.$activity->id;
                 $this->api_res(0,['url'=>$url]);
             }
         }catch (Exception $e){
