@@ -23,6 +23,7 @@ class Home extends MY_Controller
      */
     public function lists()
     {
+        $this->load->model('roomunionmodel');
         $post       = $this->input->post(null,true);
         $store_id   = empty($post['store_id'])?'':trim($post['store_id']);
         if(empty($store_id)){
@@ -30,9 +31,12 @@ class Home extends MY_Controller
         }
 //获取首页提示信息
         //未缴费订单
-        $data['tipsnum']['order'] = Ordermodel::where(['store_id'=>$store_id])
-            ->where('status','PENDING')
-            ->groupBy('resident_id')
+        $data['tipsnum']['order'] = Ordermodel::join('boss_room_union', function ($join) {
+            $join->on('boss_order.resident_id', '=', 'boss_room_union.resident_id');
+        })
+            ->where('boss_order.store_id',$store_id)
+            ->where('boss_order.status','PENDING')
+            ->groupBy('boss_order.resident_id')
             ->get()->count();
         //缴费订单确认
         $data['tipsnum']['sureorder'] = Ordermodel::where(['store_id'=>$store_id])
