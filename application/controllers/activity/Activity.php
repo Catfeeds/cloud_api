@@ -56,7 +56,7 @@ class Activity extends MY_Controller
             foreach ($activity_id1 as $key=>$value){
                 $id_1[] = $value['activity_id'];
             }
-            $activity_id2 = Activitymodel::where('coupon_type','like','%'.$ac_name.'%')
+            $activity_id2 = Activitymodel::where('coupon_info','like','%'.$ac_name.'%')
                 ->whereIn('id',$id_1)->where('activity_type', '!=', 'NORMAL')->where('activity_type', '!=', '')->get(['id'])->toArray();
             $id_2=[];
             foreach ($activity_id2 as $id){
@@ -64,7 +64,7 @@ class Activity extends MY_Controller
             }
             $id = $id_2;
         }else{
-            $activity_id2 = Activitymodel::where('coupon_type','like','%'.$ac_name.'%')->where('activity_type','!=','NORMAL')->where('activity_type', '!=', '')
+            $activity_id2 = Activitymodel::where('coupon_info','like','%'.$ac_name.'%')->where('activity_type','!=','NORMAL')->where('activity_type', '!=', '')
                 ->get(['id'])->toArray();
             $id_2=[];
             foreach ($activity_id2 as $id){
@@ -164,19 +164,12 @@ class Activity extends MY_Controller
         $activity['description'] = $post['description'];
         $activity['limit'] = serialize($limit);
         $activity['employee_id'] = CURRENT_ID;
-        $activity['share_img'] = $this->splitAliossUrl($post['images']);/*$this->splitAliossUrl($post['images'],true)*/;
+        $activity['share_img'] = $this->splitAliossUrl($post['images']);
         $activity['share_des'] = $post['share_des'];
         $activity['share_title'] = $post['share_title'];
-        $activity['activity_type'] = 'TRNTABLE';//tweb.funxdata.com/#/turntable
+        $activity['activity_type'] = 'TRNTABLE';
         $insertId = Activitymodel::insertGetId($activity);
         $store_id =explode(',', $post['store_id']);
-        $ac = Activitymodel::find($insertId);
-        if(ENVIRONMENT=='production'){
-            $ac->qrcode_url ="tweb.funxdata.com/%23/turntable?id=".$insertId."";
-        }else{
-            $ac->qrcode_url ="web.funxdata.com/%23/turntable?id=".$insertId."";
-        }
-        $ac->save();
         foreach ($store_id as $value){
             $data = ['store_id'=>$value, 'activity_id' => $insertId];
             $store= Storeactivitymodel::insert($data);
@@ -221,19 +214,12 @@ class Activity extends MY_Controller
         $activity['description'] = $post['description'];
         $activity['limit'] = serialize($limit);
         $activity['employee_id'] = CURRENT_ID;
-        $activity['share_img'] = $this->splitAliossUrl($post['images']);/*$this->splitAliossUrl($post['images'],true)*/;
+        $activity['share_img'] = $this->splitAliossUrl($post['images']);
         $activity['share_des'] = $post['share_des'];
         $activity['share_title'] = $post['share_title'];
-        $activity['activity_type'] = 'SCRATCH';//tweb.funxdata.com/#/turntable
+        $activity['activity_type'] = 'SCRATCH';
         $insertId = Activitymodel::insertGetId($activity);
         $store_id =explode(',', $post['store_id']);
-        $ac = Activitymodel::find($insertId);
-        if(ENVIRONMENT=='production'){
-            $ac->qrcode_url ="tweb.funxdata.com/%23/turntable?id=".$insertId."";
-        }else{
-            $ac->qrcode_url ="web.funxdata.com/%23/turntable?id=".$insertId."";
-        }
-        $ac->save();
         foreach ($store_id as $value){
             $data = ['store_id'=>$value, 'activity_id' => $insertId];
             $store= Storeactivitymodel::insert($data);
@@ -288,11 +274,11 @@ class Activity extends MY_Controller
         try{
             if($activity->activity_type== 'TRNTABLE'){
                 //转盘
-                $url = config_item('activity_url').'turntable?id='.$activity->id;
+                $url = config_item('web_domain').'/23%/turntable/'.$activity->id;
                 $this->api_res(0,['url'=>$url]);
             }elseif($activity->activity_type== 'SCRATCH'){
                 //刮刮乐
-                $url = config_item('activity_url').'scraping?id='.$activity->id;
+                $url = config_item('web_domain').'/23%/scraping/'.$activity->id;
                 $this->api_res(0,['url'=>$url]);
             }
         }catch (Exception $e){
