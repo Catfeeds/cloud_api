@@ -8,16 +8,17 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  *智能设备表
  */
 
-class Smartdevicemodel extends Basemodel{
+class Smartdevicemodel extends Basemodel {
 
-    protected $table    = 'boss_smart_device';
-    protected $hidden   = ['created_at','updated_at','deleted_at'];
+    protected $table  = 'boss_smart_device';
+    protected $hidden = ['created_at', 'updated_at', 'deleted_at'];
 
-    public function room(){
-        return $this->belongsTo(Roomunionmodel::class,'room_id')->select('id','layer','number','store_id','building_name');
+    public function room() {
+        return $this->belongsTo(Roomunionmodel::class, 'room_id')
+            ->select('id', 'layer', 'number', 'store_id', 'building_name');
     }
 
-    public function store(){
-        return $this->belongsTo(Storemodel::class,'store_id')->select('id');
+    public function store() {
+        return $this->belongsTo(Storemodel::class, 'store_id')->select('id');
     }
 }

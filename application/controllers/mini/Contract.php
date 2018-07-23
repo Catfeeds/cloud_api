@@ -6,13 +6,12 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Time:        16:38
  * Describe:
  */
-class Contract extends MY_Controller{
+class Contract extends MY_Controller {
 
     /**
      * 自动签章接口的结果通知
      */
-    public function notify()
-    {
+    public function notify() {
         $this->load->library('form_validation');
         $this->load->library('fadada');
         $this->load->model('fddrecordmodel');
@@ -47,7 +46,7 @@ class Contract extends MY_Controller{
                 'field' => 'msg_digest',
                 'label' => 'msg_digest',
                 'rules' => 'required',
-            )
+            ),
         );
 
         $this->form_validation->set_rules($config);
@@ -100,54 +99,53 @@ class Contract extends MY_Controller{
     /**
      * 未归档的合同包括 住户未生成和住户未签署以及住户签署员工未签署
      */
-    public function listUnSign()
-    {
-        $input  = $this->input->post(null,true);
-        $page   = (int)(isset($input['page'])?$input['page']:1);
-        $per_page   = (int)(isset($input['per_page'])?$input['per_page']:PAGINATE);
-        $offset = ($page-1)*$per_page;
-        $where['store_id']=$this->employee->store_id;
+    public function listUnSign() {
+        $input             = $this->input->post(null, true);
+        $page              = (int) (isset($input['page']) ? $input['page'] : 1);
+        $per_page          = (int) (isset($input['per_page']) ? $input['per_page'] : PAGINATE);
+        $offset            = ($page - 1) * $per_page;
+        $where['store_id'] = $this->employee->store_id;
         $this->load->model('residentmodel');
         $this->load->model('roomunionmodel');
         $this->load->model('contractmodel');
 
-        if(isset($input['room_number'])){
-            $room_ids   = Roomunionmodel::where('number',$input['room_number'])
-                ->where('store_id',$this->employee->store_id)
+        if (isset($input['room_number'])) {
+            $room_ids = Roomunionmodel::where('number', $input['room_number'])
+                ->where('store_id', $this->employee->store_id)
                 ->get()
-                ->map(function($a){
+                ->map(function ($a) {
                     return $a->id;
                 });
-        }else{
-            $room_ids   = Roomunionmodel::where('store_id',$this->employee->store_id)
+        } else {
+            $room_ids = Roomunionmodel::where('store_id', $this->employee->store_id)
                 ->get()
-                ->map(function($a){
+                ->map(function ($a) {
                     return $a->id;
                 });
         }
 
-        $rooms  = Residentmodel::with('roomunion')
+        $rooms = Residentmodel::with('roomunion')
             ->where($where)
-            ->whereIn('room_id',$room_ids)
-            ->whereIn('status',['NOT_PAY','PRE_RESERVE'])
-            ->orderBy('updated_at','ASC')
+            ->whereIn('room_id', $room_ids)
+            ->whereIn('status', ['NOT_PAY', 'PRE_RESERVE'])
+            ->orderBy('updated_at', 'ASC')
             ->offset($offset)
             ->limit($per_page)
             ->get()
-            ->map(function($room){
-            $room2   = $room->toArray();
-            $room2['begin_time'] =date('Y-m-d',strtotime($room->begin_time->toDateTimeString()));
-            return $room2;
+            ->map(function ($room) {
+                $room2               = $room->toArray();
+                $room2['begin_time'] = date('Y-m-d', strtotime($room->begin_time->toDateTimeString()));
+                return $room2;
             });
-        $total_page = ceil(($rooms->count())/PAGINATE);
+        $total_page = ceil(($rooms->count()) / PAGINATE);
 
-        $data['data']= $rooms->toArray();
-        $data['per_page']   = $per_page;
-        $data['current_page']   = $page;
-        $data['total']  = $rooms->count();
-        $data['total_page']=$total_page;
+        $data['data']         = $rooms->toArray();
+        $data['per_page']     = $per_page;
+        $data['current_page'] = $page;
+        $data['total']        = $rooms->count();
+        $data['total_page']   = $total_page;
 
-         $this->api_res(0,$data);
+        $this->api_res(0, $data);
     }
 
     /**
@@ -156,8 +154,7 @@ class Contract extends MY_Controller{
      * 目前流程是客户签完章之后, 再签公章
      * 返回合同的预览链接 url
      */
-    public function autoSign()
-    {
+    public function autoSign() {
         $this->load->library('fadada');
         $this->load->model('contractmodel');
         $this->load->model('fddrecordmodel');
@@ -184,10 +181,10 @@ class Contract extends MY_Controller{
                         throw new Exception('该公寓没有客户编号,请设置CA后重试!');
                     }
 
-                    $transactionId = 'A'.date('YmdHis').mt_rand(10,59);
+                    $transactionId = 'A' . date('YmdHis') . mt_rand(10, 59);
 
                     //生成新的交易记录
-                    $record = new Fddrecordmodel();
+                    $record                 = new Fddrecordmodel();
                     $record->remark         = '甲方发起了签署!';
                     $record->status         = Fddrecordmodel::STATUS_INITIATED;
                     $record->contract_id    = $contract->id;
@@ -201,26 +198,25 @@ class Contract extends MY_Controller{
                         $contract->doc_title,
                         $customerId,
                         config_item('fadada_platform_sign_key_word'),
-                        config_item('fdd_notify_url')    //结果回调
+                        config_item('fdd_notify_url') //结果回调
                     );
 
                     if ($res == false) {
-                        $this->api_res(10080,[$this->fadada->showError()]);
+                        $this->api_res(10080, [$this->fadada->showError()]);
                         return;
                     }
                 }
             }
         } catch (Exception $e) {
-            throw  $e;
+            throw $e;
         }
-        $this->api_res(0,['url'=>$contract->view_url]);
+        $this->api_res(0, ['url' => $contract->view_url]);
     }
 
     /**
      * 电子合同的归档
      */
-    public function archive()
-    {
+    public function archive() {
         $this->load->library('fadada');
         $this->load->model('fddrecordmodel');
         $this->load->model('contractmodel');
@@ -253,21 +249,21 @@ class Contract extends MY_Controller{
             $res = $this->fadada->contractFiling($contract->contract_id);
 
             if ($res == false) {
-                $this->api_res(10080,[$this->fadada->showError()]);
+                $this->api_res(10080, [$this->fadada->showError()]);
                 return;
             }
 
             if ($res['code'] != 1000) {
                 log_message('error', $res['msg']);
-                $this->api_res(10080,['error'=>$res['msg']]);
+                $this->api_res(10080, ['error' => $res['msg']]);
                 return;
             }
 
             $contract->status = Contractmodel::STATUS_ARCHIVED;
             $contract->save();
 
-            $resident           = $contract->resident;
-            $ordersUnhandled    = $resident->orders()
+            $resident        = $contract->resident;
+            $ordersUnhandled = $resident->orders()
                 ->whereIn('status', [Ordermodel::STATE_AUDITED, Ordermodel::STATE_PENDING, Ordermodel::STATE_CONFIRM])
                 ->count();
 
@@ -281,30 +277,28 @@ class Contract extends MY_Controller{
             throw $e;
         }
 
-        $this->api_res(0,['res'=>$res]);
+        $this->api_res(0, ['res' => $res]);
     }
 
     /**
      * 批量给用户已经签署的合同盖章
      */
-    public function batchSign()
-    {
+    public function batchSign() {
         $this->load->library('fadada');
         $this->load->model('contractmodel');
         $this->load->model('fddrecordmodel');
         $this->load->model('residentmodel');
         $this->load->model('roomunionmodel');
         $this->load->model('storemodel');
-        $contract_ids   = explode(',',$this->input->post('contract_ids'));
-        $contracts   = Contractmodel::where('status','SIGNING')->whereIn('id',$contract_ids)->get();
-        foreach ($contracts as $contract)
-        {
-            if(!$this->sign($contract)){
-                log_message('error',"$contract->id 签署失败");
+        $contract_ids = explode(',', $this->input->post('contract_ids'));
+        $contracts    = Contractmodel::where('status', 'SIGNING')->whereIn('id', $contract_ids)->get();
+        foreach ($contracts as $contract) {
+            if (!$this->sign($contract)) {
+                log_message('error', "$contract->id 签署失败");
                 continue;
             }
-            if($this->signToArchive($contract)){
-                log_message('error',"$contract->id 归档失败");
+            if ($this->signToArchive($contract)) {
+                log_message('error', "$contract->id 归档失败");
                 continue;
             }
         }
@@ -314,8 +308,7 @@ class Contract extends MY_Controller{
     /**
      * 签署
      */
-    private function sign($contract)
-    {
+    private function sign($contract) {
         if ($contract->status == Contractmodel::STATUS_SIGNING) {
             $transaction = $contract->transactions()
                 ->where('role', Fddrecordmodel::ROLE_A)
@@ -323,25 +316,25 @@ class Contract extends MY_Controller{
                 ->first();
             if (empty($transaction)) {
                 //查询, 获取公寓的法大大customer_id
-                if(!isset($contract->resident->roomunion->store->fdd_customer_id)){
+                if (!isset($contract->resident->roomunion->store->fdd_customer_id)) {
                     return false;
-                }else{
+                } else {
                     $customerId = $contract->resident->roomunion->store->fdd_customer_id;
                 }
                 if (!$customerId) {
-                    log_message('error','该公寓没有客户编号,请设置CA后重试!');
+                    log_message('error', '该公寓没有客户编号,请设置CA后重试!');
                     return false;
                 }
 
                 $transactionId = 'A' . date('YmdHis') . mt_rand(10, 59);
 
                 //生成新的交易记录
-                $record = new Fddrecordmodel();
-                $record->remark = '甲方发起了签署!';
-                $record->status = Fddrecordmodel::STATUS_INITIATED;
-                $record->contract_id = $contract->id;
+                $record                 = new Fddrecordmodel();
+                $record->remark         = '甲方发起了签署!';
+                $record->status         = Fddrecordmodel::STATUS_INITIATED;
+                $record->contract_id    = $contract->id;
                 $record->transaction_id = $transactionId;
-                $record->role = Fddrecordmodel::ROLE_A;
+                $record->role           = Fddrecordmodel::ROLE_A;
                 $record->save();
                 //向法大大系统发送请求, 签署合同
                 $res = $this->fadada->extsignAuto(
@@ -350,24 +343,24 @@ class Contract extends MY_Controller{
                     $contract->doc_title,
                     $customerId,
                     config_item('fadada_platform_sign_key_word'),
-                    config_item('fdd_notify_url')    //结果回调
+                    config_item('fdd_notify_url') //结果回调
                 );
 
                 if ($res == false) {
-                    log_message('error',$this->fadada->showError());
+                    log_message('error', $this->fadada->showError());
                     return false;
                 }
             }
-        return true;
+            return true;
         }
     }
 
     /**
      * archive
      */
-    private function signToArchive($contract){
+    private function signToArchive($contract) {
         if ($contract->status != Contractmodel::STATUS_SIGNING) {
-            log_message('error',"$contract->id 合同目前状态无法进行此操作");
+            log_message('error', "$contract->id 合同目前状态无法进行此操作");
             return false;
         }
 
@@ -379,7 +372,7 @@ class Contract extends MY_Controller{
             ->toArray();
 
         if ($arrToCompare != array_intersect($arrToCompare, $records)) {
-            log_message('error',"$contract->id 请先确认双方都已经成功签署了合同");
+            log_message('error', "$contract->id 请先确认双方都已经成功签署了合同");
             return false;
         }
 
@@ -387,20 +380,20 @@ class Contract extends MY_Controller{
         $res = $this->fadada->contractFiling($contract->contract_id);
 
         if ($res == false) {
-            log_message('error',"$contract->id {$this->fadada->showError()}");
+            log_message('error', "$contract->id {$this->fadada->showError()}");
             return false;
         }
 
         if ($res['code'] != 1000) {
-            log_message('error', $contract->id.$res['msg']);
+            log_message('error', $contract->id . $res['msg']);
             return false;
         }
 
         $contract->status = Contractmodel::STATUS_ARCHIVED;
         $contract->save();
 
-        $resident           = $contract->resident;
-        $ordersUnhandled    = $resident->orders()
+        $resident        = $contract->resident;
+        $ordersUnhandled = $resident->orders()
             ->whereIn('status', [Ordermodel::STATE_AUDITED, Ordermodel::STATE_PENDING, Ordermodel::STATE_CONFIRM])
             ->count();
 

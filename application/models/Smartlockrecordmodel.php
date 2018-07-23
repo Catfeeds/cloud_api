@@ -7,8 +7,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Describe:    智能设备-门锁开门记录
  */
 
-class Smartlockrecordmodel extends Basemodel
-{
-    protected $table = 'boss_smart_lock_record';
-    protected $hidden = ['created_at','deleted_at'];
+class Smartlockrecordmodel extends Basemodel {
+    protected $table  = 'boss_smart_lock_record';
+    protected $hidden = ['created_at', 'deleted_at'];
 }

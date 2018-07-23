@@ -6,15 +6,13 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Time:        16:25
  * Describe:    记录访问url
  */
-class Operationrecordmodel extends Basemodel
-{
+class Operationrecordmodel extends Basemodel {
 
-    public function __construct()
-    {
+    public function __construct() {
         parent::__construct();
     }
 
-    protected $table    = 'boss_operations';
+    protected $table = 'boss_operations';
 
-    protected $hidden   = ['created_at', 'updated_at'];
+    protected $hidden = ['created_at', 'updated_at'];
 }

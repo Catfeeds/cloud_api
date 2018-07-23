@@ -7,16 +7,14 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Describe:
  */
 
-class Ownerhousemodel extends Basemodel
-{
+class Ownerhousemodel extends Basemodel {
 
-    public function __construct()
-    {
+    public function __construct() {
         parent::__construct();
     }
 
-    protected $table    = 'boss_owner_house';
+    protected $table = 'boss_owner_house';
 
-    protected $hidden   = ['created_at', 'updated_at'];
+    protected $hidden = ['created_at', 'updated_at'];
 
 }

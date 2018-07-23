@@ -8,13 +8,12 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  */
 class Privilegemodel extends Basemodel {
 
-    public function __construct()
-    {
+    public function __construct() {
         parent::__construct();
     }
 
-    protected $table    = 'boss_privilege';
+    protected $table = 'boss_privilege';
 
-    protected $hidden   = ['updated_at','deleted_at'];
+    protected $hidden = ['updated_at', 'deleted_at'];
 
 }

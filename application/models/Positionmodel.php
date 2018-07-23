@@ -6,21 +6,19 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Time:        15:07
  * Describe:
  */
-class Positionmodel extends Basemodel{
+class Positionmodel extends Basemodel {
 
-    public function __construct(array $attributes = [])
-    {
+    public function __construct(array $attributes = []) {
         parent::__construct($attributes);
     }
 
-    protected $table    = 'boss_position';
+    protected $table = 'boss_position';
 
-    protected $hidden   = ['updated_at','deleted_at'];
+    protected $hidden = ['updated_at', 'deleted_at'];
 
+    public function employee() {
 
-    public function employee(){
-
-        return $this->hasMany(Employeemodel::class,'position_id')->select('id','position_id');
+        return $this->hasMany(Employeemodel::class, 'position_id')->select('id', 'position_id');
     }
 
 }

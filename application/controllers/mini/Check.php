@@ -6,10 +6,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Time:    14:45
  * Describe:    退房
  */
-class Check extends MY_Controller
-{
-    public function __construct()
-    {
+class Check extends MY_Controller {
+    public function __construct() {
         parent::__construct();
         $this->load->model('reserveordermodel');
     }
@@ -17,11 +15,9 @@ class Check extends MY_Controller
     /**
      * 办理退房
      */
-    public function CheckOut()
-    {
+    public function CheckOut() {
         $this->load->model('roomtypemodel');
-        $post   = $this->input->post(NULL,true);
-
+        $post = $this->input->post(NULL, true);
 
     }
 
@@ -29,8 +25,7 @@ class Check extends MY_Controller
      * @return
      * 表单验证
      */
-    public function validation()
-    {
+    public function validation() {
         $this->load->library('form_validation');
         $config = array(
             array(
@@ -40,11 +35,8 @@ class Check extends MY_Controller
             ),
 
         );
-        $this->form_validation->set_rules($config)->set_error_delimiters('','');
+        $this->form_validation->set_rules($config)->set_error_delimiters('', '');
         return $this->form_validation->run();
     }
 
-
-
 }
-

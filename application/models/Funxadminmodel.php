@@ -10,7 +10,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Funxadminmodel extends Basemodel {
 
-    protected $table    = 'fx_admin';
-    
-    protected $hidden   = ['id','openid','unionid','deleted_at','created_at','updated_at'];
+    protected $table = 'fx_admin';
+
+    protected $hidden = ['id', 'openid', 'unionid', 'deleted_at', 'created_at', 'updated_at'];
 }

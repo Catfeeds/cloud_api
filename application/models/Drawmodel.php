@@ -6,7 +6,6 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Date: 2018/7/9
  * Time: 16:35
  */
-class Drawmodel extends Basemodel
-{
+class Drawmodel extends Basemodel {
     protected $table = 'boss_draw';
 }

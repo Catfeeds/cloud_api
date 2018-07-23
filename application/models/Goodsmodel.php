@@ -6,8 +6,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Time:        10:32
  * Describe:
  */
-class Goodsmodel extends Basemodel
-{
-    protected $table = 'boss_shop_goods';
-    protected $hidden = ['created_at','updated_at','deleted_at'];
+class Goodsmodel extends Basemodel {
+    protected $table  = 'boss_shop_goods';
+    protected $hidden = ['created_at', 'updated_at', 'deleted_at'];
 }

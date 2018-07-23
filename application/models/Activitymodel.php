@@ -6,39 +6,28 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Time:        9:45
  * Describe:
  */
-class Activitymodel extends Basemodel
-{
-    public function __construct(array $attributes = [])
-    {
+class Activitymodel extends Basemodel {
+    public function __construct(array $attributes = []) {
         parent::__construct($attributes);
     }
 
-    protected $table    = 'boss_activity';
+    protected $table = 'boss_activity';
 
     protected $fillable = ['name', 'description'];
 
-    protected $dates    = ['created_at', 'updated_at', 'start_time', 'end_time'];
+    protected $dates = ['created_at', 'updated_at', 'start_time', 'end_time'];
 
     /**
      * 活动类型
      */
-    const TYPE_ATTRACT  = 'ATTRACT';     //吸粉活动
-    const TYPE_NORMAL   = 'NORMAL';      //普通活动, 先不管, 先处理吸粉活动
-    const TYPE_DISCOUNT = 'DISCOUNT';    //房租打折
-
-    /**
-     * 参与该活动的公寓
-     */
-//    public function apartments()
-//    {
-//        return $this->belongsToMany(Apartment::class, 'apartment_activity', 'activity_id', 'apartment_id');
-//    }
+    const TYPE_ATTRACT  = 'ATTRACT'; //吸粉活动
+    const TYPE_NORMAL   = 'NORMAL'; //普通活动, 先不管, 先处理吸粉活动
+    const TYPE_DISCOUNT = 'DISCOUNT'; //房租打折
 
     /**
      * 获取该活动相关的优惠券类型
      */
-    public function coupontypes()
-    {
+    public function coupontypes() {
         return $this
             ->belongsToMany(
                 Coupontypemodel::class, 'boss_activity_coupontype', 'activity_id', 'coupon_type_id'
@@ -46,30 +35,22 @@ class Activitymodel extends Basemodel
             ->withPivot('count', 'min');
     }
 
-    public function coupons()
-    {
+    public function coupons() {
         return $this->hasMany(Couponmodel::class, 'activity_id');
     }
-
-//    public function helprecords()
-//    {
-//        return $this->hasMany(Helprecord::class, 'activity_id');
-//    }
 
     /**
      * 所有活动的类型
      */
-    public function getAllTypes()
-    {
+    public function getAllTypes() {
         return [
             Activitymodel::TYPE_ATTRACT,
             Activitymodel::TYPE_NORMAL,
             Activitymodel::TYPE_DISCOUNT,
         ];
     }
-    public function store()
-    {
-        return $this->belongsTo(Storeactivitymodel::class, 'id','activity_id');
+    public function store() {
+        return $this->belongsTo(Storeactivitymodel::class, 'id', 'activity_id');
     }
 
 }

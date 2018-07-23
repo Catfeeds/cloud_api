@@ -9,10 +9,8 @@ use Carbon\Carbon;
  *   运营合同
  */
 
-class Operation extends MY_Controller
-{
-    public function __construct()
-    {
+class Operation extends MY_Controller {
+    public function __construct() {
         parent::__construct();
         $this->load->model('contractmodel');
     }
@@ -20,97 +18,96 @@ class Operation extends MY_Controller
     /**
      *  入住合同管理
      */
-    public function operatList()
-    {
+    public function operatList() {
         $this->load->model('storemodel');
         $this->load->model('roomunionmodel');
         $this->load->model('employeemodel');
         $this->load->model('residentmodel');
 
-        $post           = $this->input->post(NULL,true);
-        $page           = empty($post['page'])?1:intval($post['page']);
-        $offset         = PAGINATE*($page-1);
-        $count          = ceil(Contractmodel::count()/PAGINATE);
-        $where          = [];
-        if(!empty($post['store_id'])){$where['id']  = $post['store_id'];}
-        if(!empty($post['status'])){$stat=$post['status'];}else{$stat = [
-            Contractmodel::STATUS_GENERATED,
-            Contractmodel::STATUS_SIGNING,
-            Contractmodel::STATUS_ARCHIVED,
-        ];}
-        if(!empty($post['begin_time'])){$btime=$post['begin_time'];}else{$btime = date('Y-m-d H:i:s',0);};
-        if(!empty($post['end_time'])){$etime=$post['end_time'];}else{$etime = date('Y-m-d H:i:s',time());};
-        $filed  = ['id','contract_id','resident_id','sign_type','store_id','room_id','created_at','status','employee_id'];
-        if ($where||$stat||$btime||$etime){
-            $operation = Contractmodel::with('resident')->with('employee')->with('store')->with('roomunion')->
-            where($where)->whereIn('status',[
+        $post   = $this->input->post(NULL, true);
+        $page   = empty($post['page']) ? 1 : intval($post['page']);
+        $offset = PAGINATE * ($page - 1);
+        $count  = ceil(Contractmodel::count() / PAGINATE);
+        $where  = [];
+        if (!empty($post['store_id'])) {$where['id'] = $post['store_id'];}
+        if (!empty($post['status'])) {$stat = $post['status'];} else {
+            $stat = [
                 Contractmodel::STATUS_GENERATED,
                 Contractmodel::STATUS_SIGNING,
                 Contractmodel::STATUS_ARCHIVED,
-                ])->where('status',$stat)->whereBetween('created_at', [$btime, $etime])->take(PAGINATE)->
+            ];}
+        if (!empty($post['begin_time'])) {$btime = $post['begin_time'];} else { $btime = date('Y-m-d H:i:s', 0);};
+        if (!empty($post['end_time'])) {$etime = $post['end_time'];} else { $etime = date('Y-m-d H:i:s', time());};
+        $filed = ['id', 'contract_id', 'resident_id', 'sign_type', 'store_id', 'room_id', 'created_at', 'status', 'employee_id'];
+        if ($where || $stat || $btime || $etime) {
+            $operation = Contractmodel::with('resident')->with('employee')->with('store')->with('roomunion')->
+                where($where)->whereIn('status', [
+                Contractmodel::STATUS_GENERATED,
+                Contractmodel::STATUS_SIGNING,
+                Contractmodel::STATUS_ARCHIVED,
+            ])->where('status', $stat)->whereBetween('created_at', [$btime, $etime])->take(PAGINATE)->
                 skip($offset)->orderBy('id', 'desc')->get($filed);
-        }else{
+        } else {
             $operation = Contractmodel::with('resident')->with('employee')->with('store')->with('roomunion')
-                ->whereIn('status',[
+                ->whereIn('status', [
                     Contractmodel::STATUS_GENERATED,
                     Contractmodel::STATUS_SIGNING,
                     Contractmodel::STATUS_ARCHIVED,
                 ])->take(PAGINATE)->skip($offset)->orderBy('id', 'desc')->get($filed);
         }
-        $this->api_res(0,['operationlist'=>$operation,'count'=>$count]);
+        $this->api_res(0, ['operationlist' => $operation, 'count' => $count]);
     }
 
     /**
      *查看入住合同
      */
-    public function operationFind()
-    {
+    public function operationFind() {
         $this->load->model('roomunionmodel');
         $this->load->model('residentmodel');
         $this->load->model('couponmodel');
         $this->load->model('activitymodel');
         $this->load->model('storemodel');
-        $post   = $this->input->post(NULL,true);
-        $serial = $post['id'];
-        $filed  = ['id','contract_id','resident_id','room_id','status','view_url','store_id'];
-        $operation = Contractmodel::where('id',$serial)->with('store')->with('room')
+        $post      = $this->input->post(NULL, true);
+        $serial    = $post['id'];
+        $filed     = ['id', 'contract_id', 'resident_id', 'room_id', 'status', 'view_url', 'store_id'];
+        $operation = Contractmodel::where('id', $serial)->with('store')->with('room')
             ->with('residents')->get($filed)
-            ->map(function ($s){
-                $s->begin_time   = date('Y-m-d',strtotime($s->residents->begin_time->toDateTimeString()));
-                $s->end_time     = date('Y-m-d',strtotime($s->residents->end_time->toDateTimeString()));
+            ->map(function ($s) {
+                $s->begin_time = date('Y-m-d', strtotime($s->residents->begin_time->toDateTimeString()));
+                $s->end_time   = date('Y-m-d', strtotime($s->residents->end_time->toDateTimeString()));
                 return $s;
             });
-        $this->api_res(0,['info'=>$operation]);
+        $this->api_res(0, ['info' => $operation]);
     }
 
     /**
      * 预定合同管理
      */
-    public function booking()
-    {
+    public function booking() {
         $this->load->model('storemodel');
         $this->load->model('roomunionmodel');
         $this->load->model('residentmodel');
         $this->load->model('residentmodel');
-        $post = $this->input->post(NULL, true);
-        $page = empty($post['page']) ? 1 : intval($post['page']);
+        $post   = $this->input->post(NULL, true);
+        $page   = empty($post['page']) ? 1 : intval($post['page']);
         $offset = PAGINATE * ($page - 1);
-        $count = ceil(Contractmodel::count() / PAGINATE);
-        $where = [];
+        $count  = ceil(Contractmodel::count() / PAGINATE);
+        $where  = [];
         if (!empty($post['store_id'])) {$where['id'] = $post['store_id'];}
-        if (!empty($post['status'])) {$stat = $post['status'];} else {$stat = [Roomunionmodel::STATE_BLANK, Roomunionmodel::STATE_RESERVE, Roomunionmodel::STATE_RENT,
-            Roomunionmodel::STATE_ARREARS, Roomunionmodel::STATE_REFUND, Roomunionmodel::STATE_OTHER, Roomunionmodel::STATE_OCCUPIED,];}
-        if (!empty($post['begin_time'])) {$btime = $post['begin_time'];} else {$btime = date('Y-m-d H:i:s', 0);};
-        if (!empty($post['end_time'])) {$etime = $post['end_time'];} else {$etime = date('Y-m-d H:i:s', time());};
+        if (!empty($post['status'])) {$stat = $post['status'];} else {
+            $stat = [Roomunionmodel::STATE_BLANK, Roomunionmodel::STATE_RESERVE, Roomunionmodel::STATE_RENT,
+                Roomunionmodel::STATE_ARREARS, Roomunionmodel::STATE_REFUND, Roomunionmodel::STATE_OTHER, Roomunionmodel::STATE_OCCUPIED];}
+        if (!empty($post['begin_time'])) {$btime = $post['begin_time'];} else { $btime = date('Y-m-d H:i:s', 0);};
+        if (!empty($post['end_time'])) {$etime = $post['end_time'];} else { $etime = date('Y-m-d H:i:s', time());};
         $filed = ['id', 'contract_id', 'resident_id', 'store_id', 'room_id', 'employee_id'];
         if ($where || $stat) {
             $operation = Contractmodel::with('bookresident')->with('employee')->with('store')->with('roomunion')->
-            where($where)->whereIn('status', [Roomunionmodel::STATE_BLANK, Roomunionmodel::STATE_RESERVE, Roomunionmodel::STATE_RENT,
+                where($where)->whereIn('status', [Roomunionmodel::STATE_BLANK, Roomunionmodel::STATE_RESERVE, Roomunionmodel::STATE_RENT,
                 Roomunionmodel::STATE_ARREARS, Roomunionmodel::STATE_REFUND, Roomunionmodel::STATE_OTHER, Roomunionmodel::STATE_OCCUPIED,
             ])->where('status', $stat)->whereBetween('created_at', [$btime, $etime])->take(PAGINATE)->skip($offset)->orderBy('id', 'desc')->get($filed);
         } else {
             $operation = Contractmodel::with('bookresident')->with('employee')->with('store')->with('roomunion')->
-            take(PAGINATE)->skip($offset)->orderBy('id', 'desc')->get($filed);
+                take(PAGINATE)->skip($offset)->orderBy('id', 'desc')->get($filed);
         }
         $this->api_res(0, ['bookinglist' => $operation, 'count' => $count]);
     }
@@ -118,49 +115,46 @@ class Operation extends MY_Controller
     /**
      * 查看预订合同
      */
-    public function book()
-    {
+    public function book() {
         $this->load->model('storemodel');
         $this->load->model('roomunionmodel');
         $this->load->model('employeemodel');
         $this->load->model('residentmodel');
-        $post   = $this->input->post(NULL,true);
+        $post   = $this->input->post(NULL, true);
         $serial = $post['id'];
-        $filed  = ['id','contract_id','resident_id','store_id','room_id'];
+        $filed  = ['id', 'contract_id', 'resident_id', 'store_id', 'room_id'];
 
-        $operation = Contractmodel::where('id',$serial)->with('roomunion')->with('store')->with('booking')->get($filed);
-        $this->api_res(0,['info'=>$operation]);
+        $operation = Contractmodel::where('id', $serial)->with('roomunion')->with('store')->with('booking')->get($filed);
+        $this->api_res(0, ['info' => $operation]);
     }
 
     /**
      * 查看PDF合同
      */
-    public function pdfLook()
-    {
-        $post  =$this->input->post(NULL,true);
-        $id = $post['id'];
-        $filed  =['view_url'];
-        $pdf  = Contractmodel::where('id',$id)->get($filed);
+    public function pdfLook() {
+        $post  = $this->input->post(NULL, true);
+        $id    = $post['id'];
+        $filed = ['view_url'];
+        $pdf   = Contractmodel::where('id', $id)->get($filed);
 //        foreach ($pdf as $value){
-//            $pdf['view_url'] = $this->fullAliossUrl($value['view_url']);
-//        }
-        $this->api_res(0,['seepdf'=>$pdf]);
+        //            $pdf['view_url'] = $this->fullAliossUrl($value['view_url']);
+        //        }
+        $this->api_res(0, ['seepdf' => $pdf]);
     }
 
     /**
      *上传合同
      */
-    public function loadcontract()
-    {
+    public function loadcontract() {
         $this->load->model('roomunionmodel');
         $this->load->model('storemodel');
         $this->load->model('roomtypemodel');
         $this->load->model('residentmodel');
-        $post   = $this->input->post(NULL,true);
+        $post = $this->input->post(NULL, true);
 //        $this->load->model('contracttemplatemodel');
-//        //生成该合同的编号
-        $resident   = Residentmodel::find(3);
-        $room = $resident->roomunion;
+        //        //生成该合同的编号
+        $resident  = Residentmodel::find(3);
+        $room      = $resident->roomunion;
         $apartment = $resident->roomunion->store;
 //      统计今年门店的合同的数量
         $contractCount = $apartment->contracts()
@@ -168,60 +162,59 @@ class Operation extends MY_Controller
             ->count();
         //生成合同编号 //门店里的合同前缀 - 用户表里的开始时间的年份 - 000格式合同数量自增 - 用户名 - 房间表的房间号
         $contractNumber = $apartment->contract_number_prefix . '-' . Carbon::parse($resident->begin_time)->year . '-' .
-            sprintf("%03d", ++$contractCount) . '-' . $resident->name . '-' . $room->number;
-       //var_dump($contractNumber);die();
+        sprintf("%03d", ++$contractCount) . '-' . $resident->name . '-' . $room->number;
+        //var_dump($contractNumber);die();
         $this->load->model('contracttemplatemodel');
 //       $post   = $this->input->post(NULL,true);
-        $config   = [
-            'allowed_types'   => 'pdf',
-            'upload_path'     => 'temp',
+        $config = [
+            'allowed_types' => 'pdf',
+            'upload_path'   => 'temp',
         ];
-        $this->load->library('upload',$config);
-        if (!$this->upload->do_upload('file'))
-        {
+        $this->load->library('upload', $config);
+        if (!$this->upload->do_upload('file')) {
             var_dump($this->upload->display_errors());exit;
         }
-        $data   = $this->upload->data('full_path');
-     // var_dump($data);die();
-        if(Contractmodel::where('',$contractNumber)->exists()){  //若存在
+        $data = $this->upload->data('full_path');
+        // var_dump($data);die();
+        if (Contractmodel::where('', $contractNumber)->exists()) {
+            //若存在
             $this->api_res(1008);
             return;
         }
 //        $name1 = $this->input->$post['number'];
-//        $name = Storemodel::where('',$name1)->get();
-//      //  var_dump($name);die();
-//        $template   = new Contractmodel();
-//       // $template->dowdload_url = $this->fullAliossUrl($data);
-//      // $template->
-//     //   $template->url = $data;
-//        if($template->save()){
-//            $this->api_res(0);
-//        }else{
-//            $this->api_res(1009);
-//        }
+        //        $name = Storemodel::where('',$name1)->get();
+        //      //  var_dump($name);die();
+        //        $template   = new Contractmodel();
+        //       // $template->dowdload_url = $this->fullAliossUrl($data);
+        //      // $template->
+        //     //   $template->url = $data;
+        //        if($template->save()){
+        //            $this->api_res(0);
+        //        }else{
+        //            $this->api_res(1009);
+        //        }
     }
 
     /**
      * 上传合同扫描的pdf
      */
-    public function uploadPdfContract(){
+    public function uploadPdfContract() {
         $this->load->model('contractmodel');
-        $input  = $this->input->post(null,true);
-        $url    = isset($input['url'])?$input['url']:'';
-        $contract_id    = $input['contract_id'];
-        $contract   = Contractmodel::find($contract_id);
-        if(!$contract){
+        $input       = $this->input->post(null, true);
+        $url         = isset($input['url']) ? $input['url'] : '';
+        $contract_id = $input['contract_id'];
+        $contract    = Contractmodel::find($contract_id);
+        if (!$contract) {
             $this->api_res(10017);
             return;
         }
         $contract->download_url = $url;
-        $contract->view_url = $url;
-        if($contract->save()){
+        $contract->view_url     = $url;
+        if ($contract->save()) {
             $this->api_res(0);
-        }else{
+        } else {
             $this->api_res(1009);
         }
     }
-
 
 }

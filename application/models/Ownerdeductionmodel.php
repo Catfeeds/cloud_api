@@ -6,10 +6,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Time:        17:45
  * Describe:
  */
-class Ownerdeductionmodel extends Basemodel
-{
-    public function __construct()
-    {
+class Ownerdeductionmodel extends Basemodel {
+    public function __construct() {
         parent::__construct();
     }
 

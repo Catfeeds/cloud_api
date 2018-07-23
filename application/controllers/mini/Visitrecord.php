@@ -6,10 +6,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Time:        17:44
  * Describe:    来访登记
  */
-class Visitrecord extends MY_Controller
-{
-    public function __construct()
-    {
+class Visitrecord extends MY_Controller {
+    public function __construct() {
         parent::__construct();
         $this->load->model('Reserveordermodel');
     }
@@ -17,24 +15,21 @@ class Visitrecord extends MY_Controller
     /*
      * 来访登记信息
      */
-    public function visit()
-    {
-        $post = $this->input->post(null,true);
-        if(!$this->validation())
-        {
-            $fieldarr= ['visit_by','name','phone','time','work_address','info_source','room_type_id',
-                        'people_count','check_in_time','guest_type','require','remark'];
-            $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
+    public function visit() {
+        $post = $this->input->post(null, true);
+        if (!$this->validation()) {
+            $fieldarr = ['visit_by', 'name', 'phone', 'time', 'work_address', 'info_source', 'room_type_id',
+                'people_count', 'check_in_time', 'guest_type', 'require', 'remark'];
+            $this->api_res(1002, ['errmsg' => $this->form_first_error($fieldarr)]);
             return;
         }
-        $reserve    = new Reserveordermodel();
+        $reserve = new Reserveordermodel();
         $reserve->fill($post);
-        $reserve->employee_id   = CURRENT_ID;
-        $reserve->store_id      = $this->employee->store_id;
-        if($reserve->save())
-        {
+        $reserve->employee_id = CURRENT_ID;
+        $reserve->store_id    = $this->employee->store_id;
+        if ($reserve->save()) {
             $this->api_res(0);
-        }else{
+        } else {
             $this->api_res(1009);
         }
     }
@@ -42,8 +37,7 @@ class Visitrecord extends MY_Controller
     /**
      * 表单验证
      */
-    public function validation()
-    {
+    public function validation() {
         $this->load->library('form_validation');
         $config = array(
             array(
@@ -108,7 +102,7 @@ class Visitrecord extends MY_Controller
             ),
         );
 
-        $this->form_validation->set_rules($config)->set_error_delimiters('','');
+        $this->form_validation->set_rules($config)->set_error_delimiters('', '');
         return $this->form_validation->run();
     }
 }

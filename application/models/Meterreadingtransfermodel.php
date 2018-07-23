@@ -9,11 +9,10 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 /**
  * 记录水电费的临时数据，主要用于计算水电费
  */
-class Meterreadingtransfermodel extends Basemodel
-{
-    protected $table    = 'boss_meter_reading_transfer';
+class Meterreadingtransfermodel extends Basemodel {
+    protected $table = 'boss_meter_reading_transfer';
 
-    protected $dates    = [];
+    protected $dates = [];
 
     protected $fillable = [
         'store_id',
@@ -27,37 +26,33 @@ class Meterreadingtransfermodel extends Basemodel
         'updated_at',
     ];
 
-    protected $casts    = [
+    protected $casts = [
         'confirmed' => 'boolean',
     ];
 
-    const TYPE_WATER_H  = 'HOT_WATER_METER';    //冷水表
-    const TYPE_WATER_C  = 'COLD_WATER_METER';   //热水表
-    const TYPE_ELECTRIC = 'ELECTRIC_METER';     //电表
+    const TYPE_WATER_H  = 'HOT_WATER_METER'; //冷水表
+    const TYPE_WATER_C  = 'COLD_WATER_METER'; //热水表
+    const TYPE_ELECTRIC = 'ELECTRIC_METER'; //电表
 
-    const UNCONFIRMED   = 0;
-    const CONFIRMED     = 1;
+    const UNCONFIRMED = 0;
+    const CONFIRMED   = 1;
 
     /**
      * 该记录所属房间
      */
-    public function roomunion()
-    {
+    public function roomunion() {
         return $this->belongsTo(Roomunionmodel::class, 'room_id');
 //            ->select('id','number');
     }
 
-    public function building()
-    {
+    public function building() {
         return $this->belongsTo(BuildingModel::class, 'building_id');
 //            ->select('id','name');
     }
 
-    public function store()
-    {
+    public function store() {
         return $this->belongsTo(Storemodel::class, 'store_id')
-            ->select('id','name','water_price','hot_water_price','electricity_price');
+            ->select('id', 'name', 'water_price', 'hot_water_price', 'electricity_price');
 
     }
 }
-

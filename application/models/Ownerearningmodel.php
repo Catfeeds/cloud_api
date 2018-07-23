@@ -6,10 +6,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Time:        17:31
  * Describe:
  */
-class Ownerearningmodel extends Basemodel
-{
-    public function __construct()
-    {
+class Ownerearningmodel extends Basemodel {
+    public function __construct() {
         parent::__construct();
     }
 
@@ -17,8 +15,7 @@ class Ownerearningmodel extends Basemodel
 
     protected $hidden = ['created_at', 'updated_at'];
 
-    public function deductions()
-    {
+    public function deductions() {
         return $this->hasMany(Ownerdeductionmodel::class, 'earnings_id');
     }
 
