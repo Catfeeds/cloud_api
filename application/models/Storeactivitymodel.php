@@ -10,4 +10,5 @@ class Storeactivitymodel extends Basemodel
 {
     public $timestamps = false;
     protected $table = 'boss_store_activity';
+
 }
