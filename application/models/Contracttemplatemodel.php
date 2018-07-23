@@ -7,11 +7,10 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Describe:    BOSS
  * 合同模板表
  */
-class Contracttemplatemodel extends Basemodel{
+class Contracttemplatemodel extends Basemodel {
 
-    protected $table    = 'boss_contract_template';
+    protected $table = 'boss_contract_template';
 
-    protected $hidden   = ['created_at','updated_at','deleted_at','fdd_tpl_id','fdd_tpl_path'];
-
+    protected $hidden = ['created_at', 'updated_at', 'deleted_at', 'fdd_tpl_id', 'fdd_tpl_path'];
 
 }

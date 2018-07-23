@@ -6,13 +6,11 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Time:        9:59
  * Describe:    [boss端]服务类型model
  */
-class Servicetypemodel extends Basemodel
-{
-    protected $table = 'boss_service_type';
-    protected $hidden   = ['created_at','updated_at','deleted_at'];
+class Servicetypemodel extends Basemodel {
+    protected $table  = 'boss_service_type';
+    protected $hidden = ['created_at', 'updated_at', 'deleted_at'];
 
-    public function services()
-    {
+    public function services() {
         return $this->hasMany(Serviceordermodel::class, 'service_id');
     }
 }

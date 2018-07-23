@@ -6,10 +6,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Time:        10:41
  * Describe:    员工
  */
-class Employee extends MY_Controller
-{
-    public function __construct()
-    {
+class Employee extends MY_Controller {
+    public function __construct() {
         parent::__construct();
         $this->load->model('employeemodel');
     }
@@ -17,11 +15,10 @@ class Employee extends MY_Controller
     /**
      * 个人中心主页
      */
-    public function showCenter()
-    {
+    public function showCenter() {
         $this->load->model('positionmodel');
         $this->load->model('storemodel');
-        $field = ['id', 'name', 'avatar', 'position_id', 'store_id'];
+        $field    = ['id', 'name', 'avatar', 'position_id', 'store_id'];
         $category = Employeemodel::with(['position' => function ($query) {
             $query->select('id', 'name');
         }])->with(['store' => function ($query) {
@@ -33,41 +30,40 @@ class Employee extends MY_Controller
     /**
      * 显示员工列表
      */
-    public function listEmp()
-    {
-        $post = $this->input->post(null, true);
-        $field = ['id', 'name', 'avatar', 'phone', 'position_id','status'];
-        $current_page = isset($post['page']) ? intval($post['page']) : 1;//当前页数
-        $pre_page = isset($post['pre_page']) ? intval($post['pre_page']) : 10;//当前页显示条数
-        $offset = $pre_page * ($current_page - 1);
-        $total = Employeemodel::where('status', 'ENABLE')->count();
-        $total_pages = ceil($total / $pre_page);//总页数
+    public function listEmp() {
+        $post         = $this->input->post(null, true);
+        $field        = ['id', 'name', 'avatar', 'phone', 'position_id', 'status'];
+        $current_page = isset($post['page']) ? intval($post['page']) : 1; //当前页数
+        $pre_page     = isset($post['pre_page']) ? intval($post['pre_page']) : 10; //当前页显示条数
+        $offset       = $pre_page * ($current_page - 1);
+        $total        = Employeemodel::where('status', 'ENABLE')->count();
+        $total_pages  = ceil($total / $pre_page); //总页数
         if ($current_page > $total_pages) {
-            $this->api_res(0, ['total' => $total, 'pre_page' => $pre_page, 'current_page' => $current_page,
-                'total_pages' => $total_pages, 'data' => []]);
+            $this->api_res(0, ['total' => $total, 'pre_page'   => $pre_page, 'current_page' => $current_page,
+                'total_pages'              => $total_pages, 'data' => []]);
             return;
         }
         $this->load->model('positionmodel');
-        $category = Employeemodel::with('position')->where('store_id',$this->employee->store_id)
+        $category = Employeemodel::with('position')->where('store_id', $this->employee->store_id)
             ->where('status', 'ENABLE')
             ->take($pre_page)->skip($offset)
             ->orderBy('id', 'desc')
             ->get($field)->toArray();
-        $this->api_res(0, ['total' => $total, 'pre_page' => $pre_page, 'current_page' => $current_page,
-                                'total_pages' => $total_pages, 'data' => $category]);
+        $this->api_res(0, ['total' => $total, 'pre_page'   => $pre_page, 'current_page' => $current_page,
+            'total_pages'              => $total_pages, 'data' => $category]);
     }
 
     /**
      * 切换门店
      */
-    public function switchStore(){
+    public function switchStore() {
 
     }
 
     /**
      * 获取员工可操作的门店
      */
-    public function showStore(){
+    public function showStore() {
 
     }
 

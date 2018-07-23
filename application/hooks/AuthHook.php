@@ -12,17 +12,15 @@ class AuthHook {
 
     private $CI;
 
-    public function __construct()
-    {
-        $this->CI = &get_instance();   //获取CI对象
+    public function __construct() {
+        $this->CI = &get_instance(); //获取CI对象
     }
 
     /**
      * 生产环境的白名单
      * 白名单内的不需要验证token
      */
-    private function productionAuth()
-    {
+    private function productionAuth() {
         return [
             'mini/login/gettoken',
             'mini/login/handleloginstatus',
@@ -40,8 +38,7 @@ class AuthHook {
      * 测试环境白名单
      * 白名单内的不需要验证token
      */
-    private function developmentAuth()
-    {
+    private function developmentAuth() {
         return array(
             'account/login/logintest',
             'ping/index',
@@ -50,72 +47,71 @@ class AuthHook {
             'account/login/login',
             'bill/bill/test',
 //            'bill/checkout/list',
-//            'bill/checkout/show',
-//            'demo/copy/transferimages',
+            //            'bill/checkout/show',
+            //            'demo/copy/transferimages',
             'demo/copy/run',
 //            'common/imageupload',
-//            'common/fileupload',
-//            'bill/order/download',
-//
+            //            'common/fileupload',
+            //            'bill/order/download',
+            //
             'demo/sheet/index',
 //            'demo/sheet/output',
-//
-//            'bill/bill/generate',
-//            //
-//            'bill/bill/listbill',
-//            'bill/bill/showbill',
-//            'bill/bill/billexcel',
+            //
+            //            'bill/bill/generate',
+            //            //
+            //            'bill/bill/listbill',
+            //            'bill/bill/showbill',
+            //            'bill/bill/billexcel',
 
 //            'account/login/login',
-//            'account/login/listmenu',
+            //            'account/login/listmenu',
             'demo/test/test1',
 
 //            'mini/resident/checkroomunion',
-//            'mini/resident/checkin',
-//            'mini/resident/destory',
+            //            'mini/resident/checkin',
+            //            'mini/resident/destory',
             //'mini/resident/showqrcode',
-//            'mini/resident/reservation',
-//            'mini/resident/getresident',
-//            'mini/resident/listresident',
-//            'mini/resident/unconfirm',
-//            'mini/resident/bookingtocheckin',
-//            'mini/resident/renew',
-//            'mini/checkout/listcheckout',
-//            'mini/checkout/store',
-//            'mini/checkout/submitforapproval',
-//            'mini/checkout/approve',
-//            'mini/checkout/show',
-//            'mini/checkout/destroy',
-//            'mini/activity/showactivity',
+            //            'mini/resident/reservation',
+            //            'mini/resident/getresident',
+            //            'mini/resident/listresident',
+            //            'mini/resident/unconfirm',
+            //            'mini/resident/bookingtocheckin',
+            //            'mini/resident/renew',
+            //            'mini/checkout/listcheckout',
+            //            'mini/checkout/store',
+            //            'mini/checkout/submitforapproval',
+            //            'mini/checkout/approve',
+            //            'mini/checkout/show',
+            //            'mini/checkout/destroy',
+            //            'mini/activity/showactivity',
             //'home/home/home'
-//            'bill/meter/confirm',
-//            'bill/meter/import',
-//            'bill/meter/outputtemplate',
-//            'bill/bill/generate',
-//            'bill/bill/listbill',
-//            'bill/bill/testa',
+            //            'bill/meter/confirm',
+            //            'bill/meter/import',
+            //            'bill/meter/outputtemplate',
+            //            'bill/bill/generate',
+            //            'bill/bill/listbill',
+            //            'bill/bill/testa',
             'demo/test/testa',
             'demo/test/getendtimerooms',
             'demo/test/getendtimeresidentorder',
 //            'bill/order/listorder',
-//            'bill/order/editorder',
-//
-//            'mini/order/getavailablecoupons',
-//            'mini/order/listorder',
-//            'mini/order/amountwithdiscount',
-//            'bill/order/addorder',
-//            'mini/order/showbyroom',
+            //            'bill/order/editorder',
+            //
+            //            'mini/order/getavailablecoupons',
+            //            'mini/order/listorder',
+            //            'mini/order/amountwithdiscount',
+            //            'bill/order/addorder',
+            //            'mini/order/showbyroom',
             //'mini/order/confirm',
             //'mini/order/pay',
             //'mini/owner/showdetail',
-//            'mini/owner/searchowner',
+            //            'mini/owner/searchowner',
 
 //            'mini/renew/getresidentbyroom',
-//            'mini/renew/getrenewroomstatus',
-//            'mini/renew/renew',
-//            'mini/renew/listrenew',
-//            'mini/renew/destroy',
-
+            //            'mini/renew/getrenewroomstatus',
+            //            'mini/renew/renew',
+            //            'mini/renew/listrenew',
+            //            'mini/renew/destroy',
 
             'mini/rerequire/getendtimerooms',
 
@@ -129,154 +125,154 @@ class AuthHook {
             //'store/store/getstore',
             //'store/store/updatestore',
             //'store/store/searchstore',
-//            'store/store/seachbymulti',
-//            'store/roomtype/listroomtype',
-//            'store/roomtype/addroomtype',
-//            'store/roomtype/deleteroomtype',
-//            'store/roomtype/searchroomtype',
-//            'store/roomtype/getroomtype',
-//            'store/roomtype/updateroomtype',
-//            'store/roomtype/destroyroomtype',
-//            'store/template/listtemplate',
-//            'store/template/deletetemplate',
-//            'store/template/addtemplate',
-//            'store/template/searchtemplate',
-//            'store/template/destroytemplate',
-//            'store/template/gettemplate',
-//            'store/template/updatetemplate',
-//            'store/template/showtemplate',
-//            'mini/residentct/searchresident',
+            //            'store/store/seachbymulti',
+            //            'store/roomtype/listroomtype',
+            //            'store/roomtype/addroomtype',
+            //            'store/roomtype/deleteroomtype',
+            //            'store/roomtype/searchroomtype',
+            //            'store/roomtype/getroomtype',
+            //            'store/roomtype/updateroomtype',
+            //            'store/roomtype/destroyroomtype',
+            //            'store/template/listtemplate',
+            //            'store/template/deletetemplate',
+            //            'store/template/addtemplate',
+            //            'store/template/searchtemplate',
+            //            'store/template/destroytemplate',
+            //            'store/template/gettemplate',
+            //            'store/template/updatetemplate',
+            //            'store/template/showtemplate',
+            //            'mini/residentct/searchresident',
 
 //
-//            'store/roomdot/adddot',
-//            'store/roomunion/addunion',
-//            'store/roomunion/listunion',
-//            'store/roomunion/showbuilding',
-//            'store/roomunion/submitunion',
-//            'store/roomunion/destory',
-//            'store/roomdot/listdot',
-//            'store/roomunion/getunion',
-//            'store/roomdot/getdot',
-//            'store/roomdot/destroy',
-//            'store/roomunion/batchupdateunion',
-//            'store/roomdot/batchupdatedot',
-//
-//            'store/community/addcommunity',
-//            'store/community/listcommunity',
-//            'store/community/searchcommunity',
-//            'store/community/updatecommunity',
-//            'store/community/getcommunity',
-//            'store/community/deletecommunity',
-//            'store/community/destroycommunity',
-//            'store/community/showcommunity',
-//
-//            'store/room/adddot',
+            //            'store/roomdot/adddot',
+            //            'store/roomunion/addunion',
+            //            'store/roomunion/listunion',
+            //            'store/roomunion/showbuilding',
+            //            'store/roomunion/submitunion',
+            //            'store/roomunion/destory',
+            //            'store/roomdot/listdot',
+            //            'store/roomunion/getunion',
+            //            'store/roomdot/getdot',
+            //            'store/roomdot/destroy',
+            //            'store/roomunion/batchupdateunion',
+            //            'store/roomdot/batchupdatedot',
+            //
+            //            'store/community/addcommunity',
+            //            'store/community/listcommunity',
+            //            'store/community/searchcommunity',
+            //            'store/community/updatecommunity',
+            //            'store/community/getcommunity',
+            //            'store/community/deletecommunity',
+            //            'store/community/destroycommunity',
+            //            'store/community/showcommunity',
+            //
+            //            'store/room/adddot',
             'bill/order/push',
             'bill/order/notify',
 //            'store/room/addunion',
-//
-//            'service/servicetype/listservicetype',
-//            'service/servicetype/addservicetype',
-//            'service/servicetype/imageupload',
-//            'service/servicetype/updateservicetype',
-//
-//            'service/serviceorder/listserviceorder',
-//            'service/serviceorder/getservicetype',
-//            'service/serviceorder/getdetail',
-//
-//            'service/reserveorder/listreserveorder',
-//
-//            'shop/goodscategory/goodscategory',
-//            'shop/goodscategory/addcategory',
-//            'shop/goodscategory/updatecategory',
-//            'shop/goodscategory/deletecategory',
-//
-//            'shop/goods/listgoods',
-//            'shop/goods/getcategory',
-//            'shop/goods/addgoods',
-//            'shop/goods/updategoods',
-//            'shop/goods/updateonsale',
-//            'shop/goods/deletegoods',
-//
-//            'shop/goodsorder/listgoodsorder',
-//            'shop/goodsorder/detail',
-//
-//            'smartdevice/smartdevice/listsmartdevice',
+            //
+            //            'service/servicetype/listservicetype',
+            //            'service/servicetype/addservicetype',
+            //            'service/servicetype/imageupload',
+            //            'service/servicetype/updateservicetype',
+            //
+            //            'service/serviceorder/listserviceorder',
+            //            'service/serviceorder/getservicetype',
+            //            'service/serviceorder/getdetail',
+            //
+            //            'service/reserveorder/listreserveorder',
+            //
+            //            'shop/goodscategory/goodscategory',
+            //            'shop/goodscategory/addcategory',
+            //            'shop/goodscategory/updatecategory',
+            //            'shop/goodscategory/deletecategory',
+            //
+            //            'shop/goods/listgoods',
+            //            'shop/goods/getcategory',
+            //            'shop/goods/addgoods',
+            //            'shop/goods/updategoods',
+            //            'shop/goods/updateonsale',
+            //            'shop/goods/deletegoods',
+            //
+            //            'shop/goodsorder/listgoodsorder',
+            //            'shop/goodsorder/detail',
+            //
+            //            'smartdevice/smartdevice/listsmartdevice',
             //'smartdevice/smartdevice/record',
-//            'smartdevice/smartdevice/test',
-//            'smartdevice/smartdevice/getallrecord',
-//            'smartdevice/readmeter/handle',
-//            'smartdevice/crondreadmeter/readmeter',
-//
-//            'common/city',
-//            'common/province',
-//            'common/district',
-//
-//            'sellcontrol/sellcontrol/details',
+            //            'smartdevice/smartdevice/test',
+            //            'smartdevice/smartdevice/getallrecord',
+            //            'smartdevice/readmeter/handle',
+            //            'smartdevice/crondreadmeter/readmeter',
+            //
+            //            'common/city',
+            //            'common/province',
+            //            'common/district',
+            //
+            //            'sellcontrol/sellcontrol/details',
 
 //            'resident/resident/getresidentorder'
             //'mini/reserve/listreserve',
-//            'mini/reserve/addreserve',
-//            'mini/reserve/reserveinfo',
-//            'mini/reserve/room_type',
-//            'mini/reserve/reservestatus',
+            //            'mini/reserve/addreserve',
+            //            'mini/reserve/reserveinfo',
+            //            'mini/reserve/room_type',
+            //            'mini/reserve/reservestatus',
 
 //            'mini/contract/listunsign',
             'mini/contract/notify',
             'mini/contract/autosign',
             'mini/contract/archive',
 //
-//            'mini/visitrecord/visit',
-//            'mini/login/gettoken',
-//            'mini/login/handleloginstatus',
-//            'mini/personalcenter/center',
+            //            'mini/visitrecord/visit',
+            //            'mini/login/gettoken',
+            //            'mini/login/handleloginstatus',
+            //            'mini/personalcenter/center',
 
 //            'mini/home/lists',
 
             //'mini/server/show',
             //'mini/server/comfirmorder',
-//            'mini/server/create',
+            //            'mini/server/create',
             //'mini/server/listserver',
             //'mini/server/limitcontract',
-//            'mini/server/serverstatus',
-//            'mini/room/listroom',
-//            'mini/room/detailsroom',
-//            'mini/room/building',
-//            'mini/room/countroom',
-//
-//            'contract/operation/operatlist',
-//            'contract/operation/operationfind',
-//            'contract/operation/booking',
-//            'contract/operation/book',
+            //            'mini/server/serverstatus',
+            //            'mini/room/listroom',
+            //            'mini/room/detailsroom',
+            //            'mini/room/building',
+            //            'mini/room/countroom',
+            //
+            //            'contract/operation/operatlist',
+            //            'contract/operation/operationfind',
+            //            'contract/operation/booking',
+            //            'contract/operation/book',
             //'contract/resident/resident',
-//            'contract/contract/showcontract',
-//
-//
-//            'activity/activity/listactivity',
-//
-//            'coupon/coupon/listcoupon',
-//            'coupon/coupon/addcoupon',
-//            'coupon/coupon/updatecoupon',
-//            'coupon/coupon/sendcoupon',
-//            'coupon/coupon/sendcoupon',
+            //            'contract/contract/showcontract',
+            //
+            //
+            //            'activity/activity/listactivity',
+            //
+            //            'coupon/coupon/listcoupon',
+            //            'coupon/coupon/addcoupon',
+            //            'coupon/coupon/updatecoupon',
+            //            'coupon/coupon/sendcoupon',
+            //            'coupon/coupon/sendcoupon',
             //'coupon/coupon/resident',
-//            'coupon/coupon/assigncoupon',
-//
-//            'contract/operation/pdflook',
-//            'contract/operation/loadcontract',
-//
-//            'pricecontrol/pricecontrol/pricecontrol',
-//            'pricecontrol/pricecontrol/rentprice',
-//            'pricecontrol/pricecontrol/utilities',
-//            'pricecontrol/pricecontrol/changeutility',
-//
-//            'resident/resident/showresident',
-//            'resident/resident/residentinfo',
-//            'resident/resident/updateresident',
-//            'resident/resident/contract',
-//            'resident/resident/bill',
-//            'sellcontrol/sellcontrol/details',
-//            'utility/utility/listutility',
+            //            'coupon/coupon/assigncoupon',
+            //
+            //            'contract/operation/pdflook',
+            //            'contract/operation/loadcontract',
+            //
+            //            'pricecontrol/pricecontrol/pricecontrol',
+            //            'pricecontrol/pricecontrol/rentprice',
+            //            'pricecontrol/pricecontrol/utilities',
+            //            'pricecontrol/pricecontrol/changeutility',
+            //
+            //            'resident/resident/showresident',
+            //            'resident/resident/residentinfo',
+            //            'resident/resident/updateresident',
+            //            'resident/resident/contract',
+            //            'resident/resident/bill',
+            //            'sellcontrol/sellcontrol/details',
+            //            'utility/utility/listutility',
             'utility/utility/listutility1',
 //            'utility/utility/updatenumber',
         );
@@ -285,22 +281,21 @@ class AuthHook {
     /**
      * 是否验证token
      */
-    public function isAuth()
-    {
-        $directory  = $this->CI->router->fetch_directory();
-        $class      = $this->CI->router->fetch_class();
-        $method     = $this->CI->router->fetch_method();
-        $full_path  = strtolower($directory . $class . '/' . $method);
-        try{
-            if(ENVIRONMENT=='production'){
-                $authArr    = $this->productionAuth();
-            }else{
-                $authArr    = $this->developmentAuth();
+    public function isAuth() {
+        $directory = $this->CI->router->fetch_directory();
+        $class     = $this->CI->router->fetch_class();
+        $method    = $this->CI->router->fetch_method();
+        $full_path = strtolower($directory . $class . '/' . $method);
+        try {
+            if (ENVIRONMENT == 'production') {
+                $authArr = $this->productionAuth();
+            } else {
+                $authArr = $this->developmentAuth();
             }
-            if(!in_array($full_path,$authArr)){
+            if (!in_array($full_path, $authArr)) {
                 $this->auth($full_path);
             }
-        }catch (Exception $e) {
+        } catch (Exception $e) {
             header("Content-Type:application/json;charset=UTF-8");
             echo json_encode(array('rescode' => 1001, 'resmsg' => 'token无效', 'data' => []));
             exit;
@@ -311,11 +306,10 @@ class AuthHook {
      * @param $full_path
      * 验证token的方法
      */
-    public function auth($full_path)
-    {
-        $token  = $this->CI->input->get_request_header('token');
-        $decoded= $this->CI->m_jwt->decodeJwtToken($token);
-        $d_bxid = $decoded->bxid;
+    public function auth($full_path) {
+        $token        = $this->CI->input->get_request_header('token');
+        $decoded      = $this->CI->m_jwt->decodeJwtToken($token);
+        $d_bxid       = $decoded->bxid;
         $d_company_id = $decoded->company_id;
         define('CURRENT_ID', $d_bxid);
         define('COMPANY_ID', $d_company_id);
@@ -335,15 +329,14 @@ class AuthHook {
             exit;
         }
         /*//权限匹配
-        if (!$this->privilegeMatch($directory, $class, $full_path)) {
-            header("Content-Type:application/json;charset=UTF-8");
-            echo json_encode(array('rescode' => 1011, 'resmsg' => '没有访问权限', 'data' => []));
-            exit;
-        }*/
+    if (!$this->privilegeMatch($directory, $class, $full_path)) {
+    header("Content-Type:application/json;charset=UTF-8");
+    echo json_encode(array('rescode' => 1011, 'resmsg' => '没有访问权限', 'data' => []));
+    exit;
+    }*/
     }
 
-    public function privilegeMatch($full_path)
-    {
+    public function privilegeMatch($full_path) {
         $this->CI->load->model('employeemodel');
         $this->CI->load->model('positionmodel');
         $employee = Employeemodel::with('position')->where('bxid', CURRENT_ID)->first(['id', 'position_id']);
@@ -354,27 +347,29 @@ class AuthHook {
         }
         $this->CI->load->model('privilegemodel');
         $pc_privilege_ids = $employee->position->pc_privilege_ids;
-        $ids_three = explode(',', $pc_privilege_ids);
-        $ids_two = Privilegemodel::whereIn('id', $ids_three)->where('url',$full_path)->get();
-        if(empty($ids_two)){
+        $ids_three        = explode(',', $pc_privilege_ids);
+        $ids_two          = Privilegemodel::whereIn('id', $ids_three)->where('url', $full_path)->get();
+        if (empty($ids_two)) {
             return false;
         }
     }
 
-    public function operationRecord($full_path)
-    {
+    public function operationRecord($full_path) {
         $this->CI->load->model('employeemodel');
         $this->CI->load->model('operationrecordmodel');
         $operation = new Operationrecordmodel();
-        $employee = Employeemodel::where('bxid', CURRENT_ID)->first();
-        if (!$employee) return false;
-        $operation->bxid = CURRENT_ID;
-        $operation->company_id = COMPANY_ID;
+        $employee  = Employeemodel::where('bxid', CURRENT_ID)->first();
+        if (!$employee) {
+            return false;
+        }
+
+        $operation->bxid        = CURRENT_ID;
+        $operation->company_id  = COMPANY_ID;
         $operation->employee_id = $employee->id;
-        $operation->name = $employee->name;
-        $operation->url = $full_path;
-        $operation->created_at = date('Y-m-d H:i:s', time());
-        $operation->updated_at = date('Y-m-d H:i:s', time());
+        $operation->name        = $employee->name;
+        $operation->url         = $full_path;
+        $operation->created_at  = date('Y-m-d H:i:s', time());
+        $operation->updated_at  = date('Y-m-d H:i:s', time());
         if (!$operation->save()) {
             return false;
         }

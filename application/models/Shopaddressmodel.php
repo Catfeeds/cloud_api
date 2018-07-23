@@ -7,9 +7,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Describe:    收货地址
  */
 
-class Shopaddressmodel extends Basemodel
-{
-    protected $table = 'boss_shop_address';
-    protected $hidden = ['created_at','updated_at','deleted_at'];
-
+class Shopaddressmodel extends Basemodel {
+    protected $table  = 'boss_shop_address';
+    protected $hidden = ['created_at', 'updated_at', 'deleted_at'];
 }

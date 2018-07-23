@@ -6,16 +6,14 @@
  * Describe:    员工与门店映射
  */
 
-class Employeestoremapmodel extends Basemodel
-{
-    public function __construct()
-    {
+class Employeestoremapmodel extends Basemodel {
+    public function __construct() {
         parent::__construct();
     }
 
-    public $timestamps=false;
-    
-    protected $table    = 'employee_store';
+    public $timestamps = false;
 
-    protected $hidden   = ['created_at', 'updated_at', 'deleted_at'];
+    protected $table = 'employee_store';
+
+    protected $hidden = ['created_at', 'updated_at', 'deleted_at'];
 }

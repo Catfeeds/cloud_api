@@ -7,9 +7,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Describe:
  *
  */
-class Storepaymodel extends Basemodel{
-
-    protected $table    = 'boss_store_pay';
-
-    protected $casts    = ['data'=>'array'];
+class Storepaymodel extends Basemodel {
+    protected $table = 'boss_store_pay';
+    protected $casts = ['data' => 'array'];
 }

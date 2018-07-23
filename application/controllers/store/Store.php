@@ -6,13 +6,11 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Time:        16:47
  * Describe:    门店管理
  */
-class Store extends MY_Controller
-{
-    public function __construct()
-    {
+class Store extends MY_Controller {
+    public function __construct() {
         parent::__construct();
         /*if(!$this->position){
-            throw new Exception();
+        throw new Exception();
         }*/
         $this->load->model('storemodel');
     }
@@ -22,59 +20,64 @@ class Store extends MY_Controller
      * post page 页码
      * return count 总页数，list 门店列表
      */
-    public function listStore()
-    {
-        $post   = $this->input->post(null,true);
-        $page   = intval(isset($post['page'])?$post['page']:1);
-        $where  = ['company_id'=>COMPANY_ID];
-        empty($post['city'])?:$where['city']=$post['city'];
-        empty($post['type'])?:$where['rent_type']=$post['type'];
-        empty($post['status'])?:$where['status']=$post['status'];
-        $store_ids = explode(',',$this->employee->store_ids);
-        $offset = PAGINATE*($page-1);
-        $field  = ['id','name','city','rent_type','address','contact_user','counsel_phone','status','created_at'];
-        $count  = ceil(Storemodel::where($where)->count()/PAGINATE);
-        $cities = Storemodel::where(['company_id'=>COMPANY_ID])->groupBy('city')->get(['city']);
-        $types  = isset($post['city'])?Storemodel::where(['company_id'=>COMPANY_ID])->where('city',$post['city'])->groupBy('rent_type')->get(['rent_type']):Storemodel::groupBy('rent_type')->get(['rent_type']);
+    public function listStore() {
+        $post  = $this->input->post(null, true);
+        $page  = intval(isset($post['page']) ? $post['page'] : 1);
+        $where = ['company_id' => COMPANY_ID];
+
+        empty($post['city']) ?: $where['city']      = $post['city'];
+        empty($post['type']) ?: $where['rent_type'] = $post['type'];
+        empty($post['status']) ?: $where['status']  = $post['status'];
+
+        $store_ids = explode(',', $this->employee->store_ids);
+        $offset    = PAGINATE * ($page - 1);
+        $field     = ['id', 'name', 'city', 'rent_type', 'address', 'contact_user', 'counsel_phone', 'status', 'created_at'];
+        $count     = ceil(Storemodel::where($where)->count() / PAGINATE);
+        $cities    = Storemodel::where(['company_id' => COMPANY_ID])->groupBy('city')->get(['city']);
+        $types     = isset($post['city']) ? Storemodel::where(['company_id' => COMPANY_ID])
+            ->where('city', $post['city'])
+            ->groupBy('rent_type')
+            ->get(['rent_type'])
+        : Storemodel::groupBy('rent_type')->get(['rent_type']);
         $status = Storemodel::where($where)->groupBy('status')->get(['status']);
-        if($page>$count){
-            $this->api_res(0,['count'=>$count,'city'=>$cities,'type'=>$types,'status'=>$status,'list'=>[]]);
+        if ($page > $count) {
+            $this->api_res(0, ['count' => $count, 'city' => $cities, 'type' => $types, 'status' => $status, 'list' => []]);
             return;
         }
-        $stores = Storemodel::offset($offset)->where($where)->whereIn('id',$store_ids)->limit(PAGINATE)->orderBy('id','asc')->get($field);
-        $this->api_res(0,['count'=>$count,'city'=>$cities,'type'=>$types,'status'=>$status,'list'=>$stores]);
+        $stores = Storemodel::offset($offset)->where($where)->whereIn('id', $store_ids)->limit(PAGINATE)->orderBy('id', 'asc')->get($field);
+        $this->api_res(0, ['count' => $count, 'city' => $cities, 'type' => $types, 'status' => $status, 'list' => $stores]);
     }
 
     /**
      * 查找门店（按名称模糊查询）
      */
-    public function searchStore(){
-        $name   = $this->input->post('name',true);
-        $where  = ['company_id'=>COMPANY_ID];
-        $page   = intval($this->input->post('page',true)?$this->input->post('page',true):1);
-        $offset = PAGINATE*($page-1);
-        $field  = ['id','name','city','rent_type','address','contact_user','counsel_phone','status','created_at'];
-        $count  = ceil(Storemodel::where('name','like',"%$name%")->count()/PAGINATE);
+    public function searchStore() {
+        $name   = $this->input->post('name', true);
+        $where  = ['company_id' => COMPANY_ID];
+        $page   = intval($this->input->post('page', true) ? $this->input->post('page', true) : 1);
+        $offset = PAGINATE * ($page - 1);
+        $field  = ['id', 'name', 'city', 'rent_type', 'address', 'contact_user', 'counsel_phone', 'status', 'created_at'];
+        $count  = ceil(Storemodel::where('name', 'like', "%$name%")->count() / PAGINATE);
         $cities = Storemodel::where($where)->groupBy('city')->get(['city']);
         $types  = Storemodel::where($where)->groupBy('rent_type')->get(['rent_type']);
         $status = Storemodel::where($where)->groupBy('status')->get(['status']);
-        if($page>$count){
-            $this->api_res(0,['count'=>$count,'city'=>$cities,'type'=>$types,'status'=>$status,'list'=>[]]);
+        if ($page > $count) {
+            $this->api_res(0, ['count' => $count, 'city' => $cities, 'type' => $types, 'status' => $status, 'list' => []]);
             return;
         }
-        $stores = Storemodel::where($where)->where('name','like',"%$name%")->offset($offset)->limit(PAGINATE)->orderBy('id','desc')->get($field);
-        $this->api_res(0,['count'=>$count,'city'=>$cities,'type'=>$types,'status'=>$status,'list'=>$stores]);
+        $stores = Storemodel::where($where)->where('name', 'like', "%$name%")->offset($offset)->limit(PAGINATE)->orderBy('id', 'desc')->get($field);
+        $this->api_res(0, ['count' => $count, 'city' => $cities, 'type' => $types, 'status' => $status, 'list' => $stores]);
     }
 
     /**
      * 删除门店
      */
-    public function deleteStore(){
-        $store_id   = $this->input->post('store_id',true);
-        $where  = ['company_id'=>COMPANY_ID];
-        if(Storemodel::where($where)->find($store_id)->delete()){
+    public function deleteStore() {
+        $store_id = $this->input->post('store_id', true);
+        $where    = ['company_id' => COMPANY_ID];
+        if (Storemodel::where($where)->find($store_id)->delete()) {
             $this->api_res(0);
-        }else{
+        } else {
             $this->api_res(1009);
         }
     }
@@ -82,24 +85,24 @@ class Store extends MY_Controller
     /**
      * 批量删除门店
      */
-    public function destroyStore(){
-        $id     = $this->input->post('store_id',true);
-        if(!is_array($id)){
+    public function destroyStore() {
+        $id = $this->input->post('store_id', true);
+        if (!is_array($id)) {
             $this->api_res(1005);
             return;
         }
-        $where  = ['company_id'=>COMPANY_ID];
-        $ids    = Storemodel::where($where)->get(['id'])->map(function($id){
+        $where = ['company_id' => COMPANY_ID];
+        $ids   = Storemodel::where($where)->get(['id'])->map(function ($id) {
             return $id->id;
         })->toArray();
-        $diff     = array_diff($id,$ids);
-        if($diff){
+        $diff = array_diff($id, $ids);
+        if ($diff) {
             $this->api_res(1009);
             return;
         }
-        if(Storemodel::destroy($id)){
+        if (Storemodel::destroy($id)) {
             $this->api_res(0);
-        }else{
+        } else {
             $this->api_res(1009);
         }
     }
@@ -107,134 +110,127 @@ class Store extends MY_Controller
     /**
      * 获取门店名
      */
-    public function showStore(){
-        $city   = $this->input->post('city',true);
-        $where  = ['company_id'=>COMPANY_ID];
-        empty($city)?:$where['city']=$city;
-        $store_ids['id']= explode(',',$this->employee->store_ids);
+    public function showStore() {
+        $city                          = $this->input->post('city', true);
+        $where                         = ['company_id' => COMPANY_ID];
+        empty($city) ?: $where['city'] = $city;
+        $store_ids['id']               = explode(',', $this->employee->store_ids);
 
-        if (empty($store_ids)||!isset($store_ids)){
+        if (empty($store_ids) || !isset($store_ids)) {
             $this->api_res(1018);
             return;
         }
 
-        $store  = Storemodel::where($where)->whereIn($store_ids)->get(['id','name','province','city','district']);
-        $this->api_res(0,['stores'=>$store]);
+        $store = Storemodel::where($where)->whereIn($store_ids)->get(['id', 'name', 'province', 'city', 'district']);
+        $this->api_res(0, ['stores' => $store]);
     }
 
     /**
      * 获取城市
      */
-    public function showCity(){
-        $where  = ['company_id'=>COMPANY_ID];
-        $city   = Storemodel::where($where)->groupBy('city')->get(['city'])->map(function($city){
+    public function showCity() {
+        $where = ['company_id' => COMPANY_ID];
+        $city  = Storemodel::where($where)->groupBy('city')->get(['city'])->map(function ($city) {
             return $city['city'];
         });
-        $this->api_res(0,['cities'=>$city]);
+        $this->api_res(0, ['cities' => $city]);
     }
 
     /**
      * 查看门店信息
      */
-    public function getStore(){
-        $where  = ['company_id'=>COMPANY_ID];
-        $store_id   = $this->input->post('store_id',true);
-        if(!$store_id){
+    public function getStore() {
+        $where    = ['company_id' => COMPANY_ID];
+        $store_id = $this->input->post('store_id', true);
+        if (!$store_id) {
             $this->api_res(1005);
             return;
         }
-        $field  = [
-            'rent_type','status','name','theme','province','city','district','address', 'contact_user',
-            'counsel_phone','counsel_time','images','describe'
+        $field = [
+            'rent_type', 'status', 'name', 'theme', 'province', 'city', 'district', 'address', 'contact_user',
+            'counsel_phone', 'counsel_time', 'images', 'describe',
         ];
-        $store  = Storemodel::where($where)->select($field)->find($store_id);
+        $store = Storemodel::where($where)->select($field)->find($store_id);
 //        $store->describe    = strip_tags(htmlspecialchars_decode($store->describe));
-        $store->describe    = (htmlspecialchars_decode($store->describe));
-        $store->images  = $this->fullAliossUrl(json_decode($store->images,true),true);
-        $this->api_res(0,['store'=>$store]);
+        $store->describe = (htmlspecialchars_decode($store->describe));
+        $store->images   = $this->fullAliossUrl(json_decode($store->images, true), true);
+        $this->api_res(0, ['store' => $store]);
     }
-
 
     /**
      * 编辑门店
      */
-    public function updateStore(){
-        $store_id   = $this->input->post('store_id',true);
-        $where  = ['company_id'=>COMPANY_ID];
-        if(!$store_id){
+    public function updateStore() {
+        $store_id = $this->input->post('store_id', true);
+        $where    = ['company_id' => COMPANY_ID];
+        if (!$store_id) {
             $this->api_res(1005);
             return;
         }
 //        $this->api_res(0,['des'=>$this->input->post('describe')]);
-        $field  = [
-            'rent_type','status','name','theme','province','city','district','address', 'contact_user',
-            'counsel_phone','counsel_time','images','describe'
+        $field = [
+            'rent_type', 'status', 'name', 'theme', 'province', 'city', 'district', 'address', 'contact_user',
+            'counsel_phone', 'counsel_time', 'images', 'describe',
         ];
-        if(!$this->validationText($this->validationUpdateConfig()))
-        {
-            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+        if (!$this->validationText($this->validationUpdateConfig())) {
+            $this->api_res(1002, ['error' => $this->form_first_error($field)]);
             return;
         }
-        $post    = $this->input->post(null,true);
-        if(!isset($post['images']))
-        {
-            $this->api_res(1002,['error'=>'必须上传图片']);
+        $post = $this->input->post(null, true);
+        if (!isset($post['images'])) {
+            $this->api_res(1002, ['error' => '必须上传图片']);
             return;
         }
-        $images  = $this->splitAliossUrl($post['images'],true);
-        $images  = json_encode($images);
-        $update  = Storemodel::where($where)->find($store_id);
-        if(!$update){
+        $images = $this->splitAliossUrl($post['images'], true);
+        $images = json_encode($images);
+        $update = Storemodel::where($where)->find($store_id);
+        if (!$update) {
             $this->api_res(1009);
             return;
         }
-        $post    = $this->input->post(null,true);
+        $post = $this->input->post(null, true);
         $update->fill($post);
-        $update->describe   = htmlspecialchars($this->input->post('describe'));
-        log_message('error',$post['describe']);
+        $update->describe = htmlspecialchars($this->input->post('describe'));
+        log_message('error', $post['describe']);
         $update->images = $images;
-        if($update->save()){
-            $this->api_res(0,['store_id'=>$update->id]);
-        }else{
+        if ($update->save()) {
+            $this->api_res(0, ['store_id' => $update->id]);
+        } else {
             $this->api_res(1009);
         }
     }
 
-
     /**
      * 添加分布式门店
      */
-    public function addStoreDot()
-    {
-        $field  = [
-            'rent_type','status','name','theme','province','city','district','address', 'contact_user',
-            'counsel_phone','counsel_time','images','describe'
+    public function addStoreDot() {
+        $field = [
+            'rent_type', 'status', 'name', 'theme', 'province', 'city', 'district', 'address', 'contact_user',
+            'counsel_phone', 'counsel_time', 'images', 'describe',
         ];
-        if(!$this->validationText($this->validationAddDotConfig()))
-        {
-            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+        if (!$this->validationText($this->validationAddDotConfig())) {
+            $this->api_res(1002, ['error' => $this->form_first_error($field)]);
             return;
         }
-        $post    = $this->input->post(null,true);
-        if(!isset($post['images']))
-        {
-            $this->api_res(1002,['error'=>'必须上传图片']);
+        $post = $this->input->post(null, true);
+        if (!isset($post['images'])) {
+            $this->api_res(1002, ['error' => '必须上传图片']);
             return;
         }
-        $images  = $this->splitAliossUrl($post['images'],true);
+        $images = $this->splitAliossUrl($post['images'], true);
         $images = json_encode($images);
-        if(Storemodel::where(['company_id'=>COMPANY_ID,'rent_type'=>'DOT','name'=>$post['name']])->first()){
+        if (Storemodel::where(['company_id' => COMPANY_ID, 'rent_type' => 'DOT', 'name' => $post['name']])->first()) {
             $this->api_res(1008);
             return;
         }
-        $insert  = new Storemodel();
+        $insert = new Storemodel();
         $insert->fill($post);
         $insert->describe   = htmlspecialchars($this->input->post('describe'));
         $insert->company_id = COMPANY_ID;
-        $insert->images=$images;
-        if($insert->save()){
-            $this->api_res(0,['store_id'=>$insert->id]);
-        }else{
+        $insert->images     = $images;
+        if ($insert->save()) {
+            $this->api_res(0, ['store_id' => $insert->id]);
+        } else {
             $this->api_res(1009);
         }
     }
@@ -242,54 +238,49 @@ class Store extends MY_Controller
     /**
      * 添加集中式门店
      */
-    public function addStoreUnion()
-    {
-        $field  = [
-            'rent_type','status','name','theme','province','city','district','address', 'contact_user',
-            'contact_phone','counsel_phone','counsel_time','images','describe','history','shop','relax','bus'
+    public function addStoreUnion() {
+        $field = [
+            'rent_type', 'status', 'name', 'theme', 'province', 'city', 'district', 'address', 'contact_user',
+            'contact_phone', 'counsel_phone', 'counsel_time', 'images', 'describe', 'history', 'shop', 'relax', 'bus',
         ];
-        if(!$this->validationText($this->validationAddUnionConfig()))
-        {
-            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+        if (!$this->validationText($this->validationAddUnionConfig())) {
+            $this->api_res(1002, ['error' => $this->form_first_error($field)]);
             return;
         }
-        $post   = $this->input->post(null,true);
-        if(!isset($post['images']))
-        {
-            $this->api_res(1002,['error'=>'必须上传图片']);
+        $post = $this->input->post(null, true);
+        if (!isset($post['images'])) {
+            $this->api_res(1002, ['error' => '必须上传图片']);
             return;
         }
-        $images  = $this->splitAliossUrl($post['images'],true);
+        $images = $this->splitAliossUrl($post['images'], true);
         $images = json_encode($images);
-        if(Storemodel::where(['company_id'=>COMPANY_ID,'rent_type'=>'UNION','name'=>$post['name']])->first()){
+        if (Storemodel::where(['company_id' => COMPANY_ID, 'rent_type' => 'UNION', 'name' => $post['name']])->first()) {
             $this->api_res(1008);
             return;
         }
-        $insert  = new Storemodel();
+        $insert = new Storemodel();
         $insert->fill($post);
         $insert->company_id = COMPANY_ID;
-        $insert->images=$images;
-        if($insert->save()){
-            $this->api_res(0,['store_id'=>$insert->id]);
-        }else{
+        $insert->images     = $images;
+        if ($insert->save()) {
+            $this->api_res(0, ['store_id' => $insert->id]);
+        } else {
             $this->api_res(1009);
         }
     }
 
-
     /**
      * 编辑门店的验证规则
      */
-    public function validationUpdateConfig()
-    {
+    public function validationUpdateConfig() {
         $config = [
             array(
-                'field' => 'name',
-                'label' => '门店名',
-                'rules' => 'required|trim|max_length[20]',
-                'errors'=> array(
+                'field'  => 'name',
+                'label'  => '门店名',
+                'rules'  => 'required|trim|max_length[20]',
+                'errors' => array(
                     'required' => '门店名不能为空.',
-                )
+                ),
             ),
             array(
                 'field' => 'rent_type',
@@ -342,9 +333,9 @@ class Store extends MY_Controller
                 'rules' => 'required|trim',
             ),
             /*array(
-                'field' => 'images',
-                'label' => '门店图片',
-                'rules' => 'required|trim',
+            'field' => 'images',
+            'label' => '门店图片',
+            'rules' => 'required|trim',
             ),*/
             array(
                 'field' => 'describe',
@@ -379,17 +370,16 @@ class Store extends MY_Controller
     /**
      * 添加门店的验证规则
      */
-    public function validationAddUnionConfig()
-    {
+    public function validationAddUnionConfig() {
 
         $config = [
             array(
-                'field' => 'name',
-                'label' => '门店名',
-                'rules' => 'required|trim|max_length[20]',
-                'errors'=> array(
+                'field'  => 'name',
+                'label'  => '门店名',
+                'rules'  => 'required|trim|max_length[20]',
+                'errors' => array(
                     'required' => '门店名不能为空.',
-                )
+                ),
             ),
             array(
                 'field' => 'rent_type',
@@ -442,9 +432,9 @@ class Store extends MY_Controller
                 'rules' => 'required|trim',
             ),
             /*array(
-                'field' => 'images',
-                'label' => '门店图片',
-                'rules' => 'required|trim',
+            'field' => 'images',
+            'label' => '门店图片',
+            'rules' => 'required|trim',
             ),*/
             array(
                 'field' => 'describe',
@@ -479,17 +469,16 @@ class Store extends MY_Controller
     /**
      * 添加门店的验证规则
      */
-    public function validationAddDotConfig()
-    {
+    public function validationAddDotConfig() {
 
         $config = [
             array(
-                'field' => 'name',
-                'label' => '门店名',
-                'rules' => 'required|trim|max_length[20]',
-                'errors'=> array(
+                'field'  => 'name',
+                'label'  => '门店名',
+                'rules'  => 'required|trim|max_length[20]',
+                'errors' => array(
                     'required' => '门店名不能为空.',
-                )
+                ),
             ),
             array(
                 'field' => 'rent_type',
@@ -542,9 +531,9 @@ class Store extends MY_Controller
                 'rules' => 'required|trim',
             ),
             /*array(
-                'field' => 'images',
-                'label' => '门店图片',
-                'rules' => 'required|trim',
+            'field' => 'images',
+            'label' => '门店图片',
+            'rules' => 'required|trim',
             ),*/
             array(
                 'field' => 'describe',
@@ -554,6 +543,5 @@ class Store extends MY_Controller
         ];
         return $config;
     }
-
 
 }

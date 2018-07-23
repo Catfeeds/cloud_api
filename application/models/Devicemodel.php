@@ -6,31 +6,26 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Time:        10:17
  * Describe:
  */
-class Devicemodel extends Basemodel
-{
-    const STATE_PENDING     = 'PENDING';    // 默认
-    const STATE_CONFIRM     = 'CONFIRM';    // 确认
-    const STATE_COMPLETED   = 'COMPLATE';   // 完成
+class Devicemodel extends Basemodel {
+    const STATE_PENDING   = 'PENDING'; // 默认
+    const STATE_CONFIRM   = 'CONFIRM'; // 确认
+    const STATE_COMPLETED = 'COMPLATE'; // 完成
 
-    protected $table        = 'boss_device';
+    protected $table = 'boss_device';
 
-    public function roomtype()
-    {
+    public function roomtype() {
         return $this->belongsTo(Roomtypemodel::class, 'room_type_id');
     }
 
-    public function roomunion()
-    {
+    public function roomunion() {
         return $this->belongsTo(Roomunionmodel::class, 'room_id');
     }
 
-    public function store()
-    {
+    public function store() {
         return $this->belongsTo(Storemodel::class, 'apartment_id');
     }
 
-    public function customer()
-    {
+    public function customer() {
         return $this->belongsTo(Customermodel::class, 'customer_id');
     }
 }

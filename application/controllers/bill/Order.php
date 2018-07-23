@@ -1,20 +1,18 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use \PhpOffice\PhpSpreadsheet\Style\Alignment;
-use Illuminate\Database\Capsule\Manager as DB;
 use EasyWeChat\Foundation\Application;
+use Illuminate\Database\Capsule\Manager as DB;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use \PhpOffice\PhpSpreadsheet\Style\Alignment;
+
 /**
  * Author:      zjh<401967974@qq.com>
  * Date:        2018/6/4 0004
  * Time:        17:17
  * Describe:    订单表 一个订单分为多个流水
  */
-class Order extends MY_Controller
-{
-    public function __construct()
-    {
+class Order extends MY_Controller {
+    public function __construct() {
         parent::__construct();
         $this->load->model('ordermodel');
     }
@@ -22,26 +20,23 @@ class Order extends MY_Controller
     /**
      * BOSS端订单列表
      */
-    public function listOrder()
-    {
-        $input  = $this->input->post(null,true);
-        $where  = [];
-        $store_ids = explode(',',$this->employee->store_ids);
-        empty($input['store_id'])?:$where['store_id']=$input['store_id'];
-        empty($input['type'])?:$where['type']=$input['type'];
-        empty($input['year'])?:$where['year']=$input['year'];
-        empty($input['month'])?:$where['month']=$input['month'];
-        $search = empty($input['search'])?'':$input['search'];
-        $page   = isset($input['page'])?$input['page']:1;
-        $offset = ($page-1)*PAGINATE;
-        $status = $input['status'];
-        if($status=='PAY')
-        {
+    public function listOrder() {
+        $input                                          = $this->input->post(null, true);
+        $where                                          = [];
+        $store_ids                                      = explode(',', $this->employee->store_ids);
+        empty($input['store_id']) ?: $where['store_id'] = $input['store_id'];
+        empty($input['type']) ?: $where['type']         = $input['type'];
+        empty($input['year']) ?: $where['year']         = $input['year'];
+        empty($input['month']) ?: $where['month']       = $input['month'];
+        $search                                         = empty($input['search']) ? '' : $input['search'];
+        $page                                           = isset($input['page']) ? $input['page'] : 1;
+        $offset                                         = ($page - 1) * PAGINATE;
+        $status                                         = $input['status'];
+        if ($status == 'PAY') {
             $status = [Ordermodel::STATE_COMPLETED];
-        }elseif($status=='NOTPAY')
-        {
-            $status = array_diff($this->ordermodel->getAllStatus(),[Ordermodel::STATE_COMPLETED]);
-        }else{
+        } elseif ($status == 'NOTPAY') {
+            $status = array_diff($this->ordermodel->getAllStatus(), [Ordermodel::STATE_COMPLETED]);
+        } else {
             $status = $this->ordermodel->getAllStatus();
         }
 
@@ -50,60 +45,57 @@ class Order extends MY_Controller
         $this->load->model('residentmodel');
         $this->load->model('employeemodel');
 
-        $count  = ceil((Ordermodel::with('store','roomunion','resident','employee')
-                ->whereIn('store_id',$store_ids)
-                ->where(function ($query) use ($search){
-                    $query->orWhereHas('resident',function($query) use($search){
-                        $query->where('name','like',"%$search%");
-                    })->orWhereHas('roomunion',function($query) use($search){
-                        $query->where('number','like',"%$search%");
-                    })/*->orWhereHas('employee',function($query) use($search){
-                        $query->where('name','like',"%$search%");
-                    })*/;
+        $count = ceil((Ordermodel::with('store', 'roomunion', 'resident', 'employee')
+                ->whereIn('store_id', $store_ids)
+                ->where(function ($query) use ($search) {
+                    $query->orWhereHas('resident', function ($query) use ($search) {
+                        $query->where('name', 'like', "%$search%");
+                    })->orWhereHas('roomunion', function ($query) use ($search) {
+                        $query->where('number', 'like', "%$search%");
+                    }) /*->orWhereHas('employee',function($query) use($search){
+                $query->where('name','like',"%$search%");
+                })*/    ;
                 })
                 ->where($where)
-                ->whereIn('status',$status)
-                ->count())/PAGINATE);
+                ->whereIn('status', $status)
+                ->count()) / PAGINATE);
 
-        if($count<$page){
-            $this->api_res(0,['orders'=>[],'total_page'=>$count]);
+        if ($count < $page) {
+            $this->api_res(0, ['orders' => [], 'total_page' => $count]);
             return;
         }
 
-        $orders = Ordermodel::with(['store','roomunion','resident','employee'])
-            ->whereIn('store_id',$store_ids)
-            ->where(function ($query) use ($search){
-                $query->orWhereHas('resident',function($query) use($search){
-                    $query->where('name','like',"%$search%");
-                })->orWhereHas('roomunion',function($query) use($search){
-                    $query->where('number','like',"%$search%");
-                })/*->orWhereHas('employee',function($query) use($search){
-                    $query->where('name','like',"%$search%");
-                })*/;
+        $orders = Ordermodel::with(['store', 'roomunion', 'resident', 'employee'])
+            ->whereIn('store_id', $store_ids)
+            ->where(function ($query) use ($search) {
+                $query->orWhereHas('resident', function ($query) use ($search) {
+                    $query->where('name', 'like', "%$search%");
+                })->orWhereHas('roomunion', function ($query) use ($search) {
+                    $query->where('number', 'like', "%$search%");
+                }) /*->orWhereHas('employee',function($query) use($search){
+            $query->where('name','like',"%$search%");
+            })*/    ;
             })
             ->where($where)
-            ->whereIn('status',$status)
-            ->orderBy('created_at','DESC')
-            ->orderBy('room_id','ASC')
+            ->whereIn('status', $status)
+            ->orderBy('created_at', 'DESC')
+            ->orderBy('room_id', 'ASC')
             ->offset($offset)->limit(PAGINATE)
             ->get()->toArray();
 
-
-        $this->api_res(0,['orders'=>$orders,'total_page'=>$count]);
+        $this->api_res(0, ['orders' => $orders, 'total_page' => $count]);
 
     }
 
-    public function download()
-    {
-        $input  = $this->input->post(null,true);
+    public function download() {
+        $input = $this->input->post(null, true);
 
         $orders = Ordermodel::get()->toArray();
 
         var_dump($orders);
     }
 
-    private function createPHPExcel($filename)
-    {
+    private function createPHPExcel($filename) {
         $phpexcel = new Spreadsheet();
         $phpexcel->getProperties()
             ->setCreator('梵响互动')
@@ -118,11 +110,10 @@ class Order extends MY_Controller
         return $phpexcel;
     }
 
-    private function setExcelTitle(Spreadsheet $phpexcel, $apartment, $start, $end)
-    {
+    private function setExcelTitle(Spreadsheet $phpexcel, $apartment, $start, $end) {
         $phpexcel->getActiveSheet()
             ->mergeCells('A1:N2')
-            ->setCellValue('A1', $apartment->name . ' 订单流水统计' . $start .' - ' . $end)
+            ->setCellValue('A1', $apartment->name . ' 订单流水统计' . $start . ' - ' . $end)
             ->getStyle('A1')
             ->getAlignment()
             ->setVertical(Alignment::VERTICAL_CENTER)
@@ -131,8 +122,7 @@ class Order extends MY_Controller
         $phpexcel->getActiveSheet()->getCell('A1')->getStyle()->getFont()->setSize(16);
     }
 
-    private function setExcelFirstRow(Spreadsheet $phpexcel)
-    {
+    private function setExcelFirstRow(Spreadsheet $phpexcel) {
         $phpexcel->getActiveSheet()
             ->setCellValue('A3', '订单月份')
             ->setCellValue('B3', '确认时间')
@@ -153,48 +143,46 @@ class Order extends MY_Controller
     /**
      * boss端创建账单
      */
-    public function addOrder()
-    {
-        $field  = ['room_id','resident_id','month','year','type','money'];
-        if(!$this->validationText($this->validateStore()))
-        {
-            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+    public function addOrder() {
+        $field = ['room_id', 'resident_id', 'month', 'year', 'type', 'money'];
+        if (!$this->validationText($this->validateStore())) {
+            $this->api_res(1002, ['error' => $this->form_first_error($field)]);
             return;
         }
-        $input  = $this->input->post();
-        $room_id    = $input['room_id'];
-        $resident_id    = $input['resident_id'];
-        $month    = $input['month'];
-        $year    = $input['year'];
-        $type    = $input['type'];
-        $money    = $input['money'];
+        $input       = $this->input->post();
+        $room_id     = $input['room_id'];
+        $resident_id = $input['resident_id'];
+        $month       = $input['month'];
+        $year        = $input['year'];
+        $type        = $input['type'];
+        $money       = $input['money'];
         $this->load->model('roomunionmodel');
         $this->load->model('residentmodel');
 //        $this->load->model('storemodel');
-//        $this->load->model('roomtypemodel');
-        $room   = Roomunionmodel::where('resident_id',$resident_id)->findOrFail($room_id);
-        $resident   = $room->resident;
+        //        $this->load->model('roomtypemodel');
+        $room     = Roomunionmodel::where('resident_id', $resident_id)->findOrFail($room_id);
+        $resident = $room->resident;
         $this->load->model('ordermodel');
-        $order  = new Ordermodel();
-        $order->number  = $order->getOrderNumber();
-        $order->store_id   = $room->store_id;
-        $order->room_id   = $room_id;
-        $order->room_type_id   = $room->room_type_id;
-        $order->employee_id   = $this->employee->id;
+        $order               = new Ordermodel();
+        $order->number       = $order->getOrderNumber();
+        $order->store_id     = $room->store_id;
+        $order->room_id      = $room_id;
+        $order->room_type_id = $room->room_type_id;
+        $order->employee_id  = $this->employee->id;
 //        $order->employee_id   = 118;
-        $order->resident_id   = $resident_id;
-        $order->customer_id   = $resident->customer_id;
-        $order->uxid   = $resident->uxid;
-        $order->money   = $money;
-        $order->paid   = $money;
-        $order->year   = $year;
-        $order->month   = $month;
-        $order->type   = $type;
-        $order->status   = Ordermodel::STATE_PENDING;
-        $order->data   = array_merge((array)$order->data,[date('Y-m-d H:i:s',time())=>$this->employee->name.'通过后台添加了账单']);
-        if($order->save()){
-            $this->api_res(0,['order_id'=>$order->id]);
-        }else {
+        $order->resident_id = $resident_id;
+        $order->customer_id = $resident->customer_id;
+        $order->uxid        = $resident->uxid;
+        $order->money       = $money;
+        $order->paid        = $money;
+        $order->year        = $year;
+        $order->month       = $month;
+        $order->type        = $type;
+        $order->status      = Ordermodel::STATE_PENDING;
+        $order->data        = array_merge((array) $order->data, [date('Y-m-d H:i:s', time()) => $this->employee->name . '通过后台添加了账单']);
+        if ($order->save()) {
+            $this->api_res(0, ['order_id' => $order->id]);
+        } else {
             $this->api_res(1009);
         }
     }
@@ -202,69 +190,64 @@ class Order extends MY_Controller
     /**
      * 通过门店和房间号获取住户和房间信息
      */
-    public function getResidentByRoom()
-    {
-        $input  = $this->input->post(null,true);
-        $room_number    = $this->input->post('room_number',true);
-        $store_id       = $this->input->post('store_id',true);
-        if(empty($store_id) || empty($room_number))
-        {
+    public function getResidentByRoom() {
+        $input       = $this->input->post(null, true);
+        $room_number = $this->input->post('room_number', true);
+        $store_id    = $this->input->post('store_id', true);
+        if (empty($store_id) || empty($room_number)) {
             $this->api_res(10032);
             return;
         }
         $this->load->model('roomunionmodel');
         $this->load->model('residentmodel');
         $this->load->model('storemodel');
-        $room   = Roomunionmodel::with('resident','store')
-            ->where(['store_id'=>$store_id,'number'=>$room_number])
+        $room = Roomunionmodel::with('resident', 'store')
+            ->where(['store_id' => $store_id, 'number' => $room_number])
             ->first();
-        if(empty($room)){
+        if (empty($room)) {
             $this->api_res(10032);
             return;
         }
-        if(empty($room->resident)){
+        if (empty($room->resident)) {
             $this->api_res(10033);
             return;
         }
 
-        $this->api_res(0,[$room]);
+        $this->api_res(0, [$room]);
     }
 
     /**
      * 编辑账单
      */
-    public function editOrder()
-    {
-        $input  = $this->input->post(null,true);
-        $field  = ['order_id','money','remark'];
-        if(!$this->validationText($this->validateEdit())){
-            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+    public function editOrder() {
+        $input = $this->input->post(null, true);
+        $field = ['order_id', 'money', 'remark'];
+        if (!$this->validationText($this->validateEdit())) {
+            $this->api_res(1002, ['error' => $this->form_first_error($field)]);
             return;
         }
-        $order_id    = $input['order_id'];
-        $money       = $input['money'];
-        $remark      = $input['remark'];
+        $order_id = $input['order_id'];
+        $money    = $input['money'];
+        $remark   = $input['remark'];
         $this->load->model('ordermodel');
-        $order  = Ordermodel::whereIn('status',[Ordermodel::STATE_GENERATED,Ordermodel::STATE_PENDING,Ordermodel::STATE_AUDITED])
+        $order = Ordermodel::whereIn('status', [Ordermodel::STATE_GENERATED, Ordermodel::STATE_PENDING, Ordermodel::STATE_AUDITED])
             ->findOrFail($order_id);
 
         $order->employee_id = $this->employee->id;
-        $order->money   = $money;
-        $order->paid    = $money;
-        $order->remark  = $remark;
-        $order->data   = array_merge((array)$order->data,[date('Y-m-d H:i:s',time())=>$this->employee->name.'修改了账单，'.'修改原因：'.$remark]);
+        $order->money       = $money;
+        $order->paid        = $money;
+        $order->remark      = $remark;
+        $order->data        = array_merge((array) $order->data, [date('Y-m-d H:i:s', time()) => $this->employee->name . '修改了账单，' . '修改原因：' . $remark]);
 
-        if($order->save()){
-            $this->api_res(0,['order_id'=>$order->id]);
-        }else{
+        if ($order->save()) {
+            $this->api_res(0, ['order_id' => $order->id]);
+        } else {
             $this->api_res(1009);
         }
 
     }
 
-
-    private function validateStore()
-    {
+    private function validateStore() {
         return array(
             array(
                 'field' => 'room_id',
@@ -300,8 +283,7 @@ class Order extends MY_Controller
 
     }
 
-    private function validateEdit()
-    {
+    private function validateEdit() {
         return array(
             array(
                 'field' => 'money',
@@ -325,19 +307,18 @@ class Order extends MY_Controller
     /**
      * 推送账单
      */
-    public function push()
-    {
-        $year   = 2018;
-        $month  = 7;
-        $input = $this->input->post(null,true);
+    public function push() {
+        $year     = 2018;
+        $month    = 7;
+        $input    = $this->input->post(null, true);
         $store_id = $input['store_id'];
         $this->load->model('ordermodel');
         $this->load->model('residentmodel');
         $this->load->model('customermodel');
         $unPushOrders = Ordermodel::where('store_id', $store_id)
             ->where('status', Ordermodel::STATE_GENERATED)
-            ->where('year',$year)
-            ->where('month',$month)
+            ->where('year', $year)
+            ->where('month', $month)
             ->get()->groupBy('resident_id');
 
 //        var_dump($unPushOrders->toArray());exit;
@@ -354,9 +335,9 @@ class Order extends MY_Controller
                 log_message('error', $resident_id . '没有用户customer信息');
                 $orders = Ordermodel::where('resident_id', $resident_id)
                     ->where('status', Ordermodel::STATE_GENERATED)
-                    ->where('year',$year)
-                    ->where('month',$month)
-                    ->update(['status'=> Ordermodel::STATE_PENDING]);
+                    ->where('year', $year)
+                    ->where('month', $month)
+                    ->update(['status' => Ordermodel::STATE_PENDING]);
                 continue;
             }
             $amount = $orders->sum('money');
@@ -364,25 +345,25 @@ class Order extends MY_Controller
                 DB::beginTransaction();
                 $orders = Ordermodel::where('resident_id', $resident_id)
                     ->where('status', Ordermodel::STATE_GENERATED)
-                    ->where('year',$year)
-                    ->where('month',$month)
-                    ->update(['status'=> Ordermodel::STATE_PENDING]);
+                    ->where('year', $year)
+                    ->where('month', $month)
+                    ->update(['status' => Ordermodel::STATE_PENDING]);
 
-                if(0==$customer->subscribe) {
-                    log_message('error',$resident_id.'未关注公众号，未推送账单');
+                if (0 == $customer->subscribe) {
+                    log_message('error', $resident_id . '未关注公众号，未推送账单');
 
-                }else{
+                } else {
                     $app->notice->uses(config_item('tmplmsg_customer_paynotice'))
                         ->withUrl(config_item('wechat_base_url') . '#/myBill')
                         ->andData([
-                            'first' => '温馨提示, 您有未支付的账单, 如已支付, 请忽略！',
+                            'first'    => '温馨提示, 您有未支付的账单, 如已支付, 请忽略！',
                             'keyword1' => $amount . '元',
                             'keyword2' => '请尽快缴费！',
-                            'remark' => '如有疑问，请与工作人员联系',
+                            'remark'   => '如有疑问，请与工作人员联系',
                         ])
                         ->andReceiver($customer->openid)
                         ->send();
-                    log_message('error',$resident_id.'推送成功');
+                    log_message('error', $resident_id . '推送成功');
                 }
 
                 DB::commit();
@@ -398,34 +379,33 @@ class Order extends MY_Controller
     /**
      * 向住户发送模板消息, 通知缴费
      */
-    public function notify()
-    {
-        $input = $this->input->post(null,true);
-        $store_id   = $input['store_id'];
+    public function notify() {
+        $input    = $this->input->post(null, true);
+        $store_id = $input['store_id'];
         $this->load->helper('common');
-        $app = new Application(getWechatCustomerConfig());
-        $failed         = [];
+        $app    = new Application(getWechatCustomerConfig());
+        $failed = [];
         $this->load->model('ordermodel');
         $this->load->model('residentmodel');
         $this->load->model('customermodel');
         $this->load->model('roomunionmodel');
-        $pendingOrders  = Ordermodel::where('store_id',$store_id)
-            ->where('status',Ordermodel::STATE_PENDING)
-            ->where('is_notify',0)
+        $pendingOrders = Ordermodel::where('store_id', $store_id)
+            ->where('status', Ordermodel::STATE_PENDING)
+            ->where('is_notify', 0)
             ->get()
             ->groupBy('resident_id');
 
-        foreach ($pendingOrders as $resident_id =>$orders){
-            $resident   = Residentmodel::find($resident_id);
+        foreach ($pendingOrders as $resident_id => $orders) {
+            $resident = Residentmodel::find($resident_id);
             if (empty($resident)) {
                 log_message('error', $resident_id . '没有住户resident信息');
-                $failed[]         = $resident_id. '没有住户resident信息';
+                $failed[] = $resident_id . '没有住户resident信息';
                 continue;
             }
-            $customer   = $resident->customer;
-            if(empty($customer) || (0==$customer->subscribe)){
+            $customer = $resident->customer;
+            if (empty($customer) || (0 == $customer->subscribe)) {
                 log_message('error', $resident_id . '没有用户customer信息或未关注');
-                $failed[]         = $resident_id. '没有用户customer信息或未关注';
+                $failed[] = $resident_id . '没有用户customer信息或未关注';
                 continue;
             }
 
@@ -434,19 +414,19 @@ class Order extends MY_Controller
             $app->notice->uses(config_item('tmplmsg_customer_paynotice'))
                 ->withUrl(config_item('wechat_base_url') . '#/myBill')
                 ->andData([
-                    'first' => '温馨提示, 您有未支付的账单, 如已支付, 请忽略！',
+                    'first'    => '温馨提示, 您有未支付的账单, 如已支付, 请忽略！',
                     'keyword1' => $amount . '元',
                     'keyword2' => '请尽快缴费！',
-                    'remark' => '如有疑问，请与工作人员联系',
+                    'remark'   => '如有疑问，请与工作人员联系',
                 ])
                 ->andReceiver($customer->openid)
                 ->send();
             $resident->orders()
-                ->where('status',Ordermodel::STATE_PENDING)
-                ->where('is_notify',0)
-                ->update(['is_notify'=>1]);
-            log_message('error',$resident_id.'推送成功');
+                ->where('status', Ordermodel::STATE_PENDING)
+                ->where('is_notify', 0)
+                ->update(['is_notify' => 1]);
+            log_message('error', $resident_id . '推送成功');
         }
-        $this->api_res(0,['failed'=>$failed]);
+        $this->api_res(0, ['failed' => $failed]);
     }
 }

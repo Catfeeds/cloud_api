@@ -7,93 +7,103 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Describe:    BOSS
  * 公司员工表
  */
-class Employeemodel extends Basemodel{
+class Employeemodel extends Basemodel {
 
-    protected $table    = 'boss_employee';
+    protected $table = 'boss_employee';
 
-    protected $hidden  = ['created_at','update_at','deleted_at'];
+    protected $hidden = ['created_at', 'update_at', 'deleted_at'];
 
-    public function store()
-    {
+    public function store() {
         return $this->belongsTo(Storemodel::class, 'store_id');
     }
 
     //员工办理的客户
-    public function resident(){
+    public function resident() {
 
-        return $this->hasMany(Residentmodel::class,'employee_id');
+        return $this->hasMany(Residentmodel::class, 'employee_id');
     }
     //员工所属的公司
-    public function company(){
+    public function company() {
 
-        return $this->belongsTo(Companymodel::class,'company_id');
+        return $this->belongsTo(Companymodel::class, 'company_id');
     }
 
     //员公的职位
-    public function position(){
-        return $this->belongsTo(Positionmodel::class,'position_id');
+    public function position() {
+        return $this->belongsTo(Positionmodel::class, 'position_id');
     }
 
     //查询员工信息
-    public function getInfo($type,$sign){
-        switch ($type){
-            case 'wechat':
-                $info   = $this->where(WXID,$sign)->where('status','ENABLE')->first();
-                break;
-            case 'phone':
-                $info   = $this->where('phone',$sign)->where('status','ENABLE')->first();
-                break;
-            default:
-                $info   = null;
+    public function getInfo($type, $sign) {
+        switch ($type) {
+        case 'wechat':
+            $info = $this->where(WXID, $sign)->where('status', 'ENABLE')->first();
+            break;
+        case 'phone':
+            $info = $this->where('phone', $sign)->where('status', 'ENABLE')->first();
+            break;
+        default:
+            $info = null;
         }
         return $info;
     }
 
     //获取当前登陆者拥有权限的某个城市的门店信息
-    public static function getMyCitystores($city)
-    {
-        $where  = [];
-        empty($city)?:$where['city']=$city;
+    public static function getMyCitystores($city) {
+        $where                         = [];
+        empty($city) ?: $where['city'] = $city;
         require_once 'Storemodel.php';
         $employee = static::where('bxid', CURRENT_ID)->get(['store_ids'])->first();
-        if (!$employee) return FALSE;
+        if (!$employee) {
+            return FALSE;
+        }
+
         $store_ids = explode(',', $employee->store_ids);
-        $storems = Storemodel::whereIn('id', $store_ids)->where($where)->get(['id', 'name', 'province', 'city', 'district']);
+        $storems   = Storemodel::whereIn('id', $store_ids)->where($where)->get(['id', 'name', 'province', 'city', 'district']);
         return $storems;
     }
 
     //获取当前登陆者拥有权限的某个城市的门店ids
-    public static function getMyCitystoreids($city)
-    {
+    public static function getMyCitystoreids($city) {
         require_once 'Storemodel.php';
         $employee = static::where('bxid', CURRENT_ID)->get(['store_ids'])->first();
-        if (!$employee) return FALSE;
+        if (!$employee) {
+            return FALSE;
+        }
+
         $store_ids = explode(',', $employee->store_ids);
-        $stores = Storemodel::whereIn('id', $store_ids)->where('city', $city)->get(['id']);
-        if (!$stores) return FALSE;
-        foreach($stores as $store) {
+        $stores    = Storemodel::whereIn('id', $store_ids)->where('city', $city)->get(['id']);
+        if (!$stores) {
+            return FALSE;
+        }
+
+        foreach ($stores as $store) {
             $mystore_ids[] = $store->id;
         }
         return $mystore_ids;
     }
 
     //获取当前登陆者拥有权限的门店ids
-    public static function getMyStoreids()
-    {
+    public static function getMyStoreids() {
         $employee = static::where('bxid', CURRENT_ID)->get(['store_ids'])->first();
-        if (!$employee) return FALSE;
+        if (!$employee) {
+            return FALSE;
+        }
+
         $store_ids = explode(',', $employee->store_ids);
         return $store_ids;
     }
 
     //获取当前登陆者拥有权限的城市
-    public static function getMyCities()
-    {
+    public static function getMyCities() {
         require_once 'Storemodel.php';
         $employee = static::where('bxid', CURRENT_ID)->get(['store_ids'])->first();
-        if (!$employee) return FALSE;
+        if (!$employee) {
+            return FALSE;
+        }
+
         $store_ids = explode(',', $employee->store_ids);
-        $cities = Storemodel::whereIn('id', $store_ids)->get(['city'])->map(function ($c){
+        $cities    = Storemodel::whereIn('id', $store_ids)->get(['city'])->map(function ($c) {
             return $c->city;
         });
         $cities = $cities->unique(); //去除集合中重复值
@@ -101,14 +111,13 @@ class Employeemodel extends Basemodel{
     }
 
     //获取当前登陆者公司所负责的所有城市
-    public static function getMyCompanyCities()
-    {
+    public static function getMyCompanyCities() {
         require_once 'Storemodel.php';
-        $cities = Storemodel::where('company_id', COMPANY_ID)->get(['city'])->map(function ($c){
+        $cities = Storemodel::where('company_id', COMPANY_ID)->get(['city'])->map(function ($c) {
             return $c->city;
         });
         $cities = $cities->unique(); //去除集合中重复值
-        foreach($cities as $city) {
+        foreach ($cities as $city) {
             $my_cities[] = $city;
         }
         return $my_cities;

@@ -6,7 +6,6 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Time:        21:32
  * Describe:
  */
-class Imagesmodel extends Basemodel{
-
-    protected $table='boss_images';
+class Imagesmodel extends Basemodel {
+    protected $table = 'boss_images';
 }

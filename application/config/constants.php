@@ -10,7 +10,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | error_reporting is disabled, the backtrace will not display, regardless
 | of this setting
 |
-*/
+ */
 defined('SHOW_DEBUG_BACKTRACE') OR define('SHOW_DEBUG_BACKTRACE', TRUE);
 
 /*
@@ -25,11 +25,11 @@ defined('SHOW_DEBUG_BACKTRACE') OR define('SHOW_DEBUG_BACKTRACE', TRUE);
 | user, PHP under CGI with Apache suEXEC, etc.).  Octal values should
 | always be used to set the mode correctly.
 |
-*/
-defined('FILE_READ_MODE')  OR define('FILE_READ_MODE', 0644);
+ */
+defined('FILE_READ_MODE') OR define('FILE_READ_MODE', 0644);
 defined('FILE_WRITE_MODE') OR define('FILE_WRITE_MODE', 0666);
-defined('DIR_READ_MODE')   OR define('DIR_READ_MODE', 0755);
-defined('DIR_WRITE_MODE')  OR define('DIR_WRITE_MODE', 0755);
+defined('DIR_READ_MODE') OR define('DIR_READ_MODE', 0755);
+defined('DIR_WRITE_MODE') OR define('DIR_WRITE_MODE', 0755);
 
 /*
 |--------------------------------------------------------------------------
@@ -38,15 +38,15 @@ defined('DIR_WRITE_MODE')  OR define('DIR_WRITE_MODE', 0755);
 |
 | These modes are used when working with fopen()/popen()
 |
-*/
-defined('FOPEN_READ')                           OR define('FOPEN_READ', 'rb');
-defined('FOPEN_READ_WRITE')                     OR define('FOPEN_READ_WRITE', 'r+b');
-defined('FOPEN_WRITE_CREATE_DESTRUCTIVE')       OR define('FOPEN_WRITE_CREATE_DESTRUCTIVE', 'wb'); // truncates existing file data, use with care
-defined('FOPEN_READ_WRITE_CREATE_DESTRUCTIVE')  OR define('FOPEN_READ_WRITE_CREATE_DESTRUCTIVE', 'w+b'); // truncates existing file data, use with care
-defined('FOPEN_WRITE_CREATE')                   OR define('FOPEN_WRITE_CREATE', 'ab');
-defined('FOPEN_READ_WRITE_CREATE')              OR define('FOPEN_READ_WRITE_CREATE', 'a+b');
-defined('FOPEN_WRITE_CREATE_STRICT')            OR define('FOPEN_WRITE_CREATE_STRICT', 'xb');
-defined('FOPEN_READ_WRITE_CREATE_STRICT')       OR define('FOPEN_READ_WRITE_CREATE_STRICT', 'x+b');
+ */
+defined('FOPEN_READ') OR define('FOPEN_READ', 'rb');
+defined('FOPEN_READ_WRITE') OR define('FOPEN_READ_WRITE', 'r+b');
+defined('FOPEN_WRITE_CREATE_DESTRUCTIVE') OR define('FOPEN_WRITE_CREATE_DESTRUCTIVE', 'wb'); // truncates existing file data, use with care
+defined('FOPEN_READ_WRITE_CREATE_DESTRUCTIVE') OR define('FOPEN_READ_WRITE_CREATE_DESTRUCTIVE', 'w+b'); // truncates existing file data, use with care
+defined('FOPEN_WRITE_CREATE') OR define('FOPEN_WRITE_CREATE', 'ab');
+defined('FOPEN_READ_WRITE_CREATE') OR define('FOPEN_READ_WRITE_CREATE', 'a+b');
+defined('FOPEN_WRITE_CREATE_STRICT') OR define('FOPEN_WRITE_CREATE_STRICT', 'xb');
+defined('FOPEN_READ_WRITE_CREATE_STRICT') OR define('FOPEN_READ_WRITE_CREATE_STRICT', 'x+b');
 
 /*
 |--------------------------------------------------------------------------
@@ -72,45 +72,44 @@ defined('FOPEN_READ_WRITE_CREATE_STRICT')       OR define('FOPEN_READ_WRITE_CREA
 |    Bash scripting:
 |       http://tldp.org/LDP/abs/html/exitcodes.html
 |
-*/
-defined('EXIT_SUCCESS')        OR define('EXIT_SUCCESS', 0); // no errors
-defined('EXIT_ERROR')          OR define('EXIT_ERROR', 1); // generic error
-defined('EXIT_CONFIG')         OR define('EXIT_CONFIG', 3); // configuration error
-defined('EXIT_UNKNOWN_FILE')   OR define('EXIT_UNKNOWN_FILE', 4); // file not found
-defined('EXIT_UNKNOWN_CLASS')  OR define('EXIT_UNKNOWN_CLASS', 5); // unknown class
+ */
+defined('EXIT_SUCCESS') OR define('EXIT_SUCCESS', 0); // no errors
+defined('EXIT_ERROR') OR define('EXIT_ERROR', 1); // generic error
+defined('EXIT_CONFIG') OR define('EXIT_CONFIG', 3); // configuration error
+defined('EXIT_UNKNOWN_FILE') OR define('EXIT_UNKNOWN_FILE', 4); // file not found
+defined('EXIT_UNKNOWN_CLASS') OR define('EXIT_UNKNOWN_CLASS', 5); // unknown class
 defined('EXIT_UNKNOWN_METHOD') OR define('EXIT_UNKNOWN_METHOD', 6); // unknown class member
-defined('EXIT_USER_INPUT')     OR define('EXIT_USER_INPUT', 7); // invalid user input
-defined('EXIT_DATABASE')       OR define('EXIT_DATABASE', 8); // database error
-defined('EXIT__AUTO_MIN')      OR define('EXIT__AUTO_MIN', 9); // lowest automatically-assigned error code
-defined('EXIT__AUTO_MAX')      OR define('EXIT__AUTO_MAX', 125); // highest automatically-assigned error code
+defined('EXIT_USER_INPUT') OR define('EXIT_USER_INPUT', 7); // invalid user input
+defined('EXIT_DATABASE') OR define('EXIT_DATABASE', 8); // database error
+defined('EXIT__AUTO_MIN') OR define('EXIT__AUTO_MIN', 9); // lowest automatically-assigned error code
+defined('EXIT__AUTO_MAX') OR define('EXIT__AUTO_MAX', 125); // highest automatically-assigned error code
 
 //定义请求数据的方法
-if (!is_cli()){
-	define('IS_POST',strtolower($_SERVER["REQUEST_METHOD"]) == 'post');//判断是否是post方法
-	define('IS_GET',strtolower($_SERVER["REQUEST_METHOD"]) == 'get');//判断是否是get方法
-	define('IS_OPTIONS',strtolower($_SERVER["REQUEST_METHOD"]) == 'options');//判断是否是post方法
-	define('IS_AJAX',isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');//判断是否是ajax请求
+if (!is_cli()) {
+    define('IS_POST', strtolower($_SERVER["REQUEST_METHOD"]) == 'post'); //判断是否是post方法
+    define('IS_GET', strtolower($_SERVER["REQUEST_METHOD"]) == 'get'); //判断是否是get方法
+    define('IS_OPTIONS', strtolower($_SERVER["REQUEST_METHOD"]) == 'options'); //判断是否是post方法
+    define('IS_AJAX', isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest'); //判断是否是ajax请求
 }
 
 //自定义常量
-define('WXID','unionid');    //验证用户的用到的微信标识 （openid/unionid）
+define('WXID', 'unionid'); //验证用户的用到的微信标识 （openid/unionid）
 
-define('SMSTEXT','【火花草莓社区】您的验证码是'); //发送短信的文本内容
+define('SMSTEXT', '【火花草莓社区】您的验证码是'); //发送短信的文本内容
 
-define('SUPERPRE','S_'); //区分公司超级用户区分的前缀
+define('SUPERPRE', 'S_'); //区分公司超级用户区分的前缀
 //Redis 空间
-define('PHONECODE','FUNXDATA:BOSS:LOGIN:PHONE_CODE:'); //手机验证码
-define('USERINFO','FUNXDATA:BOSS:USER:INFO:');      //用户信息
-define('COMPANYINFO','FUNXDATA:BOSS:COMPANY:INFO:'); //公司信息
-define('COMPANYPRIVILEGE','FUNXDATA:BOSS:COMPANY:PRIVILEGE:'); //公司权限
+define('PHONECODE', 'FUNXDATA:BOSS:LOGIN:PHONE_CODE:'); //手机验证码
+define('USERINFO', 'FUNXDATA:BOSS:USER:INFO:'); //用户信息
+define('COMPANYINFO', 'FUNXDATA:BOSS:COMPANY:INFO:'); //公司信息
+define('COMPANYPRIVILEGE', 'FUNXDATA:BOSS:COMPANY:PRIVILEGE:'); //公司权限
 
-define('DANBYTOKEN','FUNXDATA:BOSS:DANBY:TOKEN');
-
+define('DANBYTOKEN', 'FUNXDATA:BOSS:DANBY:TOKEN');
 
 //分页
-define('PAGINATE',10);          //分页页码
+define('PAGINATE', 10); //分页页码
 
 //微信生成带参数的二维码 前缀
-define('QRCODERESIDENT',101);          //办理用户入住
-define('PRIVILEGE_IDS_ONE',range(1,9)); //一级权限分类ids
-define('PRIVILEGE_IDS_THREE',range(10,36)); //三级权限分类父ids
+define('QRCODERESIDENT', 101); //办理用户入住
+define('PRIVILEGE_IDS_ONE', range(1, 9)); //一级权限分类ids
+define('PRIVILEGE_IDS_THREE', range(10, 36)); //三级权限分类父ids

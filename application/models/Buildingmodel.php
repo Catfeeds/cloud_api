@@ -7,25 +7,22 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Describe:    BOSS
  * 楼栋表
  */
-class Buildingmodel extends Basemodel{
+class Buildingmodel extends Basemodel {
 
-    protected $table    = 'boss_building';
+    protected $table = 'boss_building';
 
-    protected $fillable = ['store_id','name','layer_total','layer_room_number'];
+    protected $fillable = ['store_id', 'name', 'layer_total', 'layer_room_number'];
 
-    protected $hidden   = [];
+    protected $hidden = [];
 
     //楼栋所属的门店信息
-    public function store(){
-
-        return $this->belongsTo(Storemodel::class,'store_id');
+    public function store() {
+        return $this->belongsTo(Storemodel::class, 'store_id');
     }
 
     //楼栋的房间
-    public function room(){
-
-        return $this->hasMany(Roommodel::class,'building_id');
+    public function room() {
+        return $this->hasMany(Roommodel::class, 'building_id');
     }
-
 
 }

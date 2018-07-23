@@ -8,10 +8,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Describe:    梵响客户信息操作
  */
 
-class Company extends MY_Controller
-{
-    public function __construct()
-    {
+class Company extends MY_Controller {
+    public function __construct() {
         parent::__construct();
         $this->load->model('companymodel');
     }
@@ -19,196 +17,186 @@ class Company extends MY_Controller
     /**
      * 返回客户列表
      */
-    public function listCompany()
-    {
-   
-            $input          = $this->input->post(NULL,TRUE);
-            $page           = isset($input['page'])?$input['page']:1;
-            $name           = isset($input['name'])?$input['name']:NULL;
-            $offset         = PAGINATE*($page-1);
-            $field          = ['id','name','address','contact_user','contact_phone','license','status'];
-            $cdn_path       = config_item('cdn_path');
-            if (!empty($name)){
-                $name       = $this->fiterStr($name);
-                $count      = ceil(Companymodel::where('name','like','%'."$name".'%')->count()/PAGINATE);
-                $company    = Companymodel::where('name','like','%'."$name".'%')->take(PAGINATE)
-                                ->skip($offset)->orderBy('id','desc')->get($field)->toArray();
-                $this->api_res(0,['count'=>$count,'list'=>$company,'path'=>$cdn_path]);
-                return true;
-            }
-            $count          = ceil(Companymodel::count()/PAGINATE);
-            $company        = Companymodel::take(PAGINATE)->skip($offset)
-                            ->orderBy('id','desc')->get($field)->toArray();
-            $this->api_res(0,['count'=>$count,'list'=>$company]);
+    public function listCompany() {
+        $input    = $this->input->post(NULL, TRUE);
+        $page     = isset($input['page']) ? $input['page'] : 1;
+        $name     = isset($input['name']) ? $input['name'] : NULL;
+        $offset   = PAGINATE * ($page - 1);
+        $field    = ['id', 'name', 'address', 'contact_user', 'contact_phone', 'license', 'status'];
+        $cdn_path = config_item('cdn_path');
+        if (!empty($name)) {
+            $name    = $this->fiterStr($name);
+            $count   = ceil(Companymodel::where('name', 'like', '%' . "$name" . '%')->count() / PAGINATE);
+            $company = Companymodel::where('name', 'like', '%' . "$name" . '%')->take(PAGINATE)
+                ->skip($offset)->orderBy('id', 'desc')->get($field)->toArray();
+            $this->api_res(0, ['count' => $count, 'list' => $company, 'path' => $cdn_path]);
+            return true;
+        }
+        $count   = ceil(Companymodel::count() / PAGINATE);
+        $company = Companymodel::take(PAGINATE)->skip($offset)
+            ->orderBy('id', 'desc')->get($field)->toArray();
+        $this->api_res(0, ['count' => $count, 'list' => $company]);
 
-     
     }
 
     /**
      * 添加客户信息
      */
-    public function addCompany()
-    {
-        
-            $post   = $this->input->post(NULL,TRUE);
-            if(!$this->validateText($post)){
-                $fieldarr=['name','address','contact_user','contact_phone'];
-                $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
-                return false;
-            }
+    public function addCompany() {
 
-            $company                = new Companymodel();
-            $company->name          = $post['name'];
-            $company->address       = $post['address'];
-            $company->contact_user  = $post['contact_user'];
-            $company->contact_phone = $post['contact_phone'];
-            $company->license       = $post['license_path'];
+        $post = $this->input->post(NULL, TRUE);
+        if (!$this->validateText($post)) {
+            $fieldarr = ['name', 'address', 'contact_user', 'contact_phone'];
+            $this->api_res(1002, ['errmsg' => $this->form_first_error($fieldarr)]);
+            return false;
+        }
 
-            if($company->save()){
-                $this->api_res(0,['id'=>$company->id]);
-            }else{
-                $this->api_res(10102);
-            }
-  
+        $company                = new Companymodel();
+        $company->name          = $post['name'];
+        $company->address       = $post['address'];
+        $company->contact_user  = $post['contact_user'];
+        $company->contact_phone = $post['contact_phone'];
+        $company->license       = $post['license_path'];
+
+        if ($company->save()) {
+            $this->api_res(0, ['id' => $company->id]);
+        } else {
+            $this->api_res(10102);
+        }
+
     }
 
     /**
      * 上传营业执照
      */
-    public function licenseUpload()
-    {
+    public function licenseUpload() {
 
-        $config     = [
-                'allowed_types' => 'gif|jpg|png',
-                'max_size'      => '5000',
-                ];
+        $config = [
+            'allowed_types' => 'gif|jpg|png',
+            'max_size'      => '5000',
+        ];
         $this->load->library('alioss', $config);
-        if(!$this->alioss->do_upload('license')){
+        if (!$this->alioss->do_upload('license')) {
             $this->api_res(10106);
             return false;
         }
 
-        $data = $this->alioss->data();
+        $data         = $this->alioss->data();
         $license_path = $data['oss_path'];
-        $this->api_res(0,['license_path'=>$license_path]);
+        $this->api_res(0, ['license_path' => $license_path]);
     }
 
     /**
      * 扫描二维码添加客户
      */
-    public function qrcodeAddCompany(){
-        $post   = $this->input->post(NULL,true);
-        $id     = isset($post['id'])?$post['id']:NULL;
-        $code   = isset($post['code'])?$post['code']:NULL;
+    public function qrcodeAddCompany() {
+        $post = $this->input->post(NULL, true);
+        $id   = isset($post['id']) ? $post['id'] : NULL;
+        $code = isset($post['code']) ? $post['code'] : NULL;
 
-        $id     = str_replace(' ','',trim(strip_tags($id)));
-        $code   = str_replace(' ','',trim(strip_tags($code)));
+        $id   = str_replace(' ', '', trim(strip_tags($id)));
+        $code = str_replace(' ', '', trim(strip_tags($code)));
 
         $appid  = config_item('wx_web_appid');
         $secret = config_item('wx_web_secret');
-        $url    = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid='.$appid.'&secret='.$secret.'&code='.$code.'&grant_type=authorization_code';
-        $user   = $this->httpCurl($url,'get','json');
-        if(array_key_exists('errcode',$user))
-        {
+        $url    = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid=' . $appid . '&secret=' . $secret . '&code=' . $code . '&grant_type=authorization_code';
+        $user   = $this->httpCurl($url, 'get', 'json');
+        if (array_key_exists('errcode', $user)) {
             $this->api_res(10006);
             return false;
         }
-       
-            $company             = Companymodel::where('id',$id)->first();
-            $company->openid     = $user['openid'];
-            $company->unionid    = $user['unionid'];
-            if($company->save()){
-                $company->status = 'NORMAL';
-                $company->save();
-                $this->api_res(0);
-            }else{
-                $this->api_res(10105);
-            }
-     
+
+        $company          = Companymodel::where('id', $id)->first();
+        $company->openid  = $user['openid'];
+        $company->unionid = $user['unionid'];
+        if ($company->save()) {
+            $company->status = 'NORMAL';
+            $company->save();
+            $this->api_res(0);
+        } else {
+            $this->api_res(10105);
+        }
+
     }
 
     /**
      * 修改客户信息
      */
-    public function updateCompany()
-    {
-        
-            $post   = $this->input->post(NULL,TRUE);
-            if(!$this->validateText($post)){
-                $fieldarr=['name','address','contact_user','contact_phone'];
-                $this->api_res(1002,['errmsg'=>$this->form_first_error($fieldarr)]);
-                return false;
-            }
+    public function updateCompany() {
 
-            $id                     = $post['id'];
-            $company                = Companymodel::where('id',$id)->first();
-            $company->name          = $post['name'];
-            $company->address       = $post['address'];
-            $company->contact_user  = $post['contact_user'];
-            $company->contact_phone = $post['contact_phone'];
-            //$company->status        = $post['status'];
+        $post = $this->input->post(NULL, TRUE);
+        if (!$this->validateText($post)) {
+            $fieldarr = ['name', 'address', 'contact_user', 'contact_phone'];
+            $this->api_res(1002, ['errmsg' => $this->form_first_error($fieldarr)]);
+            return false;
+        }
 
-            if($company->save()){
-                $this->api_res(0);
-            }else{
-                $this->api_res(10103);
-            }
-      
+        $id                     = $post['id'];
+        $company                = Companymodel::where('id', $id)->first();
+        $company->name          = $post['name'];
+        $company->address       = $post['address'];
+        $company->contact_user  = $post['contact_user'];
+        $company->contact_phone = $post['contact_phone'];
+        //$company->status        = $post['status'];
+
+        if ($company->save()) {
+            $this->api_res(0);
+        } else {
+            $this->api_res(10103);
+        }
+
     }
 
     /**
      * 查看营业执照
      */
-    public function queryLicense()
-    {
- 
-            $post       = $this->input->post(NULL,TRUE);
-            $company_id         = isset($post['company_id'])?$post['company_id']:NULL;
-            if(!$company_id){
-                $this->api_res(10101);
-            }
-            $license_pre= config_item('cdn_path');
+    public function queryLicense() {
 
-            $license_path   = Companymodel::find($company_id,['license'])->toArray();
-            $license_path   = $license_path['license'];
+        $post       = $this->input->post(NULL, TRUE);
+        $company_id = isset($post['company_id']) ? $post['company_id'] : NULL;
+        if (!$company_id) {
+            $this->api_res(10101);
+        }
+        $license_pre = config_item('cdn_path');
 
-            if($license_path){
-                $this->api_res(0,['path'=>$license_pre.$license_path]);
-            }else{
-                $this->api_res(10101);
-            }
-      
+        $license_path = Companymodel::find($company_id, ['license'])->toArray();
+        $license_path = $license_path['license'];
+
+        if ($license_path) {
+            $this->api_res(0, ['path' => $license_pre . $license_path]);
+        } else {
+            $this->api_res(10101);
+        }
+
     }
 
     /**
      * 删除客户信息
      * 软删除
      */
-    public function deleteCompany()
-    {
-     
-            $post       = $this->input->post(NULL,TRUE);
-            $post       = $post['id'];
-            $id         = isset($post)?explode(',',$post):NULL;
-            $company    = Companymodel::destroy($id);
+    public function deleteCompany() {
 
-            if($company){
-                $this->api_res(0);
-            }else{
-                $this->api_res(10104);
-            }
-      
+        $post    = $this->input->post(NULL, TRUE);
+        $post    = $post['id'];
+        $id      = isset($post) ? explode(',', $post) : NULL;
+        $company = Companymodel::destroy($id);
+
+        if ($company) {
+            $this->api_res(0);
+        } else {
+            $this->api_res(10104);
+        }
+
     }
 
     /**
      * 验证text
      */
-    public function validateText($post=[])
-    {
+    public function validateText($post = []) {
 
         $this->load->library('form_validation');
 
-        $this->form_validation->set_rules($this->validateRules())->set_error_delimiters('','');
+        $this->form_validation->set_rules($this->validateRules())->set_error_delimiters('', '');
 
         return $this->form_validation->run();
     }
@@ -216,16 +204,15 @@ class Company extends MY_Controller
     /**
      * 验证规则 Rules
      */
-    public function validateRules()
-    {
-        $rules=array(
+    public function validateRules() {
+        $rules = array(
             array(
-                'field' => 'name',
-                'label' => '公司名称',
-                'rules' => 'required|trim',
-                'errors'=> array(
+                'field'  => 'name',
+                'label'  => '公司名称',
+                'rules'  => 'required|trim',
+                'errors' => array(
                     'required' => '用户名不能为空.',
-                )
+                ),
             ),
             array(
                 'field' => 'address',

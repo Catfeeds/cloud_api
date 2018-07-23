@@ -6,11 +6,10 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Time:        14:51
  * Describe:
  */
-class Utilityreadingmodel extends Basemodel
-{
-    protected $table    = 'boss_utility_reading';
+class Utilityreadingmodel extends Basemodel {
+    protected $table = 'boss_utility_reading';
 
-    protected $dates    = ['created_at', 'updated_at'];
+    protected $dates = ['created_at', 'updated_at'];
 
     protected $fillable = [
         'order_id',
@@ -24,8 +23,7 @@ class Utilityreadingmodel extends Basemodel
     /**
      * 该记录所属房间
      */
-    public function order()
-    {
+    public function order() {
         return $this->belongsTo(Ordermodel::class, 'room_id');
     }
 

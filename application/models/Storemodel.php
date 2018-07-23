@@ -8,60 +8,48 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * 门店表
  */
 
-class Storemodel extends Basemodel{
+class Storemodel extends Basemodel {
 
-    protected $table    = 'boss_store';
+    protected $table = 'boss_store';
 
     protected $fillable = [
-        'rent_type','status','name','theme','province','city','district','address', 'contact_user',
-        'contact_phone','counsel_phone','counsel_time','describe','history','shop','relax','bus',
+        'rent_type', 'status', 'name', 'theme', 'province', 'city', 'district', 'address', 'contact_user',
+        'contact_phone', 'counsel_phone', 'counsel_time', 'describe', 'history', 'shop', 'relax', 'bus',
     ];
 
-    protected $casts    = ['images'=>'array'];
+    protected $casts = ['images' => 'array'];
 
-    protected $hidden   = ['updated_at','deleted_at'];
+    protected $hidden = ['updated_at', 'deleted_at'];
 
     //门店所管辖的楼栋
-    public function building(){
-
-        return $this->hasMany(Buildingmodel::class,'store_id');
+    public function building() {
+        return $this->hasMany(Buildingmodel::class, 'store_id');
     }
 
     //门店的员工信息
-    public function employee(){
-
-        return $this->hasMany(Employeemodel::class,'store_id');
+    public function employee() {
+        return $this->hasMany(Employeemodel::class, 'store_id');
     }
 
     //门店的房型
-    public function roomtype(){
-
-        return $this->hasMany(Roomtypemodel::class,'store_id');
+    public function roomtype() {
+        return $this->hasMany(Roomtypemodel::class, 'store_id');
     }
 
     //门店的房间
-    public function room(){
-
-        return $this->hasMany(Roommodel::class,'store_id');
+    public function room() {
+        return $this->hasMany(Roommodel::class, 'store_id');
     }
 
     /**
      * 该公寓所拥有的活动
      */
-    public function activities()
-    {
+    public function activities() {
         return $this->belongsToMany(Activitymodel::class, 'boss_store_activity', 'store_id', 'activity_id');
     }
 
-//    public function coupontypes()
-//    {
-//        return $this->belongsToMany(Activitymodel::class, 'boss_activity_coupontype', 'activity_id', 'coupontype_id');
-//    }
-    public function contracts()
-    {
+    public function contracts() {
         return $this->hasMany(Contractmodel::class, 'store_id');
     }
-
-
 
 }

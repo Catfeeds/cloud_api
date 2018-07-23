@@ -8,14 +8,13 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * 用户信息表
  */
 
-class Customermodel extends Basemodel{
+class Customermodel extends Basemodel {
 
-    protected $table    = 'boss_customer';
+    protected $table = 'boss_customer';
 
-    protected $hidden   = [];
+    protected $hidden = [];
 
-    public function coupons(){
-
-        return $this->hasMany(Couponmodel::class,'customer_id');
+    public function coupons() {
+        return $this->hasMany(Couponmodel::class, 'customer_id');
     }
 }

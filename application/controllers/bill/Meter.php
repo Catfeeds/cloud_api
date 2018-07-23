@@ -3,17 +3,16 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 use Illuminate\Database\Capsule\Manager as DB;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
 /**
  * Author:      zjh<401967974@qq.com>
  * Date:        2018/6/4 0004
  * Time:        15:40
  * Describe:
  */
-class Meter extends MY_Controller
-{
+class Meter extends MY_Controller {
 
-    public function __construct()
-    {
+    public function __construct() {
         parent::__construct();
         $this->load->model('meterreadingtransfermodel');
     }
@@ -21,26 +20,19 @@ class Meter extends MY_Controller
     /**
      * 确定读数的上传并生成账单
      */
-    public function confirm()
-    {
+    public function confirm() {
 
-        $field  = ['month','year','type'];
+        $field = ['month', 'year', 'type'];
 
-        $input  = $this->input->post(null,true);
+        $input = $this->input->post(null, true);
 
-        if(!$this->validationText($this->validateConfirm())){
-            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+        if (!$this->validationText($this->validateConfirm())) {
+            $this->api_res(1002, ['error' => $this->form_first_error($field)]);
             return;
         }
 
-//        if($this->employee->position!='APARTMENT'){
-//            $this->api_res(1011);
-//            return;
-//        }
-
-
-        $month  = $this->checkAndGetMonth($input['month'],false);
-        $year   = $this->checkAndGetYear($input['year'],false);
+        $month = $this->checkAndGetMonth($input['month'], false);
+        $year  = $this->checkAndGetYear($input['year'], false);
 
         $this->load->model('ordermodel');
         $this->load->model('roomunionmodel');
@@ -52,19 +44,20 @@ class Meter extends MY_Controller
 
             DB::beginTransaction();
 
-            $type   = $input['type'];
+            $type = $input['type'];
 
             $transfers = Meterreadingtransfermodel::with('roomunion')
                 ->where('type', $type)
 //                ->where('store_id',1)
-//                ->where('store_id', $this->employee->store_id)
-                ->where('store_id', $this->input->post('store_id',true))
+            //                ->where('store_id', $this->employee->store_id)
+                ->where('store_id', $this->input->post('store_id', true))
                 ->where('confirmed', Meterreadingtransfermodel::UNCONFIRMED)
                 ->get();
 
-
             $transfers->map(function ($transfer) use ($year, $month) {
-                if (0.01 > $transfer->this_reading - $transfer->last_reading) return true;
+                if (0.01 > $transfer->this_reading - $transfer->last_reading) {
+                    return true;
+                }
 
                 if (0 == $transfer->roomunion->resident_id) {
                     return false;
@@ -89,12 +82,10 @@ class Meter extends MY_Controller
         $this->api_res(0);
     }
 
-
     /**
      * 生成水电订单
      */
-    private function addUtilityOrder($transfer, $year, $month)
-    {
+    private function addUtilityOrder($transfer, $year, $month) {
         $roomunion = $transfer->roomunion;
 
         if (!$resident = $roomunion->resident) {
@@ -102,22 +93,22 @@ class Meter extends MY_Controller
         }
 
         switch ($transfer->type) {
-            case Meterreadingtransfermodel::TYPE_ELECTRIC :
-                $type   = Ordermodel::PAYTYPE_ELECTRIC;
-                // $price  = $resident->electricity_price;
-                $price  = $roomunion->store->electricity_price;
-                break;
-            case Meterreadingtransfermodel::TYPE_WATER_H :
-                $type   = Ordermodel::PAYTYPE_WATER_HOT;
-                $price  = $roomunion->store->hot_water_price;
-                break;
-            case Meterreadingtransfermodel::TYPE_WATER_C :
-                $type   = Ordermodel::PAYTYPE_WATER;
-                $price  = $roomunion->store->water_price;
-                break;
-            default:
-                throw new Exception('未识别的账单类型！');
-                break;
+        case Meterreadingtransfermodel::TYPE_ELECTRIC:
+            $type = Ordermodel::PAYTYPE_ELECTRIC;
+            // $price  = $resident->electricity_price;
+            $price = $roomunion->store->electricity_price;
+            break;
+        case Meterreadingtransfermodel::TYPE_WATER_H:
+            $type  = Ordermodel::PAYTYPE_WATER_HOT;
+            $price = $roomunion->store->hot_water_price;
+            break;
+        case Meterreadingtransfermodel::TYPE_WATER_C:
+            $type  = Ordermodel::PAYTYPE_WATER;
+            $price = $roomunion->store->water_price;
+            break;
+        default:
+            throw new Exception('未识别的账单类型！');
+            break;
         }
 
         $money = ($transfer->this_reading - $transfer->last_reading) * $price;
@@ -133,22 +124,22 @@ class Meter extends MY_Controller
         $this->load->helper('string');
         $order = new Ordermodel();
         $order->fill([
-            'number'        => date('YmdHis').random_string('numeric', 10),
-            'type'          => $type,
-            'year'          => $year,
-            'month'         => $month,
-            'money'         => $money,
-            'paid'          => $money,
-            'store_id'  => $roomunion->store_id,
-            'resident_id'   => $roomunion->resident_id,
-            'room_id'       => $roomunion->id,
-            'employee_id'   => $this->employee->id,
-            'customer_id'   => $roomunion->resident->customer_id,
-            'uxid'          => $roomunion->resident->uxid,
-            'room_type_id'  => $roomunion->room_type_id,
-            'status'        => Ordermodel::STATE_GENERATED,
-            'deal'          => Ordermodel::DEAL_UNDONE,
-            'pay_status'    => Ordermodel::PAYSTATE_RENEWALS,
+            'number'       => date('YmdHis') . random_string('numeric', 10),
+            'type'         => $type,
+            'year'         => $year,
+            'month'        => $month,
+            'money'        => $money,
+            'paid'         => $money,
+            'store_id'     => $roomunion->store_id,
+            'resident_id'  => $roomunion->resident_id,
+            'room_id'      => $roomunion->id,
+            'employee_id'  => $this->employee->id,
+            'customer_id'  => $roomunion->resident->customer_id,
+            'uxid'         => $roomunion->resident->uxid,
+            'room_type_id' => $roomunion->room_type_id,
+            'status'       => Ordermodel::STATE_GENERATED,
+            'deal'         => Ordermodel::DEAL_UNDONE,
+            'pay_status'   => Ordermodel::PAYSTATE_RENEWALS,
         ]);
 
         $order->save();
@@ -156,16 +147,14 @@ class Meter extends MY_Controller
         return $order;
     }
 
-
     /**
      * 记录表读数
      */
-    private function logMeterReading($transfer)
-    {
-        $record = new Meterreadingmodel();
-        $record->room_id    = $transfer->room_id;
-        $record->type       = $transfer->type;
-        $record->reading    = $transfer->last_reading;
+    private function logMeterReading($transfer) {
+        $record          = new Meterreadingmodel();
+        $record->room_id = $transfer->room_id;
+        $record->type    = $transfer->type;
+        $record->reading = $transfer->last_reading;
         $record->save();
 
         return $record;
@@ -174,8 +163,7 @@ class Meter extends MY_Controller
     /**
      * 记录水电账单的读数
      */
-    private function recordUtilityReadings($order, $transfer)
-    {
+    private function recordUtilityReadings($order, $transfer) {
         if (!$order) {
             return null;
         }
@@ -192,7 +180,7 @@ class Meter extends MY_Controller
         return $record;
     }
 
-    private function validateConfirm(){
+    private function validateConfirm() {
 
         return array(
 
@@ -217,8 +205,7 @@ class Meter extends MY_Controller
     /**
      * 上传读数
      */
-    public function import()
-    {
+    public function import() {
         $this->load->model('meterreadingmodel');
         $this->load->model('storemodel');
         $this->load->model('roomunionmodel');
@@ -227,21 +214,20 @@ class Meter extends MY_Controller
         $type       = $this->input->post('type');
         $store_id   = $this->input->post('store_id');
         $type       = $this->checkAndGetReadingType($type);
-        $sheetArray   = $this->uploadOssSheet();
+        $sheetArray = $this->uploadOssSheet();
 
-        $data       = $this->checkAndGetInputData($sheetArray,$store_id);
+        $data = $this->checkAndGetInputData($sheetArray, $store_id);
 
 //        var_dump($data);exit;
 
-
         /*if(!empty($data['error'])){
-            $this->api_res(10052,['error'=>$data['error']]);
-           // return;
+        $this->api_res(10052,['error'=>$data['error']]);
+        // return;
         }*/
-        $c  = $this->writeReading($data, $type);
+        $c = $this->writeReading($data, $type);
         /*if(!empty($c['error'])){
-            $this->api_res(10051,['error'=>$c['error']]);
-            return;
+        $this->api_res(10051,['error'=>$c['error']]);
+        return;
         }*/
         $this->api_res(0);
     }
@@ -249,18 +235,17 @@ class Meter extends MY_Controller
     /**
      * 处理上传的记录
      */
-    private function writeReading($data = [], $type)
-    {
+    private function writeReading($data = [], $type) {
         $transfers = [];
-        $error  = [];
+        $error     = [];
 
         foreach ($data as $item) {
-            $room       = $item['room'];
-            $transfer   = $room->meterreadingtransfer->where('type', $type)->first();
+            $room     = $item['room'];
+            $transfer = $room->meterreadingtransfer->where('type', $type)->first();
 
             /*if (count($transfer) && 0.01 <= $transfer->last_reading - $item['read']) {
-                $error['error'][]   = '错误：房间 ' . $room->number . ' 新导入读数低于上次记录!';
-                continue;
+            $error['error'][]   = '错误：房间 ' . $room->number . ' 新导入读数低于上次记录!';
+            continue;
             }*/
             //新读数
             if ($transfer && $transfer->confirmed) {
@@ -268,22 +253,22 @@ class Meter extends MY_Controller
                 $transfer->last_reading = $transfer->this_reading;
                 $transfer->confirmed    = !$transfer->confirmed;
             } elseif (!$transfer) {
-                $transfer   = new Meterreadingtransfermodel();
+                $transfer               = new Meterreadingtransfermodel();
                 $transfer->room_id      = $room->id;
                 $transfer->building_id  = $room->building_id;
                 $transfer->store_id     = $room->store_id;
                 $transfer->last_reading = $item['read'];
                 $transfer->type         = $type;
             }
-        /*else{
-                $transfer->last_reading = $transfer->this_reading;
+            /*else{
+            $transfer->last_reading = $transfer->this_reading;
             }*/
-            $transfer->weight = $item['weight'];
+            $transfer->weight       = $item['weight'];
             $transfer->this_reading = $item['read'];
-            $transfers[]    = $transfer;
+            $transfers[]            = $transfer;
         }
         /*if(!empty($error)){
-            return $error;
+        return $error;
         }*/
         foreach ($transfers as $transfer) {
 
@@ -295,19 +280,20 @@ class Meter extends MY_Controller
     /**
      * 处理文件中上传的数据
      */
-    private function checkAndGetInputData($sheetArray,$store_id)
-    {
-        $rooms  = Roomunionmodel::with('meterreadingtransfer')->where('store_id',$store_id)->get();
-        $store  = Storemodel::find($store_id);
+    private function checkAndGetInputData($sheetArray, $store_id) {
+        $rooms      = Roomunionmodel::with('meterreadingtransfer')->where('store_id', $store_id)->get();
+        $store      = Storemodel::find($store_id);
         $buildings  = $store->building;
         $buildCount = count($buildings);
         $building   = $buildings->first();
-        $data   = [];
-        $error  = [];
-        foreach ($sheetArray as $key => $item)  {
-            if (0 == $key || !$item[0] || !$item[1]) continue;
+        $data       = [];
+        $error      = [];
+        foreach ($sheetArray as $key => $item) {
+            if (0 == $key || !$item[0] || !$item[1]) {
+                continue;
+            }
 
-            $read   = trim($item[2]);
+            $read = trim($item[2]);
 
             if (!is_numeric($read) || 0 > $read || 1e8 < $read) {
                 $error[] = '请检查房间：' . $item[1] . '的表读数';
@@ -315,7 +301,7 @@ class Meter extends MY_Controller
             }
             if (1 < $buildCount) {
                 if (!isset($item[3])) {
-                    $error[]  = '请检查楼幢 id';
+                    $error[] = '请检查楼幢 id';
                     continue;
                 }
 
@@ -323,19 +309,19 @@ class Meter extends MY_Controller
             } else {
                 $buildingId = $building->id;
             }
-            $room   = $rooms->where('number', strtoupper($item[1]))->where('building_id', $buildingId)->first();
+            $room = $rooms->where('number', strtoupper($item[1]))->where('building_id', $buildingId)->first();
             if (!$room) {
-                $error[]  = '未找到房间：' ."$item[1]";
+                $error[] = '未找到房间：' . "$item[1]";
                 continue;
             }
             $weight = isset($item[4]) ? (int) $item[4] : 100;
             if (!$weight) {
                 $weight = 100;
             } elseif (100 < $weight || 0 > $weight) {
-                $error[]  = '请检查房间：' . $item[1] . '的均摊比例';
+                $error[] = '请检查房间：' . $item[1] . '的均摊比例';
                 continue;
             }
-            $data[] = ['read' => $read, 'room' => $room, 'weight' => $weight,'error'=>$error];
+            $data[] = ['read' => $read, 'room' => $room, 'weight' => $weight, 'error' => $error];
         }
         return $data;
     }
@@ -343,8 +329,7 @@ class Meter extends MY_Controller
     /**
      * 检查表计读数类型
      */
-    public function checkAndGetReadingType($type)
-    {
+    public function checkAndGetReadingType($type) {
         if (!in_array($type, [
             Meterreadingtransfermodel::TYPE_WATER_H,
             Meterreadingtransfermodel::TYPE_WATER_C,
@@ -355,17 +340,16 @@ class Meter extends MY_Controller
         return $type;
     }
 
-
-    private function uploadOssSheet(){
-        $url    = $this->input->post('url');
-        $f_open = fopen($url,'r');
-        $file_name  = APPPATH.'cache/test.xlsx';
-        file_put_contents($file_name,$f_open);
+    private function uploadOssSheet() {
+        $url       = $this->input->post('url');
+        $f_open    = fopen($url, 'r');
+        $file_name = APPPATH . 'cache/test.xlsx';
+        file_put_contents($file_name, $f_open);
         $inputFileType = \PhpOffice\PhpSpreadsheet\IOFactory::identify($file_name);
-        $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($inputFileType);
+        $reader        = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($inputFileType);
         $reader->setReadDataOnly(true);
         $excel = $reader->load($file_name);
-        $sheet  = $excel->getActiveSheet();
+        $sheet = $excel->getActiveSheet();
         return $sheet->toArray();
 
     }
@@ -373,18 +357,17 @@ class Meter extends MY_Controller
     /**
      * 处理文件的上传
      */
-    private function uploadExcel()
-    {
+    private function uploadExcel() {
         $this->load->library('excel', [
             'allowed_types' => 'xls|xlsx',
-            'max_size'  => 40*1024,
+            'max_size'      => 40 * 1024,
         ]);
-        if(!$this->excel->do_upload('file')){
-            $this->api_res(1004,array('error' => $this->excel->display_errors('','')));
+        if (!$this->excel->do_upload('file')) {
+            $this->api_res(1004, array('error' => $this->excel->display_errors('', '')));
             return;
-        }else {
+        } else {
             //var_dump($this->excel->excel);
-            $sheet  = $this->excel->excel->getActiveSheet();
+            $sheet = $this->excel->excel->getActiveSheet();
         }
         return ($sheet->toArray());
     }
@@ -392,12 +375,12 @@ class Meter extends MY_Controller
     /**
      * 输出水电表excel模板
      */
-    public function outputTemplate(){
+    public function outputTemplate() {
 
-        $spreadsheet    = new Spreadsheet();
-        $sheet  = $spreadsheet->getActiveSheet();
-        $data   = ['序号','房间号','起始读数','楼幢ID','均摊百分比'];
-        $sheet->fromArray($data,null,'A1');
+        $spreadsheet = new Spreadsheet();
+        $sheet       = $spreadsheet->getActiveSheet();
+        $data        = ['序号', '房间号', '起始读数', '楼幢ID', '均摊百分比'];
+        $sheet->fromArray($data, null, 'A1');
         $writer = new Xlsx($spreadsheet);
 
         header("Pragma: public");
@@ -406,13 +389,13 @@ class Meter extends MY_Controller
         header("Content-Type:application/force-download");
         header("Content-Type:application/vnd.ms-excel");
         header("Content-Type:application/octet-stream");
-        header("Content-Type:application/download");;
+        header("Content-Type:application/download");
         header('Content-Disposition:attachment;filename="meterReadingTemplate.xlsx"');
         header("Content-Transfer-Encoding:binary");
 
 //        $file=file_get_contents('http://api.boss.strongberry.cn/水电读数导入模板.xlsx');
-//
-//        echo $file;
+        //
+        //        echo $file;
         $writer->save('php://output');
 //      $this->api_res(0,['url'=>'http://api.boss.strongberry.com/水电读数导入模板.xlsx']);
     }

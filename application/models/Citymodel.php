@@ -5,11 +5,7 @@
  * Date: 2018-05-10
  * Time: 14:02
  */
-class Citymodel extends Basemodel
-{
-    protected $table = 'public_city';
+class Citymodel extends Basemodel {
+    protected $table  = 'public_city';
     protected $hidden = ['created_at', 'updated_at', 'deleted_at'];
-
-
 }
-

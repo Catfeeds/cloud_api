@@ -6,8 +6,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Time:        10:50
  * Describe:    智能设备-水表电表记录
  */
-class Smartdevicerecordmodel extends Basemodel
-{
-    protected $table = 'boss_smart_device_record';
-    protected $hidden = ['created_at','deleted_at'];
+class Smartdevicerecordmodel extends Basemodel {
+    protected $table  = 'boss_smart_device_record';
+    protected $hidden = ['created_at', 'deleted_at'];
 }

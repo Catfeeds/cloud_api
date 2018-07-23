@@ -7,21 +7,19 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Describe:    BOSS
  * 同住人信息
  */
-class Commonresidentmodel extends Basemodel{
+class Commonresidentmodel extends Basemodel {
 
-    protected $table    = 'boss_common_resident';
+    protected $table = 'boss_common_resident';
 
-    protected $hidden   = [];
+    protected $hidden = [];
 
     //合租人的用户信息
-    public function customer(){
-
-        return $this->belongsTo(Customermodel::class,'customer_id');
+    public function customer() {
+        return $this->belongsTo(Customermodel::class, 'customer_id');
     }
 
     //合租人的主租人
-    public function resident(){
-
-        return $this->belongsTo(Residentmodel::class,'resident_id');
+    public function resident() {
+        return $this->belongsTo(Residentmodel::class, 'resident_id');
     }
 }
