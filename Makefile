@@ -19,7 +19,7 @@ dev: redis
 	 -v $(PWD):/var/www/html/ \
 	 -w /var/www/html/ \
 	 --link ${SERVICE}-redis:redis \
-	 $(DEV_UI_IMAGE) bash
+	 $(DEV_UI_IMAGE)
 
 run: image
 	docker run --rm -it \
