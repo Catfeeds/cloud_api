@@ -54,8 +54,8 @@ class Activity extends MY_Controller {
         $activity = Activitymodel::where('activity_type', '!=', 'NORMAL')
             ->where('activity_type', '!=', '')
             ->where('coupon_info', 'like', "%$ac_name%")
-            ->take(PAGINATE)
-            ->skip($offset)
+            ->offset($offset)
+            ->limit(PAGINATE)
             ->orderBy('end_time', 'desc')
             ->where(function ($query) use ($store_id) {
                 $query->orWhereHas('store', function ($query) use ($store_id) {
@@ -67,8 +67,8 @@ class Activity extends MY_Controller {
         $count = Activitymodel::where('activity_type', '!=', 'NORMAL')
             ->where('activity_type', '!=', '')
             ->where('coupon_info', 'like', "%$ac_name%")
-            ->take(PAGINATE)
-            ->skip($offset)
+            ->offset($offset)
+            ->limit(PAGINATE)
             ->orderBy('end_time', 'desc')
             ->where(function ($query) use ($store_id) {
                 $query->orWhereHas('store', function ($query) use ($store_id) {
@@ -100,6 +100,7 @@ class Activity extends MY_Controller {
             $data[$key]['prize']          = $str;
             $limit                        = unserialize($coupon['limit']);
             $data[$key]['customer']       = $limit['com'];
+            $data[$key]['type']           = $coupon['activity_type'];
             $data[$key]['limit']          = $limit['limit'];
             $data[$key]['participate']    = $participate;
             $data[$key]['Lottery_number'] = $Lottery_number;
