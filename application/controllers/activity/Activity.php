@@ -49,7 +49,7 @@ class Activity extends MY_Controller {
         $page      = isset($post['page']) ? intval($post['page']) : 1;
         $store_id  = explode(',', $store_id);
         $offset    = ($page - 1) * PAGINATE;
-        $filed     = ['id', 'name', 'start_time', 'end_time', 'description', 'coupon_info',
+        $filed     = ['id', 'name', 'start_time', 'end_time', 'description', 'coupon_info','type',
             'limit', 'employee_id', 'qrcode_url', 'activity_type', 'one_prize', 'two_prize', 'three_prize'];
         $activity = Activitymodel::where('activity_type', '!=', 'NORMAL')
             ->where('activity_type', '!=', '')
@@ -58,7 +58,7 @@ class Activity extends MY_Controller {
             ->limit(PAGINATE)
             ->orderBy('end_time', 'desc')
             ->where(function ($query) use ($store_id) {
-                $query->orWhereHas('store', function ($query) use ($store_id) {
+                $query->orWhereHas('store', function ($query) use ($store_id){
                     $query->whereIN('store_id', $store_id);
                 });
             })
@@ -67,8 +67,6 @@ class Activity extends MY_Controller {
         $count = Activitymodel::where('activity_type', '!=', 'NORMAL')
             ->where('activity_type', '!=', '')
             ->where('coupon_info', 'like', "%$ac_name%")
-            ->offset($offset)
-            ->limit(PAGINATE)
             ->orderBy('end_time', 'desc')
             ->where(function ($query) use ($store_id) {
                 $query->orWhereHas('store', function ($query) use ($store_id) {
@@ -105,7 +103,7 @@ class Activity extends MY_Controller {
             $data[$key]['participate']    = $participate;
             $data[$key]['Lottery_number'] = $Lottery_number;
             $data[$key]['lucky_draw']     = $lucky_draw;
-            if ($coupon['activity_type'] == 'LOWER') {
+            if ($coupon['type'] == 'LOWER') {
                 $data[$key]['status'] = 'Lowerframe';
             } elseif (time() < strtotime($coupon['start_time'])) {
                 $data[$key]['status'] = 'Notbeginning';
@@ -160,7 +158,6 @@ class Activity extends MY_Controller {
         $activity['share_des']     = $post['share_des'];
         $activity['share_title']   = $post['share_title'];
         $activity['activity_type'] = 'TRNTABLE';
-
         $insertId = Activitymodel::insertGetId($activity);
         $store_id = explode(',', $post['store_id']);
         foreach ($store_id as $value) {
@@ -242,7 +239,7 @@ class Activity extends MY_Controller {
             return false;
         }
         $activity                = Activitymodel::find($activity_id);
-        $activity->activity_type = 'LOWER';
+        $activity->type = 'LOWER';
         if ($activity->save()) {
             $data = ['status' => 'Lowerframe'];
             $this->api_res(0, $data);
@@ -267,7 +264,7 @@ class Activity extends MY_Controller {
             $this->api_res(1007);
             return false;
         }
-        if ($activity->activity_type == 'LOWER') {
+        if ($activity->type == 'LOWER') {
             $this->api_res(11102);
             return false;
         }
