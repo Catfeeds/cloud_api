@@ -275,11 +275,21 @@ class Login extends MY_Controller {
      * 测试环境下登陆获取token
      */
     public function loginTest() {
-        if (ENVIRONMENT != 'production') {
-            $token = $this->m_jwt->generateJwtToken(99, 1);
-            $this->api_res(0, $token);
-        } else {
-            $this->api_res(500);
+        if (ENVIRONMENT == 'production') {
+            $this->api_res(401);
+            return;
         }
+
+        $input      = $this->input->post(NULL, TRUE);
+        $bxid       = 99;
+        $company_id = 1;
+        if (!isset($input['bxid'])) {
+            $bxid = $input['bxid'];
+        }
+        if (!isset($input['company_id'])) {
+            $company_id = $input['company_id'];
+        }
+        $token = $this->m_jwt->generateJwtToken($bxid, $company_id);
+        $this->api_res(0, $token);
     }
 }

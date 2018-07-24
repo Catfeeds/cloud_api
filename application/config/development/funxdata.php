@@ -14,6 +14,7 @@
 date_default_timezone_set('Asia/ShangHai');
 $config['time_zone']    = date_default_timezone_get();
 $config['web_domain'] = 'tweb.funxdata.com';
+
 /*
 //梵响数据系统相关文件的整理配置
 */

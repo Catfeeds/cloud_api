@@ -16,7 +16,6 @@ class Login extends MY_Controller {
         $this->load->model('employeemodel');
         $this->load->helper('common');
         $this->app = (new Application(getMiniWechatConfig()))->mini_program;
-
     }
 
     public function getToken() {
