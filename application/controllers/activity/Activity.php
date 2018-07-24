@@ -44,8 +44,8 @@ class Activity extends MY_Controller {
         $store     = Storemodel::get(['id'])->toArray();
         $result    = array_column($store, 'id');
         $str_store = implode(',', $result);
-        $store_id  = isset($post['store_id']) ? trim($post['store_id']) : $str_store;
-        $ac_name   = isset($post['activity_name']) ? trim($post['activity_name']) : '';
+        $store_id  = empty($post['store_id'])?$str_store :trim($post['store_id']) ;
+        $ac_name   = isset($post['activity_name'])?trim($post['activity_name']):'';
         $page      = isset($post['page']) ? intval($post['page']) : 1;
         $store_id  = explode(',', $store_id);
         $offset    = ($page - 1) * PAGINATE;
@@ -104,7 +104,6 @@ class Activity extends MY_Controller {
             $data[$key]['participate']    = $participate;
             $data[$key]['Lottery_number'] = $Lottery_number;
             $data[$key]['lucky_draw']     = $lucky_draw;
-            $data[$key]['url']            = $coupon['qrcode_url'];
             if ($coupon['activity_type'] == 'LOWER') {
                 $data[$key]['status'] = 'Lowerframe';
             } elseif (time() < strtotime($coupon['start_time'])) {
