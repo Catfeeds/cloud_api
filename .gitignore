@@ -7,3 +7,4 @@ public/temp/
 .gitignore
 .DS_Store
 .idea/
+supervisord.pid
