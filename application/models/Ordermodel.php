@@ -389,6 +389,9 @@ class Ordermodel extends Basemodel {
     public function roomunion() {
         return $this->belongsTo(Roomunionmodel::class, 'room_id');
     }
+    public function roomunion_s() {
+        return $this->belongsTo(Roomunionmodel::class, 'room_id')->select('id','number');
+    }
 
     public function store() {
         return $this->belongsTo(Storemodel::class, 'store_id');
@@ -396,6 +399,10 @@ class Ordermodel extends Basemodel {
 
     public function resident() {
         return $this->belongsTo(Residentmodel::class, 'resident_id');
+    }
+
+    public function resident_s() {
+        return $this->belongsTo(Residentmodel::class, 'resident_id')->select('id','name','begin_time','end_time');
     }
 
     public function employee() {
