@@ -184,11 +184,13 @@ class Roomunionmodel extends Basemodel {
     /*
      * 查询
      */
-    public function room_details($where, $filed, $time) {
+    public function room_details($where, $filed, $time,$number = '') {
         $arrears_count = 0;
         $awhere        = array_except($where, 'status');
+
         $this->details = Roomunionmodel::with('room_type')->with('resident')->with('order')
             ->where($awhere)->whereBetween('updated_at', $time)
+            ->where('number','like','%'.$number.'%')
             ->get($filed)->groupBy('layer')
             ->map(function ($s) {
                 $s = $s->toArray();
@@ -215,6 +217,7 @@ class Roomunionmodel extends Basemodel {
         if (isset($where['status']) && $where['status'] == 'ARREARS') {
             $this->details = Roomunionmodel::with('room_type')->with('resident')->with('order')
                 ->where($awhere)->whereBetween('updated_at', $time)->whereHas('order')
+                ->where('number','like','%'.$number.'%')
                 ->get($filed)->groupBy('layer')
                 ->map(function ($s) {
                     $s = $s->toArray();
@@ -230,7 +233,8 @@ class Roomunionmodel extends Basemodel {
                 })->toArray();
         } else {
             $this->details = Roomunionmodel::with('room_type')->with('resident')->with('order')
-                ->where($where)->whereBetween('updated_at', $time)
+                ->where($awhere)->whereBetween('updated_at', $time)
+                ->where('number','like','%'.$number.'%')
                 ->get($filed)->groupBy('layer')
                 ->map(function ($s) {
                     $s = $s->toArray();
