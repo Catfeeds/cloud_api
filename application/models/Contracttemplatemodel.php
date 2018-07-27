@@ -13,4 +13,12 @@ class Contracttemplatemodel extends Basemodel {
 
     protected $hidden = ['created_at', 'updated_at', 'deleted_at', 'fdd_tpl_id', 'fdd_tpl_path'];
 
+    public function store(){
+        return $this->belongsTo(Storemodel::class, 'store_id')
+            ->select( 'id','name');
+    }
+    public function room(){
+        return $this->belongsTo(Roomtypemodel::class,'room_type_id')
+            ->select('id','name');
+    }
 }

@@ -17,13 +17,13 @@ class Reserveorder extends MY_Controller {
      */
     public function listReserveorder() {
         $this->load->model('employeemodel');
+        $this->load->model('storemodel');
         $post = $this->input->post(NULL, true);
         $page = isset($post['page']) ? intval($post['page']) : 1;
-
         $offset = PAGINATE * ($page - 1);
         $where  = array();
         $filed  = ['id', 'time', 'name', 'phone', 'visit_by', 'work_address',
-            'require', 'info_source', 'employee_id', 'status', 'remark'];
+            'require', 'info_source', 'employee_id', 'status', 'remark','store_id'];
 
         if (!empty($post['store_id'])) {$where['store_id'] = intval($post['store_id']);}
         if (!empty($post['visit_type'])) {$where['visit_by'] = trim($post['visit_type']);}
@@ -34,7 +34,7 @@ class Reserveorder extends MY_Controller {
                 $this->api_res(0, ['list' => []]);
                 return;
             } else {
-                $reserve = Reserveordermodel::whereIn('store_id', $store_ids)->with('employee')
+                $reserve = Reserveordermodel::whereIn('store_id', $store_ids)->with('employee')->with('store')
                     ->take(PAGINATE)->skip($offset)
                     ->orderBy('id', 'desc')->get($filed)->toArray();
             }
@@ -44,7 +44,7 @@ class Reserveorder extends MY_Controller {
                 $this->api_res(0, ['list' => []]);
                 return;
             } else {
-                $reserve = Reserveordermodel::with('employee')->whereIn('store_id', $store_ids)->where($where)
+                $reserve = Reserveordermodel::with('employee')->with('store')->whereIn('store_id', $store_ids)->where($where)
                     ->take(PAGINATE)->skip($offset)
                     ->orderBy('id', 'desc')->get($filed)->toArray();
             }
