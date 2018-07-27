@@ -1,13 +1,16 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+
 /**
  * Author:      zjh<401967974@qq.com>
  * Date:        2018/4/28 0028
  * Time:        9:29
  * Describe:    房型管理
  */
-class Roomtype extends MY_Controller {
-    public function __construct() {
+class Roomtype extends MY_Controller
+{
+    public function __construct()
+    {
         parent::__construct();
         $this->load->model('roomtypemodel');
     }
@@ -15,14 +18,15 @@ class Roomtype extends MY_Controller {
     /**
      * 房型列表
      */
-    public function listRoomType() {
+    public function listRoomType()
+    {
         $this->load->model('storemodel');
-        $post   = $this->input->post(null, true);
-        $page   = intval(isset($post['page']) ? $post['page'] : 1);
+        $post = $this->input->post(null, true);
+        $page = intval(isset($post['page']) ? $post['page'] : 1);
         $offset = PAGINATE * ($page - 1);
-        $field  = ['id', 'store_id', 'name', 'feature','display'];
+        $field = ['id', 'store_id', 'name', 'feature', 'display'];
         $this->load->model('storemodel');
-        $where     = empty($post['store_id']) ? [] : ['store_id' => $post['store_id']];
+        $where = empty($post['store_id']) ? [] : ['store_id' => $post['store_id']];
         $store_ids = explode(',', $this->employee->store_ids);
         if (isset($post['city']) && !empty($post['city'])) {
             $store_ids = Storemodel::where('city', $post['city'])->get(['id'])->map(function ($s) {
@@ -64,12 +68,13 @@ class Roomtype extends MY_Controller {
      * 新增房型
      * store_id,
      */
-    public function addRoomType() {
+    public function addRoomType()
+    {
 
-        $post  = $this->input->post(null, true);
+        $post = $this->input->post(null, true);
         $field = [
             'store_id', 'name', 'feature', 'area', 'room_number', 'hall_number', 'toilet_number', 'toward', 'description',
-            'provides', 'images','display'
+            'provides', 'images', 'display'
         ];
         if (!$this->validationText($this->validationAddConfig())) {
             $this->api_res(1002, ['error' => $this->form_first_error($field)]);
@@ -78,9 +83,9 @@ class Roomtype extends MY_Controller {
         $roomtype = new Roomtypemodel();
         $roomtype->fill($post);
         $roomtype->description = htmlspecialchars($this->input->post('description'));
-        $images                = $this->splitAliossUrl($post['images'], true);
+        $images = $this->splitAliossUrl($post['images'], true);
 //        $images  = json_encode($images);
-        $images           = ($images);
+        $images = ($images);
         $roomtype->images = $images;
         if ($roomtype->save()) {
             $this->api_res(0);
@@ -92,7 +97,8 @@ class Roomtype extends MY_Controller {
     /**
      * 删除房型
      */
-    public function deleteRoomType() {
+    public function deleteRoomType()
+    {
 
         $room_type_id = $this->input->post('room_type_id', true);
         if (Roomtypemodel::find($room_type_id)->delete()) {
@@ -105,7 +111,8 @@ class Roomtype extends MY_Controller {
     /**
      * 批量删除
      */
-    public function destroyRoomType() {
+    public function destroyRoomType()
+    {
         $id = $this->input->post('room_type_id', true);
         if (!is_array($id)) {
             $this->api_res(1005);
@@ -121,11 +128,12 @@ class Roomtype extends MY_Controller {
     /**
      * 按名称模糊查找
      */
-    public function searchRoomType() {
-        $field  = ['id', 'store_id', 'name', 'feature'];
-        $post   = $this->input->post(null, true);
-        $name   = isset($post['name']) ? $post['name'] : null;
-        $page   = intval(isset($post['page']) ? $post['page'] : 1);
+    public function searchRoomType()
+    {
+        $field = ['id', 'store_id', 'name', 'feature'];
+        $post = $this->input->post(null, true);
+        $name = isset($post['name']) ? $post['name'] : null;
+        $page = intval(isset($post['page']) ? $post['page'] : 1);
         $offset = PAGINATE * ($page - 1);
         $this->load->model('storemodel');
         $count = ceil((Roomtypemodel::with('store')->where('name', 'like', "%$name%")->count()) / PAGINATE);
@@ -140,15 +148,16 @@ class Roomtype extends MY_Controller {
     /**
      * 查看房型信息
      */
-    public function getRoomType() {
-        $post  = $this->input->post(null, true);
+    public function getRoomType()
+    {
+        $post = $this->input->post(null, true);
         $field = [
             'store_id', 'name', 'feature', 'area', 'room_number', 'hall_number', 'toilet_number', 'toward', 'description',
             'provides', 'images', 'display'
         ];
         $this->load->model('storemodel');
-        $room_type_id           = isset($post['room_type_id']) ? $post['room_type_id'] : null;
-        $room_type              = Roomtypemodel::with('store')->select($field)->findOrFail($room_type_id);
+        $room_type_id = isset($post['room_type_id']) ? $post['room_type_id'] : null;
+        $room_type = Roomtypemodel::with('store')->select($field)->findOrFail($room_type_id);
         $room_type->description = (htmlspecialchars_decode($room_type->description));
 //        $room_type->images  = $this->fullAliossUrl(json_decode($room_type->images,true),true);
         $room_type->images = $this->fullAliossUrl($room_type->images, true);
@@ -160,8 +169,9 @@ class Roomtype extends MY_Controller {
      * 编辑房型信息
      *
      */
-    public function updateRoomType() {
-        $post         = $this->input->post(null, true);
+    public function updateRoomType()
+    {
+        $post = $this->input->post(null, true);
         $room_type_id = isset($post['room_type_id']) ? $post['room_type_id'] : null;
         log_message('error', $room_type_id);
         $field = [
@@ -175,10 +185,10 @@ class Roomtype extends MY_Controller {
         $roomtype = Roomtypemodel::findOrFail($room_type_id);
         $roomtype->fill($post);
         $roomtype->description = htmlspecialchars($this->input->post('description'));
-        $images                = $this->splitAliossUrl($post['images'], true);
+        $images = $this->splitAliossUrl($post['images'], true);
 //        $images = json_encode($images);
         //        log_message('error',json_encode($images));
-        $images           = ($images);
+        $images = ($images);
         $roomtype->images = $images;
         if ($roomtype->save()) {
             $this->api_res(0);
@@ -190,7 +200,8 @@ class Roomtype extends MY_Controller {
     /**
      * 添加房型的表单验证规则
      */
-    public function validationAddConfig() {
+    public function validationAddConfig()
+    {
         $config = [
             array(
                 'field' => 'store_id',
