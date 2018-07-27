@@ -17,15 +17,18 @@ class Template extends MY_Controller {
      */
     public function listTemplate() {
         $post   = $this->input->post(null, true);
+        $this->load->model('storemodel');
+        $this->load->model('roomtypemodel');
         $page   = intval(isset($post['page']) ? $post['page'] : 1);
         $offset = PAGINATE * ($page - 1);
-        $field  = ['id', 'name', 'url', 'rent_type'];
+        $field  = ['id', 'name', 'url', 'rent_type','store_id','room_type_id'];
         $count  = ceil(Contracttemplatemodel::count() / PAGINATE);
         if ($page > $count) {
             $this->api_res(0, ['count' => $count, 'list' => []]);
             return;
         }
-        $templates = Contracttemplatemodel::offset($offset)->limit(PAGINATE)->orderBy('id', 'desc')->get($field)
+        $templates = Contracttemplatemodel::offset($offset)->limit(PAGINATE)->orderBy('id', 'desc')
+            ->with('store')->with('room')->get($field)
             ->map(function ($result) {
                 $result->url = $this->fullAliossUrl($result->url);
                 return $result;
