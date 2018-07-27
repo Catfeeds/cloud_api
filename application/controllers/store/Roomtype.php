@@ -144,7 +144,7 @@ class Roomtype extends MY_Controller {
         $post  = $this->input->post(null, true);
         $field = [
             'store_id', 'name', 'feature', 'area', 'room_number', 'hall_number', 'toilet_number', 'toward', 'description',
-            'provides', 'images',
+            'provides', 'images', 'display'
         ];
         $this->load->model('storemodel');
         $room_type_id           = isset($post['room_type_id']) ? $post['room_type_id'] : null;
@@ -166,7 +166,7 @@ class Roomtype extends MY_Controller {
         log_message('error', $room_type_id);
         $field = [
             'store_id', 'name', 'feature', 'area', 'room_number', 'hall_number', 'toilet_number', 'toward', 'description',
-            'provides', 'images',
+            'provides', 'images', 'diaplay'
         ];
         if (!$this->validationText($this->validationAddConfig())) {
             $this->api_res(1002, ['error' => $this->form_first_error($field)]);
