@@ -13,7 +13,7 @@ class Roomtypemodel extends Basemodel {
 
     protected $fillable = [
         'store_id', 'name', 'feature', 'area', 'room_number', 'hall_number', 'toilet_number', 'provides',
-        'toward', 'description', 'images',
+        'toward', 'description', 'images', 'display'
     ];
 
     protected $casts  = ['images' => 'array'];

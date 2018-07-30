@@ -39,7 +39,6 @@ class Contract extends MY_Controller {
         } else {
             $search = '';
         };
-
         //合同开始结束时间的起止日期
         if (!empty($post['begin_time_start'])) {
             $bt_start = trim($post['begin_time_start']);
@@ -50,7 +49,7 @@ class Contract extends MY_Controller {
         if (!empty($post['begin_time_stop'])) {
             $bt_stop = trim($post['begin_time_stop']);
         } else {
-            $bt_stop = date('Y-m-d H:i:s', time());
+            $bt_stop =  Residentmodel::max('begin_time');
         };
 
         if (!empty($post['end_time_start'])) {
@@ -62,7 +61,7 @@ class Contract extends MY_Controller {
         if (!empty($post['end_time_stop'])) {
             $et_stop = trim($post['end_time_stop']);
         } else {
-            $et_stop = date('Y-m-d H:i:s', time());
+            $et_stop = Residentmodel::max('end_time');
         };
 
         $resident = Residentmodel::whereBetween('begin_time', [$bt_start, $bt_stop])
