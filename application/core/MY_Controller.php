@@ -26,6 +26,23 @@ class MY_Controller extends CI_Controller {
                 ->set_content_type('application/json')
                 ->set_output(json_encode(array('rescode' => $code, 'resmsg' => $msg, 'data' => [])));
         }
+
+        switch ($code) {
+        case 0:
+            break;
+        case 1002,1004,1005,1016,10002,10003,10020,10031,10032:
+            $this->set_status_header(400);
+            break;
+        case 1001,1006:
+            $this->set_status_header(401);
+            break;
+        case 1011,10011:
+            $this->set_status_header(403);
+            break;
+        default:
+            $this->set_status_header(500);
+            break;
+        }
     }
 
     /**
