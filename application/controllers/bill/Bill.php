@@ -381,7 +381,6 @@ class Bill extends MY_Controller {
                 ])
                 ->chunk(100, function ($rooms) use ($year, $month, $payDate) {
                     foreach ($rooms as $room) {
-
                         $this->queryAndGenerateOrders($room, $year, $month, $payDate);
                     }
                 });
@@ -451,7 +450,7 @@ class Bill extends MY_Controller {
             if($pay_frequency>1){
                 foreach ($bills as $type => $bill) {
                     $moneyPaid = $orders->where('type', $type)->sum('money');
-                    if (0 >= $moneyPaid) {
+                    if (0 > $moneyPaid) {
                         continue;
                     } else {
                         for($i=0;$i<$pay_frequency;$i++){
@@ -468,7 +467,7 @@ class Bill extends MY_Controller {
             }else{
                 foreach ($bills as $type => $bill) {
                     $moneyPaid = $orders->where('type', $type)->sum('money');
-                    if (0 >= $moneyPaid) {
+                    if (0 > $moneyPaid) {
                         continue;
                     } else {
                         $this->newBill($room, $resident, $type, $bill['price'], $number, $year, $month, $payDate, $bill['id']);
