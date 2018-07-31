@@ -1658,3 +1658,74 @@ CREATE TABLE `room_balance` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+CREATE TABLE `boss_taskflow` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT 'boss_taskflow 任务流表',
+  `company_id` int(11) unsigned NOT NULL,
+  `store_id` int(11) unsigned NOT NULL COMMENT '门店id',
+  `template_id` int(11) unsigned NOT NULL,
+  `room_id` int(10) unsigned NOT NULL,
+  `name` varchar(255) NOT NULL COMMENT '任务流模板的名称',
+  `type` enum('CHECKOUT') NOT NULL COMMENT '任务流模板的类型（CHECKOUT退房）',
+  `description` text NOT NULL COMMENT '描述',
+  `create_role` enum('EMPLOYEE','CUSTOMER') NOT NULL COMMENT '发起人的角色（员工发起还是用户发起）',
+  `employee_id` int(10) unsigned DEFAULT NULL COMMENT '创建或发起的员工id',
+  `customer_id` int(11) DEFAULT NULL COMMENT '创建任务流的用户id',
+  `leavel` smallint(4) unsigned NOT NULL COMMENT '优先级 越小优先级越高，最小是0',
+  `step_seq` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '处理到某一步的步骤排序',
+  `created_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `updated_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `deleted_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `boss_taskflow_step` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `step_template_id` int(10) unsigned DEFAULT NULL COMMENT '步骤模板id',
+  `taskflow_id` int(11) DEFAULT NULL COMMENT '对应的任务流id',
+  `company_id` int(11) unsigned NOT NULL,
+  `store_id` int(11) unsigned NOT NULL,
+  `name` varchar(255) NOT NULL COMMENT '步骤的名称',
+  `seq` int(11) unsigned NOT NULL COMMENT '步骤序号',
+  `type` enum('CHECKOUT') NOT NULL,
+  `position_ids` varchar(255) DEFAULT NULL COMMENT '可操作职位',
+  `employee_ids` varchar(255) DEFAULT NULL COMMENT '可操作员工ids',
+  `employee_id` int(11) DEFAULT NULL COMMENT '处理员工id',
+  `status` enum('AUDIT','APPROVED') NOT NULL DEFAULT 'AUDIT' COMMENT '待审核，已审核',
+  `created_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `updated_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `deleted_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+
+CREATE TABLE `boss_taskflow_step_template` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '任务流步骤',
+  `company_id` int(11) unsigned NOT NULL,
+  `template_id` int(11) unsigned NOT NULL COMMENT '任务流模板id',
+  `name` varchar(255) DEFAULT NULL COMMENT '步骤的名称',
+  `seq` int(11) unsigned NOT NULL COMMENT '步骤序号',
+  `type` enum('CHECKOUT') NOT NULL,
+  `position_ids` varchar(255) DEFAULT NULL COMMENT '可操作职位',
+  `employee_ids` varchar(255) DEFAULT NULL COMMENT '可操作员工ids',
+  `data` text,
+  `created_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `updated_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `deleted_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8;
+
+CREATE TABLE `boss_taskflow_template` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `company_id` int(11) unsigned NOT NULL,
+  `name` varchar(255) NOT NULL COMMENT '任务流模板的名称',
+  `type` enum('CHECKOUT') NOT NULL COMMENT '任务流模板的类型（CHECKOUT退房）',
+  `description` text COMMENT '描述',
+  `employee_id` int(10) unsigned NOT NULL COMMENT '创建或修改的操作人id',
+  `data` text COMMENT '一些备注信息',
+  `created_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `updated_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `deleted_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=50 DEFAULT CHARSET=utf8;
+
+
