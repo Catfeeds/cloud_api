@@ -456,6 +456,10 @@ class Bill extends MY_Controller {
                     } else {
                         for($i=0;$i<$pay_frequency;$i++){
                             $month2  = $month+$i;
+                            if($month2>12){
+                                $year   = $year+1;
+                                $month2 = $month2-12;
+                            }
                             $this->newBill($room, $resident, $type, $bill['price'], $number, $year, $month2, $payDate, $bill['id']);
                         }
                     }
