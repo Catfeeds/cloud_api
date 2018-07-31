@@ -285,16 +285,17 @@ class Contract extends MY_Controller {
         $this->load->model('residentmodel');
         $this->load->model('roomunionmodel');
         $this->load->model('storemodel');
-        $contract_ids = explode(',', $this->input->post('contract_ids'));
-        $contracts    = Contractmodel::where('status', 'SIGNING')->whereIn('id', $contract_ids)->get();
-        foreach ($contracts as $contract) {
-            $res = $this->sign($contract);
-            if (!$res) {
-                log_message('error', "$contract->id 签署失败");
+        $this->load->model('ordermodel');
+        $contract_ids   = explode(',',$this->input->post('contract_ids'));
+        $contracts   = Contractmodel::where('status','SIGNING')->whereIn('id',$contract_ids)->get();
+        foreach ($contracts as $contract)
+        {
+            if(!$this->sign($contract)){
+                log_message('error',"$contract->id 签署失败");
                 continue;
             }
-            if ($this->signToArchive($contract)) {
-                log_message('error', "$contract->id 归档失败");
+            if(!$this->signToArchive($contract)){
+                log_message('error',"$contract->id 归档失败");
                 continue;
             }
         }

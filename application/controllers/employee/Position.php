@@ -307,4 +307,14 @@ class Position extends MY_Controller {
         return $config;
     }
 
+    /**
+     * 展示门店下职位名称和id
+     */
+    public function showPosition()
+    {
+        //当前操作的门店
+        $positions  = Positionmodel::where('company_id',COMPANY_ID)->select(['id','name'])->get();
+        $this->api_res(0,$positions);
+    }
+
 }
