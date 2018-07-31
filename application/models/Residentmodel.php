@@ -215,6 +215,7 @@ class Residentmodel extends Basemodel {
             'first_pay'           => $resident->first_pay_money,
             'status'              => $resident->status,
             'remark'              => $resident->remark,
+            'type'                => $resident->type,
             'created_at'          => Carbon::parse($resident->created_at)->toDateTimeString(),
             'updated_at'          => Carbon::parse($resident->updated_at)->toDateTimeString(),
         ];
