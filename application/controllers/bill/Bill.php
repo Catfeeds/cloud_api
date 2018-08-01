@@ -413,6 +413,7 @@ class Bill extends MY_Controller {
         }
 
         $orders = $room->orders->where('resident_id', $resident->id);
+//        var_dump($orders->toArray());exit;
         $number = Ordermodel::newNumber();
         if ($year == $dataCheckoutYear && $month == $dataCheckoutMonth) {
             $rentMoney       = $orders->where('type', Ordermodel::PAYTYPE_ROOM)->sum('money');
@@ -448,9 +449,10 @@ class Bill extends MY_Controller {
             }
             $pay_frequency  = $resident->pay_frequency;
             if($pay_frequency>1){
+
                 foreach ($bills as $type => $bill) {
                     $moneyPaid = $orders->where('type', $type)->sum('money');
-                    if (0 > $moneyPaid) {
+                    if ($moneyPaid > 0) {
                         continue;
                     } else {
                         for($i=0;$i<$pay_frequency;$i++){
@@ -467,7 +469,7 @@ class Bill extends MY_Controller {
             }else{
                 foreach ($bills as $type => $bill) {
                     $moneyPaid = $orders->where('type', $type)->sum('money');
-                    if (0 > $moneyPaid) {
+                    if ($moneyPaid > 0) {
                         continue;
                     } else {
                         $this->newBill($room, $resident, $type, $bill['price'], $number, $year, $month, $payDate, $bill['id']);

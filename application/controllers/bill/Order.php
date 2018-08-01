@@ -255,19 +255,21 @@ class Order extends MY_Controller {
      * 推送账单
      */
     public function push() {
-        $year     = 2018;
-        $month    = 7;
         $input    = $this->input->post(null, true);
+        $year     = $input['year'];
+        $month    = $input['month'];
         $store_id = $input['store_id'];
         $this->load->model('ordermodel');
         $this->load->model('residentmodel');
         $this->load->model('customermodel');
         $unPushOrders = Ordermodel::where('store_id', $store_id)
             ->where('status', Ordermodel::STATE_GENERATED)
-            ->where('year', $year)
-            ->where('month', $month)
+            ->where(function($query) use($year,$month){
+                $query->where(function($a) use ($year,$month){
+                    $a->where('year', $year)->where('month','>=', $month);
+                })->orWhere('year','>',$year);
+            })
             ->get()->groupBy('resident_id');
-
 //        var_dump($unPushOrders->toArray());exit;
         $this->load->helper('common');
         $app = new Application(getWechatCustomerConfig());
@@ -282,8 +284,11 @@ class Order extends MY_Controller {
                 log_message('error', $resident_id . '没有用户customer信息');
                 $orders = Ordermodel::where('resident_id', $resident_id)
                     ->where('status', Ordermodel::STATE_GENERATED)
-                    ->where('year', $year)
-                    ->where('month', $month)
+                    ->where(function($query) use($year,$month){
+                        $query->where(function($a) use ($year,$month){
+                            $a->where('year', $year)->where('month','>=', $month);
+                        })->orWhere('year','>',$year);
+                    })
                     ->update(['status' => Ordermodel::STATE_PENDING]);
                 continue;
             }
@@ -292,8 +297,11 @@ class Order extends MY_Controller {
                 DB::beginTransaction();
                 $orders = Ordermodel::where('resident_id', $resident_id)
                     ->where('status', Ordermodel::STATE_GENERATED)
-                    ->where('year', $year)
-                    ->where('month', $month)
+                    ->where(function($query) use($year,$month){
+                        $query->where(function($a) use ($year,$month){
+                            $a->where('year', $year)->where('month','>=', $month);
+                        })->orWhere('year','>',$year);
+                    })
                     ->update(['status' => Ordermodel::STATE_PENDING]);
 
                 if (0 == $customer->subscribe) {
