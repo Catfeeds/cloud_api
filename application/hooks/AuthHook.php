@@ -295,7 +295,8 @@ class AuthHook {
             if (!in_array($full_path, $authArr)) {
                 $this->auth($full_path);
             }
-        } catch (Exception $e) {
+        }catch (Exception $e) {
+            header('HTTP/1.1 401 Forbidden'); 
             header("Content-Type:application/json;charset=UTF-8");
             echo json_encode(array('rescode' => 1001, 'resmsg' => 'token无效', 'data' => []));
             exit;
@@ -324,6 +325,7 @@ class AuthHook {
         }
         //操作记录测试
         if (!$this->operationRecord($full_path)) {
+            header('HTTP/1.1 500 Forbidden'); 
             header("Content-Type:application/json;charset=UTF-8");
             echo json_encode(array('rescode' => 1012, 'resmsg' => '操作log出错', 'data' => []));
             exit;
