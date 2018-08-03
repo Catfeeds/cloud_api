@@ -9,4 +9,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class Storeactivitymodel extends Basemodel {
     public $timestamps = false;
     protected $table   = 'boss_store_activity';
+    public function activity(){
+        return $this->belongsTo(Activitymodel::class,'activity_id','id');
+    }
 }

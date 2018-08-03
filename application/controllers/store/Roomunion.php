@@ -194,7 +194,7 @@ class Roomunion extends MY_Controller {
                 ->select($field)
                 ->offset($offset)
                 ->limit(PAGINATE)
-                ->orderBy('boss_room_union.id')
+                ->orderBy('number')
                 ->whereIn('boss_room_union.store_id', $store_ids)
                 ->where($where)
                 ->orWhere(function ($query) use ($search) {

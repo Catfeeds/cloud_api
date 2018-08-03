@@ -35,7 +35,7 @@ class Pricecontrol extends MY_Controller {
             $this->api_res(0, ['list' => []]);
             return;
         } else {
-            $price = Roomunionmodel::with('store_s')->with('building_s')->with('room_type')
+            $price = Roomunionmodel::orderBy('number')->with('store_s')->with('building_s')->with('room_type')
                 ->where($where)->whereIn('store_id', $store_ids)
                 ->take(PAGINATE)->skip($offset)->get($filed)
                 ->map(function ($s) {
