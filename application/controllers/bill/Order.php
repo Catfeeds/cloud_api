@@ -264,10 +264,12 @@ class Order extends MY_Controller {
         $this->load->model('customermodel');
         $unPushOrders = Ordermodel::where('store_id', $store_id)
             ->where('status', Ordermodel::STATE_GENERATED)
-            ->where(function($query) use($year,$month){
-                $query->where(function($a) use ($year,$month){
-                    $a->where('year', $year)->where('month','>=', $month);
-                })->orWhere('year','>',$year);
+            ->where('paid', '>', 0)
+            ->where('money', '>', 0)
+            ->where(function ($query) use ($year, $month) {
+                $query->where(function ($a) use ($year, $month) {
+                    $a->where('year', $year)->where('month', '>=', $month);
+                })->orWhere('year', '>', $year);
             })
             ->get()->groupBy('resident_id');
 //        var_dump($unPushOrders->toArray());exit;
@@ -284,10 +286,10 @@ class Order extends MY_Controller {
                 log_message('error', $resident_id . '没有用户customer信息');
                 $orders = Ordermodel::where('resident_id', $resident_id)
                     ->where('status', Ordermodel::STATE_GENERATED)
-                    ->where(function($query) use($year,$month){
-                        $query->where(function($a) use ($year,$month){
-                            $a->where('year', $year)->where('month','>=', $month);
-                        })->orWhere('year','>',$year);
+                    ->where(function ($query) use ($year, $month) {
+                        $query->where(function ($a) use ($year, $month) {
+                            $a->where('year', $year)->where('month', '>=', $month);
+                        })->orWhere('year', '>', $year);
                     })
                     ->update(['status' => Ordermodel::STATE_PENDING]);
                 continue;
@@ -297,10 +299,10 @@ class Order extends MY_Controller {
                 DB::beginTransaction();
                 $orders = Ordermodel::where('resident_id', $resident_id)
                     ->where('status', Ordermodel::STATE_GENERATED)
-                    ->where(function($query) use($year,$month){
-                        $query->where(function($a) use ($year,$month){
-                            $a->where('year', $year)->where('month','>=', $month);
-                        })->orWhere('year','>',$year);
+                    ->where(function ($query) use ($year, $month) {
+                        $query->where(function ($a) use ($year, $month) {
+                            $a->where('year', $year)->where('month', '>=', $month);
+                        })->orWhere('year', '>', $year);
                     })
                     ->update(['status' => Ordermodel::STATE_PENDING]);
 
@@ -390,29 +392,29 @@ class Order extends MY_Controller {
         $this->load->model('roomunionmodel');
         $this->load->model('residentmodel');
         $this->load->model('storemodel');
-        $input = $this->input->post();
-        $where = [];
-        empty($input['store_id'])?: $where['store_id'] = $input['store_id'];
-        empty($input['year'])    ?: $where['year']     = $input['year'];
-        empty($input['month'])   ?: $where['month']    = $input['month'];
-        $filed                  = ['id','room_id','resident_id','money','paid','type','status','pay_date',
-            'remark','discount_money'];
-        $orders                 = Ordermodel::with('roomunion')->with('resident')->where($where)->get($filed);
-        $store                  = Storemodel::where('id',$where['store_id'])->first();
-        $store                  = $store->name;
-        $order_excel            = [];
+        $input                                          = $this->input->post();
+        $where                                          = [];
+        empty($input['store_id']) ?: $where['store_id'] = $input['store_id'];
+        empty($input['year']) ?: $where['year']         = $input['year'];
+        empty($input['month']) ?: $where['month']       = $input['month'];
+        $filed                                          = ['id', 'room_id', 'resident_id', 'money', 'paid', 'type', 'status', 'pay_date',
+            'remark', 'discount_money'];
+        $orders      = Ordermodel::with('roomunion')->with('resident')->where($where)->get($filed);
+        $store       = Storemodel::where('id', $where['store_id'])->first();
+        $store       = $store->name;
+        $order_excel = [];
         foreach ($orders as $order) {
-            $res                = [];
-            $res['number']      = $order->roomunion->number;
-            $res['name']        = isset($order->resident->name)?$order->resident->name:'';
-            $res['type']        = $order->type;
-            $res['paid']        = $order->paid;
-            $res['money']       = $order->money;
-            $res['status']      = $order->status;
-            $res['pay_date']    = $order->pay_date;
-            $res['discount']    = $order->discount_money;
-            $res['remark']      = $order->remark;
-            $order_excel[]      = $res;
+            $res             = [];
+            $res['number']   = $order->roomunion->number;
+            $res['name']     = isset($order->resident->name) ? $order->resident->name : '';
+            $res['type']     = $order->type;
+            $res['paid']     = $order->paid;
+            $res['money']    = $order->money;
+            $res['status']   = $order->status;
+            $res['pay_date'] = $order->pay_date;
+            $res['discount'] = $order->discount_money;
+            $res['remark']   = $order->remark;
+            $order_excel[]   = $res;
         }
         $objPHPExcel = new Spreadsheet();
         $sheet       = $objPHPExcel->getActiveSheet();
@@ -435,7 +437,7 @@ class Order extends MY_Controller {
         header("Content-Type:application/vnd.ms-excel");
         header("Content-Type:application/octet-stream");
         header("Content-Type:application/download");
-        header("Content-Disposition:attachment;filename=$store".$where['year'].'年'.$where['month'].'月'.".'.xlsx'");
+        header("Content-Disposition:attachment;filename=$store" . $where['year'] . '年' . $where['month'] . '月' . ".'.xlsx'");
         header("Content-Transfer-Encoding:binary");
         $writer->save('php://output');
     }
