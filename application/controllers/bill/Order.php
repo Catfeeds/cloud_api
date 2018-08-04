@@ -264,6 +264,8 @@ class Order extends MY_Controller {
         $this->load->model('customermodel');
         $unPushOrders = Ordermodel::where('store_id', $store_id)
             ->where('status', Ordermodel::STATE_GENERATED)
+            ->where('paid', '>', 0)
+            ->where('money', '>', 0)
             ->where(function ($query) use ($year, $month) {
                 $query->where(function ($a) use ($year, $month) {
                     $a->where('year', $year)->where('month', '>=', $month);
