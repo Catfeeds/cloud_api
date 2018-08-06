@@ -26,7 +26,8 @@ $config['wechat_base_url'] = 'web.strongberry.cn/';
 //住户公众号模板消息ID
 //1.缴费提醒
 $config['tmplmsg_customer_paynotice']   = 'UAKRkFEhbxo7vMrnWYkx6iK9jqqObhYKUEFLcJ50kK0';
-
+//2.预约看房通知
+$config['tmplmsg_employee_Reserve']   = 'dWQgnPZ5rBhbnTuHh0YSJ30V_wMbvgTREknhjG4ophw';
 //微信开放平台网页授权的信息
 $config['wx_web_appid']     = 'wx75fd74e2316b2355';
 $config['wx_web_secret']    = '70fa3a7fe658be97552788fc764f5434';

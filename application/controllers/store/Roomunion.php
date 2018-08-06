@@ -194,7 +194,7 @@ class Roomunion extends MY_Controller {
                 ->select($field)
                 ->offset($offset)
                 ->limit(PAGINATE)
-                ->orderBy('number')
+                ->orderBy('boss_room_union.id','number')
                 ->whereIn('boss_room_union.store_id', $store_ids)
                 ->where($where)
                 ->orWhere(function ($query) use ($search) {
@@ -212,7 +212,7 @@ class Roomunion extends MY_Controller {
         }
         $rooms = Roomunionmodel::leftJoin('boss_store', 'boss_store.id', '=', 'boss_room_union.store_id')
             ->leftJoin('boss_room_type', 'boss_room_type.id', '=', 'boss_room_union.room_type_id')
-            ->select($field)->offset($offset)->limit(PAGINATE)->orderBy('boss_room_union.id')
+            ->select($field)->offset($offset)->limit(PAGINATE)->orderBy('boss_room_union.id','number')
             ->where($where)->whereIn('boss_room_union.store_id', $store_ids)
             ->get();
         $this->api_res(0, ['count' => $count, 'rooms' => $rooms]);
