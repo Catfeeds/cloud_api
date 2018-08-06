@@ -56,6 +56,7 @@ class Resident extends MY_Controller
     }
 
     /**
+     *
      * 办理入住
      * @param $store_id
      * @param $room_number
@@ -150,7 +151,19 @@ class Resident extends MY_Controller
 //            $this->load->model('contractmodel');
 //            $data=$resident->transform($resident);
             //var_dump($data);
-            $this->api_res(0,['resident_id'=>$resident->id]);
+            $a = $post['contract_time'];
+            switch ($a>=3?($a>=6?($a>=12?4:3):2):1){
+                case  4: $time = 'A_year';       break;
+                case  3: $time = 'Half_A_year';  break;
+                case  2: $time = 'Three_months'; break;
+                case  1: $time = 'under_time';   break;
+            }
+                if (empty($post['old_phone'])) {
+                    $res = $this->sendCheckIn($resident->id, $time);
+                } else {
+                    $res = $this->sendOldbeltNew($resident->id, $time, $post['old_phone']);
+                }
+            $this->api_res(0,['resident_id'=>$resident->id , 'res' =>$res]);
         }catch (Exception $e) {
             DB::rollBack();
             throw $e;

@@ -57,7 +57,7 @@ class Smartdevice extends MY_Controller {
                     }])
                     ->take(PAGINATE)
                     ->skip($offset)
-                    ->orderBy('id', 'desc')
+                    ->orderBy('number')
                     ->get($filed)
                     ->toArray();
             }

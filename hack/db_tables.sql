@@ -41,7 +41,7 @@ CREATE TABLE `boss_activity` (
   `start_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '开始时间',
   `end_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '结束时间',
   `created_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '创建时间',
-  `activity_type` enum('TRNTABLE','SCRATCH','NORMAL','LOWER') COLLATE utf8_unicode_ci  DEFAULT 'NORMAL' COMMENT '新活动的类型',
+  `activity_type` enum('TRNTABLE','SCRATCH','NORMAL','LOWER','OLDBELTNEW','CHECKIN') COLLATE utf8_unicode_ci  DEFAULT 'NORMAL' COMMENT '新活动的类型',
   `updated_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '更新时间',
   `deleted_at` datetime DEFAULT NULL,
   `limit` varchar(255) COLLATE utf8_unicode_ci COMMENT '限制条件',
@@ -55,6 +55,7 @@ CREATE TABLE `boss_activity` (
   `share_img` varchar(255) COLLATE utf8_unicode_ci,
   `share_title` varchar(255) COLLATE utf8_unicode_ci,
   `share_des` varchar(255) COLLATE utf8_unicode_ci,
+  `prize_id` int(10) DEFAULT nll,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=120 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -75,6 +76,23 @@ CREATE TABLE `boss_activity_coupontype` (
   `deleted_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `boss_activity_prize`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `boss_activity_prize` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `prize` varchar(255) NOT NULL,
+  `count` varchar(255) NOT NULL,
+  `grant` varchar(255) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP COMMENT '0000-00-00 00:00:00',
+  `deleted_at` datetime DEFAULT NULL,
+  `updated_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP COMMENT '0000-00-00 00:00:00',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8;
 
 --
 -- Table structure for table `boss_activity_record`
@@ -279,6 +297,8 @@ CREATE TABLE `boss_coupon` (
   `employee_id` int(11) DEFAULT NULL,
   `order_id` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '使用了该券的订单id',
   `activity_id` int(10) NOT NULL,
+  `company_id` int(8) DEFAULT null,
+  `store_id` varcher(255) DEFAULT null,
   `coupon_type_id` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'coupons表中的id',
   `status` enum('ASSIGNED','UNUSED','ROLLBACKING','OCCUPIED','USED','EXPIRED','INACTIVE') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'UNUSED' COMMENT '优惠券状态 ASSIGNED:已分配,但是未审核,不对用户显示, 用于吸粉活动的优惠券派发 UNUSED:未使用, ROLLBACKING:由于订单取消等原因,优惠券回滚到未使用状态中, OCCUPIED:被占用,支付时已使用,订单未完成, USED:已经使用, EXPIRED:已经过期, 未激活（未到开始使用日期）',
   `deadline` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '过期时间',
