@@ -16,4 +16,14 @@ class Taskflowstepmodel extends Basemodel
     protected $fillable = [
 
     ];
+
+    public function taskflow()
+    {
+        return $this->belongsTo(Taskflowmodel::class,'taskflow_id');
+    }
+
+    public function employee()
+    {
+        return $this->belongsTo(Employeemodel::class,'employee_id');
+    }
 }
