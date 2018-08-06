@@ -84,6 +84,7 @@ class Activity extends MY_Controller
         $count = ceil($count / PAGINATE);
         if (!$activity) {
             $this->api_res(1007);
+            return false;
         }
         $data = array();
         foreach ($activity as $key => $coupon) {
@@ -268,6 +269,11 @@ class Activity extends MY_Controller
             $this->api_res(1002, ['error' => $this->form_first_error($fieldarr)]);
             return false;
         }
+        $arr = [$post['one_prize'], $post['two_prize'], $post['three_prize']];
+        if (count($arr) != count(array_unique($arr))) {
+            $this->api_res(11101);
+            return false;
+        }
         $prize['prize'] = serialize(['one' => $post['one_prize'], 'two' => $post['two_prize'], 'three' => $post['three_prize']]);
         $prize['count'] = serialize(['one' => $post['one_count'], 'two' => $post['two_count'], 'three' => $post['three_count']]);
         $prize['grant'] = serialize(['one' => $post['one_grant'], 'two' => $post['two_grant'], 'three' => $post['three_grant']]);
@@ -322,6 +328,12 @@ class Activity extends MY_Controller
             $this->api_res(1002, ['error' => $this->form_first_error($fieldarr)]);
             return false;
         }
+
+        $arr = [$post['one_prize'], $post['two_prize'], $post['three_prize']];
+        if (count($arr) != count(array_unique($arr))) {
+            $this->api_res(11101);
+            return false;
+        }
         $prize['prize'] = serialize(['old' => $post['old_prize'], 'one' => $post['one_prize'], 'two' => $post['two_prize'], 'three' => $post['three_prize']]);
         $prize['count'] = serialize(['old' => $post['old_count'], 'one' => $post['one_count'], 'two' => $post['two_count'], 'three' => $post['three_count']]);
         $prize['grant'] = serialize(['old' => $post['old_grant'], 'one' => $post['one_grant'], 'two' => $post['two_grant'], 'three' => $post['three_grant']]);
@@ -335,6 +347,7 @@ class Activity extends MY_Controller
         $activity['activity_type'] = 'OLDBELTNEW';
         $insertId = Activitymodel::insertGetId($activity);
         $store_id = explode(',', $post['store_id']);
+
         foreach ($store_id as $value) {
             $data = ['store_id' => $value, 'activity_id' => $insertId];
             $store = Storeactivitymodel::insert($data);

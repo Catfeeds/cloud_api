@@ -67,7 +67,7 @@ class Resident extends MY_Controller
             'room_id','begin_time','people_count','contract_time','discount_id','first_pay_money',
             'deposit_money','deposit_month','tmp_deposit','rent_type','pay_frequency',
             'name','phone','card_type','card_number','card_one','card_two','card_three','real_property_costs','real_rent_money',
-            'name_two','phone_two','card_type_two','card_number_two','alter_phone','alternative','address'
+            'name_two','phone_two','card_type_two','card_number_two','alter_phone','alternative','address',
         ];
         if(!$this->validationText($this->validateCheckIn())){
             $this->api_res(1002,['error'=>$this->form_first_error($field)]);
@@ -139,7 +139,8 @@ class Resident extends MY_Controller
             //把房间状态改成占用
             $b=$this->occupiedByResident($room, $resident);
             //$b=$this->handleCheckInCommonEvent($resident, $room);
-            if($a && $b){
+
+            if($a && $b ){
                 DB::commit();
             }else{
                 DB::rollBack();
@@ -151,19 +152,24 @@ class Resident extends MY_Controller
 //            $this->load->model('contractmodel');
 //            $data=$resident->transform($resident);
             //var_dump($data);
-            $a = $post['contract_time'];
-            switch ($a>=3?($a>=6?($a>=12?4:3):2):1){
-                case  4: $time = 'A_year';       break;
-                case  3: $time = 'Half_A_year';  break;
-                case  2: $time = 'Three_months'; break;
-                case  1: $time = 'under_time';   break;
-            }
+            $time = $post['contract_time'];
+            $res = '';
+            $this->load->library('../controllers/coupon/coupon.php');
+            if($post['is_participate'] = 'join') {
+                $this->load->model('activitymodel');
+                $this->load->model('storeactivitymodel');
+                $this->load->model('activityprizemodel');
+                $this->load->model('couponmodel');
+                $this->load->model('coupontypemodel');
+                $this->load->model('Customermodel');
+                $activity = new Activitymodel();
                 if (empty($post['old_phone'])) {
-                    $res = $this->sendCheckIn($resident->id, $time);
+                    $res = $activity->sendCheckIn($resident->id, $time);
                 } else {
-                    $res = $this->sendOldbeltNew($resident->id, $time, $post['old_phone']);
+                    $res = $activity->sendOldbeltNew($resident->id, $time, $post['old_phone']);
                 }
-            $this->api_res(0,['resident_id'=>$resident->id , 'res' =>$res]);
+            }
+            $this->api_res(0,['resident_id'=>$resident->id,'res'=>$res]);
         }catch (Exception $e) {
             DB::rollBack();
             throw $e;
