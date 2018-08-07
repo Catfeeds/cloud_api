@@ -264,7 +264,7 @@ class Checkout extends MY_Controller {
         $bill->sequence_number = sprintf("%s%06d", $dateString, $count);
 
         $bill->store_id    = $resident->store_id;
-        $bill->employee_id = $resident->employee_id;
+        $bill->employee_id = $this->employee->id;
         $bill->resident_id = $resident->id;
         $bill->customer_id = $resident->customer_id;
         $bill->uxid        = $resident->uxid;
