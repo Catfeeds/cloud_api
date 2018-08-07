@@ -32,7 +32,7 @@ class Store extends MY_Controller {
         $store_ids = explode(',', $this->employee->store_ids);
         $offset    = PAGINATE * ($page - 1);
         $field     = ['id', 'name', 'city', 'rent_type', 'address', 'contact_user', 'counsel_phone', 'status', 'created_at'];
-        $count     = ceil(Storemodel::where($where)->count() / PAGINATE);
+        $count     = ceil(Storemodel::where($where)->whereIn('id', $store_ids)->count() / PAGINATE);
         $cities    = Storemodel::where(['company_id' => COMPANY_ID])->groupBy('city')->get(['city']);
         $types     = isset($post['city']) ? Storemodel::where(['company_id' => COMPANY_ID])
             ->where('city', $post['city'])
