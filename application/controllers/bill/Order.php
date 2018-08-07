@@ -346,7 +346,7 @@ class Order extends MY_Controller {
         $this->load->model('roomunionmodel');
         $pendingOrders = Ordermodel::where('store_id', $store_id)
             ->where('status', Ordermodel::STATE_PENDING)
-            ->where('is_notify', 0)
+//            ->where('is_notify', 0)
             ->get()
             ->groupBy('resident_id');
 
@@ -376,10 +376,10 @@ class Order extends MY_Controller {
                 ])
                 ->andReceiver($customer->openid)
                 ->send();
-            $resident->orders()
-                ->where('status', Ordermodel::STATE_PENDING)
-                ->where('is_notify', 0)
-                ->update(['is_notify' => 1]);
+//            $resident->orders()
+//                ->where('status', Ordermodel::STATE_PENDING)
+//                ->where('is_notify', 0)
+//                ->update(['is_notify' => 1]);
             log_message('error', $resident_id . '推送成功');
         }
         $this->api_res(0, ['failed' => $failed]);
@@ -438,5 +438,27 @@ class Order extends MY_Controller {
         header("Content-Disposition:attachment;filename=$store" . $where['year'] . '年' . $where['month'] . '月' . ".'.xlsx'");
         header("Content-Transfer-Encoding:binary");
         $writer->save('php://output');
+    }
+
+    /**
+     * 确认账单（审核通过）
+     * 考虑到有支付周期大于1的账单，需要一起推送当前月和之后月份的账单
+     * 参数 store_id, year, month
+     */
+    public function approve()
+    {
+        $input    = $this->input->post(null, true);
+        $year     = $input['year'];
+        $month    = $input['month'];
+        $store_id = $input['store_id'];
+        Ordermodel::where('store_id', $store_id)
+            ->where('status', Ordermodel::STATE_GENERATED)
+            ->where(function ($query) use ($year, $month) {
+                $query->where(function ($a) use ($year, $month) {
+                    $a->where('year', $year)->where('month', '>=', $month);
+                })->orWhere('year', '>', $year);
+            })
+            ->update(['status'=>Ordermodel::STATE_PENDING]);
+        $this->api_res(0);
     }
 }
