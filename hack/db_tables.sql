@@ -605,18 +605,26 @@ CREATE TABLE `boss_meter_reading_transfer` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `store_id` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '公寓id',
   `building_id` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '楼的id',
+  `serial_number` varchar(64) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT '设备编号',
   `room_id` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '楼的id',
+  `resident_id` int(10) NOT NULL DEFAULT '0' COMMENT '租户ID',
+  `year` int(8) NOT NULL DEFAULT '2018' COMMENT '年份',
+  `month` int(4) NOT NULL DEFAULT '0' COMMENT '月份',
   `type` enum('COLD_WATER_METER','HOT_WATER_METER','ELECTRIC_METER') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'COLD_WATER_METER' COMMENT '表计类型：冷水表，热水表，电表',
   `last_reading` float(10,2) NOT NULL DEFAULT '0.00' COMMENT '上一次的读数',
+  `last_time` datetime NOT NULL DEFAULT '2017-01-01 00:00:00' COMMENT '上次抄表时间',
   `this_reading` float(10,2) NOT NULL DEFAULT '0.00' COMMENT '最新读数',
-  `last_time` datetime NOT NULL COMMENT '上次生成账单的时间',
-  `weight` tinyint(4) NOT NULL DEFAULT '0' COMMENT '计算金额的比例',
+  `this_time` datetime NOT NULL DEFAULT '2017-01-01 00:00:00' COMMENT '本次抄表时间',
+  `weight` tinyint(4) NOT NULL DEFAULT '100' COMMENT '计算金额的比例',
+  `status` enum('NORMAL','NEW_RNET','CHANGE_NEW','CHANGE_OLD') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'NORMAL' COMMENT '状态：NORMAL正常，CHANGE_NEW换表(新),NEW_RNET新入住,CHANGE_OLD换表(旧),',
   `confirmed` tinyint(4) NOT NULL DEFAULT '0' COMMENT '数据是否已经确认',
   `created_at` datetime NOT NULL DEFAULT '2017-01-01 00:00:00' COMMENT '创建时间',
   `updated_at` datetime NOT NULL DEFAULT '2017-01-01 00:00:00' COMMENT '更新时间',
   `deleted_at` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3541 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique` (`resident_id`,`year`,`month`,`type`,`room_id`,`serial_number`,`status`)
+) ENGINE=InnoDB AUTO_INCREMENT=4393 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

@@ -413,19 +413,22 @@ class Order extends MY_Controller {
             $res['discount'] = $order->discount_money;
             $res['remark']   = $order->remark;
             $order_excel[]   = $res;
+
         }
         $objPHPExcel = new Spreadsheet();
         $sheet       = $objPHPExcel->getActiveSheet();
         $i           = 1;
         $objPHPExcel->getActiveSheet()->setCellValue('A' . $i, '房间号');
         $objPHPExcel->getActiveSheet()->setCellValue('B' . $i, '姓名');
-        $objPHPExcel->getActiveSheet()->setCellValue('C' . $i, '支付类型');
-        $objPHPExcel->getActiveSheet()->setCellValue('D' . $i, '支付金额');
-        $objPHPExcel->getActiveSheet()->setCellValue('E' . $i, '定价');
-        $objPHPExcel->getActiveSheet()->setCellValue('F' . $i, '支付状态');
-        $objPHPExcel->getActiveSheet()->setCellValue('G' . $i, '支付时间');
-        $objPHPExcel->getActiveSheet()->setCellValue('H' . $i, '优惠金额');
-        $objPHPExcel->getActiveSheet()->setCellValue('I' . $i, '备注');
+        $objPHPExcel->getActiveSheet()->setCellValue('C' . $i, '起始日');
+        $objPHPExcel->getActiveSheet()->setCellValue('D' . $i, '届满日');
+        $objPHPExcel->getActiveSheet()->setCellValue('E' . $i, '支付类型');
+        $objPHPExcel->getActiveSheet()->setCellValue('F' . $i, '支付金额');
+        $objPHPExcel->getActiveSheet()->setCellValue('G' . $i, '定价');
+        $objPHPExcel->getActiveSheet()->setCellValue('H' . $i, '支付状态');
+        $objPHPExcel->getActiveSheet()->setCellValue('I' . $i, '支付时间');
+        $objPHPExcel->getActiveSheet()->setCellValue('J' . $i, '优惠金额');
+        $objPHPExcel->getActiveSheet()->setCellValue('K' . $i, '备注');
         $sheet->fromArray($order_excel, null, 'A2');
         $writer = new Xlsx($objPHPExcel);
         header("Pragma: public");
@@ -461,4 +464,50 @@ class Order extends MY_Controller {
             ->update(['status'=>Ordermodel::STATE_PENDING]);
         $this->api_res(0);
     }
+
+    private function payStatus($status)
+    {
+        switch ($status)
+        {
+            case Ordermodel::STATE_GENERATED :
+                $pay_status = '生成账单';
+                break;
+            case Ordermodel::STATE_AUDITED   :
+                $pay_status = '生成账单';
+                break;
+            case Ordermodel::STATE_PENDING   :
+                $pay_status = '等待付款';
+                break;
+            case Ordermodel::STATE_CONFIRM   :
+                $pay_status = '付款等待确认';
+                break;
+            case Ordermodel::STATE_COMPLETED :
+                $pay_status = '   完成';
+                break;
+            case Ordermodel::STATE_REFUND    :
+                $pay_status = '   退单';
+                break;
+            case Ordermodel::STATE_EXPIRE    :
+                $pay_status = '   过期';
+                break;
+            case Ordermodel::STATE_CLOSE     :
+                $pay_status = '   关闭';
+                break;
+            default :
+                $pay_status = '';
+                break;
+        }
+        return $pay_status;
+    }
+
+    private function payDate($date)
+    {
+        if (substr($date,0,4) == '1970'){
+            return $time = '';
+        }
+        else{
+            return $date;
+        }
+    }
+    
 }
