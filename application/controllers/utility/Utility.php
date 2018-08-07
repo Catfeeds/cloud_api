@@ -183,6 +183,32 @@ class Utility extends MY_Controller {
     }
 
     /**
+     * 水电记录
+     */
+    public function record()
+    {
+        $this->load->model('meterreadingtransfermodel');
+        $this->load->model('storemodel');
+        $this->load->model('roomunionmodel');
+        $this->load->model('buildingmodel');
+        $post      = $this->input->post(null, true);
+        $page      = !empty($post['page']) ? intval($post['page']) : 1;
+        $offset    = PAGINATE * ($page - 1);
+        $where     = [];
+        $store_ids = explode(',', $this->employee->store_ids);
+        if (!empty($post['building_id'])) {$where['building_id'] = intval($post['building_id']);};
+        if (!empty($post['store_id'])) {$where['store_id'] = intval($post['store_id']);}
+        if (!empty($post['status'])) {$where['confirmed']= intval($post['status']);}
+        if (!empty($post['type'])) {$where['type'] = $post['type'];}
+        if (!empty($post['month'])){$month = $post['month'];}
+        $filed = ['id','store_id','building_id','resident_id','room_id','type','this_reading','this_time','confirmed','year','month'];
+        $record = Meterreadingtransfermodel::with(['building','store','room_s'])
+                    ->whereIn('store_id',$store_ids)->where($where)
+                    ->get($filed)->groupBy('resident_id')->toArray();
+        var_dump($record);
+    }
+
+    /**
      * 修改水電讀數
      */
     public function updateNumber() {

@@ -49,7 +49,7 @@ class Meter extends MY_Controller {
             $transfers = Meterreadingtransfermodel::with('roomunion')
                 ->where('type', $type)
 //                ->where('store_id',1)
-            //                ->where('store_id', $this->employee->store_id)
+                //                ->where('store_id', $this->employee->store_id)
                 ->where('store_id', $this->input->post('store_id', true))
                 ->where('confirmed', Meterreadingtransfermodel::UNCONFIRMED)
                 ->get();
@@ -93,22 +93,22 @@ class Meter extends MY_Controller {
         }
 
         switch ($transfer->type) {
-        case Meterreadingtransfermodel::TYPE_ELECTRIC:
-            $type = Ordermodel::PAYTYPE_ELECTRIC;
-            // $price  = $resident->electricity_price;
-            $price = $roomunion->store->electricity_price;
-            break;
-        case Meterreadingtransfermodel::TYPE_WATER_H:
-            $type  = Ordermodel::PAYTYPE_WATER_HOT;
-            $price = $roomunion->store->hot_water_price;
-            break;
-        case Meterreadingtransfermodel::TYPE_WATER_C:
-            $type  = Ordermodel::PAYTYPE_WATER;
-            $price = $roomunion->store->water_price;
-            break;
-        default:
-            throw new Exception('未识别的账单类型！');
-            break;
+            case Meterreadingtransfermodel::TYPE_ELECTRIC:
+                $type = Ordermodel::PAYTYPE_ELECTRIC;
+                // $price  = $resident->electricity_price;
+                $price = $roomunion->store->electricity_price;
+                break;
+            case Meterreadingtransfermodel::TYPE_WATER_H:
+                $type  = Ordermodel::PAYTYPE_WATER_HOT;
+                $price = $roomunion->store->hot_water_price;
+                break;
+            case Meterreadingtransfermodel::TYPE_WATER_C:
+                $type  = Ordermodel::PAYTYPE_WATER;
+                $price = $roomunion->store->water_price;
+                break;
+            default:
+                throw new Exception('未识别的账单类型！');
+                break;
         }
 
         $money = ($transfer->this_reading - $transfer->last_reading) * $price;
