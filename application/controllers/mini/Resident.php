@@ -47,7 +47,8 @@ class Resident extends MY_Controller
 
         if($status=='RENT'){
             $this->load->model('residentmodel');
-            $data['resident']=Residentmodel::WHERE('room_id',$room->id)->orderBy('end_time','DESC')->first()->toArray();
+//            $data['resident']=Residentmodel::WHERE('room_id',$room->id)->orderBy('end_time','DESC')->first()->toArray();
+            $data['resident']=$room->resident->toArray();
             $data['resident']['begin_time']   = Carbon::parse($data['resident']['begin_time'])->format('Y-m-d');
             $data['resident']['end_time']   = Carbon::parse($data['resident']['end_time'])->format('Y-m-d');
         }
