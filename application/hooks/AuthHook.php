@@ -46,6 +46,7 @@ class AuthHook {
             'mini/login/gettoken',
             'mini/login/handleloginstatus',
             'account/login/login',
+            'mini/contract/autosignnotify',
             'bill/bill/test',
 //            'bill/checkout/list',
             //            'bill/checkout/show',
