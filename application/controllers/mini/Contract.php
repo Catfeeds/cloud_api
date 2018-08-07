@@ -275,10 +275,14 @@ class Contract extends MY_Controller {
         $this->api_res(0, ['res' => $res]);
     }
 
+
+    /*********************************************** new ********************************************/
+
     /**
      * 批量给用户已经签署的合同盖章
      */
-    public function batchSign() {
+    public function batchSign()
+    {
         $this->load->library('fadada');
         $this->load->model('contractmodel');
         $this->load->model('fddrecordmodel');
@@ -287,40 +291,22 @@ class Contract extends MY_Controller {
         $this->load->model('storemodel');
         $this->load->model('ordermodel');
         $contract_ids   = explode(',',$this->input->post('contract_ids'));
-        $contracts   = Contractmodel::where('status','SIGNING')->whereIn('id',$contract_ids)->get();
-        foreach ($contracts as $contract)
-        {
-            if(!$this->sign($contract)){
-                log_message('error',"$contract->id 签署失败");
-                continue;
+        $contracts   = Contractmodel::whereIn('id',$contract_ids)->get();
+        foreach ($contracts as $contract) {
+            if ($contract->status != Contractmodel::STATUS_SIGNING) {
+                $this->api_res(10081);
+                return;
             }
-            if(!$this->signToArchive($contract)){
-                log_message('error',"$contract->id 归档失败");
-                continue;
-            }
-        }
-        $this->api_res(0);
-    }
-
-    /**
-     * 签署
-     */
-    private function sign($contract) {
-        if ($contract->status == Contractmodel::STATUS_SIGNING) {
             $transaction = $contract->transactions()
                 ->where('role', Fddrecordmodel::ROLE_A)
                 ->where('status', '!=', Fddrecordmodel::STATUS_FAILED)
                 ->first();
             if (empty($transaction)) {
-                //查询, 获取公寓的法大大customer_id
                 if (!isset($contract->resident->roomunion->store->fdd_customer_id)) {
-                    return false;
+                    $this->api_res(10083);
+                    return;
                 } else {
                     $customerId = $contract->resident->roomunion->store->fdd_customer_id;
-                }
-                if (!$customerId) {
-                    log_message('error', '该公寓没有客户编号,请设置CA后重试!');
-                    return false;
                 }
                 $transactionId = 'A' . date('YmdHis') . mt_rand(10, 59);
                 //生成新的交易记录
@@ -338,16 +324,20 @@ class Contract extends MY_Controller {
                     $contract->doc_title,
                     $customerId,
                     config_item('fadada_platform_sign_key_word'),
-                    config_item('fdd_notify_url') //结果回调
+                    config_item('base_url').'mini/contract/autosignnotify' //结果回调
                 );
                 if ($res == false) {
-                    log_message('error', $this->fadada->showError());
-                    return false;
+                    $this->api_res(10080);
+                    return;
+                }
+            } else {
+                if (!$this->signToArchive($contract)) {
+                    $this->api_res(10084);
+                    return;
                 }
             }
-            return true;
         }
-        return true;
+        $this->api_res(0);
     }
 
     /**
@@ -386,7 +376,108 @@ class Contract extends MY_Controller {
             ->count();
         if (0 == $ordersUnhandled) {
             $resident->update(['status' => Residentmodel::STATE_NORMAL]);
-            $resident->roomunion->update(['status' => Roommodel::STATE_RENT]);
+            $resident->roomunion->update(['status' => Roomunionmodel::STATE_RENT]);
         }
+        return true;
+    }
+
+    /**
+     * 甲方签章的结果回调
+     * 同时进行合同归档
+     */
+    public function autoSignNotify()
+    {
+        $this->load->library('form_validation');
+        $this->load->library('fadada');
+        $this->load->model('fddrecordmodel');
+
+        $config = array(
+            array(
+                'field' => 'transaction_id',
+                'label' => 'transaction_id',
+                'rules' => 'required',
+            ),
+            array(
+                'field' => 'contract_id',
+                'label' => 'contract_id',
+                'rules' => 'required',
+            ),
+            array(
+                'field' => 'result_code',
+                'label' => 'result_code',
+                'rules' => 'required',
+            ),
+            array(
+                'field' => 'result_desc',
+                'label' => 'result_desc',
+                'rules' => 'required',
+            ),
+            array(
+                'field' => 'timestamp',
+                'label' => 'timestamp',
+                'rules' => 'required',
+            ),
+            array(
+                'field' => 'msg_digest',
+                'label' => 'msg_digest',
+                'rules' => 'required',
+            ),
+        );
+
+        $this->form_validation->set_rules($config);
+
+        if ($this->form_validation->run() == FALSE) {
+            exit('缺少参数!');
+        }
+
+        //获取请求参数
+        $transactionId = trim($this->input->post('transaction_id', true));
+        $contractId    = trim($this->input->post('contract_id', true));
+        $resultCode    = trim($this->input->post('result_code', true));
+        $resultDesc    = trim($this->input->post('result_desc', true));
+        $downloadUrl   = trim($this->input->post('download_url', true));
+        $viewpdfUrl    = trim($this->input->post('viewpdf_url', true));
+        $timestamp     = trim($this->input->post('timestamp', true));
+        $msgDigest     = trim($this->input->post('msg_digest', true));
+
+        try {
+            //验证请求可靠性, 通过 msg_digest
+            $msgDigestArray = array(
+                'md5'  => [$timestamp],
+                'sha1' => [config_item('fadada_api_app_secret'), $transactionId],
+            );
+
+            $checkMsgDigest = $this->fadada->getMsgDigest($msgDigestArray);
+
+            if ($checkMsgDigest != $msgDigest) {
+                throw new Exception('msg_digest 校验不通过');
+            }
+            $record = Fddrecordmodel::where('transaction_id', $transactionId)->firstOrFail();
+            //3000 表示成功, 3001 表示失败
+            if ($resultCode == 3000) {
+                $status = Fddrecordmodel::STATUS_SUCCEED;
+            } else {
+                $status = Fddrecordmodel::STATUS_FAILED;
+            }
+            $record->status = $status;
+            $record->remark = $resultDesc;
+            $record->save();
+
+            $this->load->model('contractmodel');
+            $this->load->model('residentmodel');
+            $this->load->model('roomunionmodel');
+            $this->load->model('storemodel');
+            $this->load->model('ordermodel');
+
+            $contract   = $record->contract;
+            if (!$this->signToArchive($contract)) {
+                log_message('error',$contract->id.'归档失败');
+            }
+        } catch (Exception $e) {
+            log_message('error', $e->getMessage());
+            throw $e;
+        }
+        return true;
+
     }
 }
