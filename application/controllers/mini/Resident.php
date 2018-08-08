@@ -155,7 +155,6 @@ class Resident extends MY_Controller
             //var_dump($data);
             $time = $post['contract_time'];
             $res = '';
-            $this->load->library('../controllers/coupon/coupon.php');
             if($post['is_participate'] = 'join') {
                 $this->load->model('activitymodel');
                 $this->load->model('storeactivitymodel');
