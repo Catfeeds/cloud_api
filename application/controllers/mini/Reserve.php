@@ -79,31 +79,12 @@ class Reserve extends MY_Controller {
         }
         $reserve->status = $status;
         if ($reserve->save()) {
-            if($status == 'INVALID'){
-                $this->Template_message($post['room_type_id']);
-            }
             $this->api_res(0);
         } else {
             $this->api_res(1009);
         }
     }
-    private function Template_message($room_type_id ){
-        $name = '杨子杰';
-        $this->load->model('employeemodel');
-        $employee = Employeemodel::where('name',$name)->select(['openid'])->first();
-        $this->load->helper('common');
-        $app    = new Application(getWechatEmployeeConfig());
-        $app->notice->uses(config_item('tmplmsg_employee_Reserve'))
-            ->withUrl(config_item('wechat_base_url') . 'mini/resident/reservation')
-            ->andData([
-                'first'    => '有新的预约消息',
-                'keyword1' => '房间号为'.$room_type_id,
-                'keyword2' => '',
-                'remark'   => '如有疑问，请与工作人员联系',
-            ])
-            ->andReceiver($employee->openid)
-            ->send();
-    }
+
     /**
      *  房型
      */
