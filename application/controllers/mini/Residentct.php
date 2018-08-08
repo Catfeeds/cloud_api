@@ -252,7 +252,7 @@ class Residentct extends MY_Controller {
         }
         //获取来访方式信息
         $this->load->model('reserveordermodel');
-        $field = ['初始值', '58同城', '豆瓣', '租房网',
+        $field = ['未知', '58同城', '豆瓣', '租房网',
             '嗨住', 'zuber', '中介', '路过',
             '老带新', '朋友介绍', '微信', '同行转介',
             '闲鱼', '蘑菇租房', '微博', '其它',
