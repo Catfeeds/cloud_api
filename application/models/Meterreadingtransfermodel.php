@@ -38,9 +38,9 @@ class Meterreadingtransfermodel extends Basemodel {
     const OLD_METER = 'CHANGE_OLD'; //旧表
     const NEW_METER = 'CHANGE_NEW'; //新表
     const NEW_RENT  = 'NEW_RENT'; //月中入住
-
-    const UNCONFIRMED = 0;
-    const CONFIRMED   = 1;
+    
+    const  UNCONFIRMED  =  0 ;
+    const  CONFIRMED    =  1 ;
 
     /**
      * 该记录所属房间
