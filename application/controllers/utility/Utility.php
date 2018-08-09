@@ -204,7 +204,7 @@ class Utility extends MY_Controller {
         if (!empty($post['year'])) {$where['year'] = intval($post['year']);}
         if (!empty($post['type'])){$where['type'] = $post['type'];}
         $status = [Meterreadingtransfermodel::NORMAL,Meterreadingtransfermodel::OLD_METER];
-        $filed  = ['id','store_id','building_id','resident_id','room_id','type','this_reading','this_time','confirmed','year','month'];
+        $filed  = ['id','store_id','building_id','resident_id','room_id','type','this_reading','this_time','confirmed','year','month','image'];
         $count  =ceil(Meterreadingtransfermodel::whereIn('store_id',$store_ids)->where($where)->whereIn('status',$status)->count() / PAGINATE);
         $record = Meterreadingtransfermodel::with(['building','store','room_s'])
                 ->whereIn('store_id',$store_ids)->where($where)->whereIn('status',$status)
@@ -255,8 +255,13 @@ class Utility extends MY_Controller {
             $record->last_reading   = $new_meter->this_reading;
             $record->last_time      = $new_meter->this_time;
         }else{
-            $record->last_reading   = $last_reading->this_reading;
-            $record->last_time      = $last_reading->this_time;
+            if (!empty($last_reading)){
+                $record->last_reading   = $last_reading->this_reading;
+                $record->last_time      = $last_reading->this_time;
+            }else{
+                $record->last_reading   = '';
+                $record->last_time      = '';
+            }
         }
         return $record;
     }
@@ -301,16 +306,16 @@ class Utility extends MY_Controller {
         $reading->image         = $this->splitAliossUrl(($post['image']));
         if($reading->save()){
             //记录修改日志
+            $log = new Logofwaterelectricmodel();
             $arr = [
                 'transfer_id'       => $post['id'],
                 'employee_id'       => $this->employee->id,
                 'original_record'   => $original_record,
                 'now_record'        => $this_reading,
                 'reason'            => $post['reason'],
-                'created_at'        => date('Y-m-d H:i:s',time()),
-                'updated_at'        => date('Y-m-d H:i:s',time()),
             ];
-            Logofwaterelectricmodel::insert($arr);
+            $log->fill($arr);
+            $log->save();
             $this->api_res(0);
         }else{
             $this->api_res(1009);
@@ -371,6 +376,7 @@ class Utility extends MY_Controller {
         ];
         $change->fill($arr);
         $change->save();
+
     }
 
     private function validateChange() {

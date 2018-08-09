@@ -81,7 +81,6 @@ class AuthHook {
 //        'utility/meter/normaldevicereading',
 //        'utility/meter/smartdeviceupdate',
 //        'utility/meter/utility',
-
         );
     }
 
