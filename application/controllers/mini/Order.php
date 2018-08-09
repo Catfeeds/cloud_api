@@ -270,7 +270,6 @@ class Order extends MY_Controller {
             ->whereIn('id', $orderIds)
             ->where('status', $status)
             ->get();
-
         if (count($orders) != count($orderIds)) {
             log_message('error', 'COUNTORDER' . count($orders) . '--' . count($orderIds));
             log_message('error', '未找到订单信息或者订单状态错误!');
