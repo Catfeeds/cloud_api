@@ -252,7 +252,7 @@ class Activity extends MY_Controller
         $this->load->model('activityprizemodel');
         $store = Storeactivitymodel::where(function ($query) {
             $query->orWhereHas('activity', function ($query) {
-                $query->where('activity_type', 'CHECKIN')->where('type','!=','LOWER')->where('end_time', '>=', time());
+                $query->where('activity_type', 'CHECKIN')->where('type','!=','LOWER')->where('end_time', '>=', date('Y-m-d H:i:s',time()));
             });
         })->get(['store_id'])->toArray();
         $stores = [];
@@ -311,7 +311,7 @@ class Activity extends MY_Controller
         $this->load->model('activityprizemodel');
         $store = Storeactivitymodel::where(function ($query) {
             $query->orWhereHas('activity', function ($query) {
-                $query->where('activity_type', 'OLDBELTNEW')->where('type','!=','LOWER')->where('end_time','>=',date('Y-m-d h:i:s',time()));
+                $query->where('activity_type', 'OLDBELTNEW')->where('type','!=','LOWER')->where('end_time','>=',date('Y-m-d H:i:s',time()));
             });
         })->get(['store_id'])->toArray();
         $stores = [];
