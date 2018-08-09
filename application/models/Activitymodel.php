@@ -57,15 +57,14 @@ class Activitymodel extends Basemodel {
         $resident = Residentmodel::where('id', $resident_id)->first();
         $store_id = $resident->store_id;
         $activity_id = Activitymodel::where('activity_type','CHECKIN')
-            ->where('start_time','<=',date('Y-m-d h:i:s',time()))
-            ->where('end_time','>=',date('Y-m-d h:i:s',time()))
+            ->where('start_time','<=',date('Y-m-d H:i:s',time()))
+            ->where('end_time','>=',date('Y-m-d H:i:s',time()))
             ->where('type','!=','LOWER')
             ->where(function($query) use ($store_id){
                 $query->orwherehas('store',function($query) use ($store_id){
                     $query->where('store_id',$store_id);
                 });
             })->select(['id','prize_id','end_time','start_time'])->first();
-
         if(!$activity_id){
             return '没有查询到该活动';
         }
@@ -142,8 +141,8 @@ class Activitymodel extends Basemodel {
         $resident = Residentmodel::where('id', $resident_id)->first();
         $store_id = $resident->store_id;
         $activity_id = Activitymodel::where('activity_type','OLDBELTNEW')
-            ->where('start_time','<=',date('Y-m-d h:i:s',time()))
-            ->where('end_time','>=',date('Y-m-d h:i:s',time()))
+            ->where('start_time','<=',date('Y-m-d H:i:s',time()))
+            ->where('end_time','>=',date('Y-m-d H:i:s',time()))
             ->where('type','!=','LOWER')
             ->where(function($query) use ($store_id){
                 $query->orwherehas('store',function($query) use ($store_id){
