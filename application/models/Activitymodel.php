@@ -57,13 +57,15 @@ class Activitymodel extends Basemodel {
         $resident = Residentmodel::where('id', $resident_id)->first();
         $store_id = $resident->store_id;
         $activity_id = Activitymodel::where('activity_type','CHECKIN')
-            ->where('start_time','<=',strtotime(time()))->where('end_time','>=',strtotime(time()))
+            ->where('start_time','<=',date('Y-m-d h:i:s',time()))
+            ->where('end_time','>=',date('Y-m-d h:i:s',time()))
             ->where('type','!=','LOWER')
             ->where(function($query) use ($store_id){
                 $query->orwherehas('store',function($query) use ($store_id){
                     $query->where('store_id',$store_id);
                 });
-            })->select(['id','prize_id'])->first();
+            })->select(['id','prize_id','end_time','start_time'])->first();
+
         if(!$activity_id){
             return '没有查询到该活动';
         }
@@ -140,7 +142,8 @@ class Activitymodel extends Basemodel {
         $resident = Residentmodel::where('id', $resident_id)->first();
         $store_id = $resident->store_id;
         $activity_id = Activitymodel::where('activity_type','OLDBELTNEW')
-            ->where('start_time','<=',strtotime(time()))->where('end_time','>=',strtotime(time()))
+            ->where('start_time','<=',date('Y-m-d h:i:s',time()))
+            ->where('end_time','>=',date('Y-m-d h:i:s',time()))
             ->where('type','!=','LOWER')
             ->where(function($query) use ($store_id){
                 $query->orwherehas('store',function($query) use ($store_id){
@@ -228,7 +231,7 @@ class Activitymodel extends Basemodel {
                 'resident_id'       => $resident->id,
                 'activity_id'    => $activity_id->id,
                 'coupon_type_id' => $prize_id,
-                'store_id'       => $store_id,
+                'store_ids'       => $store_id,
                 'status'         => 'UNUSED',
                 'deadline'       => $coupon_type->deadline,
                 'created_at'     => $datetime,

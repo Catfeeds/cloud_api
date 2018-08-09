@@ -90,6 +90,8 @@ class Activity extends MY_Controller
         foreach ($activity as $key => $coupon) {
             $prize = Activityprizemodel::where('id', $coupon['prize_id'])->select(['prize'])->first();
             $p = unserialize($prize->prize);
+            $p['old']= isset($p['old'])?$p['old']:'';
+            $old_prize = Coupontypemodel::where('id', $p['old'])->get(['name'])->toArray();
             $couponarr = Coupontypemodel::whereIn('id', $p)->get(['name'])->toArray();
             $str = '';
             foreach ($couponarr as $value) {
@@ -112,6 +114,7 @@ class Activity extends MY_Controller
             $data[$key]['participate'] = $participate;
             $data[$key]['Lottery_number'] = $Lottery_number;
             $data[$key]['lucky_draw'] = $lucky_draw;
+            $data[$key]['old_prize'] =$old_prize;
             if ($coupon['type'] == 'LOWER') {
                 $data[$key]['status'] = 'Lowerframe';
             } elseif (time() < strtotime($coupon['start_time'])) {
@@ -249,7 +252,7 @@ class Activity extends MY_Controller
         $this->load->model('activityprizemodel');
         $store = Storeactivitymodel::where(function ($query) {
             $query->orWhereHas('activity', function ($query) {
-                $query->where('activity_type', 'CHECKIN')->where('type','!=','LOWER')->where('end_time', '<=', time());
+                $query->where('activity_type', 'CHECKIN')->where('type','!=','LOWER')->where('end_time', '>=', time());
             });
         })->get(['store_id'])->toArray();
         $stores = [];
@@ -308,7 +311,7 @@ class Activity extends MY_Controller
         $this->load->model('activityprizemodel');
         $store = Storeactivitymodel::where(function ($query) {
             $query->orWhereHas('activity', function ($query) {
-                $query->where('activity_type', 'OLDBELTNEW')->where('type','!=','LOWER')->where('end_time', '<=', time());
+                $query->where('activity_type', 'OLDBELTNEW')->where('type','!=','LOWER')->where('end_time','>=',date('Y-m-d h:i:s',time()));
             });
         })->get(['store_id'])->toArray();
         $stores = [];
