@@ -30,15 +30,17 @@ class Meterreadingtransfermodel extends Basemodel {
         'confirmed' => 'boolean',
     ];
 //表类型
-    const TYPE_WATER_H  = 'HOT_WATER_METER';    //冷水表
-    const TYPE_WATER_C  = 'COLD_WATER_METER';   //热水表
-    const TYPE_ELECTRIC = 'ELECTRIC_METER';     //电表
-//状态
-    const NORMAL        = 'NORMAL';             //正常状态（生成整月账单）
-    const OLD_METER     = 'CHANGE_OLD';         //旧表
-    const NEW_METER     = 'CHANGE_NEW';         //新表
-    const NEW_RENT      = 'NEW_RENT';           //月中入住
+    const TYPE_WATER_H  = 'HOT_WATER_METER'; //冷水表
+    const TYPE_WATER_C  = 'COLD_WATER_METER'; //热水表
+    const TYPE_ELECTRIC = 'ELECTRIC_METER'; //电表
+    //状态
+    const NORMAL    = 'NORMAL'; //正常状态（生成整月账单）
+    const OLD_METER = 'CHANGE_OLD'; //旧表
+    const NEW_METER = 'CHANGE_NEW'; //新表
+    const NEW_RENT  = 'NEW_RENT'; //月中入住
 
+    const UNCONFIRMED = 0;
+    const CONFIRMED   = 1;
 
     /**
      * 该记录所属房间
@@ -49,7 +51,7 @@ class Meterreadingtransfermodel extends Basemodel {
 
     public function building() {
         return $this->belongsTo(BuildingModel::class, 'building_id')
-            ->select('id','name');
+            ->select('id', 'name');
     }
 
     public function store() {
@@ -59,11 +61,11 @@ class Meterreadingtransfermodel extends Basemodel {
 
     public function resident() {
         return $this->belongsTo(Residentmodel::class, 'resident_id')
-            ->select('id', 'name','customer_id','uxid');
+            ->select('id', 'name', 'customer_id', 'uxid');
     }
 
     public function room_s() {
         return $this->belongsTo(Roomunionmodel::class, 'room_id')
-            ->select('id','number');
+            ->select('id', 'number');
     }
 }
