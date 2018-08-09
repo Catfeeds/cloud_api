@@ -1,5 +1,6 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+use Carbon\Carbon;
 /**
  * Author:      zjh<401967974@qq.com>
  * Date:        2018/5/25 0025
@@ -57,8 +58,8 @@ class Activitymodel extends Basemodel {
         $resident = Residentmodel::where('id', $resident_id)->first();
         $store_id = $resident->store_id;
         $activity_id = Activitymodel::where('activity_type','CHECKIN')
-            ->where('start_time','<=',date('Y-m-d H:i:s',time()))
-            ->where('end_time','>=',date('Y-m-d H:i:s',time()))
+            ->where('start_time','<=',Carbon::now())
+            ->where('end_time','>=',Carbon::now())
             ->where('type','!=','LOWER')
             ->where(function($query) use ($store_id){
                 $query->orwherehas('store',function($query) use ($store_id){
@@ -113,7 +114,6 @@ class Activitymodel extends Basemodel {
         if(!$count_change->save()){
             return '奖品数量更改出错';
         }
-
         $datetime = time();
         $coupon_type = Coupontypemodel::where('id',$prize_id)->select(['deadline'])->first();
         for($i=0;$i<$grant_number;$i++){
@@ -141,8 +141,8 @@ class Activitymodel extends Basemodel {
         $resident = Residentmodel::where('id', $resident_id)->first();
         $store_id = $resident->store_id;
         $activity_id = Activitymodel::where('activity_type','OLDBELTNEW')
-            ->where('start_time','<=',date('Y-m-d H:i:s',time()))
-            ->where('end_time','>=',date('Y-m-d H:i:s',time()))
+            ->where('start_time','<=',Carbon::now())
+            ->where('end_time','>=',Carbon::now())
             ->where('type','!=','LOWER')
             ->where(function($query) use ($store_id){
                 $query->orwherehas('store',function($query) use ($store_id){
@@ -237,6 +237,7 @@ class Activitymodel extends Basemodel {
                 'updated_at'     => $datetime,
             ];
         }
+        Couponmodel::insert($data);
         return '发放成功';
     }
 }
