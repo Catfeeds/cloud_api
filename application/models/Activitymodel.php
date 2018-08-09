@@ -115,7 +115,7 @@ class Activitymodel extends Basemodel {
         }
 
         $datetime = time();
-        $coupon_type = Coupontypemodel::where('id',$activity_id->prize_id)->select(['deadline'])->first();
+        $coupon_type = Coupontypemodel::where('id',$prize_id)->select(['deadline'])->first();
         for($i=0;$i<$grant_number;$i++){
             $data[] =[
                 'customer_id'    => $resident->customer_id,
@@ -196,7 +196,7 @@ class Activitymodel extends Basemodel {
             return '入住时间不满足活动需求';
         }
         $datetime = time();
-        $coupon_type = Coupontypemodel::where('id',$activity_id->prize_id)->select(['deadline'])->first();
+        $coupon_type = Coupontypemodel::where('id',$prize_id)->select(['deadline'])->first();
         $count_change = Activityprizemodel::find($activity_id->prize_id);
         if($count['old']<0){
             return '您来晚了，奖品发放完了';
