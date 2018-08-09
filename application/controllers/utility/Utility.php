@@ -14,6 +14,7 @@ class Utility extends MY_Controller {
     public function __construct() {
         parent::__construct();
         $this->load->model('meterreadingmodel');
+        $this->CI = & get_instance();
     }
 
     /**
@@ -199,13 +200,84 @@ class Utility extends MY_Controller {
         if (!empty($post['building_id'])) {$where['building_id'] = intval($post['building_id']);};
         if (!empty($post['store_id'])) {$where['store_id'] = intval($post['store_id']);}
         if (!empty($post['status'])) {$where['confirmed']= intval($post['status']);}
-        if (!empty($post['type'])) {$where['type'] = $post['type'];}
-        if (!empty($post['month'])){$month = $post['month'];}
-        $filed = ['id','store_id','building_id','resident_id','room_id','type','this_reading','this_time','confirmed','year','month'];
+        if (!empty($post['month'])) {$where['month'] = intval($post['month']);}
+        if (!empty($post['year'])) {$where['year'] = intval($post['year']);}
+        if (!empty($post['type'])){$where['type'] = $post['type'];}
+        $status = [Meterreadingtransfermodel::NORMAL,Meterreadingtransfermodel::OLD_METER];
+        $filed  = ['id','store_id','building_id','resident_id','room_id','type','this_reading','this_time','confirmed','year','month'];
+        $count  =ceil(Meterreadingtransfermodel::whereIn('store_id',$store_ids)->where($where)->whereIn('status',$status)->count() / PAGINATE);
         $record = Meterreadingtransfermodel::with(['building','store','room_s'])
-                    ->whereIn('store_id',$store_ids)->where($where)
-                    ->get($filed)->groupBy('resident_id')->toArray();
-        var_dump($record);
+                ->whereIn('store_id',$store_ids)->where($where)->whereIn('status',$status)
+                ->orderBy('year','DESC')->orderBy('month','DESC')->orderBy('store_id')->orderBy('building_id')
+                ->take(PAGINATE)->skip($offset)
+                ->get($filed)->map(function ($record){
+                    if ($record->status == Meterreadingtransfermodel::OLD_METER){
+                        $last_date              = $this->lastMonth($record->month,$record->year);
+                        $last                   = Meterreadingtransfermodel::where('resident_id',$record->resident_id)->where('room_id',$record->room_id)->where($last_date)->first(['this_reading','this_time']);
+                        $record->last_reading   = $last->this_reading;
+                        $record->last_time      = $last->this_time;
+                        return $record;
+                    }else{
+                        $record = $this->lastReading($record);
+                        return json_decode($record);
+                    }
+                })->toArray();
+        $this->api_res(0,['list'=>$record,'count'=>$count]);
+    }
+
+    /**
+     * 获取上次读数
+     * 上次读数分为三类：
+     * 1.一般情况：上次读数即上个月月末读数
+     * 2.换表情况：上次读数即新表初始读数
+     * 3.月中入住：上次读数即入住时的读数
+     */
+    public function lastReading($record)
+    {
+        //月中入住
+        $new_rent   = Meterreadingtransfermodel::where('resident_id',$record->resident_id)
+            ->where('room_id',$record->room_id)
+            ->where('status',Meterreadingtransfermodel::NEW_RENT)
+            ->first(['this_reading','this_time']);
+        //换表
+        $new_meter      = Meterreadingtransfermodel::where('resident_id',$record->resident_id)
+            ->where('room_id',$record->room_id)
+            ->where('status',Meterreadingtransfermodel::NEW_METER)
+            ->first(['this_reading','this_time']);
+        //上月
+        $last_date      = $this->lastMonth($record->month,$record->year);
+        $last_reading   = Meterreadingtransfermodel::where('resident_id',$record->resident_id)->where('room_id',$record->room_id)->where($last_date)->first(['this_reading','this_time']);
+
+        if (!empty($new_rent)){
+            $record->last_reading   = $new_rent->this_reading;
+            $record->last_time      = $new_rent->this_time;
+        }elseif(!empty($new_meter)){
+            $record->last_reading   = $new_meter->this_reading;
+            $record->last_time      = $new_meter->this_time;
+        }else{
+            $record->last_reading   = $last_reading->this_reading;
+            $record->last_time      = $last_reading->this_time;
+        }
+        return $record;
+    }
+
+    /**
+     * 计算上个月的年月
+     */
+    public function lastMonth($month='',$year='')
+    {
+        if (!empty($month)&&!empty($year)){
+            if ($month == 1){
+                $month  = 12;
+                $year   = $year-1;
+            }else{
+                $month  = $month-1;
+            }
+            $date = ['month'=>$month,'year'=>$year];
+        }else{
+            $date = [];
+        }
+        return $date;
     }
 
     /**
@@ -213,22 +285,121 @@ class Utility extends MY_Controller {
      */
     public function updateNumber() {
         $this->load->model('meterreadingtransfermodel');
-        $post = $this->input->post(null, true);
-        if (isset($post['id'])) {
-            $id      = intval($post['id']);
-            $reading = Meterreadingtransfermodel::find($id);
-            if (isset($post['this_reading'])) {
-                $this_reading          = floatval($post['this_reading']);
-                $reading->this_reading = $this_reading;
-            }
-            if (isset($post['last_reading'])) {
-                $last_reading          = floatval($post['last_reading']);
-                $reading->last_reading = $last_reading;
-            }
-            $reading->save();
-            $this->api_res(0);
-        } else {
-            $this->api_res(1002);
+        $this->load->model('logofwaterelectricmodel');
+        $post   = $this->input->post(null, true);
+        $field  = ['this_reading','image','reason'];
+        if (!$this->validationText($this->validateUpdatenumber())) {
+            $this->api_res(1002, ['error' => $this->form_first_error($field)]);
+            return;
         }
+        //修改表读数
+        $id                     = $post['id'];
+        $reading                = Meterreadingtransfermodel::find($id);
+        $original_record        = $reading->this_reading;
+        $this_reading           = floatval($post['this_reading']);
+        $reading->this_reading  = $this_reading;
+        $reading->image         = $this->splitAliossUrl(($post['image']));
+        if($reading->save()){
+            //记录修改日志
+            $arr = [
+                'transfer_id'       => $post['id'],
+                'employee_id'       => $this->employee->id,
+                'original_record'   => $original_record,
+                'now_record'        => $this_reading,
+                'reason'            => $post['reason'],
+                'created_at'        => date('Y-m-d H:i:s',time()),
+                'updated_at'        => date('Y-m-d H:i:s',time()),
+            ];
+            Logofwaterelectricmodel::insert($arr);
+            $this->api_res(0);
+        }else{
+            $this->api_res(1009);
+        }
+    }
+
+    private function validateUpdatenumber() {
+        return array(
+            array(
+                'field' => 'this_reading',
+                'label' => '本次读数',
+                'rules' => 'required|trim',
+            ),
+            array(
+                'field' => 'image',
+                'label' => '图片路径',
+                'rules' => 'required|trim',
+            ),
+            array(
+                'field' => 'reason',
+                'label' => '修改原因',
+                'rules' => 'required|trim',
+            ),
+        );
+    }
+
+    /**
+     * 换表
+     */
+    public function changeMeter()
+    {
+        $this->load->model('meterreadingtransfermodel');
+        $this->load->model('logofwaterelectricmodel');
+        $post   = $this->input->post(null, true);
+        $field  = ['old_meter_reading','old_meter_image','new_meter_reading','new_meter_image','time'];
+        if (!$this->validationText($this->validateChange())) {
+            $this->api_res(1002, ['error' => $this->form_first_error($field)]);
+            return;
+        }
+        $id         = intval($post['id']);
+        $transfer   = Meterreadingtransfermodel::find($id);
+        $change     = new Meterreadingtransfermodel();
+        $arr        = [
+            'store_id'      => $transfer->store_id,
+            'building_id'   => $transfer->building_id,
+            'serial_number' => $transfer->serial_number,
+            'room_id'       => $transfer->room_id,
+            'resident_id'   => $transfer->resident_id,
+            'year'          => $transfer->year,
+            'month'         => $transfer->month,
+            'type'          => $transfer->type,
+            'this_reading'  => $post['old_meter_reading'],
+            'this_time'     => $post['time'],
+            'status'        => Meterreadingtransfermodel::OLD_METER,
+            'image'         => $post['old_meter_image'],
+            'created_at'    => date('Y-m-d H:i:s',time()),
+            'updated_at'    => date('Y-m-d H:i:s',time()),
+        ];
+        $change->fill($arr);
+        $change->save();
+    }
+
+    private function validateChange() {
+        return array(
+            array(
+                'field' => 'old_meter_reading',
+                'label' => '旧表读数',
+                'rules' => 'required|trim',
+            ),
+            array(
+                'field' => 'old_meter_image',
+                'label' => '旧表图片',
+                'rules' => 'required|trim',
+            ),
+            array(
+                'field' => 'new_meter_reading',
+                'label' => '新表读数',
+                'rules' => 'required|trim',
+            ),
+            array(
+                'field' => 'new_meter_image',
+                'label' => '新表图片',
+                'rules' => 'required|trim',
+            ),
+            array(
+                'field' => 'time',
+                'label' => '换表时间',
+                'rules' => 'required|trim',
+            ),
+        );
     }
 }
