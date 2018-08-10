@@ -7,7 +7,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
  * Author:      hfq<1326432154@qq.com>
  * Date:        2018/7/31
  * Time:        9:25
- * Describe:
+ * Describe:    水电读数上传及账单生成逻辑
  */
 class Meter extends MY_Controller
 {
