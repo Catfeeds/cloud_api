@@ -1,6 +1,6 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
-
+use Carbon\Carbon;
 /**
  * Author:      hfq<1326432154@qq.com>
  * Date:        2018/5/31
@@ -252,7 +252,7 @@ class Activity extends MY_Controller
         $this->load->model('activityprizemodel');
         $store = Storeactivitymodel::where(function ($query) {
             $query->orWhereHas('activity', function ($query) {
-                $query->where('activity_type', 'CHECKIN')->where('type','!=','LOWER')->where('end_time', '>=', date('Y-m-d H:i:s',time()));
+                $query->where('activity_type', 'CHECKIN')->where('type','!=','LOWER')->where('end_time', '>=',Carbon::now());
             });
         })->get(['store_id'])->toArray();
         $stores = [];
@@ -311,7 +311,7 @@ class Activity extends MY_Controller
         $this->load->model('activityprizemodel');
         $store = Storeactivitymodel::where(function ($query) {
             $query->orWhereHas('activity', function ($query) {
-                $query->where('activity_type', 'OLDBELTNEW')->where('type','!=','LOWER')->where('end_time','>=',date('Y-m-d H:i:s',time()));
+                $query->where('activity_type', 'OLDBELTNEW')->where('type','!=','LOWER')->where('end_time','>=',Carbon::now());
             });
         })->get(['store_id'])->toArray();
         $stores = [];
