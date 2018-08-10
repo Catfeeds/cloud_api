@@ -183,6 +183,7 @@ class Utility extends MY_Controller {
         $writer->save('php://output');
     }
 
+
     /**
      * 水电记录
      */
@@ -216,6 +217,7 @@ class Utility extends MY_Controller {
                         $last                   = Meterreadingtransfermodel::where('resident_id',$record->resident_id)->where('room_id',$record->room_id)->where($last_date)->first(['this_reading','this_time']);
                         $record->last_reading   = $last->this_reading;
                         $record->last_time      = $last->this_time;
+                        $record->image          = $this->fullAliossUrl($record->image);
                         return $record;
                     }else{
                         $record = $this->lastReading($record);
@@ -251,16 +253,20 @@ class Utility extends MY_Controller {
         if (!empty($new_rent)){
             $record->last_reading   = $new_rent->this_reading;
             $record->last_time      = $new_rent->this_time;
+            $record->image          = $this->fullAliossUrl($new_rent->image);
         }elseif(!empty($new_meter)){
             $record->last_reading   = $new_meter->this_reading;
             $record->last_time      = $new_meter->this_time;
+            $record->image          = $this->fullAliossUrl($new_meter->image);
         }else{
             if (!empty($last_reading)){
                 $record->last_reading   = $last_reading->this_reading;
                 $record->last_time      = $last_reading->this_time;
+                $record->image          = $this->fullAliossUrl($last_reading->image);
             }else{
                 $record->last_reading   = '';
                 $record->last_time      = '';
+                $record->image          = $this->fullAliossUrl($record->image);
             }
         }
         return $record;
@@ -308,7 +314,7 @@ class Utility extends MY_Controller {
             //记录修改日志
             $log = new Logofwaterelectricmodel();
             $arr = [
-                'transfer_id'       => $post['id'],
+                'transfer_id'       => intval($post['id']),
                 'employee_id'       => $this->employee->id,
                 'original_record'   => $original_record,
                 'now_record'        => $this_reading,
@@ -367,16 +373,99 @@ class Utility extends MY_Controller {
             'year'          => $transfer->year,
             'month'         => $transfer->month,
             'type'          => $transfer->type,
+            'weight'        => $transfer->weight,
             'this_reading'  => $post['old_meter_reading'],
-            'this_time'     => $post['time'],
+            'this_time'     => date('Y-m-d H:i:s',strtotime($post['time'])),
             'status'        => Meterreadingtransfermodel::OLD_METER,
             'image'         => $post['old_meter_image'],
-            'created_at'    => date('Y-m-d H:i:s',time()),
-            'updated_at'    => date('Y-m-d H:i:s',time()),
         ];
         $change->fill($arr);
-        $change->save();
+        if($change->save()){
+            $this->addUtilityOrder($transfer,$post['old_meter_reading']);
+            $change_new         = new Meterreadingtransfermodel();
+            $new                = [
+                'store_id'      => $transfer->store_id,
+                'building_id'   => $transfer->building_id,
+                'room_id'       => $transfer->room_id,
+                'resident_id'   => $transfer->resident_id,
+                'year'          => $transfer->year,
+                'month'         => $transfer->month,
+                'type'          => $transfer->type,
+                'weight'        => $transfer->weight,
+                'this_reading'  => $post['new_meter_reading'],
+                'this_time'     => date('Y-m-d H:i:s',strtotime($post['time'])),
+                'status'        => Meterreadingtransfermodel::NEW_METER,
+                'image'         => $post['new_meter_image'],
+            ];
+            $change_new->fill($new);
+            $change_new->save();
+        }
+        $this->api_res(0);
 
+    }
+
+    /**
+     * 生成水电账单
+     */
+    private function addUtilityOrder($transfer,$this_reading){
+        $this->load->model('ordermodel');
+        $this->load->model('storemodel');
+        $this->load->model('residentmodel');
+        var_dump(1);
+        if ($transfer->resident_id==0){
+            return null;
+        }
+        switch ($transfer->type) {
+            case Meterreadingtransfermodel::TYPE_ELECTRIC:
+                $type = Ordermodel::PAYTYPE_ELECTRIC;
+                $price = $transfer->store->electricity_price;
+                break;
+            case Meterreadingtransfermodel::TYPE_WATER_H:
+                $type  = Ordermodel::PAYTYPE_WATER_HOT;
+                $price = $transfer->store->hot_water_price;
+                break;
+            case Meterreadingtransfermodel::TYPE_WATER_C:
+                $type  = Ordermodel::PAYTYPE_WATER;
+                $price = $transfer->store->water_price;
+                break;
+            default:
+                throw new Exception('未识别的账单类型！');
+                break;
+        }
+
+        $money = ($this_reading - $transfer->this_reading) * $price;
+        var_dump($money);
+        if (0.01 > $money) {
+            return null;
+        }
+
+        //分进角，比如 1.01 元，计为 1.1 元
+        $money = ceil($money * $transfer->weight / 10) / 10;
+        $this->load->helper('string');
+        $order = new Ordermodel();
+        $arr  =[
+            'number'       => date('YmdHis') . random_string('numeric', 10),
+            'type'         => $type,
+            'year'         => $transfer->year,
+            'month'        => $transfer->month,
+            'money'        => $money,
+            'paid'         => $money,
+            'store_id'     => $transfer->store_id,
+            'resident_id'  => $transfer->resident_id,
+            'room_id'      => $transfer->room_id,
+            'employee_id'  => $this->employee->id,
+            'customer_id'  => $transfer->resident->customer_id,
+            'uxid'         => $transfer->resident->uxid,
+            'status'       => Ordermodel::STATE_GENERATED,
+            'deal'         => Ordermodel::DEAL_UNDONE,
+            'pay_status'   => Ordermodel::PAYSTATE_RENEWALS,
+        ];
+        $order->fill($arr);
+        if ($order->save()){
+            return true;
+        }else{
+            return false;
+        }
     }
 
     private function validateChange() {
