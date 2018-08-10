@@ -7,7 +7,8 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
  * Author:      hfq<1326432154@qq.com>
  * Date:        2018/6/28
  * Time:        14:21
- * Describe:    财务-水电费
+ * Describe:    财务-水电
+ * 包括展示水电记录,修改读数及换表逻辑
  */
 
 class Utility extends MY_Controller {
@@ -401,7 +402,6 @@ class Utility extends MY_Controller {
             $change_new->save();
         }
         $this->api_res(0);
-
     }
 
     /**
@@ -411,7 +411,6 @@ class Utility extends MY_Controller {
         $this->load->model('ordermodel');
         $this->load->model('storemodel');
         $this->load->model('residentmodel');
-        var_dump(1);
         if ($transfer->resident_id==0){
             return null;
         }
