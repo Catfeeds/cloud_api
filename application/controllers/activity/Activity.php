@@ -90,8 +90,6 @@ class Activity extends MY_Controller
         foreach ($activity as $key => $coupon) {
             $prize = Activityprizemodel::where('id', $coupon['prize_id'])->select(['prize'])->first();
             $p = unserialize($prize->prize);
-            $p['old']= isset($p['old'])?$p['old']:'';
-            $old_prize = Coupontypemodel::where('id', $p['old'])->get(['name'])->toArray();
             $couponarr = Coupontypemodel::whereIn('id', $p)->get(['name'])->toArray();
             $str = '';
             foreach ($couponarr as $value) {
@@ -114,7 +112,6 @@ class Activity extends MY_Controller
             $data[$key]['participate'] = $participate;
             $data[$key]['Lottery_number'] = $Lottery_number;
             $data[$key]['lucky_draw'] = $lucky_draw;
-            $data[$key]['old_prize'] =$old_prize;
             if ($coupon['type'] == 'LOWER') {
                 $data[$key]['status'] = 'Lowerframe';
             } elseif (time() < strtotime($coupon['start_time'])) {
@@ -227,7 +224,7 @@ class Activity extends MY_Controller
         $activity['prize_id'] = $prize_id;
         $activity['share_img'] = $this->splitAliossUrl($post['images']);
         $activity['share_des'] = $post['share_des'];
-        $activity['share_title'] = $post['share_title'];
+            $activity['share_title'] = $post['share_title'];
         $activity['activity_type'] = 'SCRATCH';
         $insertId = Activitymodel::insertGetId($activity);
         $store_id = explode(',', $post['store_id']);
@@ -250,21 +247,23 @@ class Activity extends MY_Controller
         $post = $this->input->post(null, true);
         $this->load->model('storeactivitymodel');
         $this->load->model('activityprizemodel');
-        $store = Storeactivitymodel::where(function ($query) {
+        $store_ids = Storeactivitymodel::where(function ($query) {
             $query->orWhereHas('activity', function ($query) {
                 $query->where('activity_type', 'CHECKIN')->where('type','!=','LOWER')->where('end_time', '>=',Carbon::now());
             });
         })->get(['store_id'])->toArray();
-        $stores = [];
-        foreach ($store as $value) {
-            $stores[] = $value['store_id'];
-        }
         $store_id = explode(',', $post['store_id']);
-        if (array_intersect($stores, $store_id)) {
-            $this->api_res(11103);
-            return false;
+        if( 0 != count($store_ids)) {
+            $stores = [];
+            foreach ($store_ids as $value) {
+                $stores[] = $value['store_id'];
+            }
+            if (array_intersect($stores, $store_id)) {
+                $this->api_res(11103);
+                return false;
+            }
         }
-        $config = $this->newValidation();
+        $config = $this->ValidationCheckin();
         if (!$this->validationText($config)) {
             $fieldarr = ['name', 'start_time', 'end_time', 'store_id', 'one_prize', 'two_prize', 'three_prize',
                 'one_count', 'two_count', 'three_count', 'one_grant', 'two_grant', 'three_grant',
@@ -309,37 +308,32 @@ class Activity extends MY_Controller
         $post = $this->input->post(null, true);
         $this->load->model('storeactivitymodel');
         $this->load->model('activityprizemodel');
-        $store = Storeactivitymodel::where(function ($query) {
+        $store_ids = Storeactivitymodel::where(function ($query) {
             $query->orWhereHas('activity', function ($query) {
                 $query->where('activity_type', 'OLDBELTNEW')->where('type','!=','LOWER')->where('end_time','>=',Carbon::now());
             });
         })->get(['store_id'])->toArray();
-        $stores = [];
-        foreach ($store as $value) {
-            $stores[] = $value['store_id'];
-        }
         $store_id = explode(',', $post['store_id']);
-        if (array_intersect($stores, $store_id)) {
-            $this->api_res(11103);
-            return false;
+        if( 0 != count($store_ids)) {
+            $stores = [];
+            foreach ($store_ids as $value) {
+                $stores[] = $value['store_id'];
+            }
+            if (array_intersect($stores, $store_id)) {
+                $this->api_res(11103);
+                return false;
+            }
         }
-        $config = $this->newValidation();
+        $config = $this->ValidationOldbelt();
         if (!$this->validationText($config)) {
-            $fieldarr = ['name', 'start_time', 'end_time', 'store_id', 'one_prize', 'two_prize', 'three_prize',
-                'one_count', 'two_count', 'three_count', 'one_grant', 'two_grant', 'three_grant',
+            $fieldarr = ['name', 'start_time', 'end_time', 'store_id', 'old_prize', 'old_count', 'old_grant'
             ];
             $this->api_res(1002, ['error' => $this->form_first_error($fieldarr)]);
             return false;
         }
-
-        $arr = [$post['one_prize'], $post['two_prize'], $post['three_prize']];
-        if (count($arr) != count(array_unique($arr))) {
-            $this->api_res(11101);
-            return false;
-        }
-        $prize['prize'] = serialize(['old' => $post['old_prize'], 'one' => $post['one_prize'], 'two' => $post['two_prize'], 'three' => $post['three_prize']]);
-        $prize['count'] = serialize(['old' => $post['old_count'], 'one' => $post['one_count'], 'two' => $post['two_count'], 'three' => $post['three_count']]);
-        $prize['grant'] = serialize(['old' => $post['old_grant'], 'one' => $post['one_grant'], 'two' => $post['two_grant'], 'three' => $post['three_grant']]);
+        $prize['prize'] = serialize(['old' => $post['old_prize']]);
+        $prize['count'] = serialize(['old' => $post['old_count']]);
+        $prize['grant'] = serialize(['old' => $post['old_grant']]);
         $prize_id = Activityprizemodel::insertGetId($prize);
         $activity['coupon_info'] = $post['name'];
         $activity['description'] = $post['description'];
@@ -349,8 +343,6 @@ class Activity extends MY_Controller
         $activity['prize_id'] = $prize_id;
         $activity['activity_type'] = 'OLDBELTNEW';
         $insertId = Activitymodel::insertGetId($activity);
-        $store_id = explode(',', $post['store_id']);
-
         foreach ($store_id as $value) {
             $data = ['store_id' => $value, 'activity_id' => $insertId];
             $store = Storeactivitymodel::insert($data);
@@ -524,7 +516,7 @@ class Activity extends MY_Controller
         return $config;
     }
 
-    public function newValidation()
+    public function ValidationCheckin()
     {
         $this->load->library('form_validation');
         $config = array(
@@ -576,6 +568,50 @@ class Activity extends MY_Controller
             array(
                 'field' => 'three_grant',
                 'label' => '一年奖品发放',
+                'rules' => 'trim|required',
+            ),
+            array(
+
+                'field' => 'store_id',
+                'label' => '门店',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'start_time',
+                'label' => '开始时间',
+                'rules' => 'trim|required|max_length[255]',
+            ),
+            array(
+                'field' => 'end_time',
+                'label' => '结束时间',
+                'rules' => 'trim|required',
+            ),
+        );
+        return $config;
+    }
+
+    public function ValidationOldbelt()
+    {
+        $this->load->library('form_validation');
+        $config = array(
+            array(
+                'field' => 'name',
+                'label' => '活动名称',
+                'rules' => 'trim|required|max_length[255]',
+            ),
+            array(
+                'field' => 'old_prize',
+                'label' => '奖品',
+                'rules' => 'trim|required|max_length[255]',
+            ),
+            array(
+                'field' => 'old_count',
+                'label' => '数量',
+                'rules' => 'trim|required',
+            ),
+            array(
+                'field' => 'old_grant',
+                'label' => '奖品发放',
                 'rules' => 'trim|required',
             ),
             array(
