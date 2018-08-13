@@ -232,8 +232,7 @@ class Utility extends MY_Controller {
                     }elseif ($record->status == Meterreadingtransfermodel::NEW_METER){
                         return $record;
                     }elseif ($record->status == Meterreadingtransfermodel::NORMAL){
-                        $record = $this->lastReading($record);
-                        var_dump($record->toArray());die();
+                        $record = $this->lastReading($record);               
                         return json_decode($record);
                     }
                 })->toArray();
@@ -397,7 +396,7 @@ class Utility extends MY_Controller {
             'this_reading'  => $post['old_meter_reading'],
             'this_time'     => date('Y-m-d H:i:s',strtotime($post['time'])),
             'status'        => Meterreadingtransfermodel::OLD_METER,
-            'image'         => $post['old_meter_image'],
+            'image'         => $this->splitAliossUrl($post['old_meter_image']),
         ];
         $change->fill($arr);
         if($change->save()){
@@ -415,7 +414,7 @@ class Utility extends MY_Controller {
                 'this_reading'  => $post['new_meter_reading'],
                 'this_time'     => date('Y-m-d H:i:s',strtotime($post['time'])),
                 'status'        => Meterreadingtransfermodel::NEW_METER,
-                'image'         => $post['new_meter_image'],
+                'image'         => $this->splitAliossUrl($post['new_meter_image']),
             ];
             $change_new->fill($new);
             $change_new->save();
