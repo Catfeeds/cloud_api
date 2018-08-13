@@ -64,12 +64,15 @@ class Resident extends MY_Controller
      */
     public function checkIn()
     {
-        $field  = [
+        $field          = [
             'room_id','begin_time','people_count','contract_time','discount_id','first_pay_money',
             'deposit_money','deposit_month','tmp_deposit','rent_type','pay_frequency',
             'name','phone','card_type','card_number','card_one','card_two','card_three','real_property_costs','real_rent_money',
             'name_two','phone_two','card_type_two','card_number_two','alter_phone','alternative','address',
+            /*入住上传水电读数字段*/'electric_reading','coldwater_reading','hotwater_reading',
+            'electric_image','coldwater_image','hotwater_image'
         ];
+
         if(!$this->validationText($this->validateCheckIn())){
             $this->api_res(1002,['error'=>$this->form_first_error($field)]);
             return;
@@ -154,7 +157,24 @@ class Resident extends MY_Controller
 //            $data=$resident->transform($resident);
             //var_dump($data);
 
-            $this->api_res(0,['resident_id'=>$resident->id]);
+            $time = $post['contract_time'];
+            $res = '';
+            if($post['is_participate'] = 'join') {
+                $this->load->model('activitymodel');
+                $this->load->model('storeactivitymodel');
+                $this->load->model('activityprizemodel');
+                $this->load->model('couponmodel');
+                $this->load->model('coupontypemodel');
+                $this->load->model('Customermodel');
+                $activity = new Activitymodel();
+                if (empty($post['old_phone'])) {
+                    $res = $activity->sendCheckIn($resident->id, $time);
+                } else {
+                    $res = $activity->sendOldbeltNew($resident->id, $time, $post['old_phone']);
+                }
+            }
+            $this->waterAndElectric($post,$resident);
+            $this->api_res(0,['resident_id'=>$resident->id,'res'=>$res]);
         }catch (Exception $e) {
             DB::rollBack();
             throw $e;
@@ -429,27 +449,50 @@ class Resident extends MY_Controller
                     'required' => '请上传%s',
                 ),
             ),
-            /*array(
-                'field' => 'name_two',
-                'label' => '住户名称',
+            //水电参数'electric_reading','coldwater_reading','hotwater_reading',
+            //'electric_image','coldwater_image','hotwater_image'
+            array(
+                'field' => 'electric_reading',
+                'label' => '电表读数',
+                'rules' => 'required|trim',
+                'errors' => array(
+                    'required' => '请上传%s',
+                ),
+            ),
+            array(
+                'field' => 'coldwater_reading',
+                'label' => '冷水表读数',
+                'rules' => 'required|trim',
+                'errors' => array(
+                    'required' => '请上传%s',
+                ),
+            ),
+            array(
+                'field' => 'hotwater_reading',
+                'label' => '热水表读数',
                 'rules' => 'trim',
             ),
             array(
-                'field' => 'phone_two',
-                'label' => '手机号',
-                'rules' => 'trim|numeric|max_length[13]',
+                'field' => 'electric_image',
+                'label' => '电表照片',
+                'rules' => 'required|trim',
+                'errors' => array(
+                    'required' => '请上传%s',
+                ),
             ),
             array(
-                'field' => 'card_type_two',
-                'label' => '证件类型',
-                'rules' => 'trim|in_list[0,1,2,6,A,B,C,E,F,P,BL,OTHER]',
+                'field' => 'coldwater_image',
+                'label' => '冷水表照片',
+                'rules' => 'required|trim',
+                'errors' => array(
+                    'required' => '请上传%s',
+                ),
             ),
             array(
-                'field' => 'card_number_two',
-                'label' => '证件号码',
+                'field' => 'hotwater_image',
+                'label' => '热水表照片',
                 'rules' => 'trim',
-            ),*/
-
+            ),
         );
 
     }
@@ -1495,6 +1538,99 @@ class Resident extends MY_Controller
            return false;
         }
 
+        return true;
+    }
+
+    public function waterAndElectric($post,$resident)
+    {
+        $this->load->model('Meterreadingtransfermodel');
+        $this->load->model('roomunionmodel');
+        $this->load->model('smartdevicemodel');
+        $year           = date('Y',strtotime(time()));
+        $month          = date('m',strtotime(time()));
+        if ($month      == 12){
+            $month      = 1;
+            $year       = $year+1;
+        }else{
+            $month      = $month+1;
+        }
+        $roomunion      = Roomunionmodel::where('id',$post['room_id'])->first(['building_id','store_id']);
+        $building_id    = $roomunion->building_id;
+        $store_id       = $roomunion->store_id;
+        $cold_water     = Smartdevicemodel::where('room_id',$post['room_id'])->where('type',Meterreadingtransfermodel::TYPE_WATER_C)->first(['serial_number']);
+        $hot_water      = Smartdevicemodel::where('room_id',$post['room_id'])->where('type',Meterreadingtransfermodel::TYPE_WATER_H)->first(['serial_number']);
+        $electric       = Smartdevicemodel::where('room_id',$post['room_id'])->where('type',Meterreadingtransfermodel::TYPE_ELECTRIC)->first(['serial_number']);
+        if (empty($cold_water)){
+            $cold_water_number  = '';
+        }else{
+            $cold_water_number  =$cold_water->serial_number;
+        }
+        if (empty($hot_water)){
+            $hot_water_number  = '';
+        }else{
+            $hot_water_number  =$hot_water->serial_number;
+        }
+        if (empty($electric)){
+            $electric_number  = '';
+        }else{
+            $electric_number  =$electric->serial_number;
+        }
+        //上传冷水表读数
+        $coldwater      = new Meterreadingtransfermodel();
+        $arr_coldwater  = [
+            'store_id'      => $store_id,
+            'building_id'   => $building_id,
+            'serial_number' => $cold_water_number,
+            'room_id'       => $post['room_id'],
+            'resident_id'   => $resident->id,
+            'year'          => $year,
+            'month'         => $month,
+            'type'          => Meterreadingtransfermodel::TYPE_WATER_C,
+            'this_reading'  => $post['coldwater_reading'],
+            'image'         => $post['coldwater_image'],
+            'this_time'     => date('Y-m-d H:i:s',strtotime(time())),
+            'status'        => Meterreadingtransfermodel::NEW_RENT,
+        ];
+        $coldwater->fill($arr_coldwater);
+        $coldwater->save();
+        //上传电表读数
+        $electric       = new Meterreadingtransfermodel();
+        $arr_electric   = [
+            'store_id'      => $store_id,
+            'building_id'   => $building_id,
+            'serial_number' => $electric_number,
+            'room_id'       => $post['room_id'],
+            'resident_id'   => $resident->id,
+            'year'          => $year,
+            'month'         => $month,
+            'type'          => Meterreadingtransfermodel::TYPE_ELECTRIC,
+            'this_reading'  => $post['coldwater_reading'],
+            'image'         => $post['coldwater_image'],
+            'this_time'     => date('Y-m-d H:i:s',strtotime(time())),
+            'status'        => Meterreadingtransfermodel::NEW_RENT,
+        ];
+        $electric->fill($arr_electric);
+        $electric->save();
+        //上传热水表读数
+        if (isset($post['hotwater_reading'])&&!empty($post['hotwater_reading'])){
+            $hotwater       = new Meterreadingtransfermodel();
+            $arr_hotwater   =[
+                'store_id'      => $store_id,
+                'building_id'   => $building_id,
+                'serial_number' => $hot_water_number,
+                'room_id'       => $post['room_id'],
+                'resident_id'   => $resident->id,
+                'year'          => $year,
+                'month'         => $month,
+                'type'          => Meterreadingtransfermodel::TYPE_WATER_H,
+                'this_reading'  => $post['coldwater_reading'],
+                'image'         => $post['coldwater_image'],
+                'this_time'     => date('Y-m-d H:i:s',strtotime(time())),
+                'status'        => Meterreadingtransfermodel::NEW_RENT,
+            ];
+            $hotwater->fill($arr_hotwater);
+            $hotwater->save();
+        }
         return true;
     }
 
