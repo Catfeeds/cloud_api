@@ -44,7 +44,6 @@ class MY_Controller extends CI_Controller {
                 $this->output->set_status_header(500);
                 break;
         }
-        
 
         $msg = $this->config->item('api_code')[$code];
         if ($data) {
