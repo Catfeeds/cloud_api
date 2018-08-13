@@ -324,16 +324,16 @@ class Activity extends MY_Controller
                 return false;
             }
         }
-        $config = $this->ValidationOldbelt();
+        $config = $this->ValidationCheckin();
         if (!$this->validationText($config)) {
             $fieldarr = ['name', 'start_time', 'end_time', 'store_id', 'old_prize', 'old_count', 'old_grant'
             ];
             $this->api_res(1002, ['error' => $this->form_first_error($fieldarr)]);
             return false;
         }
-        $prize['prize'] = serialize(['old' => $post['old_prize']]);
-        $prize['count'] = serialize(['old' => $post['old_count']]);
-        $prize['grant'] = serialize(['old' => $post['old_grant']]);
+        $prize['prize'] = serialize(['one' => $post['one_prize'], 'two' => $post['two_prize'], 'three' => $post['three_prize']]);
+        $prize['count'] = serialize(['one' => $post['one_count'], 'two' => $post['two_count'], 'three' => $post['three_count']]);
+        $prize['grant'] = serialize(['one' => $post['one_grant'], 'two' => $post['two_grant'], 'three' => $post['three_grant']]);
         $prize_id = Activityprizemodel::insertGetId($prize);
         $activity['coupon_info'] = $post['name'];
         $activity['description'] = $post['description'];
@@ -590,47 +590,5 @@ class Activity extends MY_Controller
         return $config;
     }
 
-    public function ValidationOldbelt()
-    {
-        $this->load->library('form_validation');
-        $config = array(
-            array(
-                'field' => 'name',
-                'label' => '活动名称',
-                'rules' => 'trim|required|max_length[255]',
-            ),
-            array(
-                'field' => 'old_prize',
-                'label' => '奖品',
-                'rules' => 'trim|required|max_length[255]',
-            ),
-            array(
-                'field' => 'old_count',
-                'label' => '数量',
-                'rules' => 'trim|required',
-            ),
-            array(
-                'field' => 'old_grant',
-                'label' => '奖品发放',
-                'rules' => 'trim|required',
-            ),
-            array(
 
-                'field' => 'store_id',
-                'label' => '门店',
-                'rules' => 'trim|required',
-            ),
-            array(
-                'field' => 'start_time',
-                'label' => '开始时间',
-                'rules' => 'trim|required|max_length[255]',
-            ),
-            array(
-                'field' => 'end_time',
-                'label' => '结束时间',
-                'rules' => 'trim|required',
-            ),
-        );
-        return $config;
-    }
 }

@@ -667,7 +667,7 @@ class Order extends MY_Controller {
            if (empty($phone)) {
                $res = $activity->sendCheckIn($resident_id,$order->month);
            } else {
-               $res = $activity->sendOldbeltNew($phone);
+               $res = $activity->sendOldbeltNew($phone,$order->month);
            }
        }
        return $res;
