@@ -153,23 +153,8 @@ class Resident extends MY_Controller
 //            $this->load->model('contractmodel');
 //            $data=$resident->transform($resident);
             //var_dump($data);
-            $time = $post['contract_time'];
-            $res = '';
-            if($post['is_participate'] = 'join') {
-                $this->load->model('activitymodel');
-                $this->load->model('storeactivitymodel');
-                $this->load->model('activityprizemodel');
-                $this->load->model('couponmodel');
-                $this->load->model('coupontypemodel');
-                $this->load->model('Customermodel');
-                $activity = new Activitymodel();
-                if (empty($post['old_phone'])) {
-                    $res = $activity->sendCheckIn($resident->id, $time);
-                } else {
-                    $res = $activity->sendOldbeltNew($resident->id, $time, $post['old_phone']);
-                }
-            }
-            $this->api_res(0,['resident_id'=>$resident->id,'res'=>$res]);
+
+            $this->api_res(0,['resident_id'=>$resident->id]);
         }catch (Exception $e) {
             DB::rollBack();
             throw $e;

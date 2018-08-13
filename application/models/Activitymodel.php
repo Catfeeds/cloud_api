@@ -137,9 +137,12 @@ class Activitymodel extends Basemodel {
     /*
      * 老带新优惠卷
      * */
-    public function sendOldbeltNew($resident_id , $time ,$old_phone) {
-        $resident = Residentmodel::where('id', $resident_id)->first();
-        $store_id = $resident->store_id;
+    public function sendOldbeltNew($old_phone) {
+        $old_id = Residentmodel::where('phone',$old_phone)->select()->first();
+        if(!$old_id){
+            return '没有查询到该老用户';
+        }
+        $store_id = $old_id->store_id;
         $activity_id = Activitymodel::where('activity_type','OLDBELTNEW')
             ->where('start_time','<=',Carbon::now())
             ->where('end_time','>=',Carbon::now())
@@ -152,92 +155,37 @@ class Activitymodel extends Basemodel {
         if(!$activity_id){
             return '没有查询到该活动';
         }
-        switch ($time >= 3 ? ($time >= 6 ? ($time >= 12 ? 4 : 3) : 2) : 1) {
-            case  4:
-                $time = 'A_year';
-                break;
-            case  3:
-                $time = 'Half_A_year';
-                break;
-            case  2:
-                $time = 'Three_months';
-                break;
-            case  1:
-                $time = 'under_time';
-                break;
-        }
+
         $ac_prize = Activityprizemodel::where('id',$activity_id->prize_id)->select(['prize','count','grant'])->first();
         $prize = unserialize($ac_prize->prize);
         $count = unserialize($ac_prize->count);
         $grant = unserialize($ac_prize->grant);
-        $prize_new = [$prize['one'],$prize['two'],$prize['three']];
-        $coupon_new = Couponmodel::where('customer_id',$resident->customer_id)->whereIn('coupon_type_id',$prize_new)->where('activity_id',$activity_id->id)->count();
-        $old_id = Customermodel::where('phone',$old_phone)->select(['id'])->first();
-        if(!$old_id){
-            return '没有查询到该老用户';
-        }
-        if($coupon_new>=1 ){
-            return '用户已从该活动领取过同类奖品';
-        }
         $count['old'] = $count['old'] - $grant['old'];
-        if($time=='Three_months'){
-            $prize_id = $prize['one'];
-            $count['one'] = $count['one'] - $grant['one'];
-            $grant_number = $grant['one'];
-        }elseif($time=='Half_A_year'){
-            $prize_id = $prize['two'];
-            $count['two'] = $count['two'] - $grant['two'];
-            $grant_number = $grant['two'];
-        }elseif($time=='A_year'){
-            $prize_id = $prize['three'];
-            $count['three'] = $count['three'] - $grant['three'];
-            $grant_number = $grant['three'];
-        }elseif($time == 'under_time'){
-            return '入住时间不满足活动需求';
-        }
         $datetime = time();
-        $coupon_type = Coupontypemodel::where('id',$prize_id)->select(['deadline'])->first();
+        $coupon_type = Coupontypemodel::where('id',$prize['old'])->select(['deadline'])->first();
         $count_change = Activityprizemodel::find($activity_id->prize_id);
         if($count['old']<0){
             return '您来晚了，奖品发放完了';
         }else{
-            $old =[
-                'customer_id'    => $old_id->id,
+            for($i=0;$i<$grant['old'];$i++){
+            $old[] =[
+                'customer_id'    => $old_id->customer_id,
+                'resident_id'    => $old_id->id,
                 'activity_id'    => $activity_id->id,
                 'coupon_type_id' => $prize['old'],
-                'store_ids'       => $store_id,
+                'store_ids'      => $store_id,
                 'status'         => 'UNUSED',
                 'deadline'       => $coupon_type->deadline,
                 'created_at'     => $datetime,
                 'updated_at'     => $datetime,
-            ];
+             ];
+            }
             Couponmodel::insert($old);
             $count_change ->count=serialize($count);
             if(!$count_change->save()){
                 return '奖品数量更改出错';
             }
         }
-        if(($count['one']<0) || ($count['two']<0) || ($count['three']<0) ){
-            return '您来晚了，奖品发放完了';
-        }
-        $count_change ->count=serialize($count);
-        if(!$count_change->save()){
-            return '奖品数量更改出错';
-        }
-        for($i=0;$i<$grant_number;$i++){
-            $data[] =[
-                'customer_id'    => $resident->customer_id,
-                'resident_id'       => $resident->id,
-                'activity_id'    => $activity_id->id,
-                'coupon_type_id' => $prize_id,
-                'store_ids'       => $store_id,
-                'status'         => 'UNUSED',
-                'deadline'       => $coupon_type->deadline,
-                'created_at'     => $datetime,
-                'updated_at'     => $datetime,
-            ];
-        }
-        Couponmodel::insert($data);
         return '发放成功';
     }
 }

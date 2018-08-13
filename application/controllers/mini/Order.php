@@ -106,7 +106,6 @@ class Order extends MY_Controller {
             'discount'       => $this->couponmodel->bindOrdersAndCalcDiscount($resident, $orders, $coupons),
         );
         $data['amount_real'] = $data['amount_orginal'] - $data['discount'];
-
         $this->api_res(0, [$data]);
     }
 
@@ -199,11 +198,14 @@ class Order extends MY_Controller {
         $room_id     = $input['room_id'];
         //$store_pay_id   = $input[];
         $order_ids = $input['order_ids'];
+        $phone = empty($input['old_phone'])?'':$input['old_phone'];
 
         $this->load->model('residentmodel');
         $this->load->model('ordermodel');
         $this->load->model('contractmodel');
         $this->load->model('billmodel');
+        $this->load->model('couponmodel');
+        $this->load->model('coupontypemodel');
         $this->load->model('storepaymodel');
         $resident = Residentmodel::where('room_id', $room_id)->find($resident_id);
         if (!$resident) {
@@ -249,7 +251,8 @@ class Order extends MY_Controller {
             DB::rollBack();
             throw $e;
         }
-        $this->api_res(0);
+        $res =  $this->sendCoupon($resident_id,$phone);
+        $this->api_res(0,['res'=>$res]);
     }
 
     /**
@@ -489,6 +492,7 @@ class Order extends MY_Controller {
         $coupon_ids  = $input['coupon_ids'];
         $order_ids   = $input['order_ids'];
         $resident_id = $input['resident_id'];
+        $phone = empty($input['old_phone'])?'':$input['old_phone'];
 
         $this->load->model('residentmodel');
         $this->load->model('ordermodel');
@@ -554,6 +558,8 @@ class Order extends MY_Controller {
             DB::rollBack();
             throw $e;
         }
+        $res =  $this->sendCoupon($resident_id,$phone);
+        $this->api_res(0,['res'=>$res]);
     }
 
     /**
@@ -648,5 +654,22 @@ class Order extends MY_Controller {
         }
         return $res;
     }
-
+//发放优惠券
+   private function sendCoupon($resident_id,$phone){
+       $res = '';
+       $order = Ordermodel::where('resident_id',$resident_id)->where('type','room')->select(['month'])->first();
+       if($order) {
+           $this->load->model('activitymodel');
+           $this->load->model('storeactivitymodel');
+           $this->load->model('activityprizemodel');
+           $this->load->model('customermodel');
+           $activity = new Activitymodel();
+           if (empty($phone)) {
+               $res = $activity->sendCheckIn($resident_id,$order->month);
+           } else {
+               $res = $activity->sendOldbeltNew($phone);
+           }
+       }
+       return $res;
+   }
 }
