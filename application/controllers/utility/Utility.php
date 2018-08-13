@@ -183,8 +183,9 @@ class Utility extends MY_Controller {
         header("Content-Transfer-Encoding:binary");
         $writer->save('php://output');
     }
-
-
+/******************************************************************/
+/**********************水电记录，换表，修改读数************************/
+/******************************************************************/
     /**
      * 水电记录
      */
@@ -206,22 +207,33 @@ class Utility extends MY_Controller {
         if (!empty($post['year'])) {$where['year'] = intval($post['year']);}
         if (!empty($post['type'])){$where['type'] = $post['type'];}
         $status = [Meterreadingtransfermodel::NORMAL,Meterreadingtransfermodel::OLD_METER];
-        $filed  = ['id','store_id','building_id','resident_id','room_id','type','this_reading','this_time','confirmed','year','month','image'];
-        $count  =ceil(Meterreadingtransfermodel::whereIn('store_id',$store_ids)->where($where)->whereIn('status',$status)->count() / PAGINATE);
+        $filed  = ['id','store_id','building_id','resident_id','room_id','type','this_reading','this_time','confirmed','year','month','image','status'];
+        $count  = ceil(Meterreadingtransfermodel::whereIn('store_id',$store_ids)->where($where)/*->whereIn('status',$status)*/->count() / PAGINATE);
         $record = Meterreadingtransfermodel::with(['building','store','room_s'])
-                ->whereIn('store_id',$store_ids)->where($where)->whereIn('status',$status)
-                ->orderBy('year','DESC')->orderBy('month','DESC')->orderBy('store_id')->orderBy('building_id')
+                ->whereIn('store_id',$store_ids)
+                ->where($where)
+                ->orderBy('year','DESC')
+                ->orderBy('month','DESC')
+                ->orderBy('store_id')
+                ->orderBy('building_id')
                 ->take(PAGINATE)->skip($offset)
-                ->get($filed)->map(function ($record){
+                ->get($filed)
+                ->map(function ($record){
                     if ($record->status == Meterreadingtransfermodel::OLD_METER){
                         $last_date              = $this->lastMonth($record->month,$record->year);
-                        $last                   = Meterreadingtransfermodel::where('resident_id',$record->resident_id)->where('room_id',$record->room_id)->where($last_date)->first(['this_reading','this_time']);
-                        $record->last_reading   = $last->this_reading;
-                        $record->last_time      = $last->this_time;
-                        $record->image          = $this->fullAliossUrl($record->image);
+                        $last                   = Meterreadingtransfermodel::where('resident_id',$record->resident_id)->where('room_id',$record->room_id)->where($last_date)->first(['this_reading','this_time','image']);
+                        $record->last_reading   = !empty($last)?($last->this_reading):'';
+                        $record->last_time      = !empty($last)?($last->this_time):'';
+                        $record->this_image     = $this->fullAliossUrl($record->image);
+                        $record->last_image     = $this->fullAliossUrl($last->image);
                         return $record;
-                    }else{
+                    }elseif ($record->status == Meterreadingtransfermodel::NEW_RENT){
+                        return $record;
+                    }elseif ($record->status == Meterreadingtransfermodel::NEW_METER){
+                        return $record;
+                    }elseif ($record->status == Meterreadingtransfermodel::NORMAL){
                         $record = $this->lastReading($record);
+                        var_dump($record->toArray());die();
                         return json_decode($record);
                     }
                 })->toArray();
@@ -241,33 +253,40 @@ class Utility extends MY_Controller {
         $new_rent   = Meterreadingtransfermodel::where('resident_id',$record->resident_id)
             ->where('room_id',$record->room_id)
             ->where('status',Meterreadingtransfermodel::NEW_RENT)
-            ->first(['this_reading','this_time']);
+            ->first(['this_reading','this_time','image']);
         //换表
         $new_meter      = Meterreadingtransfermodel::where('resident_id',$record->resident_id)
             ->where('room_id',$record->room_id)
             ->where('status',Meterreadingtransfermodel::NEW_METER)
-            ->first(['this_reading','this_time']);
+            ->first(['this_reading','this_time','image']);
         //上月
         $last_date      = $this->lastMonth($record->month,$record->year);
-        $last_reading   = Meterreadingtransfermodel::where('resident_id',$record->resident_id)->where('room_id',$record->room_id)->where($last_date)->first(['this_reading','this_time']);
+        $last_reading   = Meterreadingtransfermodel::where('resident_id',$record->resident_id)
+            ->where('room_id',$record->room_id)
+            ->where($last_date)
+            ->first(['this_reading','this_time','image']);
 
         if (!empty($new_rent)){
             $record->last_reading   = $new_rent->this_reading;
             $record->last_time      = $new_rent->this_time;
-            $record->image          = $this->fullAliossUrl($new_rent->image);
+            $record->this_image     = $this->fullAliossUrl($record->image);
+            $record->last_image     = $this->fullAliossUrl($new_rent->image);
         }elseif(!empty($new_meter)){
             $record->last_reading   = $new_meter->this_reading;
             $record->last_time      = $new_meter->this_time;
-            $record->image          = $this->fullAliossUrl($new_meter->image);
+            $record->this_image     = $this->fullAliossUrl($record->image);
+            $record->last_image     = $this->fullAliossUrl($new_meter->image);
         }else{
             if (!empty($last_reading)){
                 $record->last_reading   = $last_reading->this_reading;
                 $record->last_time      = $last_reading->this_time;
-                $record->image          = $this->fullAliossUrl($last_reading->image);
-            }else{
+                $record->this_image     = $this->fullAliossUrl($record->image);
+                $record->last_image     = $this->fullAliossUrl($last_reading->image);
+            }else{           
                 $record->last_reading   = '';
                 $record->last_time      = '';
-                $record->image          = $this->fullAliossUrl($record->image);
+                $record->this_image     = '';
+                $record->last_image     = '';
             }
         }
         return $record;
@@ -433,7 +452,6 @@ class Utility extends MY_Controller {
         }
 
         $money = ($this_reading - $transfer->this_reading) * $price;
-        var_dump($money);
         if (0.01 > $money) {
             return null;
         }

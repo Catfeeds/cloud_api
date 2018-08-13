@@ -20,7 +20,7 @@ class Meter extends MY_Controller
 /**********************************************************************************/
 /***********************************水电逻辑重构*************************************/
 /**********************************************************************************/
-    //导入非智能表读数
+    //导入表读数
     public function normalDeviceReading()
     {
         $this->load->model('meterreadingmodel');
@@ -29,16 +29,16 @@ class Meter extends MY_Controller
         $type       = $this->input->post('type');
         $store_id   = $this->input->post('store_id');
         $month      = $this->input->post('month');
-        $year      = $this->input->post('year');
-        $type       = $this->checkAndGetReadingType($type);                 //检查电表类型
-        $sheetArray = $this->uploadOssSheet();                              //转换表读数
-        $data = $this->checkAndGetInputData($sheetArray);                   //检查表读数
+        $year       = $this->input->post('year');
+        $type       = $this->checkAndGetReadingType($type);                 //检查表计类型
+        $sheetArray = $this->uploadOssSheet();                              //转换excel读数为数组
+        $data       = $this->checkAndGetInputData($sheetArray);             //检查表读数
         if(!empty($data['error'])){
             $this->api_res(10052,['error'=>$data['error']]);
             return;
         }
-        $this->writeReading($data,$store_id,$type,$year,$month);            //存储导入数据
-        $this->api_res(0);
+        $res        = $this->writeReading($data,$store_id,$type,$year,$month);//存储导入数据
+        $this->api_res(0,['error'=>$res]);
     }
 
     /**
@@ -57,6 +57,9 @@ class Meter extends MY_Controller
 
     /**
      * 转换表读数为数组
+     * excel数据数组格式：
+     * 序号 房间号 本次读数 楼栋ID 权重
+     *  0    1      2      3    4
      * @return array
      */
     private function uploadOssSheet() {
@@ -73,7 +76,7 @@ class Meter extends MY_Controller
     }
 
     /**
-     * 处理文件中上传的数据
+     * 检测上传读数的正确性，并返回错误信息
      */
     private function checkAndGetInputData($sheetArray) {
         $data       = [];
@@ -82,12 +85,15 @@ class Meter extends MY_Controller
             if (0 == $key || !$item[0] || !$item[1]) {
                 continue;
             }
-            $read = trim($item[2]);
+            //房间号
+            $number = $item[1];
+            //检查表读数
+            $read   = trim($item[2]);
             if (!is_numeric($read) || 0 > $read || 1e8 < $read) {
                 $error[] = '请检查房间：' . $item[1] . '的表读数';
                 continue;
             }
-            $number = $item[1];
+            //检查权重
             $weight = isset($item[4]) ? (int)$item[4] : 100;
             if (!$weight) {
                 $weight = 100;
@@ -95,15 +101,33 @@ class Meter extends MY_Controller
                 $error[] = '请检查房间：' . $item[1] . '的均摊比例';
                 continue;
             }
-            $data[] = ['this_reading' => $read, 'number' => $number, 'weight' => $weight,'this_time' =>$item[5], 'error' => $error];
+            //检查抄表时间
+            if(isset($item[5])){
+                $time   = date('Y-m-d H:i:s',strtotime($item[5]));
+                if(!$time||strtotime($item[5])==0){
+                    $error[] = '房间：' . $item[1] . '时间格式错误正确格式为\'2018-12-12\'';
+                    continue;
+                }
+            }else{
+                $error[]    = '房间：' . $item[1] . '时间未上传';
+                $time       = '';
+            }
+            $data[] = ['this_reading' => $read, 'number' => $number, 'weight' => $weight,'this_time' =>$time];
         }
-        return $data;
+        if (empty($error)){
+            return $data;
+        }else{
+            $data  = ['error'=>$error];
+            return $data;
+        }
     }
 
     /**
      * 处理上传的记录
      */
     private function writeReading($data = [],$store_id,$type,$year,$month) {
+
+        $error      = [];
         //获取所有房间号(number)
         $number = [];
         foreach ($data as $key=>$value)
@@ -114,18 +138,26 @@ class Meter extends MY_Controller
         $arr    = Roomunionmodel::where('store_id',$store_id)->whereIn('number',$number)->orderBy('number')
             ->get(['id','number','resident_id','building_id'])->groupBy('number')->toArray();
         //重组插入数据库所需数组
-        foreach($data as $key=>$value){
-            $data[$key]['resident_id']  = $arr[$data[$key]['number']][0]['resident_id'];
-            $data[$key]['room_id']      = $arr[$data[$key]['number']][0]['id'];
-            $data[$key]['building_id']  = $arr[$data[$key]['number']][0]['building_id'];
+        foreach($data as $key=>$value) {
+            $transfer   = new Meterreadingtransfermodel();  
+            $data[$key]['resident_id']  = $arr[$value['number']][0]['resident_id'];
+            $data[$key]['room_id']      = $arr[$value['number']][0]['id'];
+            $data[$key]['building_id']  = $arr[$value['number']][0]['building_id'];
             $data[$key]['month']        = $month;
             $data[$key]['year']         = $year;
             $data[$key]['type']         = $type;
             $data[$key]['store_id']     = $store_id;
-            $data[$key]                 = array_except($data[$key],['number','error']);
+            $number                     = $value['number'];
+            $data[$key] = array_except($data[$key], ['number', 'error']);
+            $transfer->fill($data[$key]);
+            try {
+                $transfer->save();
+            } catch (Exception $e) {
+                log_message("debug", '房间'.$number.'读数导入失败');
+                $error[] = '房间'.$number.'读数导入失败';
+            }
         }
-        Meterreadingtransfermodel::insert($data);
-        return true;
+        return $error;
     }
 
 /*******************************************************************************************/
