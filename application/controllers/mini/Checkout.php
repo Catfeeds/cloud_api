@@ -62,13 +62,23 @@ class Checkout extends MY_Controller {
             return;
         }
 
-        $resident = Residentmodel::where('store_id', $store_id)->find($input['resident_id']);
+        $resident = Residentmodel::where('store_id', $store_id)->where('room_id',$input['room_id'])->find($input['resident_id']);
         if (!$resident) {
             $this->api_res(1007);
             return;
         }
         if ($resident->status != Residentmodel::STATE_NORMAL) {
             $this->api_res(10011);
+            return;
+        }
+        $confirmOrders  = $resident->orders()->where('status',Ordermodel::STATE_CONFIRM)->count();
+        if($confirmOrders){
+            $this->api_res(10040);
+            return;
+        }
+        $generateOrders = $resident->orders()->where('status',Ordermodel::STATE_GENERATED)->get()->sum('money');
+        if ($generateOrders>0) {
+            $this->api_res(10041);
             return;
         }
 
@@ -85,7 +95,7 @@ class Checkout extends MY_Controller {
             $checkout->bank                    = empty($input['bank']) ? '' : $input['bank'];
             $checkout->account                 = empty($input['account']) ? '' : $input['bank'];
             $checkout->bank_card_number        = empty($input['bank_card_number']) ? '' : $input['bank_card_number'];
-            $checkout->employee_remark         = $input['employee_remark'];
+            $checkout->employee_remark         = isset($input['employee_remark'])?$input['employee_remark']:'';
             $checkout->bank_card_img           = empty($input['bank_card_img']) ? '' : $this->splitAliossUrl($input['bank_card_img']);
             $checkout->store_id                = $store_id;
 
@@ -115,17 +125,19 @@ class Checkout extends MY_Controller {
                 ]
             );
 
-            DB::commit();
-
             Residentmodel::where('id', $input['resident_id'])->update(['status' => 'CHECKOUT']);
-
-            $this->api_res(0, ['checkout_id' => $checkout->id]);
-
+            $taskflow_id   = $this->createTaskflow($checkout->room_id,'CHECKOUT');
+            if ($taskflow_id) {
+                $checkout->taskflow_id  = $taskflow_id;
+                $checkout->status  = 'AUDIT';
+                $checkout->save();
+            }
+            DB::commit();
         } catch (Exception $e) {
-
             DB::rollBack();
             throw $e;
         }
+        $this->api_res(0, ['checkout_id' => $checkout->id]);
     }
 
     /**
@@ -673,6 +685,92 @@ class Checkout extends MY_Controller {
      */
     private function isManager() {
         return isset($this->employee) && $this->employee->position == 'MANAGER';
+    }
+
+    /**
+     * 创建退房的同时创建退款的任务流
+     */
+    private function createTaskflow($room_id,$type)
+    {
+        $this->load->model('taskflowmodel');
+        $this->load->model('taskflowtemplatemodel');
+        $this->load->model('taskflowstepmodel');
+        $this->load->model('taskflowsteptemplatemodel');
+        $template   = Taskflowtemplatemodel::where('company_id',COMPANY_ID)
+            ->where('type',$type)
+            ->first();
+        if (empty($template)) {
+            return false;
+        }
+        $step_field = ['id','company_id','name','type','seq','position_ids','employee_ids'];
+        $step_template  = $template->step_template()->get($step_field);
+
+        $taskflow   = new Taskflowmodel();
+        $taskflow->fill($template->toArray());
+        $taskflow->template_id  = $template->id;
+        $taskflow->serial_number= $taskflow->newNumber($this->employee->store_id);
+        $taskflow->store_id     = $this->employee->store_id;
+        $taskflow->create_role  = Taskflowmodel::CREATE_EMPLOYEE;
+        $taskflow->employee_id  = $this->employee->id;
+        $taskflow->status       = Taskflowmodel::STATE_AUDIT;
+        $taskflow->room_id      = $room_id;
+        $taskflow->save();
+        $step_template_keys_transfer = ['step_template_id','company_id','name','type','seq','position_ids','employee_ids'];
+        $step_template_arr  = $step_template->toArray();
+        $step_merge_data = [
+            'store_id'      => $this->employee->store_id,
+            'taskflow_id'   => $taskflow->id,
+            'status'        => Taskflowstepmodel::STATE_AUDIT,
+            'created_at'    => Carbon::now()->toDateTimeString(),
+            'updated_at'    => Carbon::now()->toDateTimeString(),
+        ];
+        $result = [];
+        foreach ($step_template_arr as $step){
+            $step_combine   = array_combine($step_template_keys_transfer,$step);
+            $result[]   = array_merge($step_merge_data,$step_combine);
+        }
+        Taskflowstepmodel::insert($result);
+
+        return $taskflow->id;
+    }
+
+    /**
+     * 重新发起新的退款的任务流（暂时搁置）
+     */
+    public function renewTaskflow()
+    {
+        exit;
+        $input  = $this->input->post(null,true);
+        $checkout_id    = $input['checkout_id'];
+        //检查checkout的状态是不是AUDIT才可以发起任务流
+        $checkout   = Checkoutmodel::findOrFail($checkout_id);
+        if ($checkout->status != Checkoutmodel::STATUS_AUDIT) {
+            $this->api_res(10201);
+            return;
+        }
+        $this->load->model('taskflowmodel');
+        //如果有已经存在的任务流，需要先去任务流关闭
+        if ($checkout->taskflow->status != Taskflowmodel::STATE_CLOSED) {
+            $this->api_res(10202);
+            return;
+        }
+        //创建新的任务流
+        try {
+            DB::beginTransaction();
+            $taskflow_id   = $this->createTaskflow($checkout->room_id,'CHECKOUT');
+            $checkout->taskflow_id  = $taskflow_id;
+            $checkout->employee_id  = $this->employee->id;
+            $b=$checkout->save();
+            if ($taskflow_id>0 && $b) {
+                DB::commit();
+            } else {
+                DB::rollBack();
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+        $this->api_res(0);
     }
 
 }

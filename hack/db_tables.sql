@@ -1687,12 +1687,14 @@ CREATE TABLE `room_balance` (
 SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
+-- 任务流相关数据表
 CREATE TABLE `boss_taskflow` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT 'boss_taskflow 任务流表',
   `company_id` int(11) unsigned NOT NULL,
   `store_id` int(11) unsigned NOT NULL COMMENT '门店id',
   `template_id` int(11) unsigned NOT NULL,
   `room_id` int(10) unsigned NOT NULL,
+  `serial_number` varchar(32) NOT NULL COMMENT '编号',
   `name` varchar(255) NOT NULL COMMENT '任务流模板的名称',
   `type` enum('CHECKOUT') NOT NULL COMMENT '任务流模板的类型（CHECKOUT退房）',
   `description` text NOT NULL COMMENT '描述',
@@ -1701,13 +1703,32 @@ CREATE TABLE `boss_taskflow` (
   `customer_id` int(11) DEFAULT NULL COMMENT '创建任务流的用户id',
   `leavel` smallint(4) unsigned NOT NULL DEFAULT '0' COMMENT '优先级 越小优先级越高，最小是0',
   `step_id` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '最近处理过的step_id',
-  `status` enum('AUDIT','APPROVED','CLOSED') NOT NULL,
+  `status` enum('AUDIT','APPROVED','CLOSED','UNAPPROVED') NOT NULL DEFAULT 'AUDIT',
   `remark` text,
   `created_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `updated_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `deleted_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uni_sn` (`serial_number`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+CREATE TABLE `boss_taskflow_record` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `step_id` int(11) DEFAULT NULL,
+  `taskflow_id` int(11) DEFAULT NULL COMMENT '对应的任务流id',
+  `company_id` int(11) unsigned NOT NULL,
+  `store_id` int(11) unsigned NOT NULL,
+  `name` varchar(255) NOT NULL COMMENT '步骤的名称',
+  `seq` int(11) unsigned NOT NULL COMMENT '步骤序号',
+  `type` enum('CHECKOUT') NOT NULL,
+  `employee_id` int(11) DEFAULT NULL COMMENT '处理员工id',
+  `status` enum('AUDIT','APPROVED','UNAPPROVED','CLOSED') NOT NULL DEFAULT 'AUDIT' COMMENT '待审核，审核通过，审核未通过',
+  `remark` text NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `updated_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `deleted_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 CREATE TABLE `boss_taskflow_step` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
@@ -1721,13 +1742,13 @@ CREATE TABLE `boss_taskflow_step` (
   `position_ids` varchar(255) DEFAULT NULL COMMENT '可操作职位',
   `employee_ids` varchar(255) DEFAULT NULL COMMENT '可操作员工ids',
   `employee_id` int(11) DEFAULT NULL COMMENT '处理员工id',
-  `status` enum('AUDIT','APPROVED','UNAPPROVED') NOT NULL DEFAULT 'AUDIT' COMMENT '待审核，审核通过，审核未通过',
+  `status` enum('AUDIT','APPROVED','UNAPPROVED','CLOSED') NOT NULL DEFAULT 'AUDIT' COMMENT '待审核，审核通过，审核未通过',
   `remark` text NOT NULL,
   `created_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `updated_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `deleted_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 CREATE TABLE `boss_taskflow_step_template` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '任务流步骤',
@@ -1743,7 +1764,7 @@ CREATE TABLE `boss_taskflow_step_template` (
   `updated_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `deleted_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 CREATE TABLE `boss_taskflow_template` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
@@ -1757,6 +1778,12 @@ CREATE TABLE `boss_taskflow_template` (
   `updated_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `deleted_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=50 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+
+
+
+
+
 
 
