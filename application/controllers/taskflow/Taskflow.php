@@ -256,6 +256,7 @@ class Taskflow extends MY_Controller{
         $e_store_ids    = explode(',',$this->employee->store_ids);
         $page   = (int)(empty($input['page'])?1:$input['page']);
         $this->load->model('positionmodel');
+        $this->load->model('storemodel');
         $audit  = Taskflowstepmodel::with(['taskflow'=>function($query){
             $query->with('employee')->with(['step'=>function($a){
                 $a->with(['employee'=>function($query){
