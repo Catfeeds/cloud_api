@@ -90,7 +90,7 @@ class Checkout extends MY_Controller {
             $checkout->room_id                 = $input['room_id'];
             $checkout->employee_id             = $this->employee->id;
             $checkout->type                    = $input['type'];
-            $checkout->other_deposit_deduction = $input['other_deposit_deduction'];
+            $checkout->other_deposit_deduction = empty($input['other_deposit_deduction'])?0:$input['other_deposit_deduction'];
             $checkout->status                  = Checkoutmodel::STATUS_UNPAID;
             $checkout->bank                    = empty($input['bank']) ? '' : $input['bank'];
             $checkout->account                 = empty($input['account']) ? '' : $input['bank'];
