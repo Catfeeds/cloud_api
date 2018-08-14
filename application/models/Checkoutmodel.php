@@ -34,6 +34,7 @@ class Checkoutmodel extends Basemodel {
     const STATUS_MANAGER_APPROVED   = 'MANAGER_APPROVED'; //店长审核完毕, 等待运营经理审核
     const STATUS_PRINCIPAL_APPROVED = 'PRINCIPAL_APPROVED'; //运营经理审核, 交由财务处理
     const STATUS_COMPLETED          = 'COMPLETED'; //财务处理完成, 完成退房流程
+    const STATUS_AUDIT              = 'AUDIT';//待审核
 
     const TYPE_NORMAL   = 'NORMAL_REFUND';
     const TYPE_ABNORMAL = 'UNDER_CONTRACT';
@@ -64,5 +65,13 @@ class Checkoutmodel extends Basemodel {
      */
     public function employee() {
         return $this->belongsTo(Employeemodel::class, 'employee_id');
+    }
+
+    /**
+     * 退房的任务流
+     */
+    public function taskflow()
+    {
+        return $this->belongsTo(Taskflowmodel::class,'taskflow_id');
     }
 }

@@ -16,7 +16,7 @@ class test extends MY_Controller {
         exit;
         parent::__construct();
 //        exit;
-        $this->store_id = $this->input->post('store_id');
+//        $this->store_id = $this->input->post('store_id');
     }
 
     public function test1() {

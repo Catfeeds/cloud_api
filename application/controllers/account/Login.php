@@ -283,10 +283,10 @@ class Login extends MY_Controller {
         $input      = $this->input->post(NULL, TRUE);
         $bxid       = 99;
         $company_id = 1;
-        if (!isset($input['bxid'])) {
+        if (isset($input['bxid'])) {
             $bxid = $input['bxid'];
         }
-        if (!isset($input['company_id'])) {
+        if (isset($input['company_id'])) {
             $company_id = $input['company_id'];
         }
         $token = $this->m_jwt->generateJwtToken($bxid, $company_id);

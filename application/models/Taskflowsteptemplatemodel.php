@@ -8,6 +8,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  */
 class Taskflowsteptemplatemodel extends Basemodel
 {
+    const TYPE_CHECKOUT = 'CHECKOUT';
+
     protected $table    = 'boss_taskflow_step_template';
 
     protected $fillable = [
