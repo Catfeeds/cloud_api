@@ -1546,8 +1546,8 @@ class Resident extends MY_Controller
         $this->load->model('Meterreadingtransfermodel');
         $this->load->model('roomunionmodel');
         $this->load->model('smartdevicemodel');
-        $year           = date('Y',strtotime(time()));
-        $month          = date('m',strtotime(time()));
+        $year           = date('Y');
+        $month          = date('m');
         if ($month      == 12){
             $month      = 1;
             $year       = $year+1;
@@ -1588,7 +1588,7 @@ class Resident extends MY_Controller
             'type'          => Meterreadingtransfermodel::TYPE_WATER_C,
             'this_reading'  => $post['coldwater_reading'],
             'image'         => $post['coldwater_image'],
-            'this_time'     => date('Y-m-d H:i:s',strtotime(time())),
+            'this_time'     => date('Y-m-d H:i:s'),
             'status'        => Meterreadingtransfermodel::NEW_RENT,
         ];
         $coldwater->fill($arr_coldwater);
@@ -1604,9 +1604,9 @@ class Resident extends MY_Controller
             'year'          => $year,
             'month'         => $month,
             'type'          => Meterreadingtransfermodel::TYPE_ELECTRIC,
-            'this_reading'  => $post['coldwater_reading'],
-            'image'         => $post['coldwater_image'],
-            'this_time'     => date('Y-m-d H:i:s',strtotime(time())),
+            'this_reading'  => $post['electric_reading'],
+            'image'         => $post['electric_image'],
+            'this_time'     => date('Y-m-d H:i:s'),
             'status'        => Meterreadingtransfermodel::NEW_RENT,
         ];
         $electric->fill($arr_electric);
@@ -1623,9 +1623,9 @@ class Resident extends MY_Controller
                 'year'          => $year,
                 'month'         => $month,
                 'type'          => Meterreadingtransfermodel::TYPE_WATER_H,
-                'this_reading'  => $post['coldwater_reading'],
-                'image'         => $post['coldwater_image'],
-                'this_time'     => date('Y-m-d H:i:s',strtotime(time())),
+                'this_reading'  => $post['hotwater_reading'],
+                'image'         => $post['hotwater_image'],
+                'this_time'     => date('Y-m-d H:i:s'),
                 'status'        => Meterreadingtransfermodel::NEW_RENT,
             ];
             $hotwater->fill($arr_hotwater);

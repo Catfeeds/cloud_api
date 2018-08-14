@@ -45,8 +45,9 @@ class Checkout extends MY_Controller {
      * 提交新的退房订单
      */
     public function store() {
-        $field = ['room_id', 'resident_id', 'type', 'water', 'electricity',
-            'clean', 'compensation', 'other_deposit_deduction'];
+        $field = ['room_id', 'resident_id', 'type','clean', 'compensation', 'other_deposit_deduction',
+            /*水电参数*/'coldwater_reading','hotwater_reading','electric_reading','coldwater_image',
+                'hotwater_image','electric_image'];
         $input    = $this->input->post(null, true);
         $store_id = $this->employee->store_id;
         if (!$this->validationText($this->validateStore())) {
@@ -91,10 +92,13 @@ class Checkout extends MY_Controller {
             $checkout->time = Carbon::now();
             $checkout->save();
 
-            $bills['water']        = $input['water'];
-            $bills['clean']        = $input['clean'];
-            $bills['electricity']  = $input['electricity'];
-            $bills['compensation'] = $input['compensation'];
+            $utlity                 = $this->utility($input);
+
+            $bills['water']         = $utlity['water'];
+            $bills['hot_water']     = $utlity['hot_water'];
+            $bills['electricity']   = $utlity['electric'];
+            $bills['clean']         = $input['clean'];
+            $bills['compensation']  = $input['compensation'];
             //生成退房时的订单
             $this->createOrUpdateCheckOutOrders(
                 $checkout,
@@ -102,7 +106,6 @@ class Checkout extends MY_Controller {
                 $resident,
                 $resident->roomunion
             );
-
             //重置原房间状态
             $resident->roomunion->update(
                 [
@@ -128,6 +131,125 @@ class Checkout extends MY_Controller {
     /**
      * 提交给店长审核
      */
+
+    /**
+     * 退房计算水电费用
+     */
+    private function utility($post)
+    {
+        $this->load->model('Meterreadingtransfermodel');
+        $this->load->model('roomunionmodel');
+        $this->load->model('smartdevicemodel');
+        $year           = date('Y');
+        $month          = date('m');
+        $last_coldwater = Meterreadingtransfermodel::where('year',$year)->where('month',$month)->where('resident_id',$post['resident_id'])->where('room_id',$post['room_id'])->where('status',Meterreadingtransfermodel::NORMAL)->where('type',Meterreadingtransfermodel::TYPE_WATER_C)->first(['this_reading']);
+        $last_hotwater  = Meterreadingtransfermodel::where('year',$year)->where('month',$month)->where('resident_id',$post['resident_id'])->where('room_id',$post['room_id'])->where('status',Meterreadingtransfermodel::NORMAL)->where('type',Meterreadingtransfermodel::TYPE_WATER_H)->first(['this_reading']);
+        $last_electric  = Meterreadingtransfermodel::where('year',$year)->where('month',$month)->where('resident_id',$post['resident_id'])->where('room_id',$post['room_id'])->where('status',Meterreadingtransfermodel::NORMAL)->where('type',Meterreadingtransfermodel::TYPE_ELECTRIC)->first(['this_reading']);
+        if ($month      == 12){
+            $month      = 1;
+            $year       = $year+1;
+        }else{
+            $month      = $month+1;
+        }
+        $roomunion      = Roomunionmodel::where('id',$post['room_id'])->first(['building_id','store_id']);
+        $building_id    = $roomunion->building_id;
+        $store_id       = $roomunion->store_id;
+        $price          = Storemodel::where('id',$store_id)->first(['id','water_price','hot_water_price','electricity_price']);
+        $cold_water     = Smartdevicemodel::where('room_id',$post['room_id'])->where('type',Meterreadingtransfermodel::TYPE_WATER_C)->first(['serial_number']);
+        $hot_water      = Smartdevicemodel::where('room_id',$post['room_id'])->where('type',Meterreadingtransfermodel::TYPE_WATER_H)->first(['serial_number']);
+        $electric       = Smartdevicemodel::where('room_id',$post['room_id'])->where('type',Meterreadingtransfermodel::TYPE_ELECTRIC)->first(['serial_number']);
+        if (empty($cold_water)){
+            $cold_water_number  = '';
+        }else{
+            $cold_water_number  =$cold_water->serial_number;
+        }
+        if (empty($hot_water)){
+            $hot_water_number  = '';
+        }else{
+            $hot_water_number  =$hot_water->serial_number;
+        }
+        if (empty($electric)){
+            $electric_number  = '';
+        }else{
+            $electric_number  =$electric->serial_number;
+        }
+        //上传冷水表读数
+        $coldwater      = new Meterreadingtransfermodel();
+        $arr_coldwater  = [
+            'store_id'      => $store_id,
+            'building_id'   => $building_id,
+            'serial_number' => $cold_water_number,
+            'room_id'       => $post['room_id'],
+            'resident_id'   => $post['resident_id'],
+            'year'          => $year,
+            'month'         => $month,
+            'type'          => Meterreadingtransfermodel::TYPE_WATER_C,
+            'this_reading'  => floatval($post['coldwater_reading']),
+            'image'         => $post['coldwater_image'],
+            'this_time'     => date('Y-m-d H:i:s'),
+            'status'        => Meterreadingtransfermodel::NORMAL,
+        ];
+        $coldwater->fill($arr_coldwater);
+        if ($coldwater->save()) {
+            $money['water'] = (floatval($post['coldwater_reading']) - $last_coldwater->this_reding) * $price->water_price;
+            if (0.01 > $money['water']) {
+                return null;
+            }
+        }
+        //上传电表读数
+        $electric       = new Meterreadingtransfermodel();
+        $arr_electric   = [
+            'store_id'      => $store_id,
+            'building_id'   => $building_id,
+            'serial_number' => $electric_number,
+            'room_id'       => $post['room_id'],
+            'resident_id'   => $post['resident_id'],
+            'year'          => $year,
+            'month'         => $month,
+            'type'          => Meterreadingtransfermodel::TYPE_ELECTRIC,
+            'this_reading'  => floatval($post['electric_reading']),
+            'image'         => $post['electric_image'],
+            'this_time'     => date('Y-m-d H:i:s'),
+            'status'        => Meterreadingtransfermodel::NORMAL,
+        ];
+        $electric->fill($arr_electric);
+        if($electric->save()){
+            $money['electric']      = (floatval($post['electric_reading']) - $last_electric->this_reading) * $price->electricity_price;
+            if (0.01 > $money['electric']) {
+                return null;
+            }
+        }
+        //上传热水表读数
+        if (isset($post['hotwater_reading'])&&!empty($post['hotwater_reading'])){
+            $hotwater       = new Meterreadingtransfermodel();
+            $arr_hotwater   =[
+                'store_id'      => $store_id,
+                'building_id'   => $building_id,
+                'serial_number' => $hot_water_number,
+                'room_id'       => $post['room_id'],
+                'resident_id'   => $post['resident_id'],
+                'year'          => $year,
+                'month'         => $month,
+                'type'          => Meterreadingtransfermodel::TYPE_WATER_H,
+                'this_reading'  => floatval($post['hotwater_reading']),
+                'image'         => $post['hotwater_image'],
+                'this_time'     => date('Y-m-d H:i:s'),
+                'status'        => Meterreadingtransfermodel::NORMAL,
+            ];
+            $hotwater->fill($arr_hotwater);
+            if($hotwater->save()){
+                $money['hot_water']     = (floatval($post['hotwater_reading']) - $last_hotwater->this_reading) * $price->hot_water_price;
+                if (0.01 > $money['hot_water']) {
+                    return null;
+                }
+            }
+        }
+        /*var_dump($arr_coldwater);
+        var_dump($arr_electric);
+        var_dump($arr_hotwater);*/
+        return $money;
+
+    }
 
     /**
      * 显示退房记录的详情
@@ -408,17 +530,12 @@ class Checkout extends MY_Controller {
                 'label' => '住户id',
                 'rules' => 'required|trim|numeric',
             ),
-//            array(
-            //                'field' => 'pay_or_not',
-            //                'label' => '是否支付欠款',
-            //                'rules' => 'required|trim|in_list[0,1]',
-            //            ),
             array(
                 'field' => 'type',
                 'label' => '退房类型',
                 'rules' => 'required|trim|in_list[NORMAL_REFUND,UNDER_CONTRACT]',
             ),
-            array(
+/*            array(
                 'field' => 'water',
                 'label' => '水费',
                 'rules' => 'required|trim|numeric',
@@ -427,7 +544,7 @@ class Checkout extends MY_Controller {
                 'field' => 'electricity',
                 'label' => '电费',
                 'rules' => 'required|trim|numeric',
-            ),
+            ),*/
             array(
                 'field' => 'clean',
                 'label' => '垃圾清理费',
@@ -438,11 +555,39 @@ class Checkout extends MY_Controller {
                 'label' => '物品赔偿费',
                 'rules' => 'required|trim|numeric',
             ),
-//            array(
-            //                'field' => 'other_deposit_deduction',
-            //                'label' => '其他押金抵扣金额',
-            //                'rules' => 'required|trim|numeric',
-            //            ),
+            //退房水电参数'coldwater_reading','hotwater_reading','electric_reading','coldwater_image',
+            //'hotwater_image','electric_image'
+            array(
+                'field' => 'coldwater_reading',
+                'label' => '冷水表读数',
+                'rules' => 'required|trim',
+            ),
+            array(
+                'field' => 'hotwater_reading',
+                'label' => '热水表读数',
+                'rules' => 'trim',
+            ),
+            array(
+                'field' => 'electric_reading',
+                'label' => '电表读数',
+                'rules' => 'required|trim',
+            ),
+            array(
+                'field' => 'coldwater_image',
+                'label' => '冷水表照片',
+                'rules' => 'required|trim',
+            ),
+            array(
+                'field' => 'hotwater_image',
+                'label' => '热水表照片',
+                'rules' => 'trim',
+            ),
+            array(
+                'field' => 'electric_image',
+                'label' => '电表照片',
+                'rules' => 'required|trim',
+            ),
+
         );
     }
 
