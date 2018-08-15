@@ -207,7 +207,7 @@ class Utility extends MY_Controller {
         if (!empty($post['year'])) {$where['year'] = intval($post['year']);}
         if (!empty($post['type'])){$where['type'] = $post['type'];}
         $status = [Meterreadingtransfermodel::NORMAL,Meterreadingtransfermodel::OLD_METER];
-        $filed  = ['id','store_id','building_id','resident_id','room_id','type','this_reading','this_time','confirmed','year','month','image','status'];
+        $filed  = ['id','store_id','building_id','resident_id','room_id','type','this_reading','this_time','order_id','year','month','image','status'];
         $count  = ceil(Meterreadingtransfermodel::whereIn('store_id',$store_ids)->where($where)/*->whereIn('status',$status)*/->count() / PAGINATE);
         $record = Meterreadingtransfermodel::with(['building','store','room_s'])
                 ->whereIn('store_id',$store_ids)

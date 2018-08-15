@@ -2,6 +2,7 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 use Illuminate\Database\Capsule\Manager as DB;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 /**
  * Author:      hfq<1326432154@qq.com>
@@ -32,7 +33,11 @@ class Meter extends MY_Controller
         $year       = $this->input->post('year');
         $type       = $this->checkAndGetReadingType($type);                 //检查表计类型
         $sheetArray = $this->uploadOssSheet();                              //转换excel读数为数组
-        $data       = $this->checkAndGetInputData($sheetArray);             //检查表读数
+        try{
+            $data       = $this->checkAndGetInputData($sheetArray);             //检查表读数
+        }catch (exception $e){
+
+        }
         if(!empty($data['error'])){
             $this->api_res(10052,['error'=>$data['error']]);
             return;
@@ -102,15 +107,16 @@ class Meter extends MY_Controller
                 continue;
             }
             //检查抄表时间
-            if(isset($item[5])){
-                $time   = date('Y-m-d H:i:s',strtotime($item[5]));
-                if(!$time||strtotime($item[5])==0){
-                    $error[] = '房间：' . $item[1] . '时间格式错误正确格式为\'2018-12-12\'';
-                    continue;
-                }
-            }else{
+            if(!isset($item[5])){
                 $error[]    = '房间：' . $item[1] . '时间未上传';
-                $time       = '';
+                continue;
+            }elseif (!is_numeric($item[5]))
+            {
+                $error[] = '房间：' . $item[1] . '时间格式错误正确格式为\'2018/12/12\'';
+                continue;
+            }else{
+                $sheet  = new Date();
+                $time   =date('Y-m-d', $sheet->excelToTimestamp(intval($item[5])));
             }
             $data[] = ['this_reading' => $read, 'number' => $number, 'weight' => $weight,'this_time' =>$time];
         }
@@ -248,7 +254,7 @@ class Meter extends MY_Controller
         $resident_ids   = Roomunionmodel::where('store_id',$store_id)->get(['resident_id'])->toArray();
         $error          = [];
         $sum            = 0;
-        $filed          = ['id','store_id','room_id','resident_id','type','year','month','this_reading','this_time','weight','status','confirmed'];
+        $filed          = ['id','store_id','room_id','resident_id','type','year','month','this_reading','this_time','weight','status','order_id'];
         foreach ($resident_ids as $k=>$v){
             $resident_id    = $resident_ids[$k]['resident_id'];
             if ($resident_id == 0){
@@ -256,7 +262,7 @@ class Meter extends MY_Controller
             }
             $sql            = Meterreadingtransfermodel::with('roomunion')->with('store')->where('year',$year)->where('month',$month)
                             ->where('type',$type)->where('resident_id',$resident_id);
-            $sql_last       =Meterreadingtransfermodel::where('year',$year_last)->where('month',$month_last)
+            $sql_last       = Meterreadingtransfermodel::where('year',$year_last)->where('month',$month_last)
                             ->where('type',$type)->where('resident_id',$resident_id);
             //本月月末水电读数
             $this_reading   = $sql->where('status',Meterreadingtransfermodel::NORMAL)->first();
@@ -283,12 +289,12 @@ class Meter extends MY_Controller
                 $number     =   DB::select("select `number` from boss_room_union WHERE `resident_id` = '$resident_id'");
                 $number     = $number[0]->number;
                 $error[]    = '房间'."$number".'的读数未上传';
-            }else{
+            }elseif($this_reading){
                 if(!empty($new_reading)){
                     $order = $this->addUtilityOrder($this_reading,$new_reading,$year,$month);
                     if ($order){
-                        $this_reading->confirmed = 1;$this_reading->save();
-                        $new_reading->confirmed = 1;$new_reading->save();
+                        $this_reading->order_id = $order;$this_reading->save();
+                        $new_reading->order_id = $order;$new_reading->save();
                         $sum +=1;
                     }else{
                         $number = $this_reading->roomunion->number;
@@ -298,8 +304,8 @@ class Meter extends MY_Controller
                 } elseif (!empty($rent_rading)){
                     $order = $this->addUtilityOrder($this_reading,$rent_rading,$year,$month);
                     if ($order){
-                        $this_reading->confirmed = 1;$this_reading->save();
-                        $last_reading->confirmed = 1;$last_reading->save();
+                        $this_reading->order_id = $order;$this_reading->save();
+                        $last_reading->order_id = $order;$last_reading->save();
                         $sum +=1;
                     }else{
                         $number = $this_reading->roomunion->number;
@@ -309,8 +315,7 @@ class Meter extends MY_Controller
                 }else{
                     $order = $this->addUtilityOrder($this_reading,$last_reading,$year,$month);
                     if ($order){
-                        $this_reading->confirmed = 1;$this_reading->save();
-                        $this_reading->confirmed = 1;$this_reading->save();
+                        $this_reading->order_id = $order;$this_reading->save();
                         $sum +=1;
                     }else{
                         $number = $this_reading->roomunion->number;
@@ -373,8 +378,9 @@ class Meter extends MY_Controller
             'pay_status'   => Ordermodel::PAYSTATE_RENEWALS,
         ];
         $order->fill($arr);
+
         if ($order->save()){
-            return true;
+            return $order->id;
         }else{
             return false;
         }
