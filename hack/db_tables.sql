@@ -708,7 +708,6 @@ CREATE TABLE `boss_order` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=47785 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
 --
 -- Table structure for table `boss_owner`
 --

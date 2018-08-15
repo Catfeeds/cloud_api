@@ -203,7 +203,7 @@ class Checkout extends MY_Controller {
         ];
         $coldwater->fill($arr_coldwater);
         if ($coldwater->save()) {
-            $money['water'] = (floatval($post['coldwater_reading']) - $last_coldwater->this_reding) * $price->water_price;
+            $money['water'] = (floatval($post['coldwater_reading']) - $last_coldwater->this_reading) * $price->water_price;
             if (0.01 > $money['water']) {
                 return null;
             }
