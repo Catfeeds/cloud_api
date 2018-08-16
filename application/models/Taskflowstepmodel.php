@@ -13,6 +13,7 @@ class Taskflowstepmodel extends Basemodel
     const STATE_UNAPPROVED    = 'UNAPPROVED';//审核未通过
     const STATE_CLOSED    = 'CLOSED';//关闭
     const TYPE_CHECKOUT = 'CHECKOUT';
+    const TYPE_PRICE    = 'PRICE';
 
     protected $table    = 'boss_taskflow_step';
 
