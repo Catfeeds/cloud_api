@@ -1567,18 +1567,18 @@ class Resident extends MY_Controller
         if (isset($post['coldwater_reading'])&&!empty($post['coldwater_reading'])) {
             $coldwater = new Meterreadingtransfermodel();
             $arr_coldwater = [
-                'store_id' => $store_id,
-                'building_id' => $building_id,
+                'store_id'      => $store_id,
+                'building_id'   => $building_id,
                 'serial_number' => $cold_water_number,
-                'room_id' => $post['room_id'],
-                'resident_id' => $resident->id,
-                'year' => $year,
-                'month' => $month,
-                'type' => Meterreadingtransfermodel::TYPE_WATER_C,
-                'this_reading' => $post['coldwater_reading'],
-                'image' => $this->splitAliossUrl($post['coldwater_image']),
-                'this_time' => date('Y-m-d H:i:s'),
-                'status' => Meterreadingtransfermodel::NEW_RENT,
+                'room_id'       => $post['room_id'],
+                'resident_id'   => $resident->id,
+                'year'          => $year,
+                'month'         => $month,
+                'type'          => Meterreadingtransfermodel::TYPE_WATER_C,
+                'this_reading'  => $post['coldwater_reading'],
+                'image'         => empty($post['coldwater_image'])?'':$this->splitAliossUrl($post['coldwater_image']),
+                'this_time'     => date('Y-m-d H:i:s'),
+                'status'        => Meterreadingtransfermodel::NEW_RENT,
             ];
             $coldwater->fill($arr_coldwater);
             $coldwater->save();
@@ -1587,18 +1587,18 @@ class Resident extends MY_Controller
         if (isset($post['electric_reading'])&&!empty($post['electric_reading'])) {
             $electric = new Meterreadingtransfermodel();
             $arr_electric = [
-                'store_id' => $store_id,
-                'building_id' => $building_id,
+                'store_id'      => $store_id,
+                'building_id'   => $building_id,
                 'serial_number' => $electric_number,
-                'room_id' => $post['room_id'],
-                'resident_id' => $resident->id,
-                'year' => $year,
-                'month' => $month,
-                'type' => Meterreadingtransfermodel::TYPE_ELECTRIC,
-                'this_reading' => $post['electric_reading'],
-                'image' => $this->splitAliossUrl($post['electric_image']),
-                'this_time' => date('Y-m-d H:i:s'),
-                'status' => Meterreadingtransfermodel::NEW_RENT,
+                'room_id'       => $post['room_id'],
+                'resident_id'   => $resident->id,
+                'year'          => $year,
+                'month'         => $month,
+                'type'          => Meterreadingtransfermodel::TYPE_ELECTRIC,
+                'this_reading'  => $post['electric_reading'],
+                'image'         => empty($post['electric_image'])?'':$this->splitAliossUrl($post['electric_image']),
+                'this_time'     => date('Y-m-d H:i:s'),
+                'status'        => Meterreadingtransfermodel::NEW_RENT,
             ];
             $electric->fill($arr_electric);
             $electric->save();
@@ -1616,7 +1616,7 @@ class Resident extends MY_Controller
                 'month'         => $month,
                 'type'          => Meterreadingtransfermodel::TYPE_WATER_H,
                 'this_reading'  => $post['hotwater_reading'],
-                'image'         => $this->splitAliossUrl($post['hotwater_image']),
+                'image'         => empty($post['hotwater_image'])?'':$this->splitAliossUrl($post['hotwater_image']),
                 'this_time'     => date('Y-m-d H:i:s'),
                 'status'        => Meterreadingtransfermodel::NEW_RENT,
             ];
