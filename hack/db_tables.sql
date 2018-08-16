@@ -1697,7 +1697,7 @@ CREATE TABLE `boss_taskflow` (
   `room_id` int(10) unsigned NOT NULL,
   `serial_number` varchar(32) NOT NULL COMMENT '编号',
   `name` varchar(255) NOT NULL COMMENT '任务流模板的名称',
-  `type` enum('CHECKOUT') NOT NULL COMMENT '任务流模板的类型（CHECKOUT退房）',
+  `type` enum('CHECKOUT','PRICE') NOT NULL COMMENT '任务流模板的类型（CHECKOUT退房,PRICE调价）',
   `description` text NOT NULL COMMENT '描述',
   `create_role` enum('EMPLOYEE','CUSTOMER') NOT NULL COMMENT '发起人的角色（员工发起还是用户发起）',
   `employee_id` int(10) unsigned DEFAULT NULL COMMENT '创建或发起的员工id',
@@ -1721,7 +1721,7 @@ CREATE TABLE `boss_taskflow_record` (
   `store_id` int(11) unsigned NOT NULL,
   `name` varchar(255) NOT NULL COMMENT '步骤的名称',
   `seq` int(11) unsigned NOT NULL COMMENT '步骤序号',
-  `type` enum('CHECKOUT') NOT NULL,
+  `type` enum('CHECKOUT','PRICE') NOT NULL,
   `employee_id` int(11) DEFAULT NULL COMMENT '处理员工id',
   `status` enum('AUDIT','APPROVED','UNAPPROVED','CLOSED') NOT NULL DEFAULT 'AUDIT' COMMENT '待审核，审核通过，审核未通过',
   `remark` text NOT NULL,
@@ -1739,7 +1739,7 @@ CREATE TABLE `boss_taskflow_step` (
   `store_id` int(11) unsigned NOT NULL,
   `name` varchar(255) NOT NULL COMMENT '步骤的名称',
   `seq` int(11) unsigned NOT NULL COMMENT '步骤序号',
-  `type` enum('CHECKOUT') NOT NULL,
+  `type` enum('CHECKOUT','PRICE') NOT NULL,
   `position_ids` varchar(255) DEFAULT NULL COMMENT '可操作职位',
   `employee_ids` varchar(255) DEFAULT NULL COMMENT '可操作员工ids',
   `employee_id` int(11) DEFAULT NULL COMMENT '处理员工id',
@@ -1757,7 +1757,7 @@ CREATE TABLE `boss_taskflow_step_template` (
   `template_id` int(11) unsigned NOT NULL COMMENT '任务流模板id',
   `name` varchar(255) DEFAULT NULL COMMENT '步骤的名称',
   `seq` int(11) unsigned NOT NULL COMMENT '步骤序号',
-  `type` enum('CHECKOUT') NOT NULL,
+  `type` enum('CHECKOUT','PRICE') NOT NULL,
   `position_ids` varchar(255) DEFAULT NULL COMMENT '可操作职位',
   `employee_ids` varchar(255) DEFAULT NULL COMMENT '可操作员工ids',
   `data` text,
@@ -1771,7 +1771,7 @@ CREATE TABLE `boss_taskflow_template` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `company_id` int(11) unsigned NOT NULL,
   `name` varchar(255) NOT NULL COMMENT '任务流模板的名称',
-  `type` enum('CHECKOUT') NOT NULL COMMENT '任务流模板的类型（CHECKOUT退房）',
+  `type` enum('CHECKOUT','PRICE') NOT NULL COMMENT '任务流模板的类型（CHECKOUT退房）',
   `description` text COMMENT '描述',
   `employee_id` int(10) unsigned NOT NULL COMMENT '创建或修改的操作人id',
   `data` text COMMENT '一些备注信息',
@@ -1780,6 +1780,26 @@ CREATE TABLE `boss_taskflow_template` (
   `deleted_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+CREATE TABLE `boss_price_control` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `company_id` int(10) unsigned NOT NULL,
+  `store_id` int(10) unsigned NOT NULL,
+  `room_id` int(10) unsigned NOT NULL,
+  `type` enum('ROOM','MANAGEMENT') NOT NULL COMMENT '调价类型 调房租调物业费',
+  `taskflow_id` int(10) unsigned NOT NULL,
+  `status` enum('AUDIT','DONE','CLOSED') NOT NULL COMMENT '状态 审核中，执行调价完成，关闭，',
+  `employee_id` int(11) NOT NULL COMMENT '申请调价的员工',
+  `ori_price` decimal(10,2) NOT NULL,
+  `new_price` decimal(10,2) NOT NULL,
+  `remark` text NOT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  `deleted_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
 
 
 

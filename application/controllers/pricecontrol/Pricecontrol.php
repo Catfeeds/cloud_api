@@ -1,15 +1,18 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+use Carbon\Carbon;
+use Illuminate\Database\Capsule\Manager as DB;
 /**
  * Author:      hfq<1326432154@qq.com>
  * Date:        2018/6/8
  * Time:        21:57
  * Describe:    调价
  */
-class Pricecontrol extends MY_Controller {
-    public function __construct() {
+class Pricecontrol extends MY_Controller
+{
+    public function __construct()
+    {
         parent::__construct();
-        $this->load->model('roomunionmodel');
     }
 
     /**
@@ -136,6 +139,139 @@ class Pricecontrol extends MY_Controller {
 
         $this->form_validation->set_rules($config)->set_error_delimiters('', '');
         return $this->form_validation->run();
+    }
+
+    /*********************************************** zjh ***********************************************/
+
+    /**
+     * 创建调价
+     */
+    public function create()
+    {
+        $field = ['room_id', 'type', 'new_price','remark'];
+        if (!$this->validationText($this->validateCreate())) {
+            $this->api_res(1002, ['error' => $this->form_first_error($field)]);
+            return;
+        }
+        $input  = $this->input->post(null,true);
+        //查找房间，判断权限
+        $this->load->model('roomunionmodel');
+        $this->load->model('pricecontrolmodel');
+        $room   = Roomunionmodel::find($input['room_id']);
+        $store_id   = $room->store_id;
+        $e_store_ids    = explode(',',$this->employee->store_ids);
+        if (!in_array($store_id,$e_store_ids)) {
+            $this->api_res(1019);
+            return;
+        }
+
+        $data   = [
+            'company_id'=> COMPANY_ID,
+            'store_id'  => $store_id,
+            'room_id'   => $room->id,
+            'type'      => $input['type'],
+            'new_price' => $input['new_price'],
+            'remark'    => $input['reamrk'],
+            'employee_id'   => $this->employee->id,
+            'created_at'    => Carbon::now()->toDateTimeString(),
+            'updated_at'    => Carbon::now()->toDateTimeString(),
+            ];
+        if ($input['type']==Pricecontrolmodel::TYPE_ROOM) {
+            $data['ori_price']  = $room->rent_price;
+        } elseif ($input['type']==Pricecontrolmodel::TYPE_MANAGEMENT) {
+            $data['ori_price']  = $room->property_price;
+        }
+        //判断该公司有没有调价审批模板
+        $this->load->model('taskflowtemplatemodel');
+        $taskflow_template = Taskflowtemplatemodel::where('type', Taskflowtemplatemodel::TYPE_PRICE)->first();
+        try{
+            DB::beginTransaction();
+            if (!$taskflow_template) {
+                //执行调价
+                if($this->doChangePrice($room,$input['type'],$input['new_price'])){
+                    $data['status']=Pricecontrolmodel::STATE_DONE;
+                }
+            } else {
+                $this->load->model('taskflowmodel');
+                //判断有无正在审核的调价记录
+                $p  = Pricecontrolmodel::where([
+                    'status'    => Pricecontrolmodel::STATE_AUDIT,
+                    'type'      => $input['type'],
+                    'room_id'   => $input['room_id']
+                ])->exists();
+                if($p){
+                    $this->api_res(11203);
+                    return;
+                }
+                //创建调价任务流
+                $taskflow_id    = $this->taskflowmodel->createTaskflow($input['room_id'],Taskflowmodel::TYPE_PRICE,$store_id);
+                if ($taskflow_id) {
+                    $data['taskflow_id']    = $taskflow_id;
+                    $data['status']         = Pricecontrolmodel::STATE_AUDIT;
+                }
+            }
+            //创建调价记录
+            $price_id   = Pricecontrolmodel::insertGetId($data);
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+        $this->api_res(0,$price_id);
+    }
+
+
+    /**
+     * 执行调价
+     */
+    private function doChangePrice($room,$type,$new_price)
+    {
+        if ($type==Pricecontrolmodel::TYPE_ROOM) {
+            $room->rent_price   = $new_price;
+        } elseif ($type==Pricecontrolmodel::TYPE_MANAGEMENT) {
+            $room->property_price   = $new_price;
+        }
+        return $room->save();
+    }
+
+
+    /**
+     * validate
+     */
+    private function validateCreate()
+    {
+        return array(
+            array(
+                'field' => 'room_id',
+                'label' => '房间id',
+                'rules' => 'trim|required|integer',
+            ),
+            array(
+                'field' => 'type',
+                'label' => '调价范围（房租或者物业费）',
+                'rules' => 'trim|required|in_list[ROOM,MANAGEMENT]',
+                'errors'=> [
+                    'required'  => '请选择%s',
+                ]
+            ),
+            array(
+                'field' => 'new_price',
+                'label' => '新的金额',
+                'rules' => 'trim|required|numeric',
+                'errors'=> [
+                    'required'  => '请填写%s',
+                    'numeric'   => '请填写正确的金额'
+                ]
+            ),
+            array(
+                'field' => 'remark',
+                'label' => '调价原因',
+                'rules' => 'trim|required',
+                'errors'=> [
+                    'required'  => '请填写%s',
+                ]
+            ),
+        );
     }
 
 }

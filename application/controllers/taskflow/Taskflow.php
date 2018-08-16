@@ -108,10 +108,27 @@ class Taskflow extends MY_Controller{
     }
 
     /**
-     * 创建任务流
+     * 创建任务流create
      */
     public function create()
     {
+        $input  = $this->input->post(null,true);
+        $room_id= $input['room_id'];
+        //找到房间所在的门店
+        $this->load->model('roomunionmodel');
+        $room   = Roomunionmodel::find($room_id);
+        if (!$room) {
+            $this->api_res(1007);
+            return;
+        }
+        $store_id   = $room->store_id;
+        $type   = $input['type'];
+        $taskflow_id    = $this->taskflowmodel->createTaskflow($room_id,$type,$store_id);
+        if (!$taskflow_id) {
+            $this->api_res(1020);
+            return;
+        }
+        $this->api_res(0,['taskflow_id'=>$taskflow_id]);
 
     }
 
@@ -198,6 +215,9 @@ class Taskflow extends MY_Controller{
             case Taskflowmodel::TYPE_CHECKOUT:
                 $data   = $this->showCheckoutInfo($taskflow_id);
                 break;
+            case Taskflowmodel::TYPE_PRICE:
+                $data   = $this->showPriceInfo($taskflow_id);
+                break;
             default:
                 $data   = [];
         }
@@ -233,14 +253,40 @@ class Taskflow extends MY_Controller{
         $this->load->model('residentmodel');
         $this->load->model('ordermodel');
         $this->load->model('storemodel');
+        $this->load->model('roomunionmodel');
         $checkout   = Checkoutmodel::where('taskflow_id',$taskflow_id)->first();
         $resident   = $checkout->resident;
+        $roomunion  = $checkout->roomunion;
         $store      = $checkout->store->name;
         $unpaid     = $resident->orders()->whereIn('status',[Ordermodel::STATE_PENDING,Ordermodel::STATE_GENERATED])->get();
         $unpaidMoney    = number_format($unpaid->sum('money'),2,'.','');
         $diffmoney  = number_format($resident->deposit_money+$resident->tmp_deposit-$unpaidMoney,2,'.','');
-        $data   = ['unpaidMoney'=>$unpaidMoney,'diffMoney'=>$diffmoney,'store'=>$store,'unpaid'=>$unpaid->toArray(),'resident'=>$resident->toArray()];
+        //押金流水详情
+        $deposit    = $resident->orders()->whereIn('type',[Ordermodel::PAYTYPE_DEPOSIT_O,Ordermodel::PAYTYPE_DEPOSIT_R])
+            ->where('status',Ordermodel::STATE_COMPLETED)
+            ->get();
+        $data   = [
+            'unpaidMoney'=>$unpaidMoney,
+            'diffMoney'=>$diffmoney,
+            'store'=>$store,
+            'unpaid'=>$unpaid->toArray(),
+            'resident'=>$resident->toArray(),
+            'checkout'=>$checkout->toArray(),
+            'roomunion'=>$roomunion,
+            'deposit'=>$deposit->toArray()];
         return $data;
+    }
+
+    /**
+     * 展示调价任务的信息详情
+     */
+    private function showPriceInfo($taskflow_id)
+    {
+        $this->load->model('pricecontrolmodel');
+        $this->load->model('storemodel');
+        $this->load->model('roomunionmodel');
+        $record = Pricecontrolmodel::with(['store','roomunion'])->where('taskflow_id',$taskflow_id)->first();
+        return $record;
     }
 
     /**
@@ -367,9 +413,13 @@ class Taskflow extends MY_Controller{
                 $taskflow->status   = Taskflowmodel::STATE_APPROVED;
                 switch ($taskflow->type) {
                     case Taskflowmodel::TYPE_CHECKOUT:
-                        $this->load->model('checkoutmodel');
-                        $taskflow->checkout()->update(['status'=>Checkoutmodel::STATUS_UNPAID]);
+                        $this->doneCheckout($taskflow);
                         break;
+                    case Taskflowmodel::TYPE_PRICE:
+                        //do change price ...
+                        $this->donePrice($taskflow);
+                        break;
+                    default:
                 }
             }
             $taskflow->save();
@@ -381,6 +431,34 @@ class Taskflow extends MY_Controller{
             throw  $e;
         }
         $this->api_res(0);
+    }
+
+    /**
+     * 退房审核完成
+     */
+    private function doneCheckout($taskflow)
+    {
+        $this->load->model('checkoutmodel');
+        $taskflow->checkout()->update(['status'=>Checkoutmodel::STATUS_UNPAID]);
+    }
+
+    /**
+     * 调价审核完成
+     */
+    private function donePrice($taskflow)
+    {
+        $this->load->model('pricecontrolmodel');
+        $this->load->model('roomunionmodel');
+        $price  = $taskflow->price;
+        $price  = Pricecontrolmodel::STATE_DONE;
+        $price->save();
+        $room   = $price->roomunion;
+        if ($price->type == Pricecontrolmodel::TYPE_ROOM) {
+            $room->rent_price   = $price->new_price;
+        } elseif ($price->type == Pricecontrolmodel::TYPE_MANAGEMENT) {
+            $room->property_price   = $price->new_price;
+        }
+        $room->save();
     }
 
     /**

@@ -124,9 +124,9 @@ class Checkout extends MY_Controller {
                     'resident_id'  => 0,
                 ]
             );
-
             Residentmodel::where('id', $input['resident_id'])->update(['status' => 'CHECKOUT']);
-            $taskflow_id   = $this->createTaskflow($checkout->room_id,'CHECKOUT');
+            $this->load->model('taskflowmodel');
+            $taskflow_id   = $this->taskflowmodel->createTaskflow($checkout->room_id,'CHECKOUT',$this->employee->store_id);
             if ($taskflow_id) {
                 $checkout->taskflow_id  = $taskflow_id;
                 $checkout->status  = 'AUDIT';
@@ -685,53 +685,6 @@ class Checkout extends MY_Controller {
      */
     private function isManager() {
         return isset($this->employee) && $this->employee->position == 'MANAGER';
-    }
-
-    /**
-     * 创建退房的同时创建退款的任务流
-     */
-    private function createTaskflow($room_id,$type)
-    {
-        $this->load->model('taskflowmodel');
-        $this->load->model('taskflowtemplatemodel');
-        $this->load->model('taskflowstepmodel');
-        $this->load->model('taskflowsteptemplatemodel');
-        $template   = Taskflowtemplatemodel::where('company_id',COMPANY_ID)
-            ->where('type',$type)
-            ->first();
-        if (empty($template)) {
-            return false;
-        }
-        $step_field = ['id','company_id','name','type','seq','position_ids','employee_ids'];
-        $step_template  = $template->step_template()->get($step_field);
-
-        $taskflow   = new Taskflowmodel();
-        $taskflow->fill($template->toArray());
-        $taskflow->template_id  = $template->id;
-        $taskflow->serial_number= $taskflow->newNumber($this->employee->store_id);
-        $taskflow->store_id     = $this->employee->store_id;
-        $taskflow->create_role  = Taskflowmodel::CREATE_EMPLOYEE;
-        $taskflow->employee_id  = $this->employee->id;
-        $taskflow->status       = Taskflowmodel::STATE_AUDIT;
-        $taskflow->room_id      = $room_id;
-        $taskflow->save();
-        $step_template_keys_transfer = ['step_template_id','company_id','name','type','seq','position_ids','employee_ids'];
-        $step_template_arr  = $step_template->toArray();
-        $step_merge_data = [
-            'store_id'      => $this->employee->store_id,
-            'taskflow_id'   => $taskflow->id,
-            'status'        => Taskflowstepmodel::STATE_AUDIT,
-            'created_at'    => Carbon::now()->toDateTimeString(),
-            'updated_at'    => Carbon::now()->toDateTimeString(),
-        ];
-        $result = [];
-        foreach ($step_template_arr as $step){
-            $step_combine   = array_combine($step_template_keys_transfer,$step);
-            $result[]   = array_merge($step_merge_data,$step_combine);
-        }
-        Taskflowstepmodel::insert($result);
-
-        return $taskflow->id;
     }
 
     /**
