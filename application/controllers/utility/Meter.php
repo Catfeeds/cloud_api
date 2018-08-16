@@ -376,6 +376,8 @@ class Meter extends MY_Controller
         ];
         $order->fill($arr);
         if ($order->save()){
+            $this_reading->confirmed = 1;$this_reading->save();
+            $last_reading->confirmed = 1;$last_reading->save();
             return $order->id;
         }else{
             return false;
