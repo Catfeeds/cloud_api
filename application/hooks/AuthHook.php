@@ -99,7 +99,13 @@ class AuthHook {
             } else {
                 $authArr = $this->developmentAuth();
             }
-            if (!in_array($full_path, $authArr)) {
+            
+            
+            if(strtolower($directory) == 'innserservice/'){
+                //内部服务API认证
+                $this->apiAuth();
+            }else if (!in_array($full_path, $authArr)) {
+                //web端jwt认证
                 $this->auth($full_path);
             }
         }catch (Exception $e) {
@@ -107,6 +113,28 @@ class AuthHook {
             header("Content-Type:application/json;charset=UTF-8");
             echo json_encode(array('rescode' => 1001, 'resmsg' => 'token无效', 'data' => []));
             exit;
+        }
+    }
+
+
+    public function apiAuth(){
+        $xapitoken = $this->CI->input->get_request_header('x-api-token');
+        log_message('debug','x-api-token'.$xapitoken);
+        if (empty($xapitoken)) {
+            throw new InvalidArgumentException('xapitoken may not be empty');
+        }
+        $tks = explode('.', $xapitoken);
+        if (count($tks) != 3) {
+            throw new UnexpectedValueException('xapitoken Wrong number of segments');
+        }
+        $this->CI->load->model('apimodel');
+        $model = Apimodel::where('apikey',$tks[0])->first();
+        $apihash = hash('sha256',"$tks[0].$tks[1].$model->apisecret");
+        // var_dump($apihash);exit;
+        if($tks[2] == $apihash){
+            define('X_API_TOKEN' , $xapitoken);
+        }else{
+            throw new Exception('x-api-toekn 认证失败');
         }
     }
 
