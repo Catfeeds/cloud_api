@@ -31,7 +31,7 @@ $config['wx_web_appid']  = 'wx75fd74e2316b2355';
 $config['wx_web_secret'] = '70fa3a7fe658be97552788fc764f5434';
 
 /**
-用途: 微信用户端公众号的信息
+用途: 微信租户端公众号的信息
 微信公众平台类型: 公众号
 公众号名称: 梵响数据
 微信号: funxdata
@@ -44,6 +44,38 @@ $config['wx_map_appid']   = 'wxd8da84ed2a26aa06';
 $config['wx_map_secret']  = '00e6fd3ce1151e3d2bd0e01c98c925d3';
 $config['wx_map_token']   = 'aJ1B3XhY7qRvTG3DrbxNhCLo90kpsds4';
 $config['wx_map_aes_key'] = 'IwTUFptFaJ1B3XhY7qRvTG3DrbxNhCLo90kpsqP0cNL';
+
+/**
+测试环境里 员工端和租户端共用了公众号
+用途: 微信员工端端公众号的信息
+微信公众平台类型: 公众号
+公众号名称: 梵响数据
+微信号: funxdata
+管理邮箱: slfw@fun-x.cn
+原始ID: gh_08cb40357652
+AppID: wxd8da84ed2a26aa06
+主域名: tapi.web.funxdata.com
+ */
+$config['wx_employee_appid']   = 'wxd8da84ed2a26aa06';
+$config['wx_employee_secret']  = '00e6fd3ce1151e3d2bd0e01c98c925d3';
+$config['wx_employee_token']   = 'aJ1B3XhY7qRvTG3DrbxNhCLo90kpsds4';
+$config['wx_employee_aes_key'] = 'IwTUFptFaJ1B3XhY7qRvTG3DrbxNhCLo90kpsqP0cNL';
+// 预约看房模板消息
+$config['tmplmsg_employee_Reserve'] = 'qCwYA7zOn-s5cxx8zLBcXpa-n24N_2dZIbV3K0dbEKY';
+
+/**
+用途: 员工端相关配置信息
+微信公众平台类型: 小程序
+小程序名称: 梵响数据
+管理邮箱: egg@fun-x.cn
+原始ID: gh_240bd483e3f3
+AppID: wx5721f56e75cc901e
+主域名: tapi.boss.funxdata.com
+ */
+$config['miniAppid']   = 'wx5721f56e75cc901e';
+$config['miniSecret']  = 'c2681fbb7a0cb09b3817bc7706a57163';
+$config['miniToken']   = '';
+$config['miniAes_key'] = '';
 
 //云片信息
 //https://sms.yunpian.com/v1/sms/send.json
@@ -87,17 +119,3 @@ $config['uploadtemplate.api']    = 'uploadtemplate.api';
 $config['generate_contract.api'] = 'generate_contract.api';
 $config['extsign.api']           = 'extsign.api';
 $config['extsign_auto.api']      = 'extsign_auto.api';
-
-/**
-用途: 员工端相关配置信息
-微信公众平台类型: 小程序
-小程序名称: 梵响数据
-管理邮箱: egg@fun-x.cn
-原始ID: gh_240bd483e3f3
-AppID: wx5721f56e75cc901e
-主域名: tapi.boss.funxdata.com
- */
-$config['miniAppid']   = 'wx5721f56e75cc901e';
-$config['miniSecret']  = 'c2681fbb7a0cb09b3817bc7706a57163';
-$config['miniToken']   = '';
-$config['miniAes_key'] = '';
