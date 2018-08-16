@@ -96,6 +96,7 @@ class Meter extends MY_Controller
             $read   = trim($item[2]);
             if (!is_numeric($read) || 0 > $read || 1e8 < $read) {
                 $error[] = '请检查房间：' . $item[1] . '的表读数';
+                log_message('debug','请检查房间：' . $item[1] . '的表读数');
                 continue;
             }
             //检查权重
@@ -103,15 +104,18 @@ class Meter extends MY_Controller
             if (!$weight) {
                 $weight = 100;
             } elseif (100 < $weight || 0 > $weight) {
+                log_message('debug','请检查房间：' . $item[1] . '的均摊比例');
                 $error[] = '请检查房间：' . $item[1] . '的均摊比例';
                 continue;
             }
             //检查抄表时间
             if(!isset($item[5])){
+                log_message('debug','房间：' . $item[1] . '时间未上传');
                 $error[]    = '房间：' . $item[1] . '时间未上传';
                 continue;
             }elseif (!is_numeric($item[5]))
             {
+                log_message('debug','房间：' . $item[1] . '时间格式错误');
                 $error[] = '房间：' . $item[1] . '时间格式错误正确格式为\'2018/12/12\'';
                 continue;
             }else{
@@ -288,6 +292,7 @@ class Meter extends MY_Controller
             if (empty($this_reading)){
                 $number     =   DB::select("select `number` from boss_room_union WHERE `resident_id` = '$resident_id'");
                 $number     = $number[0]->number;
+                log_message('debug','房间'."$number".'的读数未上传');
                 $error[]    = '房间'."$number".'的读数未上传';
             }elseif($this_reading){
                 if(!empty($new_reading)){
