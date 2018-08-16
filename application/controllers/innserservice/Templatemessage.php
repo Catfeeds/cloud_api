@@ -32,7 +32,7 @@ class Templatemessage extends MY_Controller {
             $query->orwherehas('position', function ($query) use ($position) {
                 $query->where('name', $position);
             });
-        })->get(['employee_mp_openid', 'store_ids', 'name'])->toArray();
+        })->get(['employee_mp_openid', 'store_ids', 'name']);
         if (!$employee) {
             $this->api_res(0);
             return false;
