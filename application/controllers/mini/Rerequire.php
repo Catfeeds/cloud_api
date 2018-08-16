@@ -99,7 +99,7 @@ class Rerequire extends MY_Controller {
 
                     }
                 } else {
-                    log_message('error', 1);
+                    log_message('debug', 1);
                 }
 
             } else {

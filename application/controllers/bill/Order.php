@@ -318,7 +318,7 @@ class Order extends MY_Controller {
                         ])
                         ->andReceiver($customer->openid)
                         ->send();
-                    log_message('error', $resident_id . '推送成功');
+                    log_message('debug', $resident_id . '推送成功');
                 }
 
                 DB::commit();
@@ -380,7 +380,7 @@ class Order extends MY_Controller {
 //                ->where('status', Ordermodel::STATE_PENDING)
 //                ->where('is_notify', 0)
 //                ->update(['is_notify' => 1]);
-            log_message('error', $resident_id . '推送成功');
+            log_message('debug', $resident_id . '推送成功');
         }
         $this->api_res(0, ['failed' => $failed]);
     }
