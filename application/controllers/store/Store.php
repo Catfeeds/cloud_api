@@ -191,7 +191,7 @@ class Store extends MY_Controller {
         $post = $this->input->post(null, true);
         $update->fill($post);
         $update->describe = htmlspecialchars($this->input->post('describe'));
-        log_message('error', $post['describe']);
+        log_message('debug', $post['describe']);
         $update->images = $images;
         if ($update->save()) {
             $this->api_res(0, ['store_id' => $update->id]);

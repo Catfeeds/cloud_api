@@ -426,7 +426,7 @@ class Order extends MY_Controller {
         if ($roomToUpdate) {
             $room->update(['status' => $roomNewStatus]);
         }
-        log_message('error', 2);
+        // log_message('debug', 2);
         //换房等逻辑, 这里需要修改
         if ($residentToUpdate) {
             if (isset($resident->data['change_room'])) {
@@ -439,7 +439,7 @@ class Order extends MY_Controller {
                 $resident->roomunion()->update(['status' => Roomunionmodel::STATE_RENT, 'resident_id' => $resident->id, 'people_count' => $resident->people_count]);
                 $resident->update(['status' => Residentmodel::STATE_NORMAL]);
             } else {
-                log_message('error', 1);
+                // log_message('debug', 1);
                 $resident->update(['status' => $residentNewStatus]);
             }
         }

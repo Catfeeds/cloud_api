@@ -173,7 +173,7 @@ class Roomtype extends MY_Controller
     {
         $post = $this->input->post(null, true);
         $room_type_id = isset($post['room_type_id']) ? $post['room_type_id'] : null;
-        log_message('error', $room_type_id);
+        log_message('debug', $room_type_id);
         $field = [
             'store_id', 'name', 'feature', 'area', 'room_number', 'hall_number', 'toilet_number', 'toward', 'description',
             'provides', 'images', 'display'
