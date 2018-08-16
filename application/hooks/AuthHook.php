@@ -63,7 +63,6 @@ class AuthHook {
 //            'account/login/login',
             //            'account/login/listmenu',
 
-
             'demo/test/test1',
             'demo/test/testa',
             'demo/test/getendtimerooms',
