@@ -6,10 +6,8 @@ use EasyWeChat\Foundation\Application;
 /**
  * 微信模板消息
  */
-class Templatemessage extends MY_Controller
-{
-    public function __construct()
-    {
+class Templatemessage extends MY_Controller {
+    public function __construct() {
         parent::__construct();
     }
 
@@ -27,11 +25,10 @@ class Templatemessage extends MY_Controller
      * visit_time: 预约时间
      * content: 预约内容
      */
-    public function sendReserveMsg()
-    {
+    public function sendReserveMsg() {
         $this->load->model('positionmodel');
         $this->load->model('employeemodel');
-        $post = $this->input->post(null, true);
+        $post     = $this->input->post(null, true);
         $position = '店长';
         $employee = Employeemodel::where(function ($query) use ($position) {
             $query->orwherehas('position', function ($query) use ($position) {
@@ -43,15 +40,15 @@ class Templatemessage extends MY_Controller
             return false;
         }
         $data = [
-            'first' => '有新的预约消息',
+            'first'    => '有新的预约消息',
             'keyword1' => $post['name'],
             'keyword2' => $post['phone'],
             'keyword3' => $post['visit_time'],
             'keyword4' => '看房预约',
-            'remake' => '如有疑问请与工作人员联系'
+            'remake'   => '如有疑问请与工作人员联系',
         ];
         if (!empty($post['content'])) {
-            $data ['keyword4'] = $post['content'];
+            $data['keyword4'] = $post['content'];
         }
         $this->load->helper('common');
         $app = new Application(getWechatEmployeeConfig());
