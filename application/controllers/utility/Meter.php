@@ -293,8 +293,6 @@ class Meter extends MY_Controller
                 if(!empty($new_reading)){
                     $order = $this->addUtilityOrder($this_reading,$new_reading,$year,$month);
                     if ($order){
-                        $this_reading->order_id = $order;$this_reading->save();
-                        $new_reading->order_id = $order;$new_reading->save();
                         $sum +=1;
                     }else{
                         $number = $this_reading->roomunion->number;
@@ -304,8 +302,6 @@ class Meter extends MY_Controller
                 } elseif (!empty($rent_rading)){
                     $order = $this->addUtilityOrder($this_reading,$rent_rading,$year,$month);
                     if ($order){
-                        $this_reading->order_id = $order;$this_reading->save();
-                        $last_reading->order_id = $order;$last_reading->save();
                         $sum +=1;
                     }else{
                         $number = $this_reading->roomunion->number;
@@ -315,7 +311,6 @@ class Meter extends MY_Controller
                 }else{
                     $order = $this->addUtilityOrder($this_reading,$last_reading,$year,$month);
                     if ($order){
-                        $this_reading->order_id = $order;$this_reading->save();
                         $sum +=1;
                     }else{
                         $number = $this_reading->roomunion->number;
@@ -376,9 +371,10 @@ class Meter extends MY_Controller
             'status'       => Ordermodel::STATE_GENERATED,
             'deal'         => Ordermodel::DEAL_UNDONE,
             'pay_status'   => Ordermodel::PAYSTATE_RENEWALS,
+            'transfer_id_s'=> $last_reading->id,
+            'transfer_id_e'=> $this_reading->id,
         ];
         $order->fill($arr);
-
         if ($order->save()){
             return $order->id;
         }else{

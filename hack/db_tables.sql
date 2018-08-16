@@ -705,6 +705,8 @@ CREATE TABLE `boss_order` (
   `out_trade_no` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '微信支付的订单号',
   `is_notify` tinyint(4) DEFAULT '0',
   `store_pay_id` int(11) DEFAULT NULL,
+  `transfer_id_s` int(10) DEFAULT '0' COMMENT '初始水电读数ID',
+  `transfer_id_e` int(10) DEFAULT '0' COMMENT '截止水电读数ID',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=47785 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
