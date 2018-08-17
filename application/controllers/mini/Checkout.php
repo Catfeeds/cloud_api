@@ -186,49 +186,53 @@ class Checkout extends MY_Controller {
             $electric_number  =$electric->serial_number;
         }
         //上传冷水表读数
-        $coldwater      = new Meterreadingtransfermodel();
-        $arr_coldwater  = [
-            'store_id'      => $store_id,
-            'building_id'   => $building_id,
-            'serial_number' => $cold_water_number,
-            'room_id'       => $post['room_id'],
-            'resident_id'   => $post['resident_id'],
-            'year'          => $year,
-            'month'         => $month,
-            'type'          => Meterreadingtransfermodel::TYPE_WATER_C,
-            'this_reading'  => floatval($post['coldwater_reading']),
-            'image'         => $post['coldwater_image'],
-            'this_time'     => date('Y-m-d H:i:s'),
-            'status'        => Meterreadingtransfermodel::NORMAL,
-        ];
-        $coldwater->fill($arr_coldwater);
-        if ($coldwater->save()) {
-            $money['water'] = (floatval($post['coldwater_reading']) - $last_coldwater->this_reading) * $price->water_price;
-            if (0.01 > $money['water']) {
-                return null;
+        if (!empty($post['coldwater_reading'])){
+            $coldwater      = new Meterreadingtransfermodel();
+            $arr_coldwater  = [
+                'store_id'      => $store_id,
+                'building_id'   => $building_id,
+                'serial_number' => $cold_water_number,
+                'room_id'       => $post['room_id'],
+                'resident_id'   => $post['resident_id'],
+                'year'          => $year,
+                'month'         => $month,
+                'type'          => Meterreadingtransfermodel::TYPE_WATER_C,
+                'this_reading'  => floatval($post['coldwater_reading']),
+                'image'         => empty($post['coldwater_image'])?'':$this->splitAliossUrl($post['coldwater_image']),
+                'this_time'     => date('Y-m-d H:i:s'),
+                'status'        => Meterreadingtransfermodel::NORMAL,
+            ];
+            $coldwater->fill($arr_coldwater);
+            if ($coldwater->save() && isset($last_coldwater->this_reading)) {
+                $money['water'] = (floatval($post['coldwater_reading']) - $last_coldwater->this_reading) * $price->water_price;
+                if (0.01 > $money['water']) {
+                    return null;
+                }
             }
         }
         //上传电表读数
-        $electric       = new Meterreadingtransfermodel();
-        $arr_electric   = [
-            'store_id'      => $store_id,
-            'building_id'   => $building_id,
-            'serial_number' => $electric_number,
-            'room_id'       => $post['room_id'],
-            'resident_id'   => $post['resident_id'],
-            'year'          => $year,
-            'month'         => $month,
-            'type'          => Meterreadingtransfermodel::TYPE_ELECTRIC,
-            'this_reading'  => floatval($post['electric_reading']),
-            'image'         => $post['electric_image'],
-            'this_time'     => date('Y-m-d H:i:s'),
-            'status'        => Meterreadingtransfermodel::NORMAL,
-        ];
-        $electric->fill($arr_electric);
-        if($electric->save()){
-            $money['electric']      = (floatval($post['electric_reading']) - $last_electric->this_reading) * $price->electricity_price;
-            if (0.01 > $money['electric']) {
-                return null;
+        if (!empty($post['electric_reading'])){
+            $electric       = new Meterreadingtransfermodel();
+            $arr_electric   = [
+                'store_id'      => $store_id,
+                'building_id'   => $building_id,
+                'serial_number' => $electric_number,
+                'room_id'       => $post['room_id'],
+                'resident_id'   => $post['resident_id'],
+                'year'          => $year,
+                'month'         => $month,
+                'type'          => Meterreadingtransfermodel::TYPE_ELECTRIC,
+                'this_reading'  => floatval($post['electric_reading']),
+                'image'         => empty($post['electric_image'])?'':$this->splitAliossUrl($post['electric_image']),
+                'this_time'     => date('Y-m-d H:i:s'),
+                'status'        => Meterreadingtransfermodel::NORMAL,
+            ];
+            $electric->fill($arr_electric);
+            if($electric->save()&&isset($last_electric->this_reading)){
+                $money['electric']      = (floatval($post['electric_reading']) - $last_electric->this_reading) * $price->electricity_price;
+                if (0.01 > $money['electric']) {
+                    return null;
+                }
             }
         }
         //上传热水表读数
@@ -249,7 +253,7 @@ class Checkout extends MY_Controller {
                 'status'        => Meterreadingtransfermodel::NORMAL,
             ];
             $hotwater->fill($arr_hotwater);
-            if($hotwater->save()){
+            if($hotwater->save()&&isset($last_hotwater->this_reading)){
                 $money['hot_water']     = (floatval($post['hotwater_reading']) - $last_hotwater->this_reading) * $price->hot_water_price;
                 if (0.01 > $money['hot_water']) {
                     return null;
