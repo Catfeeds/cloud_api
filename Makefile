@@ -8,7 +8,12 @@ REDIS_IMG?=registry.cn-beijing.aliyuncs.com/wa/redis:3.2
 VERSION=${shell cat VERSION 2> /dev/null}
 
 sync:
-	rsync -vaz --delete --exclude=.git ./ ss:/opt/web/admin-api/
+	rsync -vaz --delete \
+	 --exclude=.git \
+	 --exclude=production \
+	 --exclude=logs \
+	 --exclude=cache \
+	 ./application/ pre:/data/wwwroot/fxpms_boss/funxpms_boss/application/
 
 dev: redis
 	docker run --rm -it \
