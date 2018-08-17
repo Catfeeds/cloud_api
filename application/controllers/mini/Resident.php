@@ -138,7 +138,7 @@ class Resident extends MY_Controller
             $resident->card_one         = $this->splitAliossUrl($data['card_one']);
             $resident->card_two         = $this->splitAliossUrl($data['card_two']);
             $resident->card_three       = $this->splitAliossUrl($data['card_three']);
-            $check_images               = explode(',',$data['check_images']);
+            $check_images               = explode(',',$post['check_images']);
             foreach ($check_images as $k=>$v){
                 if ($v == ''){
                     unset($check_images[$k]);
