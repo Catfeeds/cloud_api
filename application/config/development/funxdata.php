@@ -45,6 +45,14 @@ $config['wx_map_secret']  = '00e6fd3ce1151e3d2bd0e01c98c925d3';
 $config['wx_map_token']   = 'aJ1B3XhY7qRvTG3DrbxNhCLo90kpsds4';
 $config['wx_map_aes_key'] = 'IwTUFptFaJ1B3XhY7qRvTG3DrbxNhCLo90kpsqP0cNL';
 
+//微信商户
+$config['customer_wechat_payment_merchant_id'] = '1283267801';
+$config['customer_wechat_payment_key']         = 'c26cde6c73f3db135556f9cbed016fae';
+//$config['customer_wechat_payment_cert_path']    = '/data/wwwroot/fxpms_web/cert/apiclient_cert.pem';
+$config['customer_wechat_payment_cert_path'] = '';
+//$config['customer_wechat_payment_key_path']     = '/data/wwwroot/fxpms_web/cert/apiclient_key.pem';
+$config['customer_wechat_payment_key_path'] = '';
+
 /**
 测试环境里 员工端和租户端共用了公众号
 用途: 微信员工端端公众号的信息

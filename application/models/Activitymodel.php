@@ -66,6 +66,7 @@ class Activitymodel extends Basemodel {
                     $query->where('store_id',$store_id);
                 });
             })->select(['id','prize_id','end_time','start_time'])->first();
+
         if(!$activity_id){
             return '没有查询到该活动';
         }

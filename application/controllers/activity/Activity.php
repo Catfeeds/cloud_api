@@ -311,7 +311,7 @@ class Activity extends MY_Controller
         $store_ids = Storeactivitymodel::where(function ($query) {
             $query->orWhereHas('activity', function ($query) {
                 $query->where('activity_type', 'OLDBELTNEW')->where('type','!=','LOWER')->where('end_time','>=',Carbon::now());
-            });
+       });
         })->get(['store_id'])->toArray();
         $store_id = explode(',', $post['store_id']);
         if( 0 != count($store_ids)) {
