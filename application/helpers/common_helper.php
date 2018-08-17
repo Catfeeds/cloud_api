@@ -21,6 +21,12 @@ function getWechatCustomerConfig() {
         'guzzle'  => [
             'timeout' => 3.0,
         ],
+        'payment' => [
+            'merchant_id'   => config_item('customer_wechat_payment_merchant_id'),
+            'key'           => config_item('customer_wechat_payment_key'),
+            'cert_path'     => config_item('customer_wechat_payment_cert_path'),
+            'key_path'      => config_item('customer_wechat_payment_key_path'),
+        ],
     ];
 }
 

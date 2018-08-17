@@ -9,7 +9,8 @@ use EasyWeChat\Foundation\Application;
  * Date: 2018/8/17
  * Time: 15:28
  */
-class Confirm_payment extends MY_Controller
+
+class ConfirmPayment extends MY_Controller
 {
     public function __construct()
     {
@@ -29,22 +30,22 @@ class Confirm_payment extends MY_Controller
         })->where('created_at','>=',$dt)->get()->toArray();
         if (!$order) {
             log_message('debug', '没有查询到付完款未确认的账单');
-            $this->api_res(1007);
+            $this->api_res(0);
             return false;
         }
-        $this->load->help('common');
+        $this->load->helper('common');
         $app = new Application(getWechatCustomerConfig());
 
         foreach($order as $value) {
             $result = $app->payment->query($value['out_trade_no']);
-            if($result->items['result_code'] == 'SUCCESS'){
+            if($result->return_code == 'SUCCESS' && $result->result_code == 'SUCCESS'){
                 $update_statsu = Ordermodel::where('id',$value['data']['orders'][0]['id'])->update(['status'=>'COMPLATE']);
                 if(!$update_statsu){
                     log_message('error','修改订单状态出错');
                 }
                 $this->api_res(0);
             }
-            log_message('error','微信订单确认出错，错误为：'.$result->items['return_code']);
+            log_message('error','微信订单确认出错，错误为：'.$result->result_code );
         }
     }
 }
