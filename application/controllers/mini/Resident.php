@@ -138,7 +138,7 @@ class Resident extends MY_Controller
             $resident->card_one         = $this->splitAliossUrl($data['card_one']);
             $resident->card_two         = $this->splitAliossUrl($data['card_two']);
             $resident->card_three       = $this->splitAliossUrl($data['card_three']);
-            $resident->check_images     = json_encode($this->splitAliossUrl($data['check_images'],true),true);
+            $resident->check_images     = json_encode($this->splitAliossUrl(explode(',',$data['check_images']),true),true);
             $resident->company_id       = 1;
             $a=$resident->save();
             //把房间状态改成占用
