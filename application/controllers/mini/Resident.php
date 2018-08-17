@@ -70,7 +70,7 @@ class Resident extends MY_Controller
             'name','phone','card_type','card_number','card_one','card_two','card_three','real_property_costs','real_rent_money',
             'name_two','phone_two','card_type_two','card_number_two','alter_phone','alternative','address',
             /*入住上传水电读数字段*/'electric_reading','coldwater_reading','hotwater_reading',
-            'electric_image','coldwater_image','hotwater_image'
+            'electric_image','coldwater_image','hotwater_image','check_images'
         ];
 
         if(!$this->validationText($this->validateCheckIn())){
@@ -128,17 +128,18 @@ class Resident extends MY_Controller
         try{
             DB::beginTransaction();
             $resident->fill($data);
-            $resident->rent_price   = $room->rent_price;
+            $resident->rent_price       = $room->rent_price;
             $resident->property_price   = $room->property_price;
-            $resident->water_price   = $store->water_price;
-            $resident->hot_water_price   = $store->hot_water_price;
-            $resident->electricity_price   = $store->electricity_price;
+            $resident->water_price      = $store->water_price;
+            $resident->hot_water_price  = $store->hot_water_price;
+            $resident->electricity_price= $store->electricity_price;
 
            // $resident->employee_id  = $this->employee->id;
-            $resident->card_one = $this->splitAliossUrl($data['card_one']);
-            $resident->card_two = $this->splitAliossUrl($data['card_two']);
-            $resident->card_three = $this->splitAliossUrl($data['card_three']);
-            $resident->company_id = 1;
+            $resident->card_one         = $this->splitAliossUrl($data['card_one']);
+            $resident->card_two         = $this->splitAliossUrl($data['card_two']);
+            $resident->card_three       = $this->splitAliossUrl($data['card_three']);
+            $resident->check_images     = json_encode($this->splitAliossUrl($data['check_images'],true),true);
+            $resident->company_id       = 1;
             $a=$resident->save();
             //把房间状态改成占用
             $b=$this->occupiedByResident($room, $resident);
@@ -480,6 +481,14 @@ class Resident extends MY_Controller
                 'field' => 'hotwater_image',
                 'label' => '热水表照片',
                 'rules' => 'trim',
+            ),
+            array(
+                'field' => 'check_images',
+                'label' => '房间实拍',
+                'rules' => 'required|trim',
+                'errors' => array(
+                    'required' => '请上传%s',
+                ),
             ),
         );
 
