@@ -225,21 +225,21 @@ class Utility extends MY_Controller {
                         $record->last_time      = !empty($last)?(date('Y-m-d',$last->this_time)):'';
                         $record->this_image     = $this->fullAliossUrl($record->image);
                         $record->last_image     = empty($last->image)?'':$this->fullAliossUrl($last->image);
-                        $record->this_time      = date('Y-m-d',$record->this_time);
+                        $record->this_time      = date('Y-m-d',strtotime($record->this_time));
                         return $record;
                     }elseif ($record->status == Meterreadingtransfermodel::NEW_RENT){
                         $record->last_reading   = '';
                         $record->last_time      = '';
                         $record->this_image     = $this->fullAliossUrl($record->image);
                         $record->last_image     = '';
-                        $record->this_time      = date('Y-m-d',$record->this_time);
+                        $record->this_time      = date('Y-m-d',strtotime($record->this_time));
                         return $record;
                     }elseif ($record->status == Meterreadingtransfermodel::NEW_METER){
                         $record->last_reading   = '';
                         $record->last_time      = '';
                         $record->this_image     = $this->fullAliossUrl($record->image);
                         $record->last_image     = '';
-                        $record->this_time      = date('Y-m-d',$record->this_time);
+                        $record->this_time      = date('Y-m-d',strtotime($record->this_time));
                         return $record;
                     }elseif ($record->status == Meterreadingtransfermodel::NORMAL){
                         $record = $this->lastReading($record);               
@@ -277,23 +277,23 @@ class Utility extends MY_Controller {
 
         if (!empty($new_rent)){
             $record->last_reading   = $new_rent->this_reading;
-            $record->last_time      = date('Y-m-d',$new_rent->this_time);
+            $record->last_time      = date('Y-m-d',strtotime($new_rent->this_time));
             $record->this_image     = empty($record->image)?'':$this->fullAliossUrl($record->image);
             $record->last_image     = $this->fullAliossUrl($new_rent->image);
-            $record->this_time      = date('Y-m-d',$record->this_time);
+            $record->this_time      = date('Y-m-d',strtotime($record->this_time));
         }elseif(!empty($new_meter)){
             $record->last_reading   = $new_meter->this_reading;
-            $record->last_time      = date('Y-m-d',$new_meter->this_time);
+            $record->last_time      = date('Y-m-d',strtotime($new_meter->this_time));
             $record->this_image     = empty($record->image)?'':$this->fullAliossUrl($record->image);
             $record->last_image     = $this->fullAliossUrl($new_meter->image);
-            $record->this_time      = date('Y-m-d',$record->this_time);
+            $record->this_time      = date('Y-m-d',strtotime($record->this_time));
         }else{
             if (!empty($last_reading)){
                 $record->last_reading   = $last_reading->this_reading;
-                $record->last_time      = date('Y-m-d',$last_reading->this_time);
+                $record->last_time      = date('Y-m-d',strtotime($last_reading->this_time));
                 $record->this_image     = empty($record->image)?'':$this->fullAliossUrl($record->image);
                 $record->last_image     = empty($last_reading->image)?'':$this->fullAliossUrl($last_reading->image);
-                $record->this_time      = date('Y-m-d',$record->this_time);
+                $record->this_time      = date('Y-m-d',strtotime($record->this_time));
             }else{           
                 $record->last_reading   = '';
                 $record->last_time      = '';
