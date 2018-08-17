@@ -10,4 +10,9 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class Storepaymodel extends Basemodel {
     protected $table = 'boss_store_pay';
     protected $casts = ['data' => 'array'];
+
+    public function order(){
+
+        return $this->belongsTo(Ordermodel::class,'id','resident_id');
+    }
 }
