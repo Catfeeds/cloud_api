@@ -104,9 +104,9 @@ class Checkout extends MY_Controller {
 
             $utlity                 = $this->utility($input);
 
-            $bills['water']         = $utlity['water'];
-            $bills['hot_water']     = $utlity['hot_water'];
-            $bills['electricity']   = $utlity['electric'];
+            $bills['water']         = isset($utlity['water'])?'':$utlity['water'];
+            $bills['hot_water']     = isset($utlity['hot_water'])?'':$utlity['hot_water'];
+            $bills['electricity']   = isset($utlity['electric'])?'':$utlity['electric'];
             $bills['clean']         = $input['clean'];
             $bills['compensation']  = $input['compensation'];
             //生成退房时的订单
