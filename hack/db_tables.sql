@@ -112,6 +112,23 @@ CREATE TABLE `boss_activity_record` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `boss_api`
+--
+
+CREATE TABLE `boss_api` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `apikey` varchar(255) NOT NULL DEFAULT '',
+  `apisecret` varchar(255) NOT NULL DEFAULT '',
+  `created_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `updated_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `deleted_at` datetime DEFAULT NULL,
+  `note` text NOT NULL COMMENT '备注说明',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `apikey_UNIQUE` (`apikey`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+
+
+--
 -- Table structure for table `boss_bill`
 --
 
@@ -423,9 +440,10 @@ CREATE TABLE `boss_employee` (
   `province` varchar(255) DEFAULT NULL,
   `city` varchar(255) DEFAULT NULL,
   `country` varchar(255) DEFAULT NULL,
-  `openid` varchar(255) DEFAULT NULL COMMENT '员工的openid',
+  `openid` varchar(255) DEFAULT NULL COMMENT '员工的网站应用登录openid',
   `unionid` varchar(255) DEFAULT NULL COMMENT '微信unionid',
   `mini_openid` varchar(255) DEFAULT NULL COMMENT '小程序openid',
+  `employee_mp_openid` varchar(255) DEFAULT NULL COMMENT '员工公众号openid',
   `session_key` varchar(255) DEFAULT NULL,
   `hiredate` date NOT NULL DEFAULT '0000-00-00' COMMENT '入职时间',
   `status` enum('N','Y','ENABLE','DISABLE') NOT NULL DEFAULT 'ENABLE' COMMENT '员工的状态',
