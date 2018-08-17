@@ -256,6 +256,8 @@ class Taskflow extends MY_Controller{
         $this->load->model('roomunionmodel');
         $checkout   = Checkoutmodel::where('taskflow_id',$taskflow_id)->first();
         $resident   = $checkout->resident;
+        $resident->begin_time   = Carbon::parse($resident->begin_time)->format('Y-m-d');
+        $resident->end_time   = Carbon::parse($resident->end_time)->format('Y-m-d');
         $roomunion  = $checkout->roomunion;
         $store      = $checkout->store->name;
         $unpaid     = $resident->orders()->whereIn('status',[Ordermodel::STATE_PENDING,Ordermodel::STATE_GENERATED])->get();
