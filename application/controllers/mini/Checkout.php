@@ -103,10 +103,15 @@ class Checkout extends MY_Controller {
             $checkout->save();
 
             $utlity                 = $this->utility($input);
-
-            $bills['water']         = isset($utlity['water'])?'':$utlity['water'];
-            $bills['hot_water']     = isset($utlity['hot_water'])?'':$utlity['hot_water'];
-            $bills['electricity']   = isset($utlity['electric'])?'':$utlity['electric'];
+            if (isset($utlity['water'])){
+                $bills['water'] = $utlity['water'];
+            }
+            if (isset($utlity['hot_water'])){
+                $bills['hot_water'] = $utlity['hot_water'];
+            }
+            if (isset($utlity['electric'])){
+                $bills['electricity'] = $utlity['electric'];
+            }
             $bills['clean']         = $input['clean'];
             $bills['compensation']  = $input['compensation'];
             //生成退房时的订单
@@ -185,6 +190,7 @@ class Checkout extends MY_Controller {
         }else{
             $electric_number  =$electric->serial_number;
         }
+        $money = [];
         //上传冷水表读数
         if (!empty($post['coldwater_reading'])){
             $coldwater      = new Meterreadingtransfermodel();
