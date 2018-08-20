@@ -997,6 +997,7 @@ CREATE TABLE `boss_resident` (
   `rent_price` decimal(10,2) DEFAULT NULL COMMENT '未打折前',
   `type` enum('FIRST','RENEWAL') COLLATE utf8_unicode_ci DEFAULT 'FIRST',
   `check_images` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT '入住时房间实拍',
+  `old_phone` char(11) COLLATE utf8_unicode_ci  DEFAULT NULL COMMENT '老用户手机号',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3196 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
