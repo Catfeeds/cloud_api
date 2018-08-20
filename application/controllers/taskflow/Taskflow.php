@@ -31,15 +31,16 @@ class Taskflow extends MY_Controller{
         empty($input['type'])?:$where['type']=$input['type'];
         empty($input['status'])?:$where['status']=$input['status'];
         $page   = (int)(empty($input['page'])?1:$input['page']);
+        $per_page   = (empty(($input['per_page'])))?PAGINATE:$input['per_page'];
         $count  = Taskflowmodel::where($where)
             ->where('employee_id',$employee_id)
             ->count();
-        $totalPage  = ceil($count/PAGINATE);
+        $totalPage  = ceil($count/$per_page);
         if ($page>$totalPage) {
             $this->api_res(0,['taskflows'=>[],'page'=>$page,'totalPage'=>$totalPage]);
             return;
         }
-        $offset    = PAGINATE * ($page - 1);
+        $offset    = $per_page * ($page - 1);
         $this->load->model('positionmodel');
         $this->load->model('storemodel');
         $this->load->model('roomunionmodel');
@@ -53,7 +54,7 @@ class Taskflow extends MY_Controller{
             ->where($where)
             ->where('employee_id',$employee_id)
             ->offset($offset)
-            ->limit(PAGINATE)
+            ->limit($per_page)
             ->orderBy('id','DESC')
             ->get();
             /*->map(function($res){
@@ -84,15 +85,16 @@ class Taskflow extends MY_Controller{
         empty($input['type'])?:$where['type']=$input['type'];
         empty($input['status'])?:$where['status']=$input['status'];
         $page   = (int)(empty($input['page'])?1:$input['page']);
+        $per_page   = (empty(($input['per_page'])))?PAGINATE:$input['per_page'];
         $count  = Taskflowmodel::where($where)
             ->whereIn('store_id',$e_store_ids)
             ->count();
-        $totalPage  = ceil($count/PAGINATE);
+        $totalPage  = ceil($count/$per_page);
         if ($page>$totalPage) {
             $this->api_res(0,['taskflows'=>[],'page'=>$page,'totalPage'=>$totalPage]);
             return;
         }
-        $offset    = PAGINATE * ($page - 1);
+        $offset    = $per_page * ($page - 1);
         $this->load->model('storemodel');
         $this->load->model('positionmodel');
         $this->load->model('roomunionmodel');
@@ -106,7 +108,7 @@ class Taskflow extends MY_Controller{
             ->where($where)
             ->whereIn('store_id',$e_store_ids)
             ->offset($offset)
-            ->limit(PAGINATE)
+            ->limit($per_page)
             ->get();
         $this->api_res(0,['taskflows'=>$taskflows,'page'=>$page,'totalPage'=>$totalPage,'count'=>$count]);
     }
@@ -155,14 +157,15 @@ class Taskflow extends MY_Controller{
         empty($input['type'])?:$where['type']=$input['type'];
         empty($input['status'])?:$where['status']=$input['status'];
         $page   = (int)(empty($input['page'])?1:$input['page']);
+        $per_page   = (empty(($input['per_page'])))?PAGINATE:$input['per_page'];
         $count  = Taskflowrecordmodel::where('employee_id',$this->employee->id)
             ->where($where)->groupBy('taskflow_id')->count();
-        $totalPage  = ceil($count/PAGINATE);
+        $totalPage  = ceil($count/$per_page);
         if ($page>$totalPage) {
             $this->api_res(0,['steps'=>[],'page'=>$page,'totalPage'=>$totalPage]);
             return;
         }
-        $offset    = PAGINATE * ($page - 1);
+        $offset    = $per_page * ($page - 1);
         $this->load->model('storemodel');
         $this->load->model('positionmodel');
         $this->load->model('roomunionmodel');
@@ -178,7 +181,7 @@ class Taskflow extends MY_Controller{
             ->where('employee_id',$this->employee->id)
             ->where($where)
             ->offset($offset)
-            ->limit(PAGINATE)
+            ->limit($per_page)
             ->groupBy('taskflow_id')
             ->orderBy('id','DESC')
             ->get();
@@ -310,6 +313,7 @@ class Taskflow extends MY_Controller{
         $e_position_id  = $this->employee->position_id;
         $e_store_ids    = explode(',',$this->employee->store_ids);
         $page   = (int)(empty($input['page'])?1:$input['page']);
+        $per_page   = (empty(($input['per_page'])))?PAGINATE:$input['per_page'];
         $this->load->model('positionmodel');
         $this->load->model('storemodel');
         $this->load->model('roomunionmodel');
@@ -338,13 +342,13 @@ class Taskflow extends MY_Controller{
             ->where('id','>',0);
 
         $count  = $audit->count();
-        $totalPage  = ceil($count/PAGINATE);
+        $totalPage  = ceil($count/$per_page);
         if ($page>$totalPage) {
             $this->api_res(0,['audits'=>[],'page'=>$page,'totalPage'=>$totalPage,'count'=>$count]);
             return;
         }
 
-        $pageAudit  = $audit->forPage($page,PAGINATE);
+        $pageAudit  = $audit->forPage($page,$per_page);
         $res    = [];
         foreach ($pageAudit as $a){
             $res[]  = $a;
