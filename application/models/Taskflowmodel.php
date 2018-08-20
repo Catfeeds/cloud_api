@@ -88,6 +88,15 @@ class Taskflowmodel extends Basemodel
     {
         return $this->belongsTo(Storemodel::class,'store_id');
     }
+
+    /**
+     * 房间
+     */
+    public function roomunion()
+    {
+        return $this->belongsTo(Roomunionmodel::class,'room_id');
+    }
+
     /**
      * 生成审批编号
      */

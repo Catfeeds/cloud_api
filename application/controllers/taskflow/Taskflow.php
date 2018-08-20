@@ -42,12 +42,14 @@ class Taskflow extends MY_Controller{
         $offset    = PAGINATE * ($page - 1);
         $this->load->model('positionmodel');
         $this->load->model('storemodel');
+        $this->load->model('roomunionmodel');
         $taskflows  = Taskflowmodel::with(['step'=>function($query){
             $query->with(['employee'=>function($query){
                 $query->with('position');
             }]);
         }])
             ->with('store')
+            ->with('roomunion')
             ->where($where)
             ->where('employee_id',$employee_id)
             ->offset($offset)
@@ -60,7 +62,7 @@ class Taskflow extends MY_Controller{
                 $res->step->positions = $positions;
                 return $res;
             })*/
-        $this->api_res(0,['taskflows'=>$taskflows,'page'=>$page,'totalPage'=>$totalPage]);
+        $this->api_res(0,['taskflows'=>$taskflows,'page'=>$page,'totalPage'=>$totalPage,'count'=>$count]);
     }
 
     /**
@@ -93,18 +95,20 @@ class Taskflow extends MY_Controller{
         $offset    = PAGINATE * ($page - 1);
         $this->load->model('storemodel');
         $this->load->model('positionmodel');
+        $this->load->model('roomunionmodel');
         $taskflows  = Taskflowmodel::with(['step'=>function($query){
             $query->with(['employee'=>function($query){
                 $query->with('position');
             }]);
         }])
             ->with('store')
+            ->with('roomunion')
             ->where($where)
             ->whereIn('store_id',$e_store_ids)
             ->offset($offset)
             ->limit(PAGINATE)
             ->get();
-        $this->api_res(0,['taskflows'=>$taskflows,'page'=>$page,'totalPage'=>$totalPage]);
+        $this->api_res(0,['taskflows'=>$taskflows,'page'=>$page,'totalPage'=>$totalPage,'count'=>$count]);
     }
 
     /**
@@ -161,13 +165,15 @@ class Taskflow extends MY_Controller{
         $offset    = PAGINATE * ($page - 1);
         $this->load->model('storemodel');
         $this->load->model('positionmodel');
+        $this->load->model('roomunionmodel');
         $steps  = Taskflowrecordmodel::with(['taskflow'=>function($query){
             $query->with(['step'=>function($query){
                 $query->with(['employee'=>function($query){
                     $query->with('position');
                 }]);
             }])
-            ->with('store');
+            ->with('store')
+            ->with('roomunion');
         }])
             ->where('employee_id',$this->employee->id)
             ->where($where)
@@ -176,7 +182,7 @@ class Taskflow extends MY_Controller{
             ->groupBy('taskflow_id')
             ->orderBy('id','DESC')
             ->get();
-        $this->api_res(0,['steps'=>$steps,'page'=>$page,'totalPage'=>$totalPage]);
+        $this->api_res(0,['steps'=>$steps,'page'=>$page,'totalPage'=>$totalPage,'count'=>$count]);
     }
 
     /**
@@ -306,12 +312,14 @@ class Taskflow extends MY_Controller{
         $page   = (int)(empty($input['page'])?1:$input['page']);
         $this->load->model('positionmodel');
         $this->load->model('storemodel');
+        $this->load->model('roomunionmodel');
         $audit  = Taskflowstepmodel::with(['taskflow'=>function($query){
             $query->with('employee')->with(['step'=>function($a){
                 $a->with(['employee'=>function($query){
                     $query->with('position');
                 }]);
-            }])->with('store');
+            }])->with('store')
+            ->with('roomunion');
         }])
             ->where('status','!=',Taskflowstepmodel::STATE_APPROVED)
             ->whereIn('store_id',$e_store_ids)
@@ -332,7 +340,7 @@ class Taskflow extends MY_Controller{
         $count  = $audit->count();
         $totalPage  = ceil($count/PAGINATE);
         if ($page>$totalPage) {
-            $this->api_res(0,['audits'=>[],'page'=>$page,'totalPage'=>$totalPage]);
+            $this->api_res(0,['audits'=>[],'page'=>$page,'totalPage'=>$totalPage,'count'=>$count]);
             return;
         }
 
@@ -341,7 +349,7 @@ class Taskflow extends MY_Controller{
         foreach ($pageAudit as $a){
             $res[]  = $a;
         }
-        $this->api_res(0,['audits'=>$res,'page'=>$page,'totalPage'=>$totalPage]);
+        $this->api_res(0,['audits'=>$res,'page'=>$page,'totalPage'=>$totalPage,'count'=>$count]);
     }
 
     private function validate()
