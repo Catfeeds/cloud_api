@@ -37,7 +37,7 @@ class Taskflow extends MY_Controller{
             ->count();
         $totalPage  = ceil($count/$per_page);
         if ($page>$totalPage) {
-            $this->api_res(0,['taskflows'=>[],'page'=>$page,'totalPage'=>$totalPage]);
+            $this->api_res(0,['taskflows'=>[],'page'=>$page,'totalPage'=>$totalPage,'count'=>$count]);
             return;
         }
         $offset    = $per_page * ($page - 1);
@@ -91,7 +91,7 @@ class Taskflow extends MY_Controller{
             ->count();
         $totalPage  = ceil($count/$per_page);
         if ($page>$totalPage) {
-            $this->api_res(0,['taskflows'=>[],'page'=>$page,'totalPage'=>$totalPage]);
+            $this->api_res(0,['taskflows'=>[],'page'=>$page,'totalPage'=>$totalPage,'count'=>$count]);
             return;
         }
         $offset    = $per_page * ($page - 1);
@@ -162,7 +162,7 @@ class Taskflow extends MY_Controller{
             ->where($where)->groupBy('taskflow_id')->count();
         $totalPage  = ceil($count/$per_page);
         if ($page>$totalPage) {
-            $this->api_res(0,['steps'=>[],'page'=>$page,'totalPage'=>$totalPage]);
+            $this->api_res(0,['steps'=>[],'page'=>$page,'totalPage'=>$totalPage,'count'=>$count]);
             return;
         }
         $offset    = $per_page * ($page - 1);
