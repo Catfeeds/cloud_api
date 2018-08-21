@@ -616,14 +616,36 @@ CREATE TABLE `boss_meter_reading_transfer` (
   `this_reading` float(10,2) NOT NULL DEFAULT '0.00' COMMENT '最新读数',
   `this_time` datetime NOT NULL DEFAULT '2017-01-01 00:00:00' COMMENT '本次抄表时间',
   `weight` tinyint(4) NOT NULL DEFAULT '100' COMMENT '计算金额的比例',
-  `status` enum('NORMAL','NEW_RNET','CHANGE_NEW','CHANGE_OLD') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'NORMAL' COMMENT '状态：NORMAL正常，CHANGE_NEW换表(新),NEW_RNET新入住,CHANGE_OLD换表(旧),',
+  `status` enum('NORMAL','NEW_RENT','CHANGE_NEW','CHANGE_OLD') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'NORMAL' COMMENT '状态：NORMAL正常，CHANGE_NEW换表(新),NEW_RENT新入住,CHANGE_OLD换表(旧),',
   `confirmed` tinyint(4) NOT NULL DEFAULT '0' COMMENT '数据是否已经确认',
+  `image` varchar(128) NOT NULL DEFAULT '' COMMENT '水电读数图片',
   `created_at` datetime NOT NULL DEFAULT '2017-01-01 00:00:00' COMMENT '创建时间',
   `updated_at` datetime NOT NULL DEFAULT '2017-01-01 00:00:00' COMMENT '更新时间',
   `deleted_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique` (`resident_id`,`year`,`month`,`type`,`room_id`,`serial_number`,`status`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4393 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `boss_log_water_electricity`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `boss_log_water_electricity` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `transfer_id` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'boss_meter_reading_transfer主键',
+  `employee_id` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '员工ID',
+  `original_record` float(10,2) unsigned NOT NULL DEFAULT '0.00' COMMENT '原读数',
+  `now_record` float(10,2) unsigned NOT NULL DEFAULT '0.00' COMMENT '新读数',
+  `reason` text NOT NULL COMMENT '修改理由',
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  `deleted_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 /*!40101 SET character_set_client = @saved_cs_client */;
 
