@@ -168,7 +168,7 @@ class Activity extends MY_Controller
         $this->load->model('storemodel');
         $city_name = empty($post['city'])? '' : $post['city'];
         $city = explode(',',$city_name);
-        $store = Storemodel::wherein('city',$city)->get(['name'])->toArray();
+        $store = Storemodel::wherein('city',$city)->get(['id','name'])->toArray();
         $this->api_res(0,$store);
     }
     /*
