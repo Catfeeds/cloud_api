@@ -90,7 +90,7 @@ class Activity extends MY_Controller
             ->count();
         $count = ceil($count / PAGINATE);
         if (!$activity) {
-            $this->api_res(1007);
+            $this->api_res(0, []);
             return false;
         }
         $lo_data =[];
