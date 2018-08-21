@@ -737,15 +737,12 @@ class Resident extends MY_Controller
         try{
             DB::beginTransaction();
             if(Residentmodel::STATE_RESERVE== $resident->status){
-
                 //把住户状态改为 无效的 订单也改成无效
                 $a  = $this->invalid($resident);
                 $b  = $this->invalidReserve($resident);
                 //更改房间状态为blank
                 $resident->roomunion->update(['people_count'=>0,'resident_id'=>0,'status'=>Roomunionmodel::STATE_BLANK]);
-
                 if($a &&($b || $b==0)){
-
 
                 }else{
                     log_message('error','Resident取消预定失败');
@@ -783,11 +780,14 @@ class Resident extends MY_Controller
                         //清除合同
                         $this->load->model('contractmodel');
                         $resident->contract()->delete();
-
+                        //清除水电读数
+                        $this->load->model('meterreadingtransfermodel');
+                        $resident->transfer()->delete();
                         //清除订单
                         $resident->orders()->whereNotIn('status',[Ordermodel::STATE_CONFIRM,Ordermodel::STATE_COMPLETED])->delete();
                         $resident->status   = Residentmodel::STATE_RESERVE;
                         $resident->save();
+
                     }else{
                         log_message('error','住户已经有支付过的订单, 无法进行该操作！');
                         DB::rollBack();
@@ -803,6 +803,9 @@ class Resident extends MY_Controller
                     //清除合同
                     $this->load->model('contractmodel');
                     $resident->contract()->delete();
+                    //清除水电读数
+                    $this->load->model('meterreadingtransfermodel');
+                    $resident->transfer()->delete();
                     //删除住户信息
                     $resident->delete();
                     $resident->roomunion->update(['people_count'=>0,'resident_id'=>0,'status'=>Roomunionmodel::STATE_BLANK]);
