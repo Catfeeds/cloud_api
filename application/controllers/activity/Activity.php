@@ -47,6 +47,7 @@ class Activity extends MY_Controller
         $this->load->model('drawmodel');
         $this->load->model('employeemodel');
         $this->load->model('storemodel');
+        $this->load->model('couponmodel');
         $this->load->model('activityprizemodel');
         $store = Storemodel::get(['id'])->toArray();
         $result = array_column($store, 'id');
@@ -57,24 +58,30 @@ class Activity extends MY_Controller
         $store_id = explode(',', $store_id);
         $offset = ($page - 1) * PAGINATE;
         $filed = ['id', 'name', 'start_time', 'end_time', 'description', 'coupon_info', 'type',
-            'limit', 'employee_id', 'qrcode_url', 'activity_type', 'prize_id'];
+            'limit', 'employee_id', 'qrcode_url', 'activity_type', 'prize_id', 'share_img', 'share_title', 'share_des'];
+
+        $where_id = empty($post['id']) ? [] :['id'=>$post['id']];
+        $where_type = empty($post['type']) ? [] :['activity_type'=>$post['type']];
         $activity = Activitymodel::where('activity_type', '!=', 'NORMAL')
             ->where('activity_type', '!=', '')
             ->where('coupon_info', 'like', "%$ac_name%")
-            ->offset($offset)
-            ->limit(PAGINATE)
-            ->orderBy('end_time', 'desc')
+            ->where($where_type)
+            ->where($where_id)
+            ->orderBy('start_time')
             ->where(function ($query) use ($store_id) {
                 $query->orWhereHas('store', function ($query) use ($store_id) {
                     $query->whereIN('store_id', $store_id);
                 });
             })
             ->get($filed)
-            ->ToArray();
+            ->groupBy('type')
+            ->toArray();
         $count = Activitymodel::where('activity_type', '!=', 'NORMAL')
             ->where('activity_type', '!=', '')
             ->where('coupon_info', 'like', "%$ac_name%")
-            ->orderBy('end_time', 'desc')
+            ->where($where_type)
+            ->where($where_id)
+            ->orderBy('start_time')
             ->where(function ($query) use ($store_id) {
                 $query->orWhereHas('store', function ($query) use ($store_id) {
                     $query->whereIN('store_id', $store_id);
@@ -86,7 +93,22 @@ class Activity extends MY_Controller
             $this->api_res(1007);
             return false;
         }
-        $data = array();
+        $lo_data =[];
+        $no_date =[];
+        if(isset($activity['LOWER'])){
+            $lo_data  =  $this->ac_up($activity['LOWER']);
+        }
+        if(isset($activity['NORMAL'])){
+         $no_date =  $this->ac_up($activity['NORMAL']);
+        }
+        $data_limit = array_merge($no_date,$lo_data);
+        $data = array_slice($data_limit,$offset,PAGINATE);
+        $this->api_res(0, ['count' => $count, 'list' => $data]);
+    }
+    /*
+     * 数据处理
+     * */
+    private function ac_up($activity){
         foreach ($activity as $key => $coupon) {
             $prize = Activityprizemodel::where('id', $coupon['prize_id'])->select(['prize'])->first();
             $p = unserialize($prize->prize);
@@ -99,6 +121,13 @@ class Activity extends MY_Controller
             $Lottery_number = Drawmodel::where('activity_id', $coupon['id'])->count();
             $lucky_draw = Drawmodel::where(['activity_id' => $coupon['id'], 'is_draw' => '1'])->count();
             $employee_name = Employeemodel::where('id', $coupon['employee_id'])->first(['name']);
+            $store_id = Storeactivitymodel::where('activity_id',$coupon['id'])->with('store')->get(['store_id'])->toarray();
+            $store_str = '';
+            foreach ($store_id as $value) {
+                $store_str .= $value['store']['name'] . '/';
+            }
+            $resident = Couponmodel::where('activity_id',$coupon['id'])->groupBy('resident_id')->count();
+            $coupon_count = Couponmodel::where('activity_id',$coupon['id'])->count();
             $data[$key]['id'] = $coupon['id'];
             $data[$key]['user'] = $employee_name->name;
             $data[$key]['name'] = $coupon['coupon_info'];
@@ -107,24 +136,41 @@ class Activity extends MY_Controller
             $data[$key]['prize'] = $str;
             $limit = unserialize($coupon['limit']);
             $data[$key]['customer'] = $limit['com'];
+            $data[$key]['resident'] = $resident;
+            $data[$key]['coupon_count'] = $coupon_count;
             $data[$key]['type'] = $coupon['activity_type'];
             $data[$key]['limit'] = $limit['limit'];
             $data[$key]['participate'] = $participate;
             $data[$key]['Lottery_number'] = $Lottery_number;
             $data[$key]['lucky_draw'] = $lucky_draw;
+            $data[$key]['share_img'] = $coupon['share_img'];
+            $data[$key]['share_des'] = $coupon['share_des'];
+            $data[$key]['share_title'] = $coupon['share_title'];
             if ($coupon['type'] == 'LOWER') {
                 $data[$key]['status'] = 'Lowerframe';
             } elseif (time() < strtotime($coupon['start_time'])) {
                 $data[$key]['status'] = 'Notbeginning';
             } elseif (time() > strtotime($coupon['end_time'])) {
+                Activitymodel::where('id',$coupon['id'])->update(['type'=>'LOWER']);
                 $data[$key]['status'] = 'End';
             } elseif (time() < strtotime($coupon['end_time']) && time() > strtotime($coupon['start_time'])) {
                 $data[$key]['status'] = 'Normal';
             }
+            $data[$key]['store_name'] =$store_str;
         }
-        $this->api_res(0, ['count' => $count, 'list' => $data]);
+        return $data;
     }
-
+    /*
+     * 根据城市获取门店
+     * */
+    public function getStore(){
+        $post = $this->input->post(null,true);
+        $this->load->model('storemodel');
+        $city_name = empty($post['city'])? '' : $post['city'];
+        $city = explode(',',$city_name);
+        $store = Storemodel::wherein('city',$city)->get(['name'])->toArray();
+        $this->api_res(0,$store);
+    }
     /*
      * 新增活动
      * 大转盘的活动
