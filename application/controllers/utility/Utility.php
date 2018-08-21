@@ -206,17 +206,28 @@ class Utility extends MY_Controller {
         if (!empty($post['month'])) {$where['month'] = intval($post['month']);}
         if (!empty($post['year'])) {$where['year'] = intval($post['year']);}
         if (!empty($post['type'])){$where['type'] = $post['type'];}
-        $filed  = ['id','store_id','building_id','resident_id','room_id','type','this_reading','this_time','confirmed','year','month','image','status'];
-        $count  = ceil(Meterreadingtransfermodel::whereIn('store_id',$store_ids)->where($where)/*->whereIn('status',$status)*/->count() / PAGINATE);
-        $record = Meterreadingtransfermodel::with(['building','store','room_s'])
-                ->whereIn('store_id',$store_ids)
-                ->where($where)
-                ->orderBy('year','DESC')
-                ->orderBy('month','DESC')
-                ->orderBy('store_id')
-                ->orderBy('building_id')
+        $number = empty($post['number'])?'':$post['number'];
+        $count  = ceil(Meterreadingtransfermodel::whereIn('store_id',$store_ids)->where($where)
+                ->where(function ($query) use ($number) {
+                    $query->WhereHas('room_s', function ($query) use ($number) {
+                        $query->where('number', 'like', "$number%");
+                    });
+                })->count() / PAGINATE);
+        $record = Meterreadingtransfermodel::rightJoin('boss_room_union','boss_meter_reading_transfer.room_id','=','boss_room_union.id')
+                ->with(['building','store','room_s'])
+                ->where(function ($query) use ($number) {
+                    $query->WhereHas('room_s', function ($query) use ($number) {
+                        $query->where('number', 'like', "$number%");
+                    });
+                })
+                ->whereIn('boss_meter_reading_transfer.store_id',$store_ids)
+                ->orderBy('boss_meter_reading_transfer.year','DESC')
+                ->orderBy('boss_meter_reading_transfer.month','DESC')
+                ->orderBy('boss_meter_reading_transfer.store_id')
+                ->orderBy('boss_meter_reading_transfer.building_id')
+                ->orderBy('boss_room_union.number')
                 ->take(PAGINATE)->skip($offset)
-                ->get($filed)
+                ->get(['boss_meter_reading_transfer.*'])
                 ->map(function ($record){
                     if ($record->status == Meterreadingtransfermodel::OLD_METER){
                         $last_date              = $this->lastMonth($record->month,$record->year);
@@ -242,7 +253,7 @@ class Utility extends MY_Controller {
                         $record->this_time      = date('Y-m-d',strtotime($record->this_time));
                         return $record;
                     }elseif ($record->status == Meterreadingtransfermodel::NORMAL){
-                        $record = $this->lastReading($record);               
+                        $record = $this->lastReading($record);
                         return json_decode($record);
                     }
                 })->toArray();
