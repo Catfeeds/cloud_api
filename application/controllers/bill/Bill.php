@@ -74,7 +74,8 @@ class Bill extends MY_Controller {
     /**
      * 查看流水下的账单信息
      */
-    public function showBill() {
+    public function showBill()
+    {
         $input   = $this->input->post(null, true);
         $bill_id = $input['id'];
         $bill    = Billmodel::find($bill_id);
@@ -82,7 +83,21 @@ class Bill extends MY_Controller {
             $this->api_res(1007);
             return;
         }
+
+        $this->load->model('couponmodel');
+        $this->load->model('coupontypemodel');
+        $this->load->model('residentmodel');
         $sequence = $bill->sequence_number;
+        $orders = Ordermodel::with(['coupon'=>function($query){
+            $query->with('coupon_type');
+        }])->where('sequence_number',$sequence)->get();
+        $sumMoney   = $orders->sum('money');
+        $sumPaid    = $orders->sum('paid');
+        $sumDiscount    = $sumMoney-$sumPaid;
+        $resident   = $bill->resident;
+        $discount   = array_merge($orders->where('coupon','!=',null)->toArray(),[]);
+
+        $this->api_res(0,['sumMoney'=>$sumMoney,'sumPaid'=>$sumPaid,'sumDiscount'=>$sumDiscount,'resident'=>$resident,'discount'=>$discount,'orders'=>$orders]);
 
         /*
          * ROOM
@@ -103,11 +118,11 @@ class Bill extends MY_Controller {
          * OVERDUE
          * */
 
-        $data['lists'] = Ordermodel::where('sequence_number', $sequence)->get()->toArray();
-        //        获取money
-        $data['sum'] = $bill->money;
-
-        $this->api_res(0, $data);
+//        $data['lists'] = Ordermodel::where('sequence_number', $sequence)->get()->toArray();
+//        //        获取money
+//        $data['sum'] = $bill->money;
+//
+//        $this->api_res(0, $data);
 
     }
 
