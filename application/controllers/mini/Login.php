@@ -45,7 +45,7 @@ class Login extends MY_Controller {
         $wechat->mini_openid = $sessionKeyData->openid;
         $wechat->session_key = $sessionKeyData->session_key;
         $wechat->save();
-        return $this->m_jwt->generateJwtToken($wechat['bxid'], $wechat['$company_id']);
+        return $this->m_jwt->generateJwtToken($wechat['bxid'], $wechat['company_id']);
     }
 
     public function authority() {
