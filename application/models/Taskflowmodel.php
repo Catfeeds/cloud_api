@@ -119,6 +119,7 @@ class Taskflowmodel extends Basemodel
         $this->CI->load->model('taskflowtemplatemodel');
         $this->CI->load->model('taskflowstepmodel');
         $this->CI->load->model('taskflowsteptemplatemodel');
+        log_message('debug','COMPANY_ID'.COMPANY_ID);
         $template   = Taskflowtemplatemodel::where('company_id',COMPANY_ID)
             ->where('type',$type)
             ->first();
