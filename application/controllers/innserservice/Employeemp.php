@@ -30,8 +30,8 @@ class Employeemp extends MY_Controller {
                 }
                 log_message("debug", "get user count: $openidList->count" . " total: " . $openidList->total);
 
-                $users = $app->user->batchGet($openidList->data["openid"]);
-                foreach ($users->user_info_list as $user) {
+                foreach ($openidList->data["openid"] as $key => $openid) {
+                    $user = $app->user->get($openid);
                     log_message("debug", "found " . $user["nickname"] . " openid.");
                     if (!empty($user["unionid"]) && !empty($user["openid"])) {
                         try {

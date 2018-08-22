@@ -28,9 +28,8 @@ class Smartdevice extends MY_Controller {
         $where     = [];
         $store_ids = explode(',', $this->employee->store_ids);
 
-        if (!empty($post['store_id'])) {$where['id'] = intval($post['store_id']);}
+        if (!empty($post['store_id'])) {$where['store_id'] = intval($post['store_id']);}
         if (!empty($post['device_type'])) {$where['type'] = trim($post['device_type']);}
-
         if (!empty($post['room_number'])) {
             $number   = trim($post['room_number']);
             $room_id  = Roomunionmodel::where('number', 'like', "$number%")->get(['id'])->toArray();
@@ -40,6 +39,7 @@ class Smartdevice extends MY_Controller {
                     array_push($room_ids, $room_id[$key]['id']);
                 }
             }
+
             $filed = ['id', 'room_id', 'store_id', 'type', 'supplier'];
             $count = ceil(Smartdevicemodel::where($where)
                     ->whereIn('store_id', $store_ids)

@@ -157,6 +157,9 @@ class Residentmodel extends Basemodel {
         return $this->hasOne(Checkoutmodel::class, 'resident_id');
     }
 
+    public function transfer(){
+        return $this->hasMany(Meterreadingtransfermodel::class,'resident_id');
+    }
     /**
      * 计算用户的合同结束时间
      * 主要是考虑到, 租房合同开始日期是某个月的月底而结束月份是2月份的情况

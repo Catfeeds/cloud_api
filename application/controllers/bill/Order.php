@@ -194,6 +194,30 @@ class Order extends MY_Controller {
 
     }
 
+    /**
+     *  关闭账单
+     */
+    public function closeOrder()
+    {
+        $order_id   = $this->input->post('order_id',true);
+        $order  = Ordermodel::find($order_id);
+        if (empty($order)) {
+            $this->api_res(1007);
+            return;
+        }
+        if (!in_array($order->status,[Ordermodel::STATE_GENERATED,Ordermodel::STATE_PENDING])) {
+            $this->api_res(10042);
+            return;
+        }
+
+        $order->status  = Ordermodel::STATE_CLOSE;
+        if ($order->save()) {
+            $this->api_res(0);
+        } else {
+            $this->api_res(1009);
+        }
+    }
+
     private function validateStore() {
         return array(
             array(
@@ -332,11 +356,14 @@ class Order extends MY_Controller {
     }
 
     /**
+     * @param store_id room_id
      * 向住户发送模板消息, 通知缴费
      */
     public function notify() {
         $input    = $this->input->post(null, true);
-        $store_id = $input['store_id'];
+        $where  = [];
+        empty($input['store_id'])?$where['store_id']=$input['room_id']:null;
+        empty($input['room_id'])?$where['room_id']=$input['room_id']:null;
         $this->load->helper('common');
         $app    = new Application(getWechatCustomerConfig());
         $failed = [];
@@ -344,7 +371,11 @@ class Order extends MY_Controller {
         $this->load->model('residentmodel');
         $this->load->model('customermodel');
         $this->load->model('roomunionmodel');
-        $pendingOrders = Ordermodel::where('store_id', $store_id)
+        if (empty($where)) {
+            $this->api_res(1005);
+            return;
+        }
+        $pendingOrders = Ordermodel::where($where)
             ->where('status', Ordermodel::STATE_PENDING)
 //            ->where('is_notify', 0)
             ->get()

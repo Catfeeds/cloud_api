@@ -266,9 +266,6 @@ class Checkout extends MY_Controller {
                 }
             }
         }
-        /*var_dump($arr_coldwater);
-        var_dump($arr_electric);
-        var_dump($arr_hotwater);*/
         return $money;
 
     }
@@ -582,7 +579,7 @@ class Checkout extends MY_Controller {
             array(
                 'field' => 'coldwater_reading',
                 'label' => '冷水表读数',
-                'rules' => 'required|trim',
+                'rules' => 'trim',
             ),
             array(
                 'field' => 'hotwater_reading',
@@ -592,12 +589,12 @@ class Checkout extends MY_Controller {
             array(
                 'field' => 'electric_reading',
                 'label' => '电表读数',
-                'rules' => 'required|trim',
+                'rules' => 'trim',
             ),
             array(
                 'field' => 'coldwater_image',
                 'label' => '冷水表照片',
-                'rules' => 'required|trim',
+                'rules' => 'trim',
             ),
             array(
                 'field' => 'hotwater_image',
@@ -607,7 +604,7 @@ class Checkout extends MY_Controller {
             array(
                 'field' => 'electric_image',
                 'label' => '电表照片',
-                'rules' => 'required|trim',
+                'rules' => 'trim',
             ),
 
         );

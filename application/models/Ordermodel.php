@@ -93,6 +93,66 @@ class Ordermodel extends Basemodel {
     protected $casts = ['data' => 'array'];
 
     /**
+     * [检索住户未完成缴费的账单未支付及未确认完成]
+     * @param  [integer] $residentId [住户id]
+     * @return [OrderCollection]    [订单列表]
+     */
+    public function ordersUnpaidOfResident($residentId) {
+        return Ordermodel::where('resident_id', $residentId)->whereIn('status', [Ordermodel::STATE_PENDING, Ordermodel::STATE_CONFIRM])->get();
+    }
+
+    public function customer() {
+        return $this->belongsTo(Customermodel::class, 'customer_id');
+    }
+
+    public function roomunion() {
+        return $this->belongsTo(Roomunionmodel::class, 'room_id');
+    }
+    public function roomunion_s() {
+        return $this->belongsTo(Roomunionmodel::class, 'room_id')->select('id','number');
+    }
+
+    public function store() {
+        return $this->belongsTo(Storemodel::class, 'store_id');
+    }
+
+    public function resident() {
+        return $this->belongsTo(Residentmodel::class, 'resident_id');
+    }
+
+    public function resident_s() {
+        return $this->belongsTo(Residentmodel::class, 'resident_id')->select('id','name','begin_time','end_time');
+    }
+
+    public function employee() {
+        return $this->belongsTo(Employeemodel::class, 'employee_id');
+    }
+
+    public function roomtype() {
+        return $this->belongsTo(Roomtypemodel::class, 'room_type_id');
+    }
+
+    public function coupon() {
+        return $this->hasOne(Couponmodel::class, 'order_id')->where('status',Couponmodel::STATUS_USED);
+    }
+
+    public function resident_room() {
+        return $this->hasOne(Roomunionmodel::class, 'resident_id', 'resident_id');
+    }
+
+    /**
+     * 订单的所有支付类型
+     */
+    public function getAllPayTypes() {
+        return array(
+            Ordermodel::PAYWAY_JSAPI,
+            Ordermodel::PAYWAY_BANK,
+            Ordermodel::PAYWAY_ALIPAY,
+            Ordermodel::PAYWAY_DEPOSIT,
+        );
+    }
+
+    /**
      * 所有订单状态
      */
     public function getAllStatus() {
@@ -373,65 +433,7 @@ class Ordermodel extends Basemodel {
         ]);
     }
 
-    /**
-     * [检索住户未完成缴费的账单未支付及未确认完成]
-     * @param  [integer] $residentId [住户id]
-     * @return [OrderCollection]    [订单列表]
-     */
-    public function ordersUnpaidOfResident($residentId) {
-        return Ordermodel::where('resident_id', $residentId)->whereIn('status', [Ordermodel::STATE_PENDING, Ordermodel::STATE_CONFIRM])->get();
-    }
 
-    public function customer() {
-        return $this->belongsTo(Customermodel::class, 'customer_id');
-    }
-
-    public function roomunion() {
-        return $this->belongsTo(Roomunionmodel::class, 'room_id');
-    }
-    public function roomunion_s() {
-        return $this->belongsTo(Roomunionmodel::class, 'room_id')->select('id','number');
-    }
-
-    public function store() {
-        return $this->belongsTo(Storemodel::class, 'store_id');
-    }
-
-    public function resident() {
-        return $this->belongsTo(Residentmodel::class, 'resident_id');
-    }
-
-    public function resident_s() {
-        return $this->belongsTo(Residentmodel::class, 'resident_id')->select('id','name','begin_time','end_time');
-    }
-
-    public function employee() {
-        return $this->belongsTo(Employeemodel::class, 'employee_id');
-    }
-
-    public function roomtype() {
-        return $this->belongsTo(Roomtypemodel::class, 'room_type_id');
-    }
-
-    public function coupon() {
-        return $this->hasOne(Couponmodel::class, 'order_id');
-    }
-
-    public function resident_room() {
-        return $this->hasOne(Roomunionmodel::class, 'resident_id', 'resident_id');
-    }
-
-    /**
-     * 订单的所有支付类型
-     */
-    public function getAllPayTypes() {
-        return array(
-            Ordermodel::PAYWAY_JSAPI,
-            Ordermodel::PAYWAY_BANK,
-            Ordermodel::PAYWAY_ALIPAY,
-            Ordermodel::PAYWAY_DEPOSIT,
-        );
-    }
 
     /**
      * 添加退房时的订单

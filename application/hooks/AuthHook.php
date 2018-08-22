@@ -143,11 +143,13 @@ class AuthHook {
      */
     public function auth($full_path) {
         $token        = $this->CI->input->get_request_header('token');
+        log_message('debug','TOKEN-'.$token);
         $decoded      = $this->CI->m_jwt->decodeJwtToken($token);
         $d_bxid       = $decoded->bxid;
         $d_company_id = $decoded->company_id;
         define('CURRENT_ID', $d_bxid);
         define('COMPANY_ID', $d_company_id);
+        log_message('debug','C_ID'.COMPANY_ID);
         $pre = substr(CURRENT_ID, 0, 2);
         if ($pre == SUPERPRE) {
             //super 拥有所有的权限

@@ -198,7 +198,6 @@ class Order extends MY_Controller {
         $room_id     = $input['room_id'];
         //$store_pay_id   = $input[];
         $order_ids = $input['order_ids'];
-        $phone = empty($input['old_phone'])?'':$input['old_phone'];
 
         $this->load->model('residentmodel');
         $this->load->model('ordermodel');
@@ -251,7 +250,7 @@ class Order extends MY_Controller {
             DB::rollBack();
             throw $e;
         }
-        $res =  $this->sendCoupon($resident_id,$phone);
+        $res =  $this->sendCoupon($resident_id);
         $this->api_res(0,['res'=>$res]);
     }
 
@@ -492,7 +491,6 @@ class Order extends MY_Controller {
         $coupon_ids  = $input['coupon_ids'];
         $order_ids   = $input['order_ids'];
         $resident_id = $input['resident_id'];
-        $phone = empty($input['old_phone'])?'':$input['old_phone'];
 
         $this->load->model('residentmodel');
         $this->load->model('ordermodel');
@@ -558,7 +556,7 @@ class Order extends MY_Controller {
             DB::rollBack();
             throw $e;
         }
-        $res =  $this->sendCoupon($resident_id,$phone);
+        $res =  $this->sendCoupon($resident_id);
         $this->api_res(0,['res'=>$res]);
     }
 
@@ -655,19 +653,20 @@ class Order extends MY_Controller {
         return $res;
     }
 //发放优惠券
-   private function sendCoupon($resident_id,$phone){
+   private function sendCoupon($resident_id){
        $res = '';
        $order = Ordermodel::where('resident_id',$resident_id)->where('type','room')->select(['month'])->first();
+       $resident = Residentmodel::where('id',$resident_id)->select(['old_phone'])->first();
        if($order) {
            $this->load->model('activitymodel');
            $this->load->model('storeactivitymodel');
            $this->load->model('activityprizemodel');
            $this->load->model('customermodel');
            $activity = new Activitymodel();
-           if (empty($phone)) {
+           if (!$resident->old_phone) {
                $res = $activity->sendCheckIn($resident_id,$order->month);
            } else {
-               $res = $activity->sendOldbeltNew($phone,$order->month);
+               $res = $activity->sendOldbeltNew($resident->old_phone,$order->month);
            }
        }
        return $res;

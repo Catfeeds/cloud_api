@@ -12,4 +12,9 @@ class Storeactivitymodel extends Basemodel {
     public function activity(){
         return $this->belongsTo(Activitymodel::class,'activity_id','id');
     }
+
+    public function store(){
+
+        return $this->belongsTo(Storemodel::class,'store_id','id')->select(['id','name']);
+    }
 }

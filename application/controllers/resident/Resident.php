@@ -29,22 +29,22 @@ class Resident extends MY_Controller {
         if (!empty($post['name'])) {$search = trim($post['name']);} else { $search = '';};
         $count = $count = ceil(Residentmodel::whereIn('store_id', $store_ids)
                 ->where($where)->where(function ($query) use ($search) {
-                $query->orwhere('name', 'like', "%$search%")
-                    ->orWhereHas('roomunion', function ($query) use ($search) {
-                        $query->where('number', 'like', "%$search%");
-                    });
-            })->count() / PAGINATE);
+                    $query->orwhere('name', 'like', "%$search%")
+                        ->orWhereHas('roomunion', function ($query) use ($search) {
+                            $query->where('number', 'like', "%$search%");
+                        });
+                })->count() / PAGINATE);
         if ($page > $count || $page < 1) {
             $this->api_res(0, ['list' => []]);
             return;
         } else {
             $resident = Residentmodel::with('room')->with('customer_s')->whereIn('store_id', $store_ids)
                 ->where($where)->where(function ($query) use ($search) {
-                $query->orwhere('name', 'like', "%$search%")
-                    ->orWhereHas('roomunion', function ($query) use ($search) {
-                        $query->where('number', 'like', "%$search%");
-                    });
-            })->orderBy('created_at', 'DESC')
+                    $query->orwhere('name', 'like', "%$search%")
+                        ->orWhereHas('roomunion', function ($query) use ($search) {
+                            $query->where('number', 'like', "%$search%");
+                        });
+                })->orderBy('created_at', 'DESC')
                 ->take(PAGINATE)->skip($offset)->get($filed)
                 ->map(function ($s) {
                     $s->room->store_name = (Storemodel::where('id', $s->room->store_id)->get(['name']))[0]['name'];
@@ -247,7 +247,21 @@ class Resident extends MY_Controller {
         });
         $this->api_res(0, compact('unpaid_money', 'paid_money', 'discount_money', 'unpaid', 'paid'));
     }
+    /*
+     * 住户优惠券信息
+     * */
+    public function getCoupon(){
+        $post = $this->input->post(null,true);
+        $this->load->model('couponmodel');
+        $this->load->model('coupontypemodel');
+        $customer = Residentmodel::where('id',$post['resident_id'])->select(['customer_id'])->first();
+        $coupon = Couponmodel::with('coupon_type')
+            ->where('resident_id',$post['resident_id'])
+            ->where('customer_id',$customer->customer_id)
+            ->get();
 
+        $this->api_res(0,['coupon' => $coupon]);
+    }
     /**
      * @return mixed
      * 表单验证
