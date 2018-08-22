@@ -408,4 +408,28 @@ class Meter extends MY_Controller
             ),
         );
     }
+
+    /**
+     * 判断门店有哪些表
+     */
+    public function meterOfStore()
+    {
+        $this->load->model('storemodel');
+        $this->load->model('meterreadingtransfermodel');
+        $post       = $this->input->post(null,true);
+        $store_id   = $post['store_id'];
+        $meter      = Storemodel::where('id',$store_id)->first(['id','water_price','hot_water_price',
+                    'electricity_price'])->toArray();
+        $arr = [];
+        if (floatval($meter['water_price'])>0){
+            $arr[] = Meterreadingtransfermodel::TYPE_WATER_C;
+        }
+        if (floatval($meter['hot_water_price'])>0){
+            $arr[] = Meterreadingtransfermodel::TYPE_WATER_H;
+        }
+        if (floatval($meter['electricity_price'])>0){
+            $arr[] = Meterreadingtransfermodel::TYPE_ELECTRIC;
+        }
+        $this->api_res(0,['meter'=>$arr]);
+    }
 }
