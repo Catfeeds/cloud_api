@@ -17,6 +17,7 @@ class Taskflowmodel extends Basemodel
 
     const TYPE_CHECKOUT = 'CHECKOUT';
     const TYPE_PRICE    = 'PRICE';
+    const TYPE_RESERVE  = 'RESERVE';
 
     const CREATE_EMPLOYEE   = 'EMPLOYEE';
     const CREATE_CUSTOMER   = 'CUSTOMER';

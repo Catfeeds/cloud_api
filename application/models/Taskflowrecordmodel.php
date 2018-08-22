@@ -14,6 +14,7 @@ class Taskflowrecordmodel extends Basemodel
     const STATE_CLOSED    = 'CLOSED';//关闭
     const TYPE_CHECKOUT = 'CHECKOUT';
     const TYPE_PRICE    = 'PRICE';
+    const TYPE_RESERVE  = 'RESERVE';
     protected $table    = 'boss_taskflow_record';
 
     protected $fillable = [
