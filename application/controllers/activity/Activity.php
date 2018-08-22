@@ -119,10 +119,10 @@ class Activity extends MY_Controller
                 $str .= $value['name'] . '/';
             }
             if($coupon['activity_type'] == 'OLDBELTNEW' || $coupon['activity_type'] == 'CHECKIN'){
-                $Lottery_number = Couponmodel::where('activity_id', $coupon['id'])->groupBy('resident_id')->count();
+                $participate = Couponmodel::where('activity_id', $coupon['id'])->groupBy('resident_id')->count();
                 $lucky_draw = Couponmodel::where('activity_id',$coupon['id'])->count();
             }ELSE{
-            $Lottery_number = Drawmodel::where('activity_id', $coupon['id'])->count();
+            $participate = Drawmodel::where('activity_id', $coupon['id'])->count();
             $lucky_draw = Drawmodel::where(['activity_id' => $coupon['id'], 'is_draw' => '1'])->count();
             }
             $employee_name = Employeemodel::where('id', $coupon['employee_id'])->first(['name']);
@@ -145,7 +145,7 @@ class Activity extends MY_Controller
             $data[$key]['coupon_count'] = $coupon_count;
             $data[$key]['type'] = $coupon['activity_type'];
             $data[$key]['limit'] = $limit['limit'];
-            $data[$key]['Lottery_number'] = $Lottery_number;
+            $data[$key]['Lottery_number'] = $participate;
             $data[$key]['lucky_draw'] = $lucky_draw;
             $data[$key]['share_img'] = $coupon['share_img'];
             $data[$key]['share_des'] = $coupon['share_des'];
