@@ -145,7 +145,7 @@ class Activity extends MY_Controller
             $data[$key]['coupon_count'] = $coupon_count;
             $data[$key]['type'] = $coupon['activity_type'];
             $data[$key]['limit'] = $limit['limit'];
-            $data[$key]['Lottery_number'] = $participate;
+            $data[$key]['participate'] = $participate;
             $data[$key]['lucky_draw'] = $lucky_draw;
             $data[$key]['share_img'] = $coupon['share_img'];
             $data[$key]['share_des'] = $coupon['share_des'];
