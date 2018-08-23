@@ -61,6 +61,13 @@ class Reserve extends MY_Controller {
     public function reserveStatus() {
         $post = $this->input->post(null, true);
         $id   = isset($post['id']) ? intval($post['id']) : null;
+        if ($post['status'] == 'END' || $post['status'] == 'INVALID') {
+            $status = trim($post['status']);
+        } else {
+            $this->api_res(1002, []);
+            return;
+        }
+        $reserve = Reserveordermodel::findOrFail($id);
         if ($post['status'] == 'END') {
             if (!$this->validation()) {
                 $fieldarr = ['room_type_id', 'work_address', 'info_source', 'people_count', 'check_in_time',
@@ -68,15 +75,13 @@ class Reserve extends MY_Controller {
                 $this->api_res(1002, ['errmsg' => $this->form_first_error($fieldarr)]);
                 return;
             }
+            $this->load->model('taskflowmodel');
+            $reserve->taskflow()->update(['status'=>Taskflowmodel::STATE_APPROVED]);
+        }else{
+            $this->load->model('taskflowmodel');
+            $reserve->taskflow()->update(['status'=>Taskflowmodel::STATE_CLOSED]);
         }
-        $reserve = Reserveordermodel::findOrFail($id);
         $reserve->fill($post);
-        if ($post['status'] == 'END' || $post['status'] == 'INVALID') {
-            $status = trim($post['status']);
-        } else {
-            $this->api_res(1002, []);
-            return;
-        }
         $reserve->status = $status;
         if ($reserve->save()) {
             $this->api_res(0);

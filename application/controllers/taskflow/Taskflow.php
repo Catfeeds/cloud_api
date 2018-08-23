@@ -10,6 +10,8 @@ use Illuminate\Database\Capsule\Manager as DB;
  */
 class Taskflow extends MY_Controller{
 
+    protected $withs=['checkout','price','reserve',];
+
     public function __construct()
     {
         parent::__construct();
@@ -44,6 +46,10 @@ class Taskflow extends MY_Controller{
         $this->load->model('positionmodel');
         $this->load->model('storemodel');
         $this->load->model('roomunionmodel');
+        $this->load->model('roomtypemodel');
+        $this->load->model('checkoutmodel');
+        $this->load->model('pricecontrolmodel');
+        $this->load->model('reserveordermodel');
         $taskflows  = Taskflowmodel::with(['step'=>function($query){
             $query->with(['employee'=>function($query){
                 $query->with('position');
@@ -51,6 +57,8 @@ class Taskflow extends MY_Controller{
         }])
             ->with('store')
             ->with('roomunion')
+            ->with($this->withs)
+            ->with('roomtype')
             ->where($where)
             ->where('employee_id',$employee_id)
             ->offset($offset)
@@ -98,6 +106,10 @@ class Taskflow extends MY_Controller{
         $this->load->model('storemodel');
         $this->load->model('positionmodel');
         $this->load->model('roomunionmodel');
+        $this->load->model('roomtypemodel');
+        $this->load->model('checkoutmodel');
+        $this->load->model('pricecontrolmodel');
+        $this->load->model('reserveordermodel');
         $taskflows  = Taskflowmodel::with(['step'=>function($query){
             $query->with(['employee'=>function($query){
                 $query->with('position');
@@ -105,6 +117,8 @@ class Taskflow extends MY_Controller{
         }])
             ->with('store')
             ->with('roomunion')
+            ->with('roomtype')
+            ->with($this->withs)
             ->where($where)
             ->whereIn('store_id',$e_store_ids)
             ->offset($offset)
@@ -169,6 +183,10 @@ class Taskflow extends MY_Controller{
         $this->load->model('storemodel');
         $this->load->model('positionmodel');
         $this->load->model('roomunionmodel');
+        $this->load->model('roomtypemodel');
+        $this->load->model('checkoutmodel');
+        $this->load->model('pricecontrolmodel');
+        $this->load->model('reserveordermodel');
         $steps  = Taskflowrecordmodel::with(['taskflow'=>function($query){
             $query->with(['step'=>function($query){
                 $query->with(['employee'=>function($query){
@@ -176,7 +194,9 @@ class Taskflow extends MY_Controller{
                 }]);
             }])
             ->with('store')
-            ->with('roomunion');
+            ->with('roomunion')
+            ->with($this->withs)
+            ->with('roomtype');
         }])
             ->where('employee_id',$this->employee->id)
             ->where($where)
@@ -227,6 +247,9 @@ class Taskflow extends MY_Controller{
             case Taskflowmodel::TYPE_PRICE:
                 $data   = $this->showPriceInfo($taskflow_id);
                 break;
+            case Taskflowmodel::TYPE_RESERVE;
+                $data   = $this->showReserve($taskflow_id);
+                break;
             default:
                 $data   = [];
         }
@@ -254,54 +277,6 @@ class Taskflow extends MY_Controller{
     }
 
     /**
-     * 展示退房任务信息详情
-     */
-    private function showCheckoutInfo($taskflow_id)
-    {
-        $this->load->model('checkoutmodel');
-        $this->load->model('residentmodel');
-        $this->load->model('ordermodel');
-        $this->load->model('storemodel');
-        $this->load->model('roomunionmodel');
-        $checkout   = Checkoutmodel::where('taskflow_id',$taskflow_id)->first();
-        $resident   = $checkout->resident;
-        $roomunion  = $checkout->roomunion;
-        $store      = $checkout->store->name;
-        $unpaid     = $resident->orders()->whereIn('status',[Ordermodel::STATE_PENDING,Ordermodel::STATE_GENERATED])->get();
-        $unpaidMoney    = number_format($unpaid->sum('money'),2,'.','');
-        $diffmoney  = number_format($resident->deposit_money+$resident->tmp_deposit-$unpaidMoney,2,'.','');
-        //押金流水详情
-        $deposit    = $resident->orders()->whereIn('type',[Ordermodel::PAYTYPE_DEPOSIT_O,Ordermodel::PAYTYPE_DEPOSIT_R])
-            ->where('status',Ordermodel::STATE_COMPLETED)
-            ->get();
-        $resident   = $resident->toArray();
-        $resident['begin_time']   = Carbon::parse($resident['begin_time'])->format('Y-m-d');
-        $resident['end_time']     = Carbon::parse($resident['end_time'])->format('Y-m-d');
-        $data   = [
-            'unpaidMoney'=>$unpaidMoney,
-            'diffMoney'=>$diffmoney,
-            'store'=>$store,
-            'unpaid'=>$unpaid->toArray(),
-            'resident'=>$resident,
-            'checkout'=>$checkout->toArray(),
-            'roomunion'=>$roomunion,
-            'deposit'=>$deposit->toArray()];
-        return $data;
-    }
-
-    /**
-     * 展示调价任务的信息详情
-     */
-    private function showPriceInfo($taskflow_id)
-    {
-        $this->load->model('pricecontrolmodel');
-        $this->load->model('storemodel');
-        $this->load->model('roomunionmodel');
-        $record = Pricecontrolmodel::with(['store','roomunion'])->where('taskflow_id',$taskflow_id)->first();
-        return $record;
-    }
-
-    /**
      * 待我审批任务流列表
      */
     public function listTaskflow()
@@ -317,13 +292,19 @@ class Taskflow extends MY_Controller{
         $this->load->model('positionmodel');
         $this->load->model('storemodel');
         $this->load->model('roomunionmodel');
+        $this->load->model('roomtypemodel');
+        $this->load->model('checkoutmodel');
+        $this->load->model('pricecontrolmodel');
+        $this->load->model('reserveordermodel');
         $audit  = Taskflowstepmodel::with(['taskflow'=>function($query){
             $query->with('employee')->with(['step'=>function($a){
                 $a->with(['employee'=>function($query){
                     $query->with('position');
                 }]);
             }])->with('store')
-            ->with('roomunion');
+                ->with($this->withs)
+                ->with('roomunion')
+                ->with('roomtype');
         }])
             ->where('status','!=',Taskflowstepmodel::STATE_APPROVED)
             ->whereIn('store_id',$e_store_ids)
@@ -434,7 +415,11 @@ class Taskflow extends MY_Controller{
                         //do change price ...
                         $this->donePrice($taskflow);
                         break;
+                    case Taskflowmodel::TYPE_RESERVE:
+                        $this->doneReserve($taskflow);
+                        break;
                     default:
+
                 }
             }
             $taskflow->save();
@@ -446,34 +431,6 @@ class Taskflow extends MY_Controller{
             throw  $e;
         }
         $this->api_res(0);
-    }
-
-    /**
-     * 退房审核完成
-     */
-    private function doneCheckout($taskflow)
-    {
-        $this->load->model('checkoutmodel');
-        $taskflow->checkout()->update(['status'=>Checkoutmodel::STATUS_UNPAID]);
-    }
-
-    /**
-     * 调价审核完成
-     */
-    private function donePrice($taskflow)
-    {
-        $this->load->model('pricecontrolmodel');
-        $this->load->model('roomunionmodel');
-        $price  = $taskflow->price;
-        $price  = Pricecontrolmodel::STATE_DONE;
-        $price->save();
-        $room   = $price->roomunion;
-        if ($price->type == Pricecontrolmodel::TYPE_ROOM) {
-            $room->rent_price   = $price->new_price;
-        } elseif ($price->type == Pricecontrolmodel::TYPE_MANAGEMENT) {
-            $room->property_price   = $price->new_price;
-        }
-        $room->save();
     }
 
     /**
@@ -538,4 +495,108 @@ class Taskflow extends MY_Controller{
         $taskflow->save();
         $this->api_res(0);
     }
+
+    /************************************** 不同流程区分处理部分 *********************************************/
+
+    /**
+     * 展示退房任务信息详情
+     */
+    private function showCheckoutInfo($taskflow_id)
+    {
+        $this->load->model('checkoutmodel');
+        $this->load->model('residentmodel');
+        $this->load->model('ordermodel');
+        $this->load->model('storemodel');
+        $this->load->model('roomunionmodel');
+        $checkout   = Checkoutmodel::where('taskflow_id',$taskflow_id)->first();
+        $resident   = $checkout->resident;
+        $roomunion  = $checkout->roomunion;
+        $store      = $checkout->store->name;
+        $unpaid     = $resident->orders()->whereIn('status',[Ordermodel::STATE_PENDING,Ordermodel::STATE_GENERATED])->get();
+        $unpaidMoney    = number_format($unpaid->sum('money'),2,'.','');
+        $diffmoney  = number_format($resident->deposit_money+$resident->tmp_deposit-$unpaidMoney,2,'.','');
+        //押金流水详情
+        $deposit    = $resident->orders()->whereIn('type',[Ordermodel::PAYTYPE_DEPOSIT_O,Ordermodel::PAYTYPE_DEPOSIT_R])
+            ->where('status',Ordermodel::STATE_COMPLETED)
+            ->get();
+        $resident   = $resident->toArray();
+        $resident['begin_time']   = Carbon::parse($resident['begin_time'])->format('Y-m-d');
+        $resident['end_time']     = Carbon::parse($resident['end_time'])->format('Y-m-d');
+        $data   = [
+            'unpaidMoney'=>$unpaidMoney,
+            'diffMoney'=>$diffmoney,
+            'store'=>$store,
+            'unpaid'=>$unpaid->toArray(),
+            'resident'=>$resident,
+            'checkout'=>$checkout->toArray(),
+            'roomunion'=>$roomunion,
+            'deposit'=>$deposit->toArray()];
+        return $data;
+    }
+
+    /**
+     * 展示调价任务的信息详情
+     */
+    private function showPriceInfo($taskflow_id)
+    {
+        $this->load->model('pricecontrolmodel');
+        $this->load->model('storemodel');
+        $this->load->model('roomunionmodel');
+        $record = Pricecontrolmodel::with(['store','roomunion'])->where('taskflow_id',$taskflow_id)->first();
+        return $record;
+    }
+
+    /**
+     * 展示预约看房信息详情
+     */
+    private function showReserve($taskflow_id)
+    {
+        $this->load->model('reserveordermodel');
+        $this->load->model('storemodel');
+        $this->load->model('roomtypemodel');
+        //do something展示预约看房信息
+        $reserve    = Reserveordermodel::with(['store','roomType'])->where('taskflow_id',$taskflow_id)->first();
+        return $reserve;
+    }
+
+    /**
+     * 退房审核完成
+     */
+    private function doneCheckout($taskflow)
+    {
+        $this->load->model('checkoutmodel');
+        $taskflow->checkout()->update(['status'=>Checkoutmodel::STATUS_UNPAID]);
+    }
+
+    /**
+     * 预约看房任务流完成
+     */
+    private function doneReserve($taskflow)
+    {
+        exit;
+        $this->load->model('reserveordermodel');
+        $taskflow->reserve()->update(['status'=>Reserveordermodel::STATE_END]);
+        //do something 完善reserve信息
+
+    }
+
+    /**
+     * 调价审核完成
+     */
+    private function donePrice($taskflow)
+    {
+        $this->load->model('pricecontrolmodel');
+        $this->load->model('roomunionmodel');
+        $price  = $taskflow->price;
+        $price  = Pricecontrolmodel::STATE_DONE;
+        $price->save();
+        $room   = $price->roomunion;
+        if ($price->type == Pricecontrolmodel::TYPE_ROOM) {
+            $room->rent_price   = $price->new_price;
+        } elseif ($price->type == Pricecontrolmodel::TYPE_MANAGEMENT) {
+            $room->property_price   = $price->new_price;
+        }
+        $room->save();
+    }
+
 }
