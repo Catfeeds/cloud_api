@@ -399,7 +399,7 @@ class Taskflow extends MY_Controller{
             //如果 通过 继续/不通过 返回上一个
             if ($audit !== Taskflowrecordmodel::STATE_APPROVED) {
                 //判断是否有已经审核过的步骤，如果有把上一步改为AUDIT，如果没有呢
-                if ($taskflow->step_id>0 && $taskflow->step_id  == $step_audit_first->id) {
+                if ($taskflow->step_id>0 && $taskflow->step_id  !== $step_audit_first->id) {
                     $taskflow->step->update(['status'=>Taskflowstepmodel::STATE_AUDIT]);
                 }
             }
