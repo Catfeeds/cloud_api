@@ -136,7 +136,12 @@ class Coupon extends MY_Controller {
         $filed  = ['id', 'room_id', 'name', 'phone', 'card_number', 'created_at', 'status'];
         $offset = PAGINATE * ($page - 1);
         if (isset($name)) {
-            $count = ceil((Residentmodel::where('name', 'like', "%$name%")->with(['roomunion' => function ($query) use ($where) {
+            $count = ceil((Residentmodel::where(function($query) use ($name){
+                    $query->orwhere('name', 'like', "%$name%")
+                        ->orwherehas('roomunion',function($query) use ($name){
+                            $query->where('number','like',"%$name%");
+                        });
+                })->with(['roomunion' => function ($query) use ($where) {
                 $query->with('store');
             }])
                     ->whereHas('roomunion', function ($query) use ($where) {
@@ -146,7 +151,12 @@ class Coupon extends MY_Controller {
                 $this->api_res(0, []);
                 return;
             }
-            $resident = Residentmodel::where('name', 'like', "%$name%")->with(['roomunion' => function ($query) use ($where) {
+            $resident = Residentmodel::where(function($query) use ($name){
+                $query->orwhere('name', 'like', "%$name%")
+                      ->orwherehas('roomunion',function($query) use ($name){
+                     $query->where('number','like',"%$name%");
+                });
+            })->with(['roomunion' => function ($query) use ($where) {
                 $query->with('store');
             }])
                 ->whereHas('roomunion', function ($query) use ($where) {
