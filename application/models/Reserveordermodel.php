@@ -8,10 +8,15 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  */
 
 class Reserveordermodel extends Basemodel {
+
+    const STATE_WAIT    = 'WAIT';
+    const STATE_END     = 'END';
+
     protected $table    = 'boss_reserve_order';
     protected $hidden   = ['created_at', 'updated_at', 'deleted_at'];
     protected $fillable = ['visit_by', 'name', 'phone', 'time', 'work_address', 'info_source', 'room_type_id',
         'people_count', 'check_in_time', 'guest_type', 'require', 'remark', 'employee_id', 'status'];
+
 
     public function employee() {
         return $this->belongsTo(Employeemodel::class, 'employee_id')->select('id', 'name');
@@ -23,5 +28,10 @@ class Reserveordermodel extends Basemodel {
 
     public function store(){
         return $this->belongsTo(Storemodel::class,'store_id')->select('id','name');
+    }
+
+    public function taskflow()
+    {
+        return $this->belongsTo(Taskflowmodel::class,'taskflow_id');
     }
 }

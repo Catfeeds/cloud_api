@@ -211,6 +211,7 @@ class Order extends MY_Controller {
         }
 
         $order->status  = Ordermodel::STATE_CLOSE;
+        $order->employee_id = $this->employee->id;
         if ($order->save()) {
             $this->api_res(0);
         } else {

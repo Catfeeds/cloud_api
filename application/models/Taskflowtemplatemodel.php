@@ -10,6 +10,7 @@ class Taskflowtemplatemodel extends Basemodel
 {
     const TYPE_CHECKOUT = 'CHECKOUT';
     const TYPE_PRICE    = 'PRICE';
+    const TYPE_RESERVE  = 'RESERVE';
     protected $table    = 'boss_taskflow_template';
 
     protected $fillable = [

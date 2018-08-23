@@ -10,13 +10,14 @@ use Carbon\Carbon;
 class Taskflowmodel extends Basemodel
 {
     protected $CI;
-    const STATE_AUDIT   = 'AUDIT';
-    const STATE_APPROVED= 'APPROVED';
-    const STATE_UNAPPROVED= 'UNAPPROVED';
-    const STATE_CLOSED  = 'CLOSED';
+    const STATE_AUDIT      = 'AUDIT';
+    const STATE_APPROVED   = 'APPROVED';
+    const STATE_UNAPPROVED = 'UNAPPROVED';
+    const STATE_CLOSED     = 'CLOSED';
 
     const TYPE_CHECKOUT = 'CHECKOUT';
     const TYPE_PRICE    = 'PRICE';
+    const TYPE_RESERVE  = 'RESERVE';
 
     const CREATE_EMPLOYEE   = 'EMPLOYEE';
     const CREATE_CUSTOMER   = 'CUSTOMER';
@@ -66,6 +67,56 @@ class Taskflowmodel extends Basemodel
     }
 
     /**
+     * 门店
+     */
+    public function store()
+    {
+        return $this->belongsTo(Storemodel::class,'store_id');
+    }
+
+    /**
+     * 房间
+     */
+    public function roomunion()
+    {
+        return $this->belongsTo(Roomunionmodel::class,'room_id');
+    }
+
+    /**
+     * 房型
+     */
+    public function roomtype()
+    {
+        return $this->belongsTo(Roomtypemodel::class,'room_type_id');
+    }
+
+    /******************************************** 不同的关联流程 *********************************************/
+    /**
+     * 综合展示详情
+     */
+//    public function detail($a)
+//    {
+//        switch ($this->type) {
+//            case self::TYPE_CHECKOUT:
+//                $this->CI->load->model('checkoutmodel');
+//                return $this->hasOne(Checkoutmodel::class,'taskflow_id');
+//                break;
+//            case self::TYPE_PRICE:
+//                $this->CI->load->model('pricecontrolmodel');
+//                return $this->hasOne(Pricecontrolmodel::class,'taskflow_id');
+//                break;
+//            case self::TYPE_RESERVE:
+//                $this->CI->load->model('reserveordermodel');
+//                return $this->hasOne(Reserveordermodel::class,'taskflow_id');
+//                break;
+//            default:
+//                return null;
+//        }
+//
+//    }
+
+
+    /**
      * 退房的信息
      */
     public function checkout()
@@ -82,19 +133,11 @@ class Taskflowmodel extends Basemodel
     }
 
     /**
-     * 门店
+     * 预约看房的信息
      */
-    public function store()
+    public function reserve()
     {
-        return $this->belongsTo(Storemodel::class,'store_id');
-    }
-
-    /**
-     * 房间
-     */
-    public function roomunion()
-    {
-        return $this->belongsTo(Roomunionmodel::class,'room_id');
+        return $this->hasOne(Reserveordermodel::class,'taskflow_id');
     }
 
     /**
@@ -112,9 +155,9 @@ class Taskflowmodel extends Basemodel
     }
 
     /**
-     * 创建退房的同时创建退款的任务流
+     * 创建任务流
      */
-    public function createTaskflow($room_id,$type,$store_id)
+    public function createTaskflow($type,$store_id,$room_id)
     {
         $this->CI->load->model('taskflowtemplatemodel');
         $this->CI->load->model('taskflowstepmodel');
@@ -124,10 +167,13 @@ class Taskflowmodel extends Basemodel
             ->where('type',$type)
             ->first();
         if (empty($template)) {
-            return false;
+            return null;
         }
         $step_field = ['id','company_id','name','type','seq','position_ids','employee_ids'];
         $step_template  = $template->step_template()->get($step_field);
+        if(empty($step_template->toArray())){
+            return null;
+        }
         $taskflow   = new Taskflowmodel();
         $taskflow->fill($template->toArray());
         $taskflow->template_id  = $template->id;
@@ -156,5 +202,7 @@ class Taskflowmodel extends Basemodel
 
         return $taskflow->id;
     }
+
+
 
 }
