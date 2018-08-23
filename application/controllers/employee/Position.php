@@ -154,12 +154,14 @@ class Position extends MY_Controller {
             $parent_ids       = Privilegemodel::whereIn('id', $pc_privilege_ids)->groupBy(['parent_id'])->get(['parent_id'])->toArray();
             if (!$parent_ids) {
                 $this->api_res(1009);
-                return false;
+                $this->output->_display();
+                exit(0);
             }
             $names = Privilegemodel::whereIn('id', $parent_ids)->get(['name'])->toArray();
             if (!$names) {
                 $this->api_res(1009);
-                return false;
+                $this->output->_display();
+                exit(0);
             }
             $temp_string = '';
             foreach ($names as $name) {
