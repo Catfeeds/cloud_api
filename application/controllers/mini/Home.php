@@ -22,17 +22,18 @@ class Home extends MY_Controller {
     public function lists() {
         $this->load->model('roomunionmodel');
         $post     = $this->input->post(null, true);
-        $store_id = empty($post['store_id']) ? '' : trim($post['store_id']);
+/*        $store_id = empty($post['store_id']) ? '' : trim($post['store_id']);
         if (empty($store_id)) {
             $this->api_res(1006);
-        }
+        }*/
+       $store_id = $this->employee->store_id;
 //获取首页提示信息
         //未缴费订单
         $data['tipsnum']['order'] = Ordermodel::join('boss_room_union', function ($join) {
             $join->on('boss_order.resident_id', '=', 'boss_room_union.resident_id');
         })
             ->where('boss_order.store_id', $store_id)
-            ->where('boss_order.status', 'PENDING')
+            ->whereIn('boss_order.status', ['GENERATE', 'AUDITED', 'PENDING'])
             ->groupBy('boss_order.resident_id')
             ->get()->count();
         //缴费订单确认
