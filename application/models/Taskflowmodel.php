@@ -18,6 +18,7 @@ class Taskflowmodel extends Basemodel
     const TYPE_CHECKOUT = 'CHECKOUT';
     const TYPE_PRICE    = 'PRICE';
     const TYPE_RESERVE  = 'RESERVE';
+    const TYPE_SERVICE  = 'SERVICE';
 
     const CREATE_EMPLOYEE   = 'EMPLOYEE';
     const CREATE_CUSTOMER   = 'CUSTOMER';
@@ -138,6 +139,14 @@ class Taskflowmodel extends Basemodel
     public function reserve()
     {
         return $this->hasOne(Reserveordermodel::class,'taskflow_id');
+    }
+
+    /**
+     * 服务订单
+     */
+    public function service()
+    {
+        return $this->hasOne(Serviceordermodel::class,'taskflow_id');
     }
 
     /**

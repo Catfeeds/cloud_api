@@ -1,10 +1,10 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 /**
- * Author:      zjh<401967974@qq.com>
+ * Author:
  * Date:        2018/5/18 0018
  * Time:        17:08
- * Describe:    预约看房
+ * Describe:    服务订单
  */
 class Server extends MY_Controller {
     public function __construct() {
@@ -189,8 +189,10 @@ class Server extends MY_Controller {
                 $server->order_id = $order->id;
                 $server->save();
                 $this->api_res(0, []);
+                return;
             } else {
                 $this->api_res(1009);
+                return;
             }
         } else {
             $this->api_res(1002);
@@ -223,10 +225,20 @@ class Server extends MY_Controller {
                     $this->api_res(10014);
                     return;
                 }
+
+                //加入任务流
+                $this->load->model('taskflowmodel');
+                $server->taskflow()->update(['status'=>Taskflowmodel::STATE_CLOSED]);
             } else {
                 $server->deal = $status;
                 $server->save();
+
+                //加入任务流
+                $this->load->model('taskflowmodel');
+                $server->taskflow()->update(['status'=>Taskflowmodel::STATE_APPROVED]);
+
                 $this->api_res(0, []);
+                return;
             }
         } else {
             $this->api_res(1002);

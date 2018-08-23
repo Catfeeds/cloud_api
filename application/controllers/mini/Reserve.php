@@ -75,9 +75,11 @@ class Reserve extends MY_Controller {
                 $this->api_res(1002, ['errmsg' => $this->form_first_error($fieldarr)]);
                 return;
             }
+            //添加任务流
             $this->load->model('taskflowmodel');
             $reserve->taskflow()->update(['status'=>Taskflowmodel::STATE_APPROVED]);
         }else{
+            //添加任务流
             $this->load->model('taskflowmodel');
             $reserve->taskflow()->update(['status'=>Taskflowmodel::STATE_CLOSED]);
         }
