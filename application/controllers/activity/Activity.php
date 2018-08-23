@@ -112,7 +112,8 @@ class Activity extends MY_Controller
         foreach ($activity as $key => $coupon) {
             $prize = Activityprizemodel::where('id', $coupon['prize_id'])->select(['prize','count'])->first();
             $p = unserialize($prize->prize);
-            $c = unserialize($prize->count);
+            $count = unserialize($prize->count);
+            $grant = unserialize($prize->grant);
             $couponarr = Coupontypemodel::whereIn('id', $p)->get(['name'])->toArray();
             $str = '';
             foreach ($couponarr as $value) {
@@ -140,7 +141,8 @@ class Activity extends MY_Controller
             $data[$key]['start_time'] = date("Y-m-d H:i", strtotime($coupon['start_time']));
             $data[$key]['end_time'] = date("Y-m-d H:i", strtotime($coupon['end_time']));
             $data[$key]['prize'] = $str;
-            $data[$key]['count'] = $c;
+            $data[$key]['count'] = $count;
+            $data[$key]['grant'] = $grant;
             $limit = unserialize($coupon['limit']);
             $data[$key]['customer'] = $limit['com'];
             $data[$key]['coupon_count'] = $coupon_count;
