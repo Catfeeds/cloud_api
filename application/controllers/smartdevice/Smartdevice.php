@@ -54,10 +54,10 @@ class Smartdevice extends MY_Controller {
                     ->whereIn('room_id', $room_ids)
                     ->with(['room' => function ($query) {
                         $query->with('store');
+                        $query->orderBy('number');
                     }])
                     ->take(PAGINATE)
                     ->skip($offset)
-                    ->orderBy('number')
                     ->get($filed)
                     ->toArray();
             }
