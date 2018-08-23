@@ -134,6 +134,7 @@ class Activity extends MY_Controller
 
             $coupon_count = Couponmodel::where('activity_id',$coupon['id'])->count();
             $data[$key]['id'] = $coupon['id'];
+            $data[$key]['description'] = $coupon['description'];
             $data[$key]['user'] = $employee_name->name;
             $data[$key]['name'] = $coupon['coupon_info'];
             $data[$key]['start_time'] = date("Y-m-d H:i", strtotime($coupon['start_time']));
@@ -147,7 +148,7 @@ class Activity extends MY_Controller
             $data[$key]['limit'] = $limit['limit'];
             $data[$key]['participate'] = $participate;
             $data[$key]['lucky_draw'] = $lucky_draw;
-            $data[$key]['share_img'] = $coupon['share_img'];
+            $data[$key]['share_img'] = $this->fullAliossUrl($coupon['share_img']);
             $data[$key]['share_des'] = $coupon['share_des'];
             $data[$key]['share_title'] = $coupon['share_title'];
             if ($coupon['type'] == 'LOWER') {
