@@ -32,6 +32,8 @@ class AuthHook {
             'mini/contract/autosignnotify',
             'mini/contract/autosign',
             'mini/contract/archive',
+
+            'ping/index',
         ];
     }
 
