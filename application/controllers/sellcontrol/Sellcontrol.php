@@ -24,7 +24,7 @@ class Sellcontrol extends MY_Controller {
         if (!empty($post['status'])) {$where['status'] = trim($post['status']);};
         if (!empty($post['store_id'])) {$where['store_id'] = intval($post['store_id']);} else { $where['store_id'] = $store_id;}
         $number = isset($post['number'])?trim($post['number']):null;
-        $filed     = ['id', 'layer', 'status', 'room_type_id', 'number', 'rent_price', 'resident_id'];
+        $filed     = ['id', 'layer', 'status', 'room_type_id', 'number', 'rent_price', 'resident_id', 'store_id'];
         $roomunion = new Roomunionmodel();
         if (!empty($post['BLANK_days'])) {
             $days            = $post['BLANK_days'];
