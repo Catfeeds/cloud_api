@@ -4,11 +4,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+//需要追加company_id的表
+define('SAASWHITELIST',['table1','table2']);
+
 class CompanyScope implements Scope {
     public function apply(Builder $builder, Model $model) {
         // var_dump($model->getTable());exit;
-        if (strpos($model->getTable(), 'boss_') === 0) {
-            return $builder->where('company_id', '=', 10001);
+        
+        if (in_array($model->getTable(), SAASWHITELIST)) {
+            return $builder->where('company_id', '=', COMPANY_ID);
         } else {
             return $builder;
         }
@@ -18,19 +22,29 @@ class CompanyScope implements Scope {
 
 class UserObserver {
     public function creating($user) {
-        $user->company_id = 10001;
+        if (in_array($user->getTable(), SAASWHITELIST)) {
+            $user->company_id = COMPANY_ID;
+        }
     }
     public function updating($user) {
-        $user->company_id = 10001;
+        if (in_array($user->getTable(), SAASWHITELIST)) {
+            $user->company_id = COMPANY_ID;
+        }
     }
     public function saving($user) {
-        $user->company_id = 10001;
+        if (in_array($user->getTable(), SAASWHITELIST)) {
+            $user->company_id = COMPANY_ID;
+        }
     }
     public function deleting($user) {
-        $user->company_id = 10001;
+        if (in_array($user->getTable(), SAASWHITELIST)) {
+            $user->company_id = COMPANY_ID;
+        }
     }
     public function restoring($user) {
-        $user->company_id = 10001;
+        if (in_array($user->getTable(), SAASWHITELIST)) {
+            $user->company_id = COMPANY_ID;
+        }
     }
 
 }
@@ -43,5 +57,7 @@ class Basemodel extends Model {
     //public static $where = ['cid'=>CURRENT_ID];
     protected static function boot() {
         parent::boot();
+        static::addGlobalScope(new CompanyScope);
+        static::observe(UserObserver::class);
     }
 }

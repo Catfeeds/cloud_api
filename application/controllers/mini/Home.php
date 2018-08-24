@@ -15,26 +15,38 @@ class Home extends MY_Controller {
         $this->load->model('residentmodel');
         $this->load->model('employeemodel');
     }
-
     /**
      * 办理退房
      */
     public function lists() {
         $this->load->model('roomunionmodel');
-        $post     = $this->input->post(null, true);
-        $store_id = empty($post['store_id']) ? '' : trim($post['store_id']);
-        if (empty($store_id)) {
-            $this->api_res(1006);
-        }
 //获取首页提示信息
         //未缴费订单
-        $data['tipsnum']['order'] = Ordermodel::join('boss_room_union', function ($join) {
-            $join->on('boss_order.resident_id', '=', 'boss_room_union.resident_id');
-        })
-            ->where('boss_order.store_id', $store_id)
-            ->where('boss_order.status', 'PENDING')
-            ->groupBy('boss_order.resident_id')
-            ->get()->count();
+        $this->load->model('roomtypemodel');
+        $store_id = $this->employee->store_id;
+        //未缴费订单
+        $room = Roomunionmodel::with('order') //
+        ->where('store_id' ,$store_id)
+            ->whereHas('order')
+            ->orderBy('number', 'ASC')
+            ->get()
+            ->groupBy('layer')
+            ->map(function ($room) {
+                $roominfo                  = $room->toArray();
+                $roominfo['count_total']   = count($room);
+                $roominfo['count_arrears'] = 0;
+                for ($i = 0; $i < $roominfo['count_total']; $i++) {
+                    if (!empty($roominfo[$i]['order'])) {
+                        $roominfo['count_arrears'] += 1;
+                    }
+                }
+                global $count;
+                $count += $roominfo['count_arrears'];
+                return $count;
+            })
+            ->toArray();
+        $data['tipsnum']['order'] = end($room);
+
         //缴费订单确认
         $data['tipsnum']['sureorder'] = Ordermodel::where(['store_id' => $store_id])
             ->where('status', 'CONFIRM')

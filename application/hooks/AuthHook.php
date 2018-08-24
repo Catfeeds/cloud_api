@@ -52,19 +52,6 @@ class AuthHook {
             'bill/bill/test',
             'demo/copy/run',
             'demo/sheet/index',
-
-//            'demo/sheet/output',
-            //
-            //            'bill/bill/generate',
-            //            //
-            //            'bill/bill/listbill',
-            //            'bill/bill/showbill',
-            //            'bill/bill/billexcel',
-//                        'bill/order/ordertoexcel',
-
-//            'account/login/login',
-            //            'account/login/listmenu',
-
             'demo/test/test1',
             'demo/test/testa',
             'demo/test/getendtimerooms',
@@ -77,12 +64,6 @@ class AuthHook {
             'mini/contract/archive',
             'utility/utility/listutility1',
 
-//            'utility/utility/updatenumber',
-
-//        'utility/meter/normaldevicereading',
-//        'utility/meter/smartdeviceupdate',
-//        'utility/meter/utility',
-
         );
     }
 
@@ -90,6 +71,7 @@ class AuthHook {
      * 是否验证token
      */
     public function isAuth() {
+        
         $directory = $this->CI->router->fetch_directory();
         $class     = $this->CI->router->fetch_class();
         $method    = $this->CI->router->fetch_method();
@@ -110,6 +92,7 @@ class AuthHook {
                 $this->auth($full_path);
             }
         }catch (Exception $e) {
+            // var_dump($e);exit;
             header('HTTP/1.1 401 Forbidden'); 
             header("Content-Type:application/json;charset=UTF-8");
             echo json_encode(array('rescode' => 1001, 'resmsg' => 'token无效', 'data' => []));
@@ -151,6 +134,9 @@ class AuthHook {
         $d_company_id = $decoded->company_id;
         define('CURRENT_ID', $d_bxid);
         define('COMPANY_ID', $d_company_id);
+        //SaaS权限验证
+        $this->saas();
+
         log_message('debug','C_ID'.COMPANY_ID);
         $pre = substr(CURRENT_ID, 0, 2);
         if ($pre == SUPERPRE) {
@@ -167,6 +153,36 @@ class AuthHook {
             header("Content-Type:application/json;charset=UTF-8");
             echo json_encode(array('rescode' => 1012, 'resmsg' => '操作log出错', 'data' => []));
             exit;
+        }
+    }
+
+     //SaaS权限验证
+    private function saas(){
+       
+        $company_id = COMPANY_ID;
+        
+        if(!empty($company_id)){
+            // if(!$this->CI->load->is_loaded('companymodel')){
+                $this->CI->load->model('companymodel');
+            // }
+            $model = Companymodel::where('id',$company_id)->first();
+
+            if(empty($model)){
+                throw new Exception('该账号不存在');
+            }
+
+            //判断有效期
+            if(strtotime($model->expiretime)<time()){
+                throw new Exception('该账号已经过期失效，请续费');
+            }
+
+            //判断模块权限
+
+
+            //判断状态
+            if('CLOSE' === $model->status){
+                throw new Exception('该账号已经注销，请联系管理员');
+            }
         }
     }
 

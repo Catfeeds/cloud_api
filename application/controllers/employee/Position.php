@@ -151,21 +151,15 @@ class Position extends MY_Controller {
         $position = $positions->map(function ($p) {
             unset($p->employee);
             $pc_privilege_ids = explode(',', $p->pc_privilege_ids);
-            $parent_ids       = Privilegemodel::whereIn('id', $pc_privilege_ids)->groupBy(['parent_id'])->get(['parent_id'])->toArray();
-            if (!$parent_ids) {
-                $this->api_res(1009);
-                return false;
-            }
-            $names = Privilegemodel::whereIn('id', $parent_ids)->get(['name'])->toArray();
-            if (!$names) {
-                $this->api_res(1009);
-                return false;
-            }
             $temp_string = '';
-            foreach ($names as $name) {
-                $temp_string = $temp_string . $name['name'] . " / ";
+            $parent_ids       = Privilegemodel::whereIn('id', $pc_privilege_ids)->groupBy(['parent_id'])->get(['parent_id'])->toArray();
+            if($parent_ids){
+                $names = Privilegemodel::whereIn('id', $parent_ids)->get(['name'])->toArray();
+                foreach ($names as $name) {
+                    $temp_string = $temp_string . $name['name'] . " / ";
+                }
+                $temp_string     = rtrim($temp_string, ' / ');
             }
-            $temp_string     = rtrim($temp_string, ' / ');
             $p->pc_privilege = $temp_string;
 
             return $p;
