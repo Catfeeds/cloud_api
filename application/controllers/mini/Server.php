@@ -214,24 +214,18 @@ class Server extends MY_Controller {
                 $order_status = Ordermodel::where('id', $server->order_id)->first();
                 if (!empty($order_status) && in_array($order_status->status, ['PENDING', 'AUDITED', 'GENERATE'])) {
                     //var_dump($order_status);
-                    $server->deal = $status;
                     Ordermodel::destroy($server->order_id);
-                    if ($server->save()) {
-                        //加入任务流关闭
-                        $this->load->model('taskflowmodel');
-                        $taskflow   = $server->taskflow;
-                        $this->taskflowmodel->closeTaskflow($taskflow);
-
-                        $this->api_res(0, []);
-                    } else {
-                        $this->api_res(1009);
-                    }
-                } else {
-                    $this->api_res(10014);
+                }
+                $server->deal = $status;
+                if (!$server->save()) {
+                    $this->api_res(1009);
                     return;
                 }
-
-
+                //加入任务流关闭
+                $this->load->model('taskflowmodel');
+                $taskflow   = $server->taskflow;
+                $this->taskflowmodel->closeTaskflow($taskflow);
+                $this->api_res(0, []);
             } else {
                 //加入任务流审核
                 $this->load->model('taskflowmodel');

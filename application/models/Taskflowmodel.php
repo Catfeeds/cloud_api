@@ -275,7 +275,8 @@ class Taskflowmodel extends Basemodel
             $this->createRecord($step_audit_first);
             $update_arr['step_id']  = $step_audit_first->id;
         }
-        $taskflow->update($update_arr);
+        $taskflow->status=Taskflowmodel::STATE_CLOSED;
+        $taskflow->save();
         return true;
     }
 
