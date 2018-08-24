@@ -68,11 +68,19 @@ class Home extends MY_Controller {
         //预约来访
         $result['home']['count_visit'] = Reserveordermodel::where('status', 'WAIT')->whereIn('store_id', $store_ids)->count();
         //即将到期
-        $result['home']['count_order'] = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('end_time', $date_later_m)->count();
+        $resident = Residentmodel::whereBetween('end_time', $date_later_m)->get(['id'])->toArray();
+        $residents = [];
+        if (!empty($resident)) {
+            foreach ($resident as $key => $value) {
+                $residents[] = $resident[$key]['id'];
+            }
+        }
+        $result['home']['count_order'] = Contractmodel::whereIn('store_id', $store_ids)->whereIn('resident_id', $residents)->count();
         //服务订单
         $result['home']['count_confirm'] = Serviceordermodel::whereIn('store_id', $store_ids)->whereIn('deal', ['UNDONE', 'SDOING'])->count();
         //未缴费账单
-        $result['home']['count_bills'] = Ordermodel::whereIn('store_id', $store_ids)->whereIn('status', ['PENDING', 'AUDITED', 'GENERATE'])->count();
+        $status = array_diff($this->ordermodel->getAllStatus(), [Ordermodel::STATE_COMPLETED]);
+        $result['home']['count_bills'] = Ordermodel::whereIn('store_id', $store_ids)->whereIn('status', $status)->count();
 /******************************日报表****************************/
         //预约看房数
         $result['day']['view'] = Reserveordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)->count();
