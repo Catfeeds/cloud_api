@@ -74,17 +74,10 @@ class Contract extends MY_Controller {
                 $residents[] = $resident[$key]['id'];
             }
         }
-        $count = ceil(Contractmodel::where($where)
-                ->where(function ($query) use ($search) {
-                    $query->orWhereHas('resident', function ($query) use ($search) {
-                        $query->where('name', 'like', "%$search%");
-                    })->orWhereHas('roomunion', function ($query) use ($search) {
-                        $query->where('number', 'like', "%$search%");
-                    });
-                })
-                ->whereIn('store_id', $store_ids)
-                ->whereIn('resident_id', $residents)
-                ->count() / PAGINATE);
+
+        $contract = new Contractmodel();
+        $count = $contract->count( $store_ids, $residents, $where, $search);
+
         if ($page > $count || $page < 1) {
             $this->api_res(0, ['list' => []]);
             return;

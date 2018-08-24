@@ -69,5 +69,19 @@ class Contractmodel extends Basemodel {
     public function booking() {
         return $this->belongsTo(Residentmodel::class, 'resident_id')->select('id', 'begin_time', 'book_money');
     }
-
+    //合同数量：用于查看所有住户入住流程中签署的预定和入住合同
+    public function count($store_ids, $residents ,$where = [] , $search = ''){
+        $count = Contractmodel::where($where)
+                ->where(function ($query) use ($search) {
+                    $query->orWhereHas('resident', function ($query) use ($search) {
+                        $query->where('name', 'like', "%$search%");
+                    })->orWhereHas('roomunion', function ($query) use ($search) {
+                        $query->where('number', 'like', "%$search%");
+                    });
+                })
+                ->whereIn('store_id', $store_ids)
+                ->whereIn('resident_id', $residents)
+                ->count();
+        return $count;
+    }
 }
