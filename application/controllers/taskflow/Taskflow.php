@@ -578,7 +578,12 @@ class Taskflow extends MY_Controller{
         $this->load->model('serviceordermodel');
         $this->load->model('customermodel');
         $service = Serviceordermodel::with('roomunion', 'customer')->where('taskflow_id',$taskflow_id)->first();
-        $service->paths = $this->fullAliossUrl(json_decode($service->paths,true),true);
+        if (!empty($service->paths)&&is_array($service->paths)) {
+            $service->paths = $this->fullAliossUrl(json_decode($service->paths,true),true);
+        } else {
+            $service->paths = [];
+        }
+
         return $service;
     }
 
