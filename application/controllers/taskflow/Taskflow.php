@@ -10,7 +10,7 @@ use Illuminate\Database\Capsule\Manager as DB;
  */
 class Taskflow extends MY_Controller{
 
-    protected $withs=['checkout','price','reserve',];
+    protected $withs=['checkout','price','reserve','service'];
 
     public function __construct()
     {
@@ -250,6 +250,9 @@ class Taskflow extends MY_Controller{
             case Taskflowmodel::TYPE_RESERVE;
                 $data   = $this->showReserve($taskflow_id);
                 break;
+            case Taskflowmodel::TYPE_SERVICE:
+                $data   = $this->showService($taskflow_id);
+                break;
             default:
                 $data   = [];
         }
@@ -418,6 +421,9 @@ class Taskflow extends MY_Controller{
                     case Taskflowmodel::TYPE_RESERVE:
                         $this->doneReserve($taskflow);
                         break;
+                    case Taskflowmodel::TYPE_SERVICE:
+                        $this->doneService($taskflow);
+                        break;
                     default:
 
                 }
@@ -560,6 +566,20 @@ class Taskflow extends MY_Controller{
     }
 
     /**
+     * 展示服务订单信息详情
+     */
+    public function showService($taskflow_id)
+    {
+        $this->load->model('roomunionmodel');
+        $this->load->model('serviceordermodel');
+        $this->load->model('customermodel');
+        $service = Serviceordermodel::with('roomunion', 'customer')->where('taskflow_id',$taskflow_id)->first();
+        $service->paths = $this->fullAliossUrl(json_decode($service->paths,true),true);
+        return $service;
+    }
+
+
+    /**
      * 退房审核完成
      */
     private function doneCheckout($taskflow)
@@ -578,6 +598,15 @@ class Taskflow extends MY_Controller{
         $taskflow->reserve()->update(['status'=>Reserveordermodel::STATE_END]);
         //do something 完善reserve信息
 
+    }
+
+    /**
+     * 服务订单完成
+     */
+    private function doneService($taskflow)
+    {
+        exit;
+        //do something
     }
 
     /**

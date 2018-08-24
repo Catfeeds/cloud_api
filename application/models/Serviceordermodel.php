@@ -28,4 +28,9 @@ class Serviceordermodel extends Basemodel {
     public function getOrderNumber() {
         return date('YmdHis') . mt_rand(1000000000, 9999999999);
     }
+
+    public function taskflow()
+    {
+        return $this->belongsTo(Taskflowmodel::class,'taskflow_id');
+    }
 }

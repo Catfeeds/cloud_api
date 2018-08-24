@@ -18,6 +18,7 @@ class Taskflowmodel extends Basemodel
     const TYPE_CHECKOUT = 'CHECKOUT';
     const TYPE_PRICE    = 'PRICE';
     const TYPE_RESERVE  = 'RESERVE';
+    const TYPE_SERVICE  = 'SERVICE';
 
     const CREATE_EMPLOYEE   = 'EMPLOYEE';
     const CREATE_CUSTOMER   = 'CUSTOMER';
@@ -141,6 +142,14 @@ class Taskflowmodel extends Basemodel
     }
 
     /**
+     * 服务订单
+     */
+    public function service()
+    {
+        return $this->hasOne(Serviceordermodel::class,'taskflow_id');
+    }
+
+    /**
      * 生成审批编号
      */
     public function newNumber($store_id)
@@ -203,6 +212,54 @@ class Taskflowmodel extends Basemodel
         return $taskflow->id;
     }
 
+    /**
+     * 通过任务流
+     */
+    public function approveTaskflow($taskflow)
+    {
+        if (empty($taskflow)) {
+            return true;
+        }
+        $this->CI->load->model('taskflowstepmodel');
+        $step_audit_first    = $taskflow->steps()->whereIn('status',[Taskflowstepmodel::STATE_AUDIT,Taskflowstepmodel::STATE_UNAPPROVED])->first();
+        if (!empty($step_audit_first)) {
+            $step_audit_first->employee_id  = $this->CI->employee->id;
+            $step_audit_first->status   = Taskflowstepmodel::STATE_APPROVED;
+            $step_audit_first->save();
+        }
+        $taskflow->step_id  = $step_audit_first->first();
+        $steps_audit_count    = $taskflow->steps()->whereIn('status',[Taskflowstepmodel::STATE_AUDIT,Taskflowstepmodel::STATE_UNAPPROVED])->count();
+        if ($steps_audit_count==0) {
+            $taskflow->status   = self::STATE_APPROVED;
+        }
+        $taskflow->save();
+        if ($taskflow->status==self::STATE_APPROVED) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
+    /**
+     * 关闭任务流
+     */
+    public function closeTaskflow($taskflow)
+    {
+        if (empty($taskflow)) {
+            return true;
+        }
+        $this->CI->load->model('taskflowstepmodel');
+        $step_audit_first    = $taskflow->steps()->whereIn('status',[Taskflowstepmodel::STATE_AUDIT,Taskflowstepmodel::STATE_UNAPPROVED])->first();
+        $update_arr = ['status'=>Taskflowmodel::STATE_CLOSED];
+        if (!empty($step_audit_first)) {
+            $step_audit_first->employee_id  = $this->CI->employee->id;
+            $step_audit_first->status   = Taskflowstepmodel::STATE_UNAPPROVED;
+            $step_audit_first->remark   = '关闭任务流';
+            $step_audit_first->save();
+            $update_arr['step_id']  = $step_audit_first->id;
+        }
+        $taskflow->update($update_arr);
+        return true;
+    }
 
 }
