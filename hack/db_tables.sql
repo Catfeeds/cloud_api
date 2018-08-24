@@ -1577,24 +1577,26 @@ CREATE TABLE `fx_company` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
   `bxid` int(10) DEFAULT NULL,
   `name` varchar(255) NOT NULL DEFAULT '' COMMENT '公司名称',
-  `nickname` varchar(64) DEFAULT NULL COMMENT '公司简称',
+  `nickname` varchar(64) DEFAULT '' COMMENT '公司简称',
   `address` text NOT NULL COMMENT '公司地址',
+  `store_type` enum('centralized','distributed') NOT NULL DEFAULT 'centralized' COMMENT 'centralized 集中式；distributed 分布式',
+  `scale` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '规模（大概房间数）',
   `contact_user` varchar(64) NOT NULL DEFAULT '' COMMENT '联系人',
-  `contact_phone` varchar(11) NOT NULL DEFAULT '0' COMMENT '联系电话',
+  `contact_phone` varchar(13) NOT NULL DEFAULT '0' COMMENT '联系电话',
   `base_position` enum('SUPER') NOT NULL DEFAULT 'SUPER' COMMENT 'super',
-  `phone` varchar(14) DEFAULT NULL,
+  `phone` varchar(14) DEFAULT '' COMMENT '电话',
   `openid` varchar(64) DEFAULT '' COMMENT '微信openid',
   `unionid` varchar(64) DEFAULT NULL,
-  `license` varchar(128) NOT NULL COMMENT '营业执照',
+  `license` varchar(128) NOT NULL DEFAULT '' COMMENT '营业执照',
+  `expiretime` timestamp NOT NULL DEFAULT '2037-12-31 00:00:00' COMMENT '失效时间',
   `remark` text COMMENT '备注信息',
-  `status` enum('NORMAL','CLOSE','UNSCAN') NOT NULL DEFAULT 'UNSCAN' COMMENT '状态(正常，关闭，未扫码)',
+  `status` enum('NORMAL','CLOSE','UNAUTH','UNSCAN') NOT NULL DEFAULT 'UNAUTH' COMMENT '状态(正常，关闭，未认证，未扫码)',
   `privilege` varchar(255) NOT NULL DEFAULT 'MOD_BASE' COMMENT '权限，开通的模块\nMOD_ALL\nMOD_BASE,MOD_A,MOD_B,MOD_C',
   `created_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `updated_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `deleted_at` datetime DEFAULT NULL,
-  `expiretime` timestamp NOT NULL DEFAULT '2037-12-30 16:00:00' COMMENT '失效时间',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

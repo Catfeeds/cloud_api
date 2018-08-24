@@ -122,5 +122,19 @@ class Employeemodel extends Basemodel {
         }
         return $my_cities;
     }
+	
+	/**
+	 * 根据id更新员工信息
+	 */
+    public function updateEmployee($employee_id,$info)
+    {
+    	$employee = $this->Find($employee_id);
+	    $employee->fill($info);
+	    if ($employee->save()){
+	    	return true;
+	    }else{
+	    	return false;
+	    }
+    }
 
 }
