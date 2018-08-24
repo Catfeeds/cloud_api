@@ -221,13 +221,15 @@ class Taskflowmodel extends Basemodel
             return true;
         }
         $this->CI->load->model('taskflowstepmodel');
+        $this->CI->load->model('taskflowrecordmodel');
         $step_audit_first    = $taskflow->steps()->whereIn('status',[Taskflowstepmodel::STATE_AUDIT,Taskflowstepmodel::STATE_UNAPPROVED])->first();
         if (!empty($step_audit_first)) {
             $step_audit_first->employee_id  = $this->CI->employee->id;
             $step_audit_first->status   = Taskflowstepmodel::STATE_APPROVED;
             $step_audit_first->save();
+            $this->createRecord($step_audit_first);
+            $taskflow->step_id  = $step_audit_first->id;
         }
-        $taskflow->step_id  = $step_audit_first->first();
         $steps_audit_count    = $taskflow->steps()->whereIn('status',[Taskflowstepmodel::STATE_AUDIT,Taskflowstepmodel::STATE_UNAPPROVED])->count();
         if ($steps_audit_count==0) {
             $taskflow->status   = self::STATE_APPROVED;
@@ -240,6 +242,19 @@ class Taskflowmodel extends Basemodel
         }
     }
 
+
+    /**
+     * 创建新的审核的记录
+     * @data $step对象
+     */
+    private function createRecord($step)
+    {
+        $record = new Taskflowrecordmodel();
+        $record->fill($step->toArray());
+        $record->step_id    = $step->id;
+        $record->save();
+    }
+
     /**
      * 关闭任务流
      */
@@ -249,6 +264,7 @@ class Taskflowmodel extends Basemodel
             return true;
         }
         $this->CI->load->model('taskflowstepmodel');
+        $this->CI->load->model('taskflowrecordmodel');
         $step_audit_first    = $taskflow->steps()->whereIn('status',[Taskflowstepmodel::STATE_AUDIT,Taskflowstepmodel::STATE_UNAPPROVED])->first();
         $update_arr = ['status'=>Taskflowmodel::STATE_CLOSED];
         if (!empty($step_audit_first)) {
@@ -256,6 +272,7 @@ class Taskflowmodel extends Basemodel
             $step_audit_first->status   = Taskflowstepmodel::STATE_UNAPPROVED;
             $step_audit_first->remark   = '关闭任务流';
             $step_audit_first->save();
+            $this->createRecord($step_audit_first);
             $update_arr['step_id']  = $step_audit_first->id;
         }
         $taskflow->update($update_arr);

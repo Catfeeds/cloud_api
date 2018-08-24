@@ -78,7 +78,7 @@ class Reserve extends MY_Controller {
             //添加任务流通过
             $this->load->model('taskflowmodel');
             $taskflow   = $reserve->taskflow;
-            if (!$this->taskflowmodel()->approveTaskflow($taskflow)) {
+            if (!$this->taskflowmodel->approveTaskflow($taskflow)) {
                 $post['status']='WAIT';
             }
         }else{
