@@ -162,9 +162,9 @@ class AuthHook {
         $company_id = COMPANY_ID;
         
         if(!empty($company_id)){
-            if(!$this->CI->load->is_loaded('companymodel')){
+            // if(!$this->CI->load->is_loaded('companymodel')){
                 $this->CI->load->model('companymodel');
-            }
+            // }
             $model = Companymodel::where('id',$company_id)->first();
 
             if(empty($model)){
