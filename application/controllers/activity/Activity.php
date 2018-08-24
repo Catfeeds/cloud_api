@@ -110,7 +110,7 @@ class Activity extends MY_Controller
      * */
     private function ac_up($activity){
         foreach ($activity as $key => $coupon) {
-            $prize = Activityprizemodel::where('id', $coupon['prize_id'])->select(['prize','count'])->first();
+            $prize = Activityprizemodel::where('id', $coupon['prize_id'])->select(['prize','count','grant'])->first();
             $p = unserialize($prize->prize);
             $count = unserialize($prize->count);
             $grant = unserialize($prize->grant);
