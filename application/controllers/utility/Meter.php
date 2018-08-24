@@ -1,9 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 use Illuminate\Database\Capsule\Manager as DB;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 /**
  * Author:      hfq<1326432154@qq.com>
  * Date:        2018/7/31
@@ -27,23 +25,26 @@ class Meter extends MY_Controller
         $this->load->model('meterreadingmodel');
         $this->load->model('storemodel');
         $this->load->model('roomunionmodel');
+        $this->load->model('smartdevicemodel');
         $type       = $this->input->post('type');
         $store_id   = $this->input->post('store_id');
         $month      = $this->input->post('month');
         $year       = $this->input->post('year');
         $type       = $this->checkAndGetReadingType($type);                 //检查表计类型
         $sheetArray = $this->uploadOssSheet();                              //转换excel读数为数组
-        try{
-            $data       = $this->checkAndGetInputData($sheetArray);             //检查表读数
-        }catch (exception $e){
-
-        }
+        $transfer   = new Meterreadingtransfermodel();
+        $data       = $transfer->checkAndGetInputData($sheetArray);
         if(!empty($data['error'])){
             $this->api_res(10052,['error'=>$data['error']]);
             return;
         }
-        $res        = $this->writeReading($data,$store_id,$type,$year,$month);//存储导入数据
-        $this->api_res(0,['error'=>$res]);
+        //存储导入数据
+        $res        = $transfer->writeReading($data,$store_id,$type,$year,$month);
+        if (!empty($res)){
+            $this->api_res(10051,['error'=>$res]);
+        }else{
+            $this->api_res(0);
+        }
     }
 
     /**
@@ -76,8 +77,9 @@ class Meter extends MY_Controller
         $reader        = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($inputFileType);
         $reader->setReadDataOnly(true);
         $excel = $reader->load($file_name);
-        $sheet = $excel->getActiveSheet();
-        return $sheet->toArray();
+        $sheet = $excel->getActiveSheet()->toArray();
+        array_shift($sheet);
+        return $sheet;
     }
 
     /**

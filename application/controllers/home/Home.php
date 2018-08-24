@@ -46,7 +46,7 @@ class Home extends MY_Controller {
         $result['month']['free']['all'] =100;
         $result['month']['free']['server'] =30;
         $result['month']['free']['other'] =50;*/
-
+        $this->load->model('roomunionmodel');
         $this->load->model('employeemodel');
         $this->load->model('reserveordermodel');
         $this->load->model('ordermodel');
@@ -60,7 +60,7 @@ class Home extends MY_Controller {
         //当前时间节点之前的一月之内(只含本月)
         $date_m = [date('Y-m', time()) . "-00 00:00:00", date('Y-m-d H:i:s', time())];
         //当前时间节点之后的一月之内
-        $date_later_m = [date('Y-m-d H:i:s', time()), date('Y-m-d H:i:s', strtotime('+1month'))];
+        $date_later_m = [date('Y-m-d', time()), date('Y-m-d', strtotime('+1month'))];
 
         //权限下的门店信息
         $store_ids = Employeemodel::getMyStoreids();
@@ -68,11 +68,20 @@ class Home extends MY_Controller {
         //预约来访
         $result['home']['count_visit'] = Reserveordermodel::where('status', 'WAIT')->whereIn('store_id', $store_ids)->count();
         //即将到期
-        $result['home']['count_order'] = Residentmodel::whereIn('store_id', $store_ids)->whereBetween('end_time', $date_later_m)->count();
+        $resident = Residentmodel::whereBetween('end_time', $date_later_m)->get(['id'])->toArray();
+        $residents = [];
+        if (!empty($resident)) {
+            foreach ($resident as $key => $value) {
+                $residents[] = $resident[$key]['id'];
+            }
+        }
+        $contract = new Contractmodel();
+        $result['home']['count_order'] = $contract->count($store_ids,$resident);
         //服务订单
         $result['home']['count_confirm'] = Serviceordermodel::whereIn('store_id', $store_ids)->whereIn('deal', ['UNDONE', 'SDOING'])->count();
         //未缴费账单
-        $result['home']['count_bills'] = Ordermodel::whereIn('store_id', $store_ids)->whereIn('status', ['PENDING', 'AUDITED', 'GENERATE'])->count();
+        $status = array_diff($this->ordermodel->getAllStatus(), [Ordermodel::STATE_COMPLETED]);
+        $result['home']['count_bills'] = Ordermodel::whereIn('store_id', $store_ids)->whereIn('status', $status)->count();
 /******************************日报表****************************/
         //预约看房数
         $result['day']['view'] = Reserveordermodel::whereIn('store_id', $store_ids)->whereBetween('created_at', $date_d)->count();
