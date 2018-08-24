@@ -1,5 +1,6 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 /**
  * Author:      zjh<401967974@qq.com>
  * Date:        2018/6/4 0004
@@ -75,5 +76,101 @@ class Meterreadingtransfermodel extends Basemodel {
     public function room_s() {
         return $this->belongsTo(Roomunionmodel::class, 'room_id')
             ->select('id', 'number');
+    }
+
+    /**
+     * 检测上传读数的正确性，并返回错误信息
+     */
+    public function checkAndGetInputData($sheetArray)
+    {
+        $data       = [];
+        $error      = [];
+        foreach ($sheetArray as $key => $item) {
+            //房间号
+            $number = $item[1];
+            //检查表读数
+            $read   = trim($item[2]);
+            if (!is_numeric($read) || 0 > $read || 1e8 < $read) {
+                $error[] = '请检查房间：' . $item[1] . '的表读数';
+                log_message('debug','请检查房间：' . $item[1] . '的表读数');
+                continue;
+            }
+            //检查权重
+            $weight = isset($item[4]) ? (int)$item[4] : 100;
+            if (!$weight) {
+                $weight = 100;
+            } elseif (100 < $weight || 0 > $weight) {
+                log_message('debug','请检查房间：' . $item[1] . '的均摊比例');
+                $error[] = '请检查房间：' . $item[1] . '的均摊比例';
+                continue;
+            }
+            //检查抄表时间
+            if(!isset($item[5])){
+                log_message('debug','房间：' . $item[1] . '时间未上传');
+                $error[]    = '房间：' . $item[1] . '时间未上传';
+                continue;
+            }elseif (!is_numeric($item[5]))
+            {
+                log_message('debug','房间：' . $item[1] . '时间格式错误');
+                $error[] = '房间：' . $item[1] . '时间格式错误正确格式为\'2018/12/12\'';
+                continue;
+            }else{
+                $sheet  = new Date();
+                $time   =date('Y-m-d', $sheet->excelToTimestamp(intval($item[5])));
+            }
+            $data[] = ['this_reading' => $read, 'number' => $number, 'weight' => $weight,'this_time' =>$time];
+        }
+        if (empty($error)){
+            return $data;
+        }else{
+            $data  = ['error'=>$error];
+            return $data;
+        }
+    }
+
+    /**
+     * 处理并插入数据库
+     */
+    public function writeReading($data = [],$store_id,$type,$year,$month) {
+        $error      = [];
+        //获取所有房间号(number)
+        $number = [];
+        foreach ($data as $key=>$value)
+        {
+            $number[] = $data[$key]['number'];
+        }
+        //根据房间号获取住户id(resident_id)，房间id(room_id)
+        $arr    = Roomunionmodel::where('store_id',$store_id)/*->whereIn('number',$number)*/->orderBy('number')
+            ->get(['id','number','resident_id','building_id'])->groupBy('number')->toArray();
+//        var_dump($arr);die();
+        //重组插入数据库所需数组
+        foreach($data as $key=>$value) {
+            $number = $value['number'];
+            $transfer   = new Meterreadingtransfermodel();
+            if (isset($arr[$value['number']])){
+                $data[$key]['resident_id']  = $arr[$value['number']][0]['resident_id'];
+                $data[$key]['room_id']      = $arr[$value['number']][0]['id'];
+                $data[$key]['building_id']  = $arr[$value['number']][0]['building_id'];
+                $data[$key]['month']        = $month;
+                $data[$key]['year']         = $year;
+                $data[$key]['type']         = $type;
+                $data[$key]['store_id']     = $store_id;
+                $serial_number              = Smartdevicemodel::where('type',$type)->where('room_id',$arr[$value['number']][0]['id'])->first();
+                $data[$key]['serial_number']= isset($serial_number->serial_number)?$serial_number->serial_number:"";
+                $data[$key] = array_except($data[$key], ['number', 'error']);
+                $transfer->fill($data[$key]);
+                try {
+                    $transfer->save();
+                } catch (Exception $e) {
+                    log_message("error", '房间'.$number.'读数导入失败');
+                    $error[] = '房间'.$number.'读数已存在';
+                }
+            }else{
+                log_message("error", '房间'.$number.'不存在');
+                $error[] = '房间'.$number.'不存在';
+                continue;
+            }
+        }
+        return $error;
     }
 }
