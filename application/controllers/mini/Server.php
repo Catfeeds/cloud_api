@@ -220,7 +220,7 @@ class Server extends MY_Controller {
                         //加入任务流关闭
                         $this->load->model('taskflowmodel');
                         $taskflow   = $server->taskflow;
-                        $this->taskflowmodel()->closeTaskflow($taskflow);
+                        $this->taskflowmodel->closeTaskflow($taskflow);
 
                         $this->api_res(0, []);
                     } else {
@@ -236,7 +236,7 @@ class Server extends MY_Controller {
                 //加入任务流审核
                 $this->load->model('taskflowmodel');
                 $taskflow   = $server->taskflow;
-                if($this->taskflowmodel()->approveTaskflow($taskflow)){
+                if($this->taskflowmodel->approveTaskflow($taskflow)){
                     $server->deal = $status;
                     $server->save();
                 }
