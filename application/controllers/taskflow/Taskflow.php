@@ -50,6 +50,7 @@ class Taskflow extends MY_Controller{
         $this->load->model('checkoutmodel');
         $this->load->model('pricecontrolmodel');
         $this->load->model('reserveordermodel');
+        $this->load->model('serviceordermodel');
         $taskflows  = Taskflowmodel::with(['step'=>function($query){
             $query->with(['employee'=>function($query){
                 $query->with('position');
@@ -110,6 +111,7 @@ class Taskflow extends MY_Controller{
         $this->load->model('checkoutmodel');
         $this->load->model('pricecontrolmodel');
         $this->load->model('reserveordermodel');
+        $this->load->model('serviceordermodel');
         $taskflows  = Taskflowmodel::with(['step'=>function($query){
             $query->with(['employee'=>function($query){
                 $query->with('position');
@@ -187,6 +189,7 @@ class Taskflow extends MY_Controller{
         $this->load->model('checkoutmodel');
         $this->load->model('pricecontrolmodel');
         $this->load->model('reserveordermodel');
+        $this->load->model('serviceordermodel');
         $steps  = Taskflowrecordmodel::with(['taskflow'=>function($query){
             $query->with(['step'=>function($query){
                 $query->with(['employee'=>function($query){
@@ -299,6 +302,7 @@ class Taskflow extends MY_Controller{
         $this->load->model('checkoutmodel');
         $this->load->model('pricecontrolmodel');
         $this->load->model('reserveordermodel');
+        $this->load->model('serviceordermodel');
         $audit  = Taskflowstepmodel::with(['taskflow'=>function($query){
             $query->with('employee')->with(['step'=>function($a){
                 $a->with(['employee'=>function($query){
