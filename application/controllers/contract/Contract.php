@@ -76,7 +76,7 @@ class Contract extends MY_Controller {
         }
 
         $contract = new Contractmodel();
-        $count = $contract->count( $store_ids, $residents, $where, $search);
+        $count = ceil($contract->count( $store_ids, $residents, $where, $search)/PAGINATE);
 
         if ($page > $count || $page < 1) {
             $this->api_res(0, ['list' => []]);
