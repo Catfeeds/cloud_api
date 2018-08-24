@@ -217,6 +217,11 @@ class Server extends MY_Controller {
                     $server->deal = $status;
                     Ordermodel::destroy($server->order_id);
                     if ($server->save()) {
+                        //加入任务流关闭
+                        $this->load->model('taskflowmodel');
+                        $taskflow   = $server->taskflow;
+                        $this->taskflowmodel()->closeTaskflow($taskflow);
+
                         $this->api_res(0, []);
                     } else {
                         $this->api_res(1009);
@@ -226,17 +231,15 @@ class Server extends MY_Controller {
                     return;
                 }
 
-                //加入任务流
-                $this->load->model('taskflowmodel');
-                $server->taskflow()->update(['status'=>Taskflowmodel::STATE_CLOSED]);
+
             } else {
-                $server->deal = $status;
-                $server->save();
-
-                //加入任务流
+                //加入任务流审核
                 $this->load->model('taskflowmodel');
-                $server->taskflow()->update(['status'=>Taskflowmodel::STATE_APPROVED]);
-
+                $taskflow   = $server->taskflow;
+                if($this->taskflowmodel()->approveTaskflow($taskflow)){
+                    $server->deal = $status;
+                    $server->save();
+                }
                 $this->api_res(0, []);
                 return;
             }
