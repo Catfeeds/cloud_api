@@ -15,34 +15,32 @@ class MY_Controller extends CI_Controller {
 
     //API返回统一方法
 
-
-    public function api_res($code,$data = false)
-    {
+    public function api_res($code, $data = false) {
         switch ($code) {
-            case 0:
-                break;
-            case 1002:
-            case 1004:
-            case 1005:
-            case 1016:
-            case 10002:
-            case 10003:
-            case 10020:
-            case 10031:
-            case 10032:
-                $this->output->set_status_header(400);
-                break;
-            case 1001:
-            case 1006:
-                $this->output->set_status_header(401);
-                break;
-            case 1011:
-            case 10011:
-                $this->output->set_status_header(403);
-                break;
-            default:
-                $this->output->set_status_header(500);
-                break;
+        case 0:
+            break;
+        case 1002:
+        case 1004:
+        case 1005:
+        case 1016:
+        case 10002:
+        case 10003:
+        case 10020:
+        case 10031:
+        case 10032:
+            $this->output->set_status_header(400);
+            break;
+        case 1001:
+        case 1006:
+            $this->output->set_status_header(401);
+            break;
+        case 1011:
+        case 10011:
+            $this->output->set_status_header(403);
+            break;
+        default:
+            $this->output->set_status_header(500);
+            break;
         }
 
         $msg = $this->config->item('api_code')[$code];
@@ -55,7 +53,6 @@ class MY_Controller extends CI_Controller {
                 ->set_content_type('application/json')
                 ->set_output(json_encode(array('rescode' => $code, 'resmsg' => $msg, 'data' => [])));
         }
-
     }
 
     /**
@@ -226,6 +223,13 @@ class MY_Controller extends CI_Controller {
     }
 
     /**
+     * 判断是不是开发测试环境
+     */
+    public function isDev() {
+        return ENVIRONMENT !== 'development' ? false : true;
+    }
+
+    /**
      * 检测当前权限是否是公寓管理员
      */
     protected function isApartment() {
@@ -254,5 +258,40 @@ class MY_Controller extends CI_Controller {
         return 0;
     }
 
+    /**
+     * 获取租户端微信公众号的相关配置
+     */
+    public function getCustomerWechatConfig($store_id) {
+        $merchant_id = config_item('customer_wechat_payment_merchant_id');
+        $key         = config_item('customer_wechat_payment_key');
 
+        if (!$this->isDev()) {
+            $this->load->model('storemodel');
+            $store = Storemodel::where("id", $store_id)->first(["payment_merchant_id", "payment_key"]);
+
+            $merchant_id = $store->payment_merchant_id;
+            $key         = $store->payment_key;
+        }
+
+        return [
+            'debug'   => $debug,
+            'app_id'  => config_item('wx_map_appid'),
+            'secret'  => config_item('wx_map_secret'),
+            'token'   => config_item('wx_map_token'),
+            'aes_key' => config_item('wx_map_aes_key'),
+            'log'     => [
+                'level' => 'debug',
+                'file'  => APPPATH . 'cache/wechatCustomer.log',
+            ],
+            'guzzle'  => [
+                'timeout' => 3.0,
+            ],
+            'payment' => [
+                'merchant_id' => $merchant_id,
+                'key'         => $key,
+                'cert_path'   => config_item('customer_wechat_payment_cert_path'),
+                'key_path'    => config_item('customer_wechat_payment_key_path'),
+            ],
+        ];
+    }
 }
