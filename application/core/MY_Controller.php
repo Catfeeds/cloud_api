@@ -262,6 +262,7 @@ class MY_Controller extends CI_Controller {
      * 获取租户端微信公众号的相关配置
      */
     public function getCustomerWechatConfig($store_id) {
+        $this->load->helper('common');
         $merchant_id = config_item('customer_wechat_payment_merchant_id');
         $key         = config_item('customer_wechat_payment_key');
 
