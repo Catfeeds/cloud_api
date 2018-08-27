@@ -337,7 +337,7 @@ class Ordermodel extends Basemodel {
     /**
      * 检索订单, 不包括已生成和已审核的订单
      **/
-    public function ordersOfRooms(array $where, $page, $perPage = PAGINATE) {
+    public function ordersOfRooms(array $where, $page = 1, $perPage = PAGINATE) {
         $query = Ordermodel::with('roomunion');
 
         $query = $query->where($where);
