@@ -65,6 +65,7 @@ class Template extends MY_Controller{
                 $s_template['template_id'] = $template_id;
                 $s_template['name'] = empty($steps[$a]['name'])?"未设置":$steps[$a]['name'];
                 $s_template['company_id'] = COMPANY_ID;
+                $s_template['type'] = $type;
 //                $s_template['store_id'] = $store_id;
                 $s_template['seq']  = $a+1;
                 $s_template['position_ids']  = $steps[$a]['position_ids'];
@@ -123,6 +124,7 @@ class Template extends MY_Controller{
                 $s_template['company_id'] = COMPANY_ID;
                 $s_template['seq']  = $a+1;
                 $s_template['position_ids']  = $steps[$a]['position_ids'];
+                $s_template['type'] = $template->type;
                 $step_templates[]   = $s_template;
             }
             Taskflowsteptemplatemodel::insert($step_templates);
