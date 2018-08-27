@@ -626,7 +626,7 @@ class Taskflow extends MY_Controller{
         $this->load->model('pricecontrolmodel');
         $this->load->model('roomunionmodel');
         $price  = $taskflow->price;
-        $price  = Pricecontrolmodel::STATE_DONE;
+        $price->status  = Pricecontrolmodel::STATE_DONE;
         $price->save();
         $room   = $price->roomunion;
         if ($price->type == Pricecontrolmodel::TYPE_ROOM) {
