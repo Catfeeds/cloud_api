@@ -405,9 +405,11 @@ class Taskflow extends MY_Controller{
             $this->createRecord($step_audit_first);
             //如果 通过 继续/不通过 返回上一个
             if ($audit != Taskflowrecordmodel::STATE_APPROVED) {
+                log_message('debug','审核状态'.$audit);
                 //判断是否有已经审核过的步骤，如果有把上一步改为AUDIT，如果没有呢
                 if ($taskflow->step_id>0 && $taskflow->step_id  != $step_audit_first->id) {
                     $taskflow->step->update(['status'=>Taskflowstepmodel::STATE_AUDIT]);
+                    log_message('debug','更新上一步步骤'.$audit);
                 }
             }
             $taskflow->step_id  = $step_audit_first->id;
