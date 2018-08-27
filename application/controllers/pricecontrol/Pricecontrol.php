@@ -172,15 +172,15 @@ class Pricecontrol extends MY_Controller
             'room_id'   => $room->id,
             'type'      => $input['type'],
             'new_price' => $input['new_price'],
-            'remark'    => $input['reamrk'],
+            'remark'    => $input['remark'],
             'employee_id'   => $this->employee->id,
             'created_at'    => Carbon::now()->toDateTimeString(),
             'updated_at'    => Carbon::now()->toDateTimeString(),
             ];
         if ($input['type']==Pricecontrolmodel::TYPE_ROOM) {
-            $data['ori_price']  = $room->rent_price;
+            $data['ori_price']  = empty($room->rent_price)?0:$room->rent_price;
         } elseif ($input['type']==Pricecontrolmodel::TYPE_MANAGEMENT) {
-            $data['ori_price']  = $room->property_price;
+            $data['ori_price']  = empty($room->property_price)?0:$room->property_price;
         }
         //判断该公司有没有调价审批模板
         $this->load->model('taskflowtemplatemodel');
