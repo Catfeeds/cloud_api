@@ -1,4 +1,4 @@
-FROM registry.cn-beijing.aliyuncs.com/wa/php-fpm:1.0.3
+FROM registry.cn-beijing.aliyuncs.com/wa/php-fpm:1.0.4
 
 MAINTAINER Chuanjian Wang <chuanjian@funxdata.com>
 
