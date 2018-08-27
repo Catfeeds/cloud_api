@@ -45,13 +45,22 @@ class Home extends MY_Controller {
                 return $count;
             })
             ->toArray();
-        $data['tipsnum']['order'] = end($room);
-
+        if($room) {
+            $data['tipsnum']['order'] = end($room);
+        }else{
+            $data['tipsnum']['order'] = 0;
+        }
         //缴费订单确认
-        $data['tipsnum']['sureorder'] = Ordermodel::where(['store_id' => $store_id])
-            ->where('status', 'CONFIRM')
-            ->groupBy('resident_id')
-            ->get()->count();
+        $this->load->model('customermodel');
+        $where['status']= 'CONFIRM';
+        $where['store_id'] = $this->employee->store_id;
+        $order = $this->ordermodel->ordersOfRooms($where);
+        if($order){
+            $data['tipsnum']['sureorder'] = $order['total'];
+        }else{
+            $data['tipsnum']['sureorder'] = 0;
+        }
+
         //办理入住未完成
         $data['tipsnum']['noorder'] = Residentmodel::where(['store_id' => $store_id])
             ->whereIn('status', ['NOT_PAY'])
