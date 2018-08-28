@@ -410,15 +410,15 @@ class Ordermodel extends Basemodel {
         }
 
         switch ($order->type) {
-        case Ordermodel::PAYTYPE_DEVICE:
-            $tmpOrder = Smartdevicemodel::find($order->other_id);
-            break;
-        case Ordermodel::PAYTYPE_UTILITY:
-            $tmpOrder = Utilitymodel::find($order->other_id);
-            break;
-        default:
-            $tmpOrder = NULL;
-            break;
+            case Ordermodel::PAYTYPE_DEVICE:
+                $tmpOrder = Smartdevicemodel::find($order->other_id);
+                break;
+            case Ordermodel::PAYTYPE_UTILITY:
+                $tmpOrder = Utilitymodel::find($order->other_id);
+                break;
+            default:
+                $tmpOrder = NULL;
+                break;
         }
 
         if (!$tmpOrder) {
