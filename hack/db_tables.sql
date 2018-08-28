@@ -136,6 +136,7 @@ CREATE TABLE `boss_api` (
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `boss_bill` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `company_id` int(10) NOT NULL DEFAULT '0' COMMENT '公司ID',
   `sequence_number` char(32) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT '流水号',
   `store_id` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '公寓的id',
   `employee_id` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '员工的id',
@@ -713,6 +714,7 @@ CREATE TABLE `boss_operations` (
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `boss_order` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `company_id` int(10) NOT NULL DEFAULT '0' COMMENT '公司ID',
   `number` char(32) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT '订单号',
   `sequence_number` char(32) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT '流水号',
   `new_number` char(32) COLLATE utf8_unicode_ci DEFAULT NULL,
@@ -1112,6 +1114,7 @@ CREATE TABLE `boss_room_type` (
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `boss_room_union` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '集中式房间id',
+  `company_id` int(10) NOT NULL DEFAULT '0' COMMENT '公司ID',
   `store_id` int(11) unsigned DEFAULT NULL COMMENT '门店id',
   `building_id` int(11) DEFAULT NULL COMMENT '楼栋id',
   `building_name` varchar(128) DEFAULT NULL COMMENT '楼栋名称',
