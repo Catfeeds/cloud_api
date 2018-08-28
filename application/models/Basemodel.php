@@ -15,7 +15,7 @@ class CompanyScope implements Scope
 	{
 		// var_dump($model->getTable());exit;
 		
-		if (in_array($model->getTable(), SAASWHITELIST)) {
+		if (in_array($model->getTable(), SAASWHITELIST)&&defined('COMPANY_ID')) {
 			return $builder->where('company_id', '=', COMPANY_ID);
 		} else {
 			return $builder;
