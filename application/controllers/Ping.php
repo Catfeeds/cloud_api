@@ -16,7 +16,7 @@ class Ping extends MY_Controller {
     }
 
     public function index() {
-        $count = Companymodel::withoutGlobalScopes()->count();
+        $count = Companymodel::count();
         echo $count;
 
         $this->m_redis->redis->set('FUNXDATA:TEST:KEY', '123456');

@@ -287,7 +287,7 @@ class Order extends MY_Controller {
         $this->load->model('ordermodel');
         $this->load->model('residentmodel');
         $this->load->model('customermodel');
-        $unPushOrders = Ordermodel::withoutGlobalScopes()->where('store_id', $store_id)
+        $unPushOrders = Ordermodel::where('store_id', $store_id)
             ->where('status', Ordermodel::STATE_GENERATED)
             ->where(function ($query) use ($year, $month) {
                 $query->where(function ($a) use ($year, $month) {
@@ -299,7 +299,7 @@ class Order extends MY_Controller {
         $this->load->helper('common');
         $app = new Application(getWechatCustomerConfig());
         foreach ($unPushOrders as $resident_id => $orders) {
-            $resident = Residentmodel::withoutGlobalScopes()->find($resident_id);
+            $resident = Residentmodel::find($resident_id);
             if (empty($resident)) {
                 log_message('error', $resident_id . '没有住户resident信息');
                 continue;
@@ -307,7 +307,7 @@ class Order extends MY_Controller {
             $customer = $resident->customer;
             if (empty($customer)) {
                 log_message('error', $resident_id . '没有用户customer信息');
-                $orders = Ordermodel::withoutGlobalScopes()->where('resident_id', $resident_id)
+                $orders = Ordermodel::where('resident_id', $resident_id)
                     ->where('status', Ordermodel::STATE_GENERATED)
                     ->where(function ($query) use ($year, $month) {
                         $query->where(function ($a) use ($year, $month) {
@@ -320,7 +320,7 @@ class Order extends MY_Controller {
             $amount = $orders->sum('money');
             try {
                 DB::beginTransaction();
-                $orders = Ordermodel::withoutGlobalScopes()->where('resident_id', $resident_id)
+                $orders = Ordermodel::where('resident_id', $resident_id)
                     ->where('status', Ordermodel::STATE_GENERATED)
                     ->where(function ($query) use ($year, $month) {
                         $query->where(function ($a) use ($year, $month) {
@@ -376,14 +376,14 @@ class Order extends MY_Controller {
             $this->api_res(1005);
             return;
         }
-        $pendingOrders = Ordermodel::withoutGlobalScopes()->where($where)
+        $pendingOrders = Ordermodel::where($where)
             ->where('status', Ordermodel::STATE_PENDING)
 //            ->where('is_notify', 0)
             ->get()
             ->groupBy('resident_id');
 
         foreach ($pendingOrders as $resident_id => $orders) {
-            $resident = Residentmodel::withoutGlobalScopes()->find($resident_id);
+            $resident = Residentmodel::find($resident_id);
             if (empty($resident)) {
                 log_message('error', $resident_id . '没有住户resident信息');
                 $failed[] = $resident_id . '没有住户resident信息';
