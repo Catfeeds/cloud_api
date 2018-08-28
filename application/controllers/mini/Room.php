@@ -133,7 +133,7 @@ class Room extends MY_Controller {
                 })
                 ->toArray();
         } elseif ($status == null) {
-            $room = Roomunionmodel::with('room_type')->with('due')->with('order')
+            $room = Roomunionmodel::with('room_type')->with('due')->with('pendOrder')
                 ->where($where)->orderBy('number', 'ASC')
                 ->get($filed)->groupBy('layer')
                 ->map(function ($room) {
@@ -152,7 +152,7 @@ class Room extends MY_Controller {
                         if ($status == 'BLANK') {
                             $roominfo['count_blank'] += 1;
                         }
-                        if (!empty($roominfo[$i]['order'])) {
+                        if (!empty($roominfo[$i]['pend_order'])) {
                             $roominfo['count_arrears'] += 1;
                         }
                         if (!empty($roominfo[$i]['due'])) {
