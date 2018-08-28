@@ -26,18 +26,14 @@ class Order extends MY_Controller {
         $this->load->model('ordermodel');
         $this->load->model('residentmodel');
 
-        $room = Roomunionmodel::where('store_id', $this->employee->store_id)->find($room_id);
-//        $room   = Roomunionmodel::find(126);
-
-        if (empty($room)) {
+        $resident = Residentmodel::where('store_id', $this->employee->store_id)->find($resident_id);
+        if (empty($resident)) {
             $this->api_res(1007);
             return;
         }
+        $room = $resident->room;
 
-        $resident = $room->resident;
-
-        $orders = $resident->orders()->where('status', $status)->get();
-
+        $orders = $room->orders()->where('status', $status)->get();
         $totalMoney = number_format($orders->sum('money'), 2);
 
         $this->api_res(0, ['totalMoney' => $totalMoney, 'orders' => $orders, 'resident' => $resident, 'room' => $room]);
