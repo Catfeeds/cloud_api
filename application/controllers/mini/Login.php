@@ -36,7 +36,7 @@ class Login extends MY_Controller {
             $this->api_res(10002);
             return;
         }
-        $wechat = Employeemodel::where('unionid', $sessionKeyData->unionid)->first();
+        $wechat = Employeemodel::withoutGlobalScopes(CompanyScope::class)->where('unionid', $sessionKeyData->unionid)->first();
 
         if (empty($wechat) OR $wechat->status == 'DISABLE') {
             $this->api_res(10002);
