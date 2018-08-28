@@ -83,7 +83,6 @@ class Bill extends MY_Controller {
             $this->api_res(1007);
             return;
         }
-
         $this->load->model('couponmodel');
         $this->load->model('coupontypemodel');
         $this->load->model('residentmodel');
@@ -94,7 +93,7 @@ class Bill extends MY_Controller {
         $sumMoney   = $orders->sum('money');
         $sumPaid    = $orders->sum('paid');
         $sumDiscount    = $sumMoney-$sumPaid;
-        $resident   = $bill->resident;
+        $resident   = $bill->resident()->with('discount')->first();
         $discount   = array_merge($orders->where('coupon','!=',null)->toArray(),[]);
 
         $this->api_res(0,['sumMoney'=>$sumMoney,'sumPaid'=>$sumPaid,'sumDiscount'=>$sumDiscount,'resident'=>$resident,'discount'=>$discount,'orders'=>$orders]);

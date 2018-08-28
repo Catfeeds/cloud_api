@@ -147,7 +147,7 @@ class Residentmodel extends Basemodel {
     }
 
     public function discount() {
-        return $this->belongsTo(Activitymodel::class, 'discount_id');
+        return $this->belongsTo(Coupontypemodel::class, 'discount_id');
     }
 
     /**
