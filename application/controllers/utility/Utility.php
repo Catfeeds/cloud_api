@@ -199,27 +199,27 @@ class Utility extends MY_Controller {
         $page      = !empty($post['page']) ? intval($post['page']) : 1;
         $offset    = PAGINATE * ($page - 1);
         $where     = [];
-        $wherete   = [];
-        $wherepu   = [];
+        $where_special   = [];
+        $where_public   = [];
         $store_ids = explode(',', $this->employee->store_ids);
-        if (!empty($post['building_id'])) {$wherete['boss_meter_reading_transfer.building_id']= intval($post['building_id']);};
-        if (!empty($post['store_id'])) {$wherete['boss_meter_reading_transfer.store_id'] = intval($post['store_id']);}
-        if (!empty($post['building_id'])) {$where['building_id']= intval($post['building_id']);};
-        if (!empty($post['store_id'])) {$where['store_id'] = intval($post['store_id']);}
+        if (!empty($post['building_id'])) {$where_special['boss_meter_reading_transfer.building_id']= intval($post['building_id']);};
+        if (!empty($post['store_id'])) {$where_special['boss_meter_reading_transfer.store_id'] = intval($post['store_id']);}
+        if (!empty($post['building_id'])) {$where_public['building_id']= intval($post['building_id']);};
+        if (!empty($post['store_id'])) {$where_public['store_id'] = intval($post['store_id']);}
         if (!empty($post['status'])) {$where['confirmed']= intval($post['status']);}
         if (!empty($post['month'])) {$where['month'] = intval($post['month']);}
         if (!empty($post['year'])) {$where['year'] = intval($post['year']);}
         if (!empty($post['type'])){$where['type'] = $post['type'];}
         $number = empty($post['number'])?'':$post['number'];
-        $count  = ceil(Meterreadingtransfermodel::whereIn('store_id',$store_ids)->where($where)->where($wherepu)
+        $count  = ceil(Meterreadingtransfermodel::whereIn('store_id',$store_ids)->where($where)->where($where_public)
                 ->where(function ($query) use ($number) {
                     $query->WhereHas('room_s', function ($query) use ($number) {
                         $query->where('number', 'like', "$number%");
                     });
                 })->count() / PAGINATE);
-        $record = Meterreadingtransfermodel::rightJoin('boss_room_union',function($join)use($wherete){
+        $record = Meterreadingtransfermodel::rightJoin('boss_room_union',function($join)use($where_special){
             $join->on('boss_meter_reading_transfer.room_id','=','boss_room_union.id')
-                ->where($wherete);
+                ->where($where_special);
         })
             ->with(['building','store','room_s'])
             ->where($where)
@@ -265,6 +265,7 @@ class Utility extends MY_Controller {
                     return json_decode($record);
                 }
             })->toArray();
+
         $this->api_res(0,['list'=>$record,'count'=>$count]);
     }
 
