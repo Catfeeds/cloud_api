@@ -9,7 +9,7 @@ class Companymodel extends Basemodel
 	protected $hidden = ['deleted_at', 'created_at', 'updated_at'];
 	protected $fillable = ['bxid', 'name', 'nickname', 'address', 'contact_user', 'contact_phone',
 	                       'base_position', 'phone', 'openid', 'unionid', 'license', 'remark',
-	                       'status', 'privilege', 'expiretime'];
+	                       'status', 'privilege', 'expiretime',''];
 	
 	const STATE_UNSCAN = 'UNSCAN'; //未扫码
 	const STATE_UNANTH = 'UNANTH'; //未认证

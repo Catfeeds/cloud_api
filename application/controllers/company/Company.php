@@ -14,6 +14,9 @@ class Company extends MY_Controller
 		parent::__construct();
 	}
 	
+	/**
+	 * 注册
+	 */
 	public function Register()
 	{
 		$this->load->library('sms');
@@ -65,7 +68,7 @@ class Company extends MY_Controller
 		$this->load->library('wechat');
 		$post = $this->input->post(null, true);
 		if (empty($post['code']) || !isset($post['code'])) {
-			log_message('error','没有上传code');
+			log_message('error', '没有上传code');
 			$this->api_res(10002);
 			return false;
 		}
@@ -95,10 +98,10 @@ class Company extends MY_Controller
 		];
 		$emplyee = new Employeemodel();
 		$res     = $emplyee->updateEmployee(intval($post['id']), $user);
-		if (!$res){
+		if (!$res) {
 			$this->api_res(1009);
 			return false;
-		}else{
+		} else {
 			$this->api_res(0);
 		}
 	}
@@ -106,11 +109,37 @@ class Company extends MY_Controller
 	/**
 	 * 企业认证
 	 */
-	public function auth()
+	public function certification()
 	{
 		$this->load->model('companymodel');
-		$this->load->model('employeemodel');
-		
+		$post = $this->input->post(null, true);
+		if (!$this->validationAuth()) {
+			$fieldarr = ['name', 'is_show', 'sort'];
+			$this->api_res(1002, ['errmsg' => $this->form_first_error($fieldarr)]);
+			return false;
+		}
+		$company_id = COMPANY_ID;
+		$company = Companymodel::Find($company_id);
+		$company->fill($post);
+		$company->license_image = $this->splitAliossUrl($post['license_image']);
+		$company->idcard_front  = $this->splitAliossUrl($post['idcard_front']);
+		$company->idcard_back   = $this->splitAliossUrl($post['idcard_back']);
+		if ($company->save()) {
+			$this->api_res(0);
+		} else {
+			$this->api_res(1009);
+		}
+	}
+	
+	/**
+	 * 返回公司认证信息
+	 */
+	public function companyInfo()
+	{
+		$this->load->model('companymodel');
+		$company_id = COMPANY_ID;
+		$company = Companymodel::Find($company_id)->toArray();
+		$this->api_res($company);
 	}
 	
 	/**
@@ -158,7 +187,15 @@ class Company extends MY_Controller
 		$config = [
 			[
 				'field'  => 'name',
-				'label'  => '姓名',
+				'label'  => '公司名称',
+				'rules'  => 'trim|required',
+				'errors' => [
+					'required' => '请填写%s',
+				],
+			],
+			[
+				'field'  => 'legal_person',
+				'label'  => '法人姓名',
 				'rules'  => 'trim|required',
 				'errors' => [
 					'required' => '请填写%s',
@@ -166,15 +203,63 @@ class Company extends MY_Controller
 			],
 			[
 				'field'  => 'phone',
-				'label'  => '电话',
+				'label'  => '法人电话',
 				'rules'  => 'trim|required',
 				'errors' => [
 					'required' => '请填写%s',
 				],
 			],
 			[
-				'field'  => 'code',
-				'label'  => '验证码',
+				'field'  => 'id_number',
+				'label'  => '法人身份证号',
+				'rules'  => 'trim|required',
+				'errors' => [
+					'required' => '请填写%s',
+				],
+			],
+			[
+				'field'  => 'idcard_front',
+				'label'  => '法人身份证正面',
+				'rules'  => 'trim|required',
+				'errors' => [
+					'required' => '请伤上传%s',
+				],
+			],
+			[
+				'field'  => 'idcard_back',
+				'label'  => '法人身份背面',
+				'rules'  => 'trim|required',
+				'errors' => [
+					'required' => '请上传%s',
+				],
+			],
+			[
+				'field'  => 'brand',
+				'label'  => '品牌名称',
+				'rules'  => 'trim|required',
+				'errors' => [
+					'required' => '请填写%s',
+				],
+			],
+			[
+				'field'  => 'brand_intro',
+				'label'  => '品牌介绍',
+				'rules'  => 'trim|required',
+				'errors' => [
+					'required' => '请填写%s',
+				],
+			],
+			[
+				'field'  => 'license',
+				'label'  => '营业执照号码',
+				'rules'  => 'trim|required',
+				'errors' => [
+					'required' => '请填写%s',
+				],
+			],
+			[
+				'field'  => 'license_image',
+				'label'  => '营业执照照片',
 				'rules'  => 'trim|required',
 				'errors' => [
 					'required' => '请填写%s',
