@@ -28,35 +28,35 @@ class UserObserver
 {
 	public function creating($user)
 	{
-		if (in_array($user->getTable(), SAASWHITELIST)) {
+		if (in_array($user->getTable(), SAASWHITELIST)&&defined('COMPANY_ID')) {
 			$user->company_id = COMPANY_ID;
 		}
 	}
 	
 	public function updating($user)
 	{
-		if (in_array($user->getTable(), SAASWHITELIST)) {
+		if (in_array($user->getTable(), SAASWHITELIST)&&defined('COMPANY_ID')) {
 			$user->company_id = COMPANY_ID;
 		}
 	}
 	
 	public function saving($user)
 	{
-		if (in_array($user->getTable(), SAASWHITELIST)) {
+		if (in_array($user->getTable(), SAASWHITELIST)&&defined('COMPANY_ID')) {
 			$user->company_id = COMPANY_ID;
 		}
 	}
 	
 	public function deleting($user)
 	{
-		if (in_array($user->getTable(), SAASWHITELIST)) {
+		if (in_array($user->getTable(), SAASWHITELIST)&&defined('COMPANY_ID')) {
 			$user->company_id = COMPANY_ID;
 		}
 	}
 	
 	public function restoring($user)
 	{
-		if (in_array($user->getTable(), SAASWHITELIST)) {
+		if (in_array($user->getTable(), SAASWHITELIST)&&defined('COMPANY_ID')) {
 			$user->company_id = COMPANY_ID;
 		}
 	}
