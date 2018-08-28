@@ -31,9 +31,9 @@ class Rerequire extends MY_Controller {
         $this->load->model('residentmodel');
         $this->load->model('ordermodel');
         $this->load->model('devicemodel');
-        $payDate = Ordermodel::calcPayDate($year, $month);
+        $payDate = Ordermodel::withoutGlobalScopes()->calcPayDate($year, $month);
 
-        $rooms = Roomunionmodel::with('resident')
+        $rooms = Roomunionmodel::withoutGlobalScopes()->with('resident')
             ->with(['orders' => function ($query) use ($month, $year) {
                 $query->where('year', $year)->where('month', $month)
                     ->whereIn('type', [Ordermodel::PAYTYPE_ROOM, Ordermodel::PAYTYPE_MANAGEMENT]);

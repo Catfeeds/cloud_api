@@ -18,4 +18,10 @@ class Company extends MY_Controller
         $post   = $this->input->post(null,true);
 
     }
+    
+    public function test()
+    {
+    	$this->load->model('employeemodel');
+    	var_dump(Employeemodel::find(163)->toArray());
+    }
 }
