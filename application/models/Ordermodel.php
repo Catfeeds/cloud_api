@@ -346,7 +346,6 @@ class Ordermodel extends Basemodel {
 
         $orders = $query
             ->with('resident')
-            ->whereHas('resident_room')
 //            ->whereHas('resident')
             /*->whereHas('roomunion',function ($query){
         $query->where('resident_id','>',0);
