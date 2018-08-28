@@ -25,9 +25,8 @@ class Home extends MY_Controller {
         $this->load->model('roomtypemodel');
         $store_id = $this->employee->store_id;
         //未缴费订单
-        $room = Roomunionmodel::with('order') //
-        ->where('store_id' ,$store_id)
-            ->whereHas('order')
+        $room = Roomunionmodel::with('pendOrder')
+            ->where('store_id' ,$store_id)
             ->orderBy('number', 'ASC')
             ->get()
             ->groupBy('layer')
@@ -36,7 +35,7 @@ class Home extends MY_Controller {
                 $roominfo['count_total']   = count($room);
                 $roominfo['count_arrears'] = 0;
                 for ($i = 0; $i < $roominfo['count_total']; $i++) {
-                    if (!empty($roominfo[$i]['order'])) {
+                    if (!empty($roominfo[$i]['pend_order'])) {
                         $roominfo['count_arrears'] += 1;
                     }
                 }
