@@ -369,6 +369,7 @@ class Ordermodel extends Basemodel {
             ->map(function ($items) {
                 $order = $items->first();
 //                log_message('error','RESIDENT_ID'.$order->resident_id);
+                if($order->resident){
                 return [
                     'room'     => [
                         'id'     => $order->roomunion->id,
@@ -388,6 +389,7 @@ class Ordermodel extends Basemodel {
                         'remark' => $order->resident_id > 0 ? $order->resident->remark : '',
                     ],
                 ];
+                }
             })
             ->values();
 
