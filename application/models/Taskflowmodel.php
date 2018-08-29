@@ -29,6 +29,8 @@ class Taskflowmodel extends Basemodel
 
     protected $table    = 'boss_taskflow';
 
+    protected $casts    = ['message'=>'array'];
+
     protected $fillable = [
         'company_id','name','type','description'
     ];
@@ -202,7 +204,7 @@ class Taskflowmodel extends Basemodel
         $taskflow->store_id     = $store_id;
         $taskflow->create_role  = $create;
         $taskflow->data_id  = $data_id;
-        $taskflow->message  = json_encode($message);
+        $taskflow->message  = $message;
         $taskflow->employee_id  = empty($employee_id)?null:$employee_id;
         $taskflow->status       = Taskflowmodel::STATE_AUDIT;
         $taskflow->group        = $template->group;
