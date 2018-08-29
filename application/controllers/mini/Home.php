@@ -25,32 +25,16 @@ class Home extends MY_Controller {
         $this->load->model('roomtypemodel');
         $store_id = $this->employee->store_id;
         //未缴费订单
-        $room = Roomunionmodel::with('pendOrder')
-            ->where('store_id' ,$store_id)
-            ->orderBy('number', 'ASC')
-            ->get()
-            ->groupBy('layer')
-            ->map(function ($room) {
-                $roominfo                  = $room->toArray();
-                $roominfo['count_total']   = count($room);
-                $roominfo['count_arrears'] = 0;
-                for ($i = 0; $i < $roominfo['count_total']; $i++) {
-                    if (!empty($roominfo[$i]['pend_order'])) {
-                        $roominfo['count_arrears'] += 1;
-                    }
-                }
-                global $count;
-                $count += $roominfo['count_arrears'];
-                return $count;
-            })
-            ->toArray();
-        if($room) {
-            $data['tipsnum']['order'] = end($room);
+        $this->load->model('customermodel');
+        $where['status'] = 'PENDING';
+        $where['store_id'] = $this->employee->store_id;
+        $order = $this->ordermodel->ordersOfRooms($where);
+        if($order) {
+            $data['tipsnum']['order'] = $order['total'];
         }else{
             $data['tipsnum']['order'] = 0;
         }
         //缴费订单确认
-        $this->load->model('customermodel');
         $where['status']= 'CONFIRM';
         $where['store_id'] = $this->employee->store_id;
         $order = $this->ordermodel->ordersOfRooms($where);
