@@ -19,9 +19,13 @@ class Taskflowmodel extends Basemodel
     const TYPE_PRICE    = 'PRICE';
     const TYPE_RESERVE  = 'RESERVE';
     const TYPE_SERVICE  = 'SERVICE';
+    const TYPE_WARNING  = 'WARNING';    //警告
+    const GROUP_NOTICE  = 'NOTICE';     //通知类任务流
+    const GROUP_AUDIT   = 'AUDIT';      //审核类任务流
 
     const CREATE_EMPLOYEE   = 'EMPLOYEE';
     const CREATE_CUSTOMER   = 'CUSTOMER';
+    const CREATE_SYSTEM     = 'SYSTEM';
 
     protected $table    = 'boss_taskflow';
 
@@ -150,6 +154,14 @@ class Taskflowmodel extends Basemodel
     }
 
     /**
+     * 警告
+     */
+    public function warning()
+    {
+        return $this->belongsTo(Warningrecordmodel::class,'data_id');
+    }
+
+    /**
      * 生成审批编号
      */
     public function newNumber($store_id)
@@ -165,20 +177,20 @@ class Taskflowmodel extends Basemodel
 
     /**
      * 创建任务流
+     * @param type store_id room_id create_role,employee_id
      */
-    public function createTaskflow($type,$store_id,$room_id)
+    public function createTaskflow($company_id,$type,$store_id,$room_id,$create=self::CREATE_EMPLOYEE,$employee_id=null,$data_id=null,$message=null)
     {
         $this->CI->load->model('taskflowtemplatemodel');
         $this->CI->load->model('taskflowstepmodel');
         $this->CI->load->model('taskflowsteptemplatemodel');
-        log_message('debug','COMPANY_ID'.COMPANY_ID);
-        $template   = Taskflowtemplatemodel::where('company_id',COMPANY_ID)
+        $template   = Taskflowtemplatemodel::where('company_id',$company_id)
             ->where('type',$type)
             ->first();
         if (empty($template)) {
             return null;
         }
-        $step_field = ['id','company_id','name','type','seq','position_ids','employee_ids'];
+        $step_field = ['id','company_id','name','type','seq','position_ids','employee_ids','group'];
         $step_template  = $template->step_template()->get($step_field);
         if(empty($step_template->toArray())){
             return null;
@@ -188,12 +200,15 @@ class Taskflowmodel extends Basemodel
         $taskflow->template_id  = $template->id;
         $taskflow->serial_number= $taskflow->newNumber($store_id);
         $taskflow->store_id     = $store_id;
-        $taskflow->create_role  = Taskflowmodel::CREATE_EMPLOYEE;
-        $taskflow->employee_id  = $this->CI->employee->id;
+        $taskflow->create_role  = $create;
+        $taskflow->data_id  = $data_id;
+        $taskflow->message  = json_encode($message);
+        $taskflow->employee_id  = empty($employee_id)?null:$employee_id;
         $taskflow->status       = Taskflowmodel::STATE_AUDIT;
+        $taskflow->group        = $template->group;
         $taskflow->room_id      = $room_id;
         $taskflow->save();
-        $step_template_keys_transfer = ['step_template_id','company_id','name','type','seq','position_ids','employee_ids'];
+        $step_template_keys_transfer = ['step_template_id','company_id','name','type','seq','position_ids','employee_ids','group'];
         $step_template_arr  = $step_template->toArray();
         $step_merge_data = [
             'store_id'      => $store_id,

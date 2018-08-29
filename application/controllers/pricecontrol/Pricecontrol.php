@@ -205,7 +205,7 @@ class Pricecontrol extends MY_Controller
                     return;
                 }
                 //创建调价任务流
-                $taskflow_id    = $this->taskflowmodel->createTaskflow(Taskflowmodel::TYPE_PRICE,$store_id,$input['room_id']);
+                $taskflow_id    = $this->taskflowmodel->createTaskflow(COMPANY_ID,Taskflowmodel::TYPE_PRICE,$store_id,$input['room_id'],Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id);
                 if ($taskflow_id) {
                     $data['taskflow_id']    = $taskflow_id;
                     $data['status']         = Pricecontrolmodel::STATE_AUDIT;

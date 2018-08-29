@@ -10,7 +10,7 @@ use Illuminate\Database\Capsule\Manager as DB;
  */
 class Taskflow extends MY_Controller{
 
-    protected $withs=['checkout','price','reserve','service'];
+    protected $withs=['checkout','price','reserve','service','warning'];
 
     public function __construct()
     {
@@ -51,6 +51,7 @@ class Taskflow extends MY_Controller{
         $this->load->model('pricecontrolmodel');
         $this->load->model('reserveordermodel');
         $this->load->model('serviceordermodel');
+        $this->load->model('warningrecordmodel');
         $taskflows  = Taskflowmodel::with(['step'=>function($query){
             $query->with(['employee'=>function($query){
                 $query->with('position');
@@ -112,6 +113,7 @@ class Taskflow extends MY_Controller{
         $this->load->model('pricecontrolmodel');
         $this->load->model('reserveordermodel');
         $this->load->model('serviceordermodel');
+        $this->load->model('warningrecordmodel');
         $taskflows  = Taskflowmodel::with(['step'=>function($query){
             $query->with(['employee'=>function($query){
                 $query->with('position');
@@ -127,31 +129,6 @@ class Taskflow extends MY_Controller{
             ->limit($per_page)
             ->get();
         $this->api_res(0,['taskflows'=>$taskflows,'page'=>$page,'totalPage'=>$totalPage,'count'=>$count]);
-    }
-
-    /**
-     * 创建任务流create
-     */
-    public function create()
-    {
-        $input  = $this->input->post(null,true);
-        $room_id= $input['room_id'];
-        //找到房间所在的门店
-        $this->load->model('roomunionmodel');
-        $room   = Roomunionmodel::find($room_id);
-        if (!$room) {
-            $this->api_res(1007);
-            return;
-        }
-        $store_id   = $room->store_id;
-        $type   = $input['type'];
-        $taskflow_id    = $this->taskflowmodel->createTaskflow($room_id,$type,$store_id);
-        if (!$taskflow_id) {
-            $this->api_res(1020);
-            return;
-        }
-        $this->api_res(0,['taskflow_id'=>$taskflow_id]);
-
     }
 
     /**
@@ -190,6 +167,7 @@ class Taskflow extends MY_Controller{
         $this->load->model('pricecontrolmodel');
         $this->load->model('reserveordermodel');
         $this->load->model('serviceordermodel');
+        $this->load->model('warningrecordmodel');
         $steps  = Taskflowrecordmodel::with(['taskflow'=>function($query){
             $query->with(['step'=>function($query){
                 $query->with(['employee'=>function($query){
@@ -256,6 +234,9 @@ class Taskflow extends MY_Controller{
             case Taskflowmodel::TYPE_SERVICE:
                 $data   = $this->showService($taskflow_id);
                 break;
+            case Taskflowmodel::TYPE_WARNING:
+                $data   = $this->showWarning($taskflow_id);
+                break;
             default:
                 $data   = [];
         }
@@ -303,6 +284,7 @@ class Taskflow extends MY_Controller{
         $this->load->model('pricecontrolmodel');
         $this->load->model('reserveordermodel');
         $this->load->model('serviceordermodel');
+        $this->load->model('warningrecordmodel');
         $audit  = Taskflowstepmodel::with(['taskflow'=>function($query){
             $query->with('employee')->with(['step'=>function($a){
                 $a->with(['employee'=>function($query){
@@ -344,7 +326,7 @@ class Taskflow extends MY_Controller{
         $this->api_res(0,['audits'=>$res,'page'=>$page,'totalPage'=>$totalPage,'count'=>$count]);
     }
 
-    private function validate()
+    private function validateAudit()
     {
         return array(
             array(
@@ -371,7 +353,7 @@ class Taskflow extends MY_Controller{
     public function audit()
     {
         $input  = $this->input->post(null,true);
-        if(!$this->validationText($this->validate())){
+        if(!$this->validationText($this->validateAudit())){
             $this->api_res(1002,['error'=>$this->form_first_error()]);
             return;
         }
@@ -430,8 +412,11 @@ class Taskflow extends MY_Controller{
                     case Taskflowmodel::TYPE_SERVICE:
                         $this->doneService($taskflow);
                         break;
+                    case Taskflowmodel::TYPE_WARNING:
+                        $this->doneWarning($taskflow);
+                        break;
                     default:
-
+                        break;
                 }
             }
             $taskflow->save();
@@ -589,8 +574,21 @@ class Taskflow extends MY_Controller{
         return $service;
     }
 
-
     /**
+     * 风险预警展示
+     */
+    private function showWarning($taskflow_id)
+    {
+        $this->load->model('warningrecordmodel');
+        $this->load->model('roomunionmodel');
+        $this->load->model('storemodel');
+        $this->load->model('residentmodel');
+        $warning    = Taskflowmodel::find($taskflow_id)->warning()->with(['roomunion','store','resident'])->first();
+        return $warning;
+    }
+
+
+        /**
      * 退房审核完成
      */
     private function doneCheckout($taskflow)
@@ -621,6 +619,13 @@ class Taskflow extends MY_Controller{
     }
 
     /**
+     * 预警处理
+     */
+    private function doneWarning($taskflow){
+        return;
+    }
+
+    /**
      * 调价审核完成
      */
     private function donePrice($taskflow)
@@ -638,5 +643,69 @@ class Taskflow extends MY_Controller{
         }
         $room->save();
     }
+
+    /*************************************** 远程调用 *********************************************/
+    /**
+     * 创建任务流create
+     * @param room_id房间id
+     * @param store_id
+     * @param type
+     * @param create_role
+     * @param company_id
+     */
+    public function create()
+    {
+        $input  = $this->input->post(null,true);
+        $filed  = ['room_id','store_id','type','create_role'];
+        if (!$this->validationText($this->validationCreate())) {
+           $this->api_res(1002,['error'=>$this->form_first_error($filed)]);
+           return;
+        }
+        $room_id    = $input['room_id'];
+        $store_id   = $input['store_id'];
+        $company_id = $input['company_id'];
+        $type       = $input['type'];
+        $role_create= $input['role_create'];
+        //核验房间
+        $this->load->model('roomunionmodel');
+        $room   = Roomunionmodel::where('store_id',$store_id)->where('company_id',$company_id)->find($room_id);
+        if (!$room) {
+            $this->api_res(1007);
+            return;
+        }
+        //创建审核流，如果没有设置模板返回null
+        $taskflow_id    = $this->taskflowmodel->createTaskflow($company_id,$type,$store_id,$room_id,$role_create,null);
+        if (!$taskflow_id) {
+            $this->api_res(10024);
+            return;
+        }
+        $this->api_res(0,['taskflow_id'=>$taskflow_id]);
+    }
+
+    /**
+     * 创建任务流验证
+     */
+ /*   public function validationCreate()
+    {
+        return [
+            array(
+                'field' => 'room_id',
+                'rules' => 'trim|required|integer',
+            ),
+            array(
+                'field' => 'store_id',
+                'rules' => 'trim|required|integer',
+            ),
+            array(
+                'field' => 'type',
+                'rules' => 'trim|required|in_list[WARNING]',
+            ),
+            array(
+                'field' => 'create_role',
+                'rules' => 'trim|required|in_list[EMPLOYEE,CUSTOMER,SYSTEM]',
+            ),
+        ];
+    }*/
+
 
 }
