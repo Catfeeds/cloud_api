@@ -161,7 +161,7 @@ class AuthHook {
     private function saas(){
        
         $company_id = COMPANY_ID;
-        
+
         if(!empty($company_id)){
             // if(!$this->CI->load->is_loaded('companymodel')){
                 $this->CI->load->model('companymodel');

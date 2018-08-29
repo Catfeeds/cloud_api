@@ -16,6 +16,9 @@ class Taskflowstepmodel extends Basemodel
     const TYPE_PRICE    = 'PRICE';
     const TYPE_RESERVE  = 'RESERVE';
     const TYPE_SERVICE  = 'SERVICE';
+    const TYPE_WARNING  = 'WARNING';    //警告
+    const GROUP_NOTICE  = 'NOTICE';     //通知类任务流
+    const GROUP_AUDIT   = 'AUDIT';      //审核类任务流
 
     protected $table    = 'boss_taskflow_step';
 

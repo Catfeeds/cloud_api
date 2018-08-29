@@ -97,9 +97,18 @@ class Template extends MY_Controller{
             $this->api_res(1002,['error'=>'请至少填写一个审批步骤']);
             return;
         }
+        $type           = $input['type'];
+        if (in_array($type,$this->taskflowtemplatemodel->getNoticeTypes())) {
+            $group    = Taskflowtemplatemodel::GROUP_NOTICE;
+            if (count($steps)>1) {
+                $this->api_res(11205);
+                return;
+            }
+        } else {
+            $group    = Taskflowtemplatemodel::GROUP_AUDIT;
+        }
         $description    = empty($input['description'])?'无':$input['description'];
         $name           = $input['name'];
-        $type           = $input['type'];
         $employee_id    = $this->employee->id;
         $updated_at     = Carbon::now();
         $data           = "员工{$employee_id} 在{$updated_at} 修改了 {$type}的审批流，名称为 {$name}";
@@ -114,6 +123,7 @@ class Template extends MY_Controller{
             $template->employee_id  = $employee_id;
             $template->description  = $description;
             $template->data = $ori_data;
+            $template->group    = $group;
             $template->save();
             $template_id    = $template->id;
             $step_templates =[];
@@ -122,7 +132,8 @@ class Template extends MY_Controller{
                 $s_template['template_id'] = $template_id;
                 $s_template['name'] = empty($steps[$a]['name'])?"未设置":$steps[$a]['name'];
                 $s_template['company_id'] = COMPANY_ID;
-                $s_template['seq']  = $a+1;
+                $s_template['seq']    = $a+1;
+                $s_template['group']  = $template->group;
                 $s_template['position_ids']  = $steps[$a]['position_ids'];
                 $s_template['type'] = $template->type;
                 $step_templates[]   = $s_template;

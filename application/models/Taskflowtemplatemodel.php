@@ -8,10 +8,13 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  */
 class Taskflowtemplatemodel extends Basemodel
 {
-    const TYPE_CHECKOUT = 'CHECKOUT';
-    const TYPE_PRICE    = 'PRICE';
-    const TYPE_RESERVE  = 'RESERVE';
-    const TYPE_SERVICE  = 'SERVICE';
+    const TYPE_CHECKOUT = 'CHECKOUT'; //退房
+    const TYPE_PRICE    = 'PRICE';      //调价
+    const TYPE_RESERVE  = 'RESERVE';    //预约看房
+    const TYPE_SERVICE  = 'SERVICE';    //服务订单
+    const TYPE_WARNING  = 'WARNING';    //警告
+    const GROUP_NOTICE  = 'NOTICE';     //通知类任务流
+    const GROUP_AUDIT   = 'AUDIT';      //审核类任务流
     protected $table    = 'boss_taskflow_template';
 
     protected $fillable = [
@@ -28,5 +31,28 @@ class Taskflowtemplatemodel extends Basemodel
     public function step_template()
     {
         return $this->hasMany(Taskflowsteptemplatemodel::class,'template_id')->orderBy('seq','ASC');
+    }
+
+    /**
+     * 通知类任务流类型
+     */
+    public function getNoticeTypes()
+    {
+        return [
+            self::TYPE_SERVICE,
+            self::TYPE_RESERVE,
+            self::TYPE_WARNING
+        ];
+    }
+
+    /**
+     * 审核类任务流类型
+     */
+    public function getAuditTypes()
+    {
+        return [
+            self::TYPE_PRICE,
+            self::TYPE_CHECKOUT,
+        ];
     }
 }
