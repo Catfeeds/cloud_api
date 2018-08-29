@@ -26,6 +26,7 @@ class Common extends MY_Controller {
             $this->api_res(1004, array('error' => $this->alioss->display_errors('', '')));
         } else {
             $oss_path = $this->alioss->data()['oss_path'];
+            log_message('debug','返回URL为'.$oss_path);
             $this->api_res(0, ['image_url' => config_item('cdn_path') . $oss_path]);
         }
     }
