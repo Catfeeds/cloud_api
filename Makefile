@@ -46,8 +46,8 @@ image:
 push: image
 	docker push $(IMG_HUB)/$(SERVICE):latest
 
-prod-image:
+image-prod:
 	docker build -t $(IMG_HUB)/$(SERVICE):$(VERSION) .
 
-prod-push: prod-image
+push-prod: image-prod
 	docker push $(IMG_HUB)/$(SERVICE):$(VERSION)

@@ -57,26 +57,26 @@ class Utility extends MY_Controller {
                 $utility = Meterreadingtransfermodel::where($where)->whereIn('store_id', $store_ids)->whereIn('room_id', $room_ids)
                     ->with('store', 'building', 'roomunion')->take(PAGINATE)->skip($offset)
                     ->get($filed)->map(function ($s) {
-                    switch ($s->type) {
-                    case 'ELECTRIC_METER':
-                        $s->diff  = number_format($s->this_reading - $s->last_reading, 2, '.', '');
-                        $s->price = number_format($s->diff * $s->store->electricity_price, 2, '.', '');
-                        break;
-                    case 'COLD_WATER_METER':
-                        $s->diff  = number_format($s->this_reading - $s->last_reading, 2, '.', '');
-                        $s->price = number_format($s->diff * $s->store->water_price, 2, '.', '');
-                        break;
-                    case 'HOT_WATER_METER':
-                        $s->diff  = number_format($s->this_reading - $s->last_reading, 2, '.', '');
-                        $s->price = number_format($s->diff * $s->store->hot_water_price, 2, '.', '');
-                        break;
-                    default:
-                        $s->diff  = number_format($s->this_reading - $s->last_reading, 2, '.', '');
-                        $s->price = 0;
-                        break;
-                    }
-                    return $s;
-                })->toArray();
+                        switch ($s->type) {
+                            case 'ELECTRIC_METER':
+                                $s->diff  = number_format($s->this_reading - $s->last_reading, 2, '.', '');
+                                $s->price = number_format($s->diff * $s->store->electricity_price, 2, '.', '');
+                                break;
+                            case 'COLD_WATER_METER':
+                                $s->diff  = number_format($s->this_reading - $s->last_reading, 2, '.', '');
+                                $s->price = number_format($s->diff * $s->store->water_price, 2, '.', '');
+                                break;
+                            case 'HOT_WATER_METER':
+                                $s->diff  = number_format($s->this_reading - $s->last_reading, 2, '.', '');
+                                $s->price = number_format($s->diff * $s->store->hot_water_price, 2, '.', '');
+                                break;
+                            default:
+                                $s->diff  = number_format($s->this_reading - $s->last_reading, 2, '.', '');
+                                $s->price = 0;
+                                break;
+                        }
+                        return $s;
+                    })->toArray();
             }
         } else {
             $count = ceil(Meterreadingtransfermodel::where($where)->whereIn('store_id', $store_ids)->count() / PAGINATE);
@@ -87,26 +87,26 @@ class Utility extends MY_Controller {
                 $utility = Meterreadingtransfermodel::where($where)->whereIn('store_id', $store_ids)
                     ->with('store', 'building', 'roomunion')->take(PAGINATE)->skip($offset)
                     ->get($filed)->map(function ($s) {
-                    switch ($s->type) {
-                    case 'ELECTRIC_METER':
-                        $s->diff  = number_format($s->this_reading - $s->last_reading, 2, '.', '');
-                        $s->price = number_format($s->diff * $s->store->electricity_price, 2, '.', '');
-                        break;
-                    case 'COLD_WATER_METER':
-                        $s->diff  = number_format($s->this_reading - $s->last_reading, 2, '.', '');
-                        $s->price = number_format($s->diff * $s->store->water_price, 2, '.', '');
-                        break;
-                    case 'HOT_WATER_METER':
-                        $s->diff  = number_format($s->this_reading - $s->last_reading, 2, '.', '');
-                        $s->price = number_format($s->diff * $s->store->hot_water_price, 2, '.', '');
-                        break;
-                    default:
-                        $s->diff  = number_format($s->this_reading - $s->last_reading, 2, '.', '');
-                        $s->price = 0;
-                        break;
-                    }
-                    return $s;
-                })->toArray();
+                        switch ($s->type) {
+                            case 'ELECTRIC_METER':
+                                $s->diff  = number_format($s->this_reading - $s->last_reading, 2, '.', '');
+                                $s->price = number_format($s->diff * $s->store->electricity_price, 2, '.', '');
+                                break;
+                            case 'COLD_WATER_METER':
+                                $s->diff  = number_format($s->this_reading - $s->last_reading, 2, '.', '');
+                                $s->price = number_format($s->diff * $s->store->water_price, 2, '.', '');
+                                break;
+                            case 'HOT_WATER_METER':
+                                $s->diff  = number_format($s->this_reading - $s->last_reading, 2, '.', '');
+                                $s->price = number_format($s->diff * $s->store->hot_water_price, 2, '.', '');
+                                break;
+                            default:
+                                $s->diff  = number_format($s->this_reading - $s->last_reading, 2, '.', '');
+                                $s->price = 0;
+                                break;
+                        }
+                        return $s;
+                    })->toArray();
             }
         }
         $this->api_res(0, ['list' => $utility, 'count' => $count]);
@@ -122,26 +122,26 @@ class Utility extends MY_Controller {
         $utility = Meterreadingtransfermodel::orderBy('store_id')
             ->with('store', 'building', 'roomunion')
             ->get($filed)->map(function ($s) {
-            switch ($s->type) {
-            case 'ELECTRIC_METER':
-                $s->diff  = number_format($s->this_reading - $s->last_reading, 2, '.', '');
-                $s->price = number_format($s->diff * $s->store->electricity_price, 2, '.', '');
-                break;
-            case 'COLD_WATER_METER':
-                $s->diff  = number_format($s->this_reading - $s->last_reading, 2, '.', '');
-                $s->price = number_format($s->diff * $s->store->water_price, 2, '.', '');
-                break;
-            case 'HOT_WATER_METER':
-                $s->diff  = number_format($s->this_reading - $s->last_reading, 2, '.', '');
-                $s->price = number_format($s->diff * $s->store->hot_water_price, 2, '.', '');
-                break;
-            default:
-                $s->diff  = number_format($s->this_reading - $s->last_reading, 2, '.', '');
-                $s->price = 0;
-                break;
-            }
-            return $s;
-        })->toArray();
+                switch ($s->type) {
+                    case 'ELECTRIC_METER':
+                        $s->diff  = number_format($s->this_reading - $s->last_reading, 2, '.', '');
+                        $s->price = number_format($s->diff * $s->store->electricity_price, 2, '.', '');
+                        break;
+                    case 'COLD_WATER_METER':
+                        $s->diff  = number_format($s->this_reading - $s->last_reading, 2, '.', '');
+                        $s->price = number_format($s->diff * $s->store->water_price, 2, '.', '');
+                        break;
+                    case 'HOT_WATER_METER':
+                        $s->diff  = number_format($s->this_reading - $s->last_reading, 2, '.', '');
+                        $s->price = number_format($s->diff * $s->store->hot_water_price, 2, '.', '');
+                        break;
+                    default:
+                        $s->diff  = number_format($s->this_reading - $s->last_reading, 2, '.', '');
+                        $s->price = 0;
+                        break;
+                }
+                return $s;
+            })->toArray();
         $newUtility = [];
         foreach ($utility as $key => $value) {
             $res                 = [];
@@ -183,9 +183,9 @@ class Utility extends MY_Controller {
         header("Content-Transfer-Encoding:binary");
         $writer->save('php://output');
     }
-/******************************************************************/
-/**********************水电记录，换表，修改读数************************/
-/******************************************************************/
+    /******************************************************************/
+    /**********************水电记录，换表，修改读数************************/
+    /******************************************************************/
     /**
      * 水电记录
      */
@@ -199,64 +199,73 @@ class Utility extends MY_Controller {
         $page      = !empty($post['page']) ? intval($post['page']) : 1;
         $offset    = PAGINATE * ($page - 1);
         $where     = [];
+        $where_special   = [];
+        $where_public   = [];
         $store_ids = explode(',', $this->employee->store_ids);
-        if (!empty($post['building_id'])) {$where['building_id'] = intval($post['building_id']);};
-        if (!empty($post['store_id'])) {$where['store_id'] = intval($post['store_id']);}
+        if (!empty($post['building_id'])) {$where_special['boss_meter_reading_transfer.building_id']= intval($post['building_id']);};
+        if (!empty($post['store_id'])) {$where_special['boss_meter_reading_transfer.store_id'] = intval($post['store_id']);}
+        if (!empty($post['building_id'])) {$where_public['building_id']= intval($post['building_id']);};
+        if (!empty($post['store_id'])) {$where_public['store_id'] = intval($post['store_id']);}
         if (!empty($post['status'])) {$where['confirmed']= intval($post['status']);}
         if (!empty($post['month'])) {$where['month'] = intval($post['month']);}
         if (!empty($post['year'])) {$where['year'] = intval($post['year']);}
         if (!empty($post['type'])){$where['type'] = $post['type'];}
         $number = empty($post['number'])?'':$post['number'];
-        $count  = ceil(Meterreadingtransfermodel::whereIn('store_id',$store_ids)->where($where)
+        $count  = ceil(Meterreadingtransfermodel::whereIn('store_id',$store_ids)->where($where)->where($where_public)
                 ->where(function ($query) use ($number) {
                     $query->WhereHas('room_s', function ($query) use ($number) {
                         $query->where('number', 'like', "$number%");
                     });
                 })->count() / PAGINATE);
-        $record = Meterreadingtransfermodel::rightJoin('boss_room_union','boss_meter_reading_transfer.room_id','=','boss_room_union.id')
-                ->with(['building','store','room_s'])
-                ->where(function ($query) use ($number) {
-                    $query->WhereHas('room_s', function ($query) use ($number) {
-                        $query->where('number', 'like', "$number%");
-                    });
-                })
-                ->whereIn('boss_meter_reading_transfer.store_id',$store_ids)
-                ->orderBy('boss_meter_reading_transfer.year','DESC')
-                ->orderBy('boss_meter_reading_transfer.month','DESC')
-                ->orderBy('boss_meter_reading_transfer.store_id')
-                ->orderBy('boss_meter_reading_transfer.building_id')
-                ->orderBy('boss_room_union.number')
-                ->take(PAGINATE)->skip($offset)
-                ->get(['boss_meter_reading_transfer.*'])
-                ->map(function ($record){
-                    if ($record->status == Meterreadingtransfermodel::OLD_METER){
-                        $last_date              = $this->lastMonth($record->month,$record->year);
-                        $last                   = Meterreadingtransfermodel::where('resident_id',$record->resident_id)->where('room_id',$record->room_id)->where($last_date)->first(['this_reading','this_time','image']);
-                        $record->last_reading   = !empty($last)?($last->this_reading):'';
-                        $record->last_time      = !empty($last)?(date('Y-m-d',strtotime($last->this_time))):'';
-                        $record->this_image     = $this->fullAliossUrl($record->image);
-                        $record->last_image     = empty($last->image)?'':$this->fullAliossUrl($last->image);
-                        $record->this_time      = date('Y-m-d',strtotime($record->this_time));
-                        return $record;
-                    }elseif ($record->status == Meterreadingtransfermodel::NEW_RENT){
-                        $record->last_reading   = '';
-                        $record->last_time      = '';
-                        $record->this_image     = $this->fullAliossUrl($record->image);
-                        $record->last_image     = '';
-                        $record->this_time      = date('Y-m-d',strtotime($record->this_time));
-                        return $record;
-                    }elseif ($record->status == Meterreadingtransfermodel::NEW_METER){
-                        $record->last_reading   = '';
-                        $record->last_time      = '';
-                        $record->this_image     = $this->fullAliossUrl($record->image);
-                        $record->last_image     = '';
-                        $record->this_time      = date('Y-m-d',strtotime($record->this_time));
-                        return $record;
-                    }elseif ($record->status == Meterreadingtransfermodel::NORMAL){
-                        $record = $this->lastReading($record);
-                        return json_decode($record);
-                    }
-                })->toArray();
+        $record = Meterreadingtransfermodel::rightJoin('boss_room_union',function($join)use($where_special){
+            $join->on('boss_meter_reading_transfer.room_id','=','boss_room_union.id')
+                ->where($where_special);
+        })
+            ->with(['building','store','room_s'])
+            ->where($where)
+            ->where(function ($query) use ($number) {
+                $query->WhereHas('room_s', function ($query) use ($number) {
+                    $query->where('number', 'like', "$number%");
+                });
+            })
+            ->whereIn('boss_meter_reading_transfer.store_id',$store_ids)
+            ->orderBy('boss_meter_reading_transfer.year','DESC')
+            ->orderBy('boss_meter_reading_transfer.month','DESC')
+            ->orderBy('boss_meter_reading_transfer.store_id')
+            ->orderBy('boss_meter_reading_transfer.building_id')
+            ->orderBy('boss_room_union.number')
+            ->take(PAGINATE)->skip($offset)
+            ->get(['boss_meter_reading_transfer.*'])
+            ->map(function ($record){
+                if ($record->status == Meterreadingtransfermodel::OLD_METER){
+                    $last_date              = $this->lastMonth($record->month,$record->year);
+                    $last                   = Meterreadingtransfermodel::where('resident_id',$record->resident_id)->where('room_id',$record->room_id)->where($last_date)->first(['this_reading','this_time','image']);
+                    $record->last_reading   = !empty($last)?($last->this_reading):'';
+                    $record->last_time      = !empty($last)?(date('Y-m-d',strtotime($last->this_time))):'';
+                    $record->this_image     = $this->fullAliossUrl($record->image);
+                    $record->last_image     = empty($last->image)?'':$this->fullAliossUrl($last->image);
+                    $record->this_time      = date('Y-m-d',strtotime($record->this_time));
+                    return $record;
+                }elseif ($record->status == Meterreadingtransfermodel::NEW_RENT){
+                    $record->last_reading   = '';
+                    $record->last_time      = '';
+                    $record->this_image     = $this->fullAliossUrl($record->image);
+                    $record->last_image     = '';
+                    $record->this_time      = date('Y-m-d',strtotime($record->this_time));
+                    return $record;
+                }elseif ($record->status == Meterreadingtransfermodel::NEW_METER){
+                    $record->last_reading   = '';
+                    $record->last_time      = '';
+                    $record->this_image     = $this->fullAliossUrl($record->image);
+                    $record->last_image     = '';
+                    $record->this_time      = date('Y-m-d',strtotime($record->this_time));
+                    return $record;
+                }elseif ($record->status == Meterreadingtransfermodel::NORMAL){
+                    $record = $this->lastReading($record);
+                    return json_decode($record);
+                }
+            })->toArray();
+
         $this->api_res(0,['list'=>$record,'count'=>$count]);
     }
 
@@ -305,7 +314,7 @@ class Utility extends MY_Controller {
                 $record->this_image     = empty($record->image)?'':$this->fullAliossUrl($record->image);
                 $record->last_image     = empty($last_reading->image)?'':$this->fullAliossUrl($last_reading->image);
                 $record->this_time      = date('Y-m-d',strtotime($record->this_time));
-            }else{           
+            }else{
                 $record->last_reading   = '';
                 $record->last_time      = '';
                 $record->this_image     = '';
