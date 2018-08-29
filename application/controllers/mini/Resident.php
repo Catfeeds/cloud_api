@@ -917,27 +917,37 @@ class Resident extends MY_Controller {
      * 办理预订
      */
     public function reservation() {
-        $field = ['room_id', 'name', 'phone', 'book_money', 'book_time', 'remark'];
+        $field = ['room_id','book_money', 'begin_time', 'contract_time','name', 'phone',
+            'card_type','card_number','special_term','remark','rent_type'];
         //表单验证
         if (!$this->validationText($this->validateReservation())) {
-
             $this->api_res(1002, ['error' => $this->form_first_error($field)]);
             return;
         }
+        $this->load->model('residentmodel');
         $input      = $this->input->post(null, true);
         $room_id    = $input['room_id'];
         $name       = $input['name'];
         $phone      = $input['phone'];
+        $card_type  = $input['card_type'];
+        $card_number= $input['card_number'];
         $book_money = $input['book_money'];
-        $book_time  = $input['book_time'];
+        $rent_type  = $input['rent_type'];
+        $contract_time  = $input['contract_time'];
+        $begin_time = $input['begin_time'];
+        $end_time   = $this->residentmodel->contractEndDate($begin_time,$contract_time);
         $remark     = isset($input['remark']) ? $input['remark'] : '';
+        $special_term   = isset($input['special_term']) ? $input['special_term'] : '';
         if (!$this->checkPhoneNumber($phone)) {
-
             $this->api_res(1002, ['error' => '请检查手机号']);
             return;
         }
+        if (!$this->checkIdCardNumber($card_type, $card_number)) {
+            $this->api_res(1002, ['error' => '请检查身份证号']);
+            return;
+        }
         $this->load->model('roomunionmodel');
-        $room = Roomunionmodel::find($room_id);
+        $room = Roomunionmodel::where('store_id',$this->employee->id)->find($room_id);
         if (!$room) {
             $this->api_res(1007);
             return;
@@ -946,10 +956,7 @@ class Resident extends MY_Controller {
             $this->api_res(10010);
             return;
         }
-        $this->load->model('residentmodel');
         $resident = new Residentmodel();
-        $this->load->model('ordermodel');
-        $order = new Ordermodel();
         try {
             //开启事务
             DB::beginTransaction();
@@ -957,36 +964,23 @@ class Resident extends MY_Controller {
             $resident->room_id     = $room_id;
             $resident->name        = $name;
             $resident->phone       = $phone;
+            $resident->card_type   = $card_type;
+            $resident->card_number = $card_number;
             $resident->book_money  = $book_money;
-            $resident->book_time   = Carbon::parse($book_time);
-            $resident->begin_time  = Carbon::now();
-            $resident->end_time    = Carbon::now();
+            $resident->rent_type   = $rent_type;
+            $resident->contract_time   = $contract_time;
+            $resident->begin_time  = $begin_time;
+            $resident->end_time    = $end_time;
             $resident->employee_id = $this->employee->id;
             $resident->status      = Residentmodel::STATE_NOTPAY;
             $resident->remark      = $remark;
+            $resident->special_term= $special_term;
             $resident->store_id    = $this->employee->store_id;
-            $resident->company_id  = 1;
+            $resident->company_id  = COMPANY_ID;
             $a                     = $resident->save();
             //更新房间状态
             $this->occupiedByResident($room, $resident);
-            // $room->Occupie();
-            //生成订单
-            $order->number       = $order->getOrderNumber();
-            $order->resident_id  = $resident->id;
-            $order->employee_id  = $resident->employee_id;
-            $order->money        = $resident->book_money;
-            $order->paid         = $resident->book_money;
-            $order->year         = $resident->book_time->year;
-            $order->month        = $resident->book_time->month;
-            $order->remark       = $resident->remark;
-            $order->room_id      = $room_id;
-            $order->store_id     = $room->store_id;
-            $order->room_type_id = $room->room_type_id;
-            $order->status       = Ordermodel::STATE_PENDING;
-            $order->deal         = Ordermodel::DEAL_UNDONE;
-            $order->type         = Ordermodel::PAYTYPE_RESERVE;
-            $b                   = $order->save();
-            if ($a && $b) {
+            if ($a) {
                 DB::commit();
                 $this->load->model('activitymodel');
                 $this->load->model('coupontypemodel');
@@ -1001,7 +995,6 @@ class Resident extends MY_Controller {
             DB::rollBack();
             throw $e;
         }
-
     }
 
     /**
@@ -1026,15 +1019,6 @@ class Resident extends MY_Controller {
                 ),
             ),
             array(
-                'field'  => 'phone',
-                'label'  => '用户手机号码',
-                'rules'  => 'required|trim|max_length[11]',
-                'errors' => array(
-                    'required'   => '请填写%s',
-                    'max_length' => '请检查%s',
-                ),
-            ),
-            array(
                 'field'  => 'book_money',
                 'label'  => '定金',
                 'rules'  => 'required|trim|numeric',
@@ -1044,17 +1028,67 @@ class Resident extends MY_Controller {
                 ),
             ),
             array(
-                'field'  => 'book_time',
-                'label'  => '订房日期',
+                'field' => 'remark',
+                'label' => '备注',
+                'rules' => 'trim',
+            ),
+            array(
+                'field' => 'special_term',
+                'label' => '特殊条款',
+                'rules' => 'trim',
+            ),
+            array(
+                'field'  => 'contract_time',
+                'label'  => '合同时长',
+                'rules'  => 'required|trim|integer',
+                'errors' => array(
+                    'required' => '请选择%s',
+                ),
+            ),
+            array(
+                'field'  => 'contract_time',
+                'label'  => '合同时长',
+                'rules'  => 'required|trim|integer',
+                'errors' => array(
+                    'required' => '请填写%s',
+                    'integer'  => '%s必须是一个整数',
+                ),
+            ),
+            array(
+                'field'  => 'rent_type',
+                'label'  => '出租类型',
+                'rules'  => 'trim|required|in_list[LONG,SHORT]',
+                'errors' => array(
+                    'required' => '请填写%s',
+                    'integer'  => '请选择正确的%s',
+                ),
+            ),
+            array(
+                'field'  => 'phone',
+                'label'  => '手机号',
+                'rules'  => 'required|trim|max_length[13]|numeric',
+                'errors' => array(
+                    'required'   => '请填写%s',
+                    'max_length' => '请检查手机号',
+                    'numeric'    => '请检查手机号',
+                ),
+            ),
+            array(
+                'field'  => 'card_type',
+                'label'  => '证件类型',
+                'rules'  => 'required|trim|in_list[0,1,2,6,A,B,C,E,F,P,BL]',
+                'errors' => array(
+                    'required' => '请填写%s',
+                    'in_list'  => '请选择正确的证件类型',
+                ),
+            ),
+            array(
+                'field'  => 'card_number',
+                'label'  => '证件号码',
                 'rules'  => 'required|trim',
                 'errors' => array(
                     'required' => '请填写%s',
                 ),
-            ),
-            array(
-                'field' => 'remark',
-                'label' => '备注',
-                'rules' => 'trim',
             ),
         );
     }
@@ -1264,7 +1298,7 @@ class Resident extends MY_Controller {
     }
 
     /**
-     * 住户续租
+     * 住户续租(已经转移)
      */
     public function renew() {
         exit;
