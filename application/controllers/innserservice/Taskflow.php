@@ -21,8 +21,8 @@ class Taskflow extends MY_Controller
      */
     public function createWarning()
     {
-        $input  = $this->input->post();
-        $data   = $input['data'];
+        $input  = $this->input->post(null,true);
+        $data       = $input['data'];
         $store_id   = $input['store_id'];
         $warning_type   = $input['type'];
         if (!$this->validationText($this->validateWarning())) {
@@ -34,6 +34,7 @@ class Taskflow extends MY_Controller
         }
         //记录任务插入成功的总条数
         $i = 0;
+        log_message('debug','RISK_DATA:'.json_encode($data));
         foreach ($data as $item) {
             try{
                 $company_id = $item['company_id'];
