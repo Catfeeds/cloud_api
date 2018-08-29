@@ -61,7 +61,7 @@ class Resident extends MY_Controller {
      */
     public function checkIn() {
         $field = [
-            'room_id', 'begin_time', 'people_count', 'contract_time', 'discount_id', 'first_pay_money',
+            'room_id', 'begin_time', 'people_count', 'contract_time', 'discount_id',
             'deposit_money', 'deposit_month', 'tmp_deposit', 'rent_type', 'pay_frequency',
             'name', 'phone', 'card_type', 'card_number', 'card_one', 'card_two', 'card_three',
             'real_property_costs', 'real_rent_money',
@@ -307,11 +307,6 @@ class Resident extends MY_Controller {
             array(
                 'field' => 'real_property_costs',
                 'label' => '实际物业费',
-                'rules' => 'trim|numeric|required',
-            ),
-            array(
-                'field' => 'first_pay_money',
-                'label' => '首次支付',
                 'rules' => 'trim|numeric|required',
             ),
             array(
