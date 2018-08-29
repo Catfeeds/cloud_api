@@ -120,7 +120,7 @@ class Order extends MY_Controller {
         //根据类型  房间 物业费 ...
         //根据支付方式
 
-        $field = ['status', 'type', 'room_number'];
+        $field = ['status', 'type', 'room_number', 'resident_id'];
         if (!$this->validationText($this->validateList())) {
             $this->api_res(1002, ['error' => $this->form_first_error($field)]);
             return;
@@ -142,16 +142,8 @@ class Order extends MY_Controller {
         $this->load->model('residentmodel');
         $this->load->model('customermodel');
 
-        if (isset($input['room_number'])) {
-            $room = Roomunionmodel::where([
-                'store_id' => $this->employee->store_id,
-                'number'   => $input['room_number'],
-            ])->first();
-            if (empty($room)) {
-                $this->api_res(0, ['data' => []]);
-                return;
-            }
-            $where['room_id'] = $room->id;
+        if (isset($input['resident_id'])) {
+            $where['resident_id'] = $input['resident_id'];
         }
 
         $data = $this->ordermodel->ordersOfRooms($where, $page, $per_page);
@@ -179,6 +171,11 @@ class Order extends MY_Controller {
             array(
                 'field' => 'room_number',
                 'label' => '房间号',
+                'rules' => 'trim',
+            ),
+            array(
+                'field' => 'resident_id',
+                'label' => '住户id',
                 'rules' => 'trim',
             ),
         );
@@ -537,7 +534,7 @@ class Order extends MY_Controller {
         } else {
             $coupons = null;
         }
-        log_message('bebug','小程序确认转账时优惠券id为'.$coupons);
+        log_message('Debug','小程序确认转账时优惠券id为'.$coupons);
         try {
             DB::beginTransaction();
             //如果有使用优惠券, 检查优惠券是否可以使用
