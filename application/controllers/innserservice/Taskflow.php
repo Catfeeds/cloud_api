@@ -22,7 +22,7 @@ class Taskflow extends MY_Controller
     public function createWarning()
     {
         $input  = $this->input->post(null,true);
-        $data       = $input['data'];
+        $data       = json_decode($input['data'],true);
         $store_id   = $input['store_id'];
         $warning_type   = $input['type'];
         if (!$this->validationText($this->validateWarning())) {
@@ -70,7 +70,7 @@ class Taskflow extends MY_Controller
                 'rules' => 'trim|required|integer',
             ),
             array(
-                'field' => 'data[]',
+                'field' => 'data',
                 'rules' => 'trim|required',
             ),
         );
