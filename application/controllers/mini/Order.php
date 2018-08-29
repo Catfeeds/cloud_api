@@ -533,7 +533,7 @@ class Order extends MY_Controller {
         } else {
             $coupons = null;
         }
-
+        log_message('bebug','小程序确认转账时优惠券id为'.$coupons);
         try {
             DB::beginTransaction();
             //如果有使用优惠券, 检查优惠券是否可以使用
@@ -566,7 +566,7 @@ class Order extends MY_Controller {
      */
     private function checkCoupons($resident, $orders, $coupons) {
         //没有优惠券, 则直接返回
-        if (0 == count($coupons)) {
+        if (!$coupons) {
             return true;
         }
 
