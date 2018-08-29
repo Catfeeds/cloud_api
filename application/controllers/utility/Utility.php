@@ -239,7 +239,7 @@ class Utility extends MY_Controller {
             ->map(function ($record){
                 if ($record->status == Meterreadingtransfermodel::OLD_METER){
                     $last_date              = $this->lastMonth($record->month,$record->year);
-                    $last                   = Meterreadingtransfermodel::where('resident_id',$record->resident_id)->where('room_id',$record->room_id)->where($last_date)->first(['this_reading','this_time','image']);
+                    $last                   = Meterreadingtransfermodel::where('resident_id',$record->resident_id)->where('type',$record->type)->where('room_id',$record->room_id)->where($last_date)->first(['this_reading','this_time','image']);
                     $record->last_reading   = !empty($last)?($last->this_reading):'';
                     $record->last_time      = !empty($last)?(date('Y-m-d',strtotime($last->this_time))):'';
                     $record->this_image     = $this->fullAliossUrl($record->image);
@@ -281,17 +281,20 @@ class Utility extends MY_Controller {
         //月中入住
         $new_rent   = Meterreadingtransfermodel::where('resident_id',$record->resident_id)
             ->where('room_id',$record->room_id)
+	        ->where('type',$record->type)
             ->where('status',Meterreadingtransfermodel::NEW_RENT)
             ->first(['this_reading','this_time','image']);
         //换表
         $new_meter      = Meterreadingtransfermodel::where('resident_id',$record->resident_id)
             ->where('room_id',$record->room_id)
+	        ->where('type',$record->type)
             ->where('status',Meterreadingtransfermodel::NEW_METER)
             ->first(['this_reading','this_time','image']);
         //上月
         $last_date      = $this->lastMonth($record->month,$record->year);
         $last_reading   = Meterreadingtransfermodel::where('resident_id',$record->resident_id)
             ->where('room_id',$record->room_id)
+	        ->where('type',$record->type)
             ->where($last_date)
             ->first(['this_reading','this_time','image']);
 
