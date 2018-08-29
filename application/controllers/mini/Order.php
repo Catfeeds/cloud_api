@@ -15,7 +15,7 @@ class Order extends MY_Controller {
     }
 
     /**
-     * 检索某个房间下的订单, 用于未交费支付时显示
+     * 检索某个住户下的订单, 用于未交费支付时显示
      */
     public function showByRoom() {
         $input       = $this->input->post(null, true);
@@ -35,7 +35,7 @@ class Order extends MY_Controller {
         $orders = $room->orders()->where('status', $status)->get();
         $totalMoney = number_format($orders->sum('money'), 2);
 
-        $this->api_res(0, ['totalMoney' => $totalMoney, 'orders' => $orders, 'resident' => $resident, 'room' => $room]);
+        $this->api_res(0, ['totalMoney' => $totalMoney, 'orders' => $orders->toArray(), 'resident' => $resident->toArray(), 'room' => $room->toArray()]);
     }
 
     /**
@@ -131,6 +131,7 @@ class Order extends MY_Controller {
         if (isset($input['type'])) {
             $where['type'] = $input['type'];
         }
+
 
         $this->load->model('roomunionmodel');
         $this->load->model('ordermodel');
