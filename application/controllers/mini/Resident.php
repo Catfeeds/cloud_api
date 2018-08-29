@@ -77,6 +77,7 @@ class Resident extends MY_Controller {
 
         $this->load->model('residentmodel');
         $post = $this->input->post(null, true);
+        log_message('info','入住POST数据为'.$post);
         if (!$this->checkPhoneNumber($post['phone'])) {
             $this->api_res(1002, ['error' => '请检查手机号']);
             return;
