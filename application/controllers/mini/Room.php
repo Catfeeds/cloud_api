@@ -1,6 +1,6 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
-
+use Illuminate\Database\Capsule\Manager as DB;
 /**
  * Author:      hfq<1326432154@qq.com>
  * Date:        2018/5/23
@@ -38,20 +38,9 @@ class Room extends MY_Controller {
         if (!empty($post['building_id'])) {$where['building_id'] = intval($post['building_id']);};
         if (!empty($post['status'])) {$status = $post['status'];} else { $status = null;};
         $where['store_id'] = $this->employee->store_id;
-//        $where['store_id']  = 1;
-
         $filed = ['id', 'layer', 'status', 'number', 'room_type_id', 'resident_id'];
         $this->load->model('roomtypemodel');
         if ($status == 'ARREARS') {
-            /* $room   =  DB::select("select u.`id`, u.`layer`, u.`status`, u.`number`, u.`room_type_id` ".
-            " from `boss_room_union` as u ".
-            " inner join `boss_order` as oo ".
-            "              on u.`id` = oo.`room_id`  ".
-            " where (u.`store_id` = ?) and u.`deleted_at` is null  ".
-            "          and oo.`status` in ('GENERATE', 'AUDITED', 'PENDING')  ".
-            "         and oo.`deleted_at` is null ".
-            " order by u.`number` asc ",[8]);*/
-
             $room = Roomunionmodel::with('room_type')->with('pendOrder')
                 ->where($where)
                 ->orderBy('number', 'ASC')
@@ -192,7 +181,54 @@ class Room extends MY_Controller {
         }
         $this->api_res(0, ['list' => $room]);
     }
+    public function listOrderRoom(){
+        $this->load->model('ordermodel');
+        $this->load->model('residentmodel');
+        $post  = $this->input->post(null, true);
+        $where = [];
+        if (!empty($post['building_id'])) {$where['building_id'] = intval($post['building_id']);};
+        if (!empty($post['status'])) {$status = $post['status'];} else { $status = null;};
+        $where['store_id'] = $this->employee->store_id;
+        if(empty($post['building_id'])){
+            $post['building_id'] = "4,5";
+        }
+        $this->load->model('roomtypemodel');
+        if ($status == 'ARREARS') {
+            $room   =  DB::select("select u.`id`, u.`layer`, u.`status`,u.`building_id` ,u.`number`, u.`room_type_id`, ty.`id` as `room_type_id`,ty.`name`  ".
+                " from `boss_room_union` as u ".
+                " left join `boss_order` as oo on u.`id` = oo.`room_id`".
+                " left join `boss_room_type` as ty on u.`room_type_id` = ty.`id`".
+                " where (u.`store_id` = ?) and u.`deleted_at` is null and (oo.`company_id` = ".COMPANY_ID.")".
+                "          and oo.`status` in ('PENDING')  ".
+                "          and oo.`deleted_at` is null ".
+                "          and u.`building_id` in(".$post['building_id'].")".
+                "          group by u.`id`".
+                " order by u.`number` asc ",[$where['store_id']]);
+        } elseif ($status == 'DUE') {
+            $room   =  DB::select("select u.`id`, u.`layer`, u.`status`, u.`number`, u.`room_type_id`, ty.`name`,".
+                "re.`id` as `resident_id`, re.`end_time`, re.`room_id` ".
+                " from `boss_room_union` as u ".
+                " left join `boss_resident` as re on u.`id` = re.`room_id`".
+                " left join `boss_room_type` as ty on u.`room_type_id` = ty.`id`".
+                " where (u.`store_id` = ?) and u.`deleted_at` is null ".
+                " and re.`end_time` between '".date('Y-m-d H:i:s', time())."' and '". date('Y-m-d H:i:s', strtotime('+1month'))."'  ".
+                "         and re.`deleted_at` is null ".
+                "          and u.`building_id` in(".$post['building_id'].")".
+                "         group by u.`id`".
+                " order by u.`number` asc ",[$where['store_id']]);
+        } else {
+            $room   =  DB::select("select u.`id`, u.`layer`, u.`status`, u.`number`, u.`room_type_id`, ty.`name`".
+                " from `boss_room_union` as u ".
+                " left join `boss_room_type` as ty on u.`room_type_id` = ty.`id`".
+                " where (u.`store_id` = ?) and u.`deleted_at` is null ".
+                "         and u.`building_id` in(".$post['building_id'].")".
+                "         and u.`status` = '".$status."' ".
+                "         group by u.`id`".
+                " order by u.`number` asc ",[$where['store_id']]);
+        }
+        $this->api_res(0, ['list' => $room]);
 
+    }
     /**
      *  门店下的房间状态统计
      */
