@@ -201,6 +201,7 @@ class Roomunionmodel extends Basemodel {
                 global $arrears_count;
                 $count = 0;
                 foreach ($s as $key => $value) {
+                    $s[$key]['order'] = $s[$key]['pend_order'];
                     if (!empty($s[$key]['pend_order'])) {
                         $count += 1;
                     }
@@ -228,6 +229,7 @@ class Roomunionmodel extends Basemodel {
                     global $arrears_count;
                     $count = 0;
                     foreach ($s as $key => $value) {
+                        $s[$key]['order'] = $s[$key]['pend_order'];
                         if (!empty($s[$key]['pend_order'])) {
                             $count += 1;
                         }
@@ -245,6 +247,7 @@ class Roomunionmodel extends Basemodel {
                     global $arrears_count;
                     $count = 0;
                     foreach ($s as $key => $value) {
+                        $s[$key]['order'] = $s[$key]['pend_order'];
                         if (!empty($s[$key]['pend_order'])) {
                             $count += 1;
                         }
