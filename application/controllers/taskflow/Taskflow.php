@@ -437,7 +437,7 @@ class Taskflow extends MY_Controller{
     private function notifyNext($taskflow)
     {
         $employees   = $this->taskflowmodel->listEmployees($taskflow->id);
-        if(!empty($employees->toArray())){
+        if(!empty($employees)){
             try{
                 switch ($taskflow->type){
                     case Taskflowmodel::TYPE_CHECKOUT:
