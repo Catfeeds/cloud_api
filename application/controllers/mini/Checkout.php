@@ -136,6 +136,7 @@ class Checkout extends MY_Controller {
                 'store_name'=> Storemodel::find($store_id)->name,
                 'number'    => Roomunionmodel::find($input['room_id'])->number,
                 'name'      => $resident->name,
+                'create_name'   => $this->employee->name,
                 'phone'     => $resident->phone,
             ]);
             $taskflow_id   = $this->taskflowmodel->createTaskflow(COMPANY_ID,Taskflowmodel::TYPE_CHECKOUT,$this->employee->store_id,$checkout->room_id,Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id,null,null,$msg);

@@ -210,6 +210,7 @@ class Pricecontrol extends MY_Controller
                 $msg    = json_encode([
                     'store_name'    => $store->name,
                     'number'        => $room->number,
+                    'create_name'          => $this->employee->name,
                     'type'          => ($input['type']=='ROOM')?'房租服务费':'物业服务费',
                     'money'         => $input['new_price'],
                 ]);
