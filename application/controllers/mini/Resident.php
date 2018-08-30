@@ -976,6 +976,8 @@ class Resident extends MY_Controller {
             $resident->remark      = $remark;
             $resident->special_term= $special_term;
             $resident->store_id    = $this->employee->store_id;
+            $resident->rent_price  = $room->rent_price;
+            $resident->property_price  = $room->rent_price;
             $resident->company_id  = COMPANY_ID;
             $a                     = $resident->save();
             //更新房间状态
