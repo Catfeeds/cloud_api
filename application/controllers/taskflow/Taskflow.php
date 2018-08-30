@@ -427,7 +427,62 @@ class Taskflow extends MY_Controller{
             DB::rollBack();
             throw  $e;
         }
+        $this->notifyNext($taskflow);
         $this->api_res(0);
+    }
+
+    /**
+     * 审核通过通知下一个人
+     */
+    private function notifyNext($taskflow)
+    {
+        $employees   = $this->taskflowmodel->listEmployees($taskflow->id);
+        if(!empty($employees->toArray())){
+            try{
+                switch ($taskflow->type){
+                    case Taskflowmodel::TYPE_CHECKOUT:
+                        $this->load->model('checkoutmodel');
+                        $this->load->model('storemodel');
+                        $this->load->model('roomunionmodel');
+                        $this->load->model('residentmodel');
+                        $checkout   = $taskflow->checkout;
+                        $resident   = Residentmodel::find('resident_id');
+                        $msg    = json_encode([
+                            'store_name'=> Storemodel::find($checkout->store_id)->name,
+                            'number'    => Roomunionmodel::find($checkout->room_id)->number,
+                            'name'      => $resident->name,
+                            'phone'     => $resident->phone,
+                        ]);
+                        break;
+                    case Taskflowmodel::TYPE_PRICE:
+                        $this->load->model('storemodel');
+                        $this->load->model('pricecontrolmodel');
+                        $this->load->model('roomunionmodel');
+                        $price  = $taskflow->price;
+                        $store  = Storemodel::find($price->store_id);
+                        $room   = Roomunionmodel::find($price->room_id);
+                        $msg    = json_encode([
+                            'store_name'    => $store->name,
+                            'number'        => $room->number,
+                            'type'          => ($price->type=='ROOM')?'房租服务费':'物业服务费',
+                            'money'         => $price->new_money,
+                        ]);
+                        break;
+                    case Taskflowmodel::TYPE_WARNING:
+                        $msg    = [];
+                        break;
+                    default:
+                        $msg    = [];
+                        break;
+                }
+                if(!empty($msg)){
+                    $this->taskflowmodel->notify($taskflow->type, $msg, $employees);
+                }
+            }catch (Exception $e) {
+                log_message('error','审核流通知下一位失败：'.$e->getMessage());
+            }
+        }
+        return true;
     }
 
     /**

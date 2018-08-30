@@ -1,6 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 use Carbon\Carbon;
+use EasyWeChat\Foundation\Application;
 /**
  * Author:      zjh<401967974@qq.com>
  * Date:        2018/7/30 0030
@@ -181,7 +182,7 @@ class Taskflowmodel extends Basemodel
      * 创建任务流
      * @param type store_id room_id create_role,employee_id
      */
-    public function createTaskflow($company_id,$type,$store_id,$room_id,$create=self::CREATE_EMPLOYEE,$employee_id=null,$data_id=null,$message=null)
+    public function createTaskflow($company_id,$type,$store_id,$room_id,$create=self::CREATE_EMPLOYEE,$employee_id=null,$data_id=null,$message=null,$msg='')
     {
         $this->CI->load->model('taskflowtemplatemodel');
         $this->CI->load->model('taskflowstepmodel');
@@ -226,7 +227,121 @@ class Taskflowmodel extends Basemodel
         }
         Taskflowstepmodel::insert($result);
 
+        $this->notify($taskflow->type, $msg, $this->listEmployees($taskflow->id));
+
         return $taskflow->id;
+    }
+
+    protected function notify($type, $msg, $employees)
+    {
+        log_message('debug', $type . ' notify  ' . $msg);
+        switch ($type) {
+            case self::TYPE_CHECKOUT:
+                $this->sendCheckoutMsg(json_decode($msg), $employees);
+                break;
+            case self::TYPE_PRICE:
+                $this->sendPriceMsg(json_decode($msg), $employees);
+                break;
+            case self::TYPE_WARNING:
+                $this->sendWarningMsg(json_encode($msg),$employees);
+                break;
+            default:
+                break;
+        }
+    }
+
+    protected function sendPriceMsg($body,$employees=[])
+    {
+        $data = [
+            'first'     => "有新的调价审核",
+            'keyword1'  => "{$body->store_name}-{$body->number}",
+            'keyword2'  => "调价类型:{$body->type}",
+            'keyword3'  => "调价金额:{$body->money}",
+            'keyword4'  => date('Y-m-d H:i:s'),
+            'remark'    => '请尽快处理!',
+        ];
+        // $this->CI->load()
+        $this->CI->load->helper('common');
+        $app = new Application(getWechatEmployeeConfig());
+        foreach ($employees as $employee) {
+            if (null == $employee['employee_mp_openid']) {
+                log_message('error', '找不到openid');
+                continue;
+            }
+            try {
+                log_message('debug', 'try to 调价审核通知');
+                $app->notice->uses(config_item('tmplmsg_employee_Check'))
+                    // ->withUrl(config_item('wechat_url') . '')
+                    ->andData($data)
+                    ->andReceiver($employee['employee_mp_openid'])
+                    ->send();
+                log_message('info', '微信回调成功发送模板消息: ' . $employee->name);
+            } catch (Exception $e) {
+                log_message('error', '调价审核消息通知失败：' . $e->getMessage());
+//                throw $e;
+                return;
+            }
+        }
+    }
+
+    protected function sendCheckoutMsg($body,$employees=[])
+    {
+        $data   = [
+            'first'     => "用户:{$body->name}提交了退房申请,请尽快处理!",
+            'keyword1'  => '退房申请',
+            'keyword2'  => $body->name,
+            'keyword3'  => Carbon::now()->toDateTimeString(),
+            'keyword4'  => "退租:{$body->store_name}-{$body->number}",
+            'remark'    => '请尽快处理用户退房审批!'
+        ];
+        // $this->CI->load()
+        $this->CI->load->helper('common');
+        $app = new Application(getWechatEmployeeConfig());
+        foreach ($employees as $employee) {
+            if (null == $employee['employee_mp_openid']) {
+                log_message('error', '找不到openid');
+                continue;
+            }
+            try {
+                log_message('debug', 'try to 退房审批通知');
+                $app->notice->uses(config_item('tmplmsg_employee_Check'))
+                    // ->withUrl(config_item('wechat_url') . '')
+                    ->andData($data)
+                    ->andReceiver($employee['employee_mp_openid'])
+                    ->send();
+                log_message('info', '微信回调成功发送模板消息: ' . $employee->name);
+            } catch (Exception $e) {
+                log_message('error', '退房审核消息通知失败：' . $e->getMessage());
+//                throw $e;
+                return;
+            }
+        }
+    }
+
+    protected function sendWarningMsg($body,$employees=[])
+    {
+        return;
+    }
+
+    protected function listEmployees($taskflow_id)
+    {
+        $audit = Taskflowstepmodel::where('status', '!=', Taskflowstepmodel::STATE_APPROVED)
+            ->where('taskflow_id', $taskflow_id)
+            ->first();
+        $this->CI->load->model('employeemodel');
+        $employee_list = Employeemodel::whereIn('position_id', explode(',', $audit['position_ids']))
+            ->get();
+
+        $ret = [];
+        foreach ($employee_list as $employee) {
+            $store_arr = explode(',', $employee['store_ids']);
+            if (!in_array($audit['store_id'], $store_arr)) {
+                continue;
+            }
+            $ret[] = $employee;
+        }
+
+        return $ret;
     }
 
     /**
@@ -296,5 +411,7 @@ class Taskflowmodel extends Basemodel
         $taskflow->save();
         return true;
     }
+
+
 
 }
