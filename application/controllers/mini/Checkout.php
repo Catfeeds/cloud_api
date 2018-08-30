@@ -131,7 +131,14 @@ class Checkout extends MY_Controller {
             );
             Residentmodel::where('id', $input['resident_id'])->update(['status' => 'CHECKOUT']);
             $this->load->model('taskflowmodel');
-            $taskflow_id   = $this->taskflowmodel->createTaskflow(COMPANY_ID,Taskflowmodel::TYPE_CHECKOUT,$this->employee->store_id,$checkout->room_id,Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id);
+            $this->load->model('storemodel');
+            $msg    = json_encode([
+                'store_name'=> Storemodel::find($store_id)->name,
+                'number'    => Roomunionmodel::find($input['room_id'])->number,
+                'name'      => $resident->name,
+                'phone'     => $resident->phone,
+            ]);
+            $taskflow_id   = $this->taskflowmodel->createTaskflow(COMPANY_ID,Taskflowmodel::TYPE_CHECKOUT,$this->employee->store_id,$checkout->room_id,Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id,null,null,$msg);
             if ($taskflow_id) {
                 $checkout->taskflow_id  = $taskflow_id;
                 $checkout->status  = 'AUDIT';
