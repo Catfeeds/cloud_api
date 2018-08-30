@@ -353,7 +353,7 @@ class Meter extends MY_Controller
                 break;
         }
 
-        $money = ($this_reading->this_reading - $last_reading->last_reading) * $price;
+        $money = ($this_reading->this_reading - $last_reading->this_reading) * $price;
         if (0.01 > $money) {
             return null;
         }
