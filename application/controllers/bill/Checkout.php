@@ -65,7 +65,7 @@ class Checkout extends MY_Controller {
         $data['checkout']['bank_card_img'] = $this->fullAliossUrl($data['checkout']['bank_card_img']);
         $data['resident']                  = Residentmodel::find($checkout->resident_id)->toArray();
         $data['room']                      = Roomunionmodel::find($checkout->room_id)->toArray();
-        $orders                            = Ordermodel::where('resident_id', $checkout->resident_id)->whereNotIn('status',[Ordermodel::STATE_COMPLETED])->get();
+        $orders                            = Ordermodel::where('resident_id', $checkout->resident_id)->whereNotIn('status',[Ordermodel::STATE_COMPLETED, Ordermodel::STATE_CLOSE])->get();
         $data['orders']                    = $orders->toArray();
         $data['countmoney']                = number_format($orders->sum('money'), 2, '.', '');
         $data['paymoney']                  = $data['resident']['tmp_deposit'] + $data['resident']['deposit_money'] - $data['countmoney'];
