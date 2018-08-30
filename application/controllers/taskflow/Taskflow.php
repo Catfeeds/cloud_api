@@ -450,6 +450,7 @@ class Taskflow extends MY_Controller{
                         $msg    = json_encode([
                             'store_name'=> Storemodel::find($checkout->store_id)->name,
                             'number'    => Roomunionmodel::find($checkout->room_id)->number,
+                            'create_name'   => Employeemodel::find($checkout->employee_id)->name,
                             'name'      => $resident->name,
                             'phone'     => $resident->phone,
                         ]);
@@ -464,6 +465,7 @@ class Taskflow extends MY_Controller{
                         $msg    = json_encode([
                             'store_name'    => $store->name,
                             'number'        => $room->number,
+                            'create_name'          => Employeemodel::find($taskflow->employee_id)->name,
                             'type'          => ($price->type=='ROOM')?'房租服务费':'物业服务费',
                             'money'         => $price->new_money,
                         ]);

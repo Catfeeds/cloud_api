@@ -70,8 +70,26 @@ $config['wx_employee_token']   = 'aJ1B3XhY7qRvTG3DrbxNhCLo90kpsds4';
 $config['wx_employee_aes_key'] = 'IwTUFptFaJ1B3XhY7qRvTG3DrbxNhCLo90kpsqP0cNL';
 // 预约看房模板消息
 $config['tmplmsg_employee_Reserve'] = 'qCwYA7zOn-s5cxx8zLBcXpa-n24N_2dZIbV3K0dbEKY';
-//模板消息-员工-审核通知(物品/退房)
-$config['tmplmsg_employee_Check']   = 'UoQcQsMD0oPYOfd6V5p9exw8x8M3bQMGkxlFJs1mEmY';
+
+// 任务提醒
+/**
+{{first.DATA}}
+名称：{{keyword1.DATA}}
+发起人：{{keyword2.DATA}}
+接收时间：{{keyword3.DATA}}
+评审对象：{{keyword4.DATA}}
+{{remark.DATA}}
+ */
+$config['tmplmsg_employee_TaskRemind'] = 'KcKwVNf5s5M-aZU93PtVjFFIcIxmNLE1vtMT1V80pq8';
+
+// 告警通知
+/**
+{{first.DATA}}
+时间：{{keyword1.DATA}}
+内容：{{keyword2.DATA}}
+{{remark.DATA}}
+ */
+$config['tmplmsg_employee_Warning'] = '9NCwhWn0bV8QgUBvjFxzTD37Wj_x-uIYorKEaEHE-cc';
 
 /**
 用途: 员工端相关配置信息

@@ -254,10 +254,10 @@ class Taskflowmodel extends Basemodel
     {
         $data = [
             'first'     => "有新的调价审核",
-            'keyword1'  => "{$body->store_name}-{$body->number}",
-            'keyword2'  => "调价类型:{$body->type}",
-            'keyword3'  => "调价金额:{$body->money}",
-            'keyword4'  => date('Y-m-d H:i:s'),
+            'keyword1'  => "{$body->store_name}-{$body->number}的调价申请",
+            'keyword2'  => "{$body->create_name}",
+            'keyword3'  =>  date('Y-m-d H:i:s'),
+            'keyword4'  => "调价类型:{$body->type}，调价金额:{$body->money}",
             'remark'    => '请尽快处理!',
         ];
         // $this->CI->load()
@@ -270,7 +270,7 @@ class Taskflowmodel extends Basemodel
             }
             try {
                 log_message('debug', 'try to 调价审核通知');
-                $app->notice->uses(config_item('tmplmsg_employee_Check'))
+                $app->notice->uses(config_item('tmplmsg_employee_TaskRemind'))
                     // ->withUrl(config_item('wechat_url') . '')
                     ->andData($data)
                     ->andReceiver($employee['employee_mp_openid'])
@@ -289,7 +289,7 @@ class Taskflowmodel extends Basemodel
         $data   = [
             'first'     => "用户:{$body->name}提交了退房申请,请尽快处理!",
             'keyword1'  => '退房申请',
-            'keyword2'  => $body->name,
+            'keyword2'  => $body->create_name,
             'keyword3'  => Carbon::now()->toDateTimeString(),
             'keyword4'  => "退租:{$body->store_name}-{$body->number}",
             'remark'    => '请尽快处理用户退房审批!'
@@ -304,7 +304,7 @@ class Taskflowmodel extends Basemodel
             }
             try {
                 log_message('debug', 'try to 退房审批通知');
-                $app->notice->uses(config_item('tmplmsg_employee_Check'))
+                $app->notice->uses(config_item('tmplmsg_employee_TaskRemind'))
                     // ->withUrl(config_item('wechat_url') . '')
                     ->andData($data)
                     ->andReceiver($employee['employee_mp_openid'])
