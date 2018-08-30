@@ -27,7 +27,7 @@ class Company extends MY_Controller
 		$this->load->model('positionmodel');
 		$post = $this->input->post(null, true);
 		if (!$this->validation()) {
-			$fieldarr = ['name', 'is_show', 'sort'];
+			$fieldarr = ['name', 'phone', 'code'];
 			$this->api_res(1002, ['errmsg' => $this->form_first_error($fieldarr)]);
 			return false;
 		}
@@ -50,7 +50,13 @@ class Company extends MY_Controller
 	public function sendCode()
 	{
 		$this->load->library('m_redis');
-		$phone = $this->input->post('phone', true);
+		$post = $this->input->post(null, true);
+		$this->load->helper('check');
+		if (!isMobile($post['phone'])) {
+			log_message('debug', '请检查手机号码');
+			return false;
+		}
+		$phone = $post['phone'];
 		$this->load->library('sms');
 		$code = str_pad(rand(1, 9999), 4, 0, STR_PAD_LEFT);
 		$str  = SMSTEXT . $code;
@@ -114,12 +120,19 @@ class Company extends MY_Controller
 		$this->load->model('companymodel');
 		$post = $this->input->post(null, true);
 		if (!$this->validationAuth()) {
-			$fieldarr = ['name', 'is_show', 'sort'];
+			$fieldarr = ['name','legal_person','phone','id_number','idcard_front','idcard_back','brand','brand_intro','license','license_image'];
 			$this->api_res(1002, ['errmsg' => $this->form_first_error($fieldarr)]);
 			return false;
 		}
+		$this->load->helper('check');
+		if (!isIdNumber($post['id_number'])) {
+			log_message('debug', '请填写正确的身份证号码');
+			return false;
+		}
+		
 		$company_id = COMPANY_ID;
 		$company = Companymodel::Find($company_id);
+		
 		$company->fill($post);
 		$company->license_image = $this->splitAliossUrl($post['license_image']);
 		$company->idcard_front  = $this->splitAliossUrl($post['idcard_front']);
@@ -168,7 +181,7 @@ class Company extends MY_Controller
 			[
 				'field'  => 'code',
 				'label'  => '验证码',
-				'rules'  => 'trim|required',
+				'rules'  => 'trim|required|exact_length[4]',
 				'errors' => [
 					'required' => '请填写%s',
 				],
@@ -204,7 +217,7 @@ class Company extends MY_Controller
 			[
 				'field'  => 'phone',
 				'label'  => '法人电话',
-				'rules'  => 'trim|required',
+				'rules'  => 'trim|required|max_length[13]',
 				'errors' => [
 					'required' => '请填写%s',
 				],
@@ -222,7 +235,7 @@ class Company extends MY_Controller
 				'label'  => '法人身份证正面',
 				'rules'  => 'trim|required',
 				'errors' => [
-					'required' => '请伤上传%s',
+					'required' => '请上传%s',
 				],
 			],
 			[

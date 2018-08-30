@@ -65,6 +65,9 @@ class AuthHook {
             'mini/contract/archive',
             'utility/utility/listutility1',
 
+            'company/company/sendcode',
+            'company/company/register',
+            'company/company/boundwechat',
         );
     }
 
