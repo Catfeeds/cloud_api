@@ -24,22 +24,20 @@ class Home extends MY_Controller {
         //未缴费订单
         $this->load->model('roomtypemodel');
         $store_id = $this->employee->store_id;
-        //未缴费订单
-        $this->load->model('customermodel');
         $where['status'] = 'PENDING';
-        $where['store_id'] = $this->employee->store_id;
-        $order = $this->ordermodel->ordersOfRooms($where);
-        if($order) {
-            $data['tipsnum']['order'] = $order['total'];
+        $where['store_id'] = $store_id;
+        $this->load->model('customermodel');
+        $orders = Ordermodel::where($where)->with('resident')->get()->groupBy('room_id')->count();
+        if($orders) {
+            $data['tipsnum']['order'] = $orders;
         }else{
             $data['tipsnum']['order'] = 0;
         }
         //缴费订单确认
         $where['status']= 'CONFIRM';
-        $where['store_id'] = $this->employee->store_id;
-        $order = $this->ordermodel->ordersOfRooms($where);
-        if($order){
-            $data['tipsnum']['sureorder'] = $order['total'];
+        $orders = Ordermodel::where($where)->with('resident')->get()->groupBy('room_id')->count();
+        if($orders){
+            $data['tipsnum']['sureorder'] = $orders;
         }else{
             $data['tipsnum']['sureorder'] = 0;
         }

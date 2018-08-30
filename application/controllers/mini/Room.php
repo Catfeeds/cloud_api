@@ -40,7 +40,7 @@ class Room extends MY_Controller {
         $where['store_id'] = $this->employee->store_id;
 //        $where['store_id']  = 1;
 
-        $filed = ['id', 'layer', 'status', 'number', 'room_type_id'];
+        $filed = ['id', 'layer', 'status', 'number', 'room_type_id', 'resident_id'];
         $this->load->model('roomtypemodel');
         if ($status == 'ARREARS') {
             /* $room   =  DB::select("select u.`id`, u.`layer`, u.`status`, u.`number`, u.`room_type_id` ".
@@ -52,7 +52,7 @@ class Room extends MY_Controller {
             "         and oo.`deleted_at` is null ".
             " order by u.`number` asc ",[8]);*/
 
-            $room = Roomunionmodel::with('room_type')->with('pendOrder') //->with('due')
+            $room = Roomunionmodel::with('room_type')->with('pendOrder')
                 ->where($where)
                 ->orderBy('number', 'ASC')
                 ->get($filed)->groupBy('layer')
@@ -66,21 +66,10 @@ class Room extends MY_Controller {
                     $roominfo['count_due']     = 0;
                     for ($i = 0; $i < $roominfo['count_total']; $i++) {
                         $status = $roominfo[$i]['status'];
-                        /*if ($status == 'RENT'){
-                    $roominfo['count_rent']     += 1;
-                    }
-                    if ($status == 'BLANK'){
-                    $roominfo['count_blank']    += 1;
-                    }*/
                         if (!empty($roominfo[$i]['pend_order'])) {
+                            $room[$i]->order = $roominfo[$i]['pend_order'];
                             $roominfo['count_arrears'] += 1;
                         }
-                        /*if (!empty($roominfo[$i]['due'])){
-                $roominfo['count_due']  += 1;
-                }
-                if ($status == 'REPAIR'){
-                $roominfo['count_repair']   += 1;
-                }*/
                     }
                     return [$room, 'count' => [
                         'count_total'   => $roominfo['count_total'],
@@ -94,7 +83,7 @@ class Room extends MY_Controller {
                 ->toArray();
         } elseif ($status == 'DUE') {
             $room = Roomunionmodel::with('room_type')->with('due') //->with('order')
-                ->where($where)->whereHas('due')->orderBy('number', 'ASC')
+            ->where($where)->orderBy('number', 'ASC')
                 ->get($filed)->groupBy('layer')
                 ->map(function ($room) {
                     $roominfo                  = $room->toArray();
@@ -105,22 +94,9 @@ class Room extends MY_Controller {
                     $roominfo['count_repair']  = 0;
                     $roominfo['count_due']     = 0;
                     for ($i = 0; $i < $roominfo['count_total']; $i++) {
-                        /*$status = $roominfo[$i]['status'];
-                    if ($status == 'RENT'){
-                    $roominfo['count_rent']     += 1;
-                    }
-                    if ($status == 'BLANK'){
-                    $roominfo['count_blank']    += 1;
-                    }
-                    if (!empty($roominfo[$i]['order'])){
-                    $roominfo['count_arrears']  += 1;
-                    }*/
                         if (!empty($roominfo[$i]['due'])) {
                             $roominfo['count_due'] += 1;
                         }
-                        /*if ($status == 'REPAIR'){
-                $roominfo['count_repair']   += 1;
-                }*/
                     }
                     return [$room, 'count' => [
                         'count_total'   => $roominfo['count_total'],
@@ -153,6 +129,7 @@ class Room extends MY_Controller {
                             $roominfo['count_blank'] += 1;
                         }
                         if (!empty($roominfo[$i]['pend_order'])) {
+                            $room[$i]->order = $roominfo[$i]['pend_order'];
                             $roominfo['count_arrears'] += 1;
                         }
                         if (!empty($roominfo[$i]['due'])) {
@@ -173,7 +150,7 @@ class Room extends MY_Controller {
                 })
                 ->toArray();
         } else {
-            $room = Roomunionmodel::with('room_type') /*->with('due')->with('order')*/
+            $room = Roomunionmodel::with('room_type')
                 ->where($where)->where('status', $status)->orderBy('number', 'ASC')
                 ->get($filed)->groupBy('layer')
                 ->map(function ($room) {
