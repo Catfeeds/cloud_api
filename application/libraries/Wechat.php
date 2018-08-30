@@ -11,9 +11,8 @@ class Wechat
 	/**
 	 * 通过code换取access_token
 	 */
-	public function getAccessToken($post)
+	public function getAccessToken($code)
 	{
-		$code   = $post['code'];
 		$appid  = config_item('wx_web_appid');
 		$secret = config_item('wx_web_secret');
 		$url    = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid=' . $appid . '&secret=' . $secret . '&code=' . $code . '&grant_type=authorization_code';
@@ -23,6 +22,7 @@ class Wechat
 			$this->api_res(1006);
 			return false;
 		}
+		$this->debug('返回用户信息为-->'.$user);
 		return $user;
 	}
 	
