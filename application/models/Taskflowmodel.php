@@ -270,11 +270,15 @@ class Taskflowmodel extends Basemodel
             }
             try {
                 log_message('debug', 'try to 调价审核通知');
-                $app->notice->uses(config_item('tmplmsg_employee_TaskRemind'))
-                    // ->withUrl(config_item('wechat_url') . '')
-                    ->andData($data)
-                    ->andReceiver($employee['employee_mp_openid'])
-                    ->send();
+                $app->notice->send([
+                    'touser' => $employee['employee_mp_openid'],
+                    'template_id' => config_item('tmplmsg_employee_TaskRemind'),
+                    'data' => $data,
+                    "miniprogram"=> [
+                        "appid"=> config_item('miniAppid'),
+                        "pagepath"=>"/pages/index/homePage"
+                    ],
+                ]);
                 log_message('info', '微信回调成功发送模板消息: ' . $employee->name);
             } catch (Exception $e) {
                 log_message('error', '调价审核消息通知失败：' . $e->getMessage());
@@ -304,11 +308,15 @@ class Taskflowmodel extends Basemodel
             }
             try {
                 log_message('debug', 'try to 退房审批通知');
-                $app->notice->uses(config_item('tmplmsg_employee_TaskRemind'))
-                    // ->withUrl(config_item('wechat_url') . '')
-                    ->andData($data)
-                    ->andReceiver($employee['employee_mp_openid'])
-                    ->send();
+                $app->notice->send([
+                    'touser' => $employee['employee_mp_openid'],
+                    'template_id' => config_item('tmplmsg_employee_TaskRemind'),
+                    'data' => $data,
+                    "miniprogram"=> [
+                        "appid"=> config_item('miniAppid'),
+                        "pagepath"=>"/pages/index/homePage"
+                    ],
+                ]);
                 log_message('info', '微信回调成功发送模板消息: ' . $employee->name);
             } catch (Exception $e) {
                 log_message('error', '退房审核消息通知失败：' . $e->getMessage());
@@ -323,7 +331,7 @@ class Taskflowmodel extends Basemodel
         return;
     }
 
-    protected function listEmployees($taskflow_id)
+    public function listEmployees($taskflow_id)
     {
         $audit = Taskflowstepmodel::where('status', '!=', Taskflowstepmodel::STATE_APPROVED)
             ->where('taskflow_id', $taskflow_id)
