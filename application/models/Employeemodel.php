@@ -13,6 +13,8 @@ class Employeemodel extends Basemodel {
 
     protected $hidden = ['created_at', 'update_at', 'deleted_at'];
 
+    protected $fillable = ['nickname','gender','avatar','openid','unionid','province','city','country'];
+    
     public function store() {
         return $this->belongsTo(Storemodel::class, 'store_id');
     }
