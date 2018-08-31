@@ -152,7 +152,7 @@ class Taskflow extends MY_Controller{
         $page   = (int)(empty($input['page'])?1:$input['page']);
         $per_page   = (empty(($input['per_page'])))?PAGINATE:$input['per_page'];
         $count  = Taskflowrecordmodel::where('employee_id',$this->employee->id)
-            ->where($where)->groupBy('taskflow_id')->count();
+            ->where($where)->groupBy('taskflow_id')->get()->count();
         $totalPage  = ceil($count/$per_page);
         if ($page>$totalPage) {
             $this->api_res(0,['steps'=>[],'page'=>$page,'totalPage'=>$totalPage,'count'=>$count]);

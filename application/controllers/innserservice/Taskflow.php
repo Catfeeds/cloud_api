@@ -24,6 +24,11 @@ class Taskflow extends MY_Controller
         $input        = $this->input->post(null, true);
         $data         = json_decode($input['data'], true);
         $store_id     = $input['store_id'];
+        $this->load->model('storemodel');
+        $this->load->model('roomunionmodel');
+        $this->load->model('residentmodel');
+        $store  = Storemodel::find($store_id);
+        $store_name = $store->name;
         $warning_type = $input['type'];
         if (!$this->validationText($this->validateWarning())) {
             $this->api_res(1002);
@@ -46,24 +51,26 @@ class Taskflow extends MY_Controller
                 $create_role   = Taskflowmodel::CREATE_SYSTEM;
                 $employee_id   = null;
                 $notify_msg    = '';
+
                 if (count($data) > 5) {
                     if (0 == $i) {
                         $notify_msg = json_encode([
                             'batch'       => true,
                             'count'       => count($data),
                             'message'     => $message,
-                            'store_name'  => 'zz',
-                            'room_number' => 'xx',
-                            'username'    => 'yy',
+                            'store_name'  => $store_name,
                         ]);
                     }
                 } else {
+                    $room   = Roomunionmodel::find($room_id);
+                    $room_number   = $room;
+                    $resident_name = $room->resident->name;
                     $notify_msg = json_encode([
                         'batch'       => false,
                         'message'     => $message,
-                        'store_name'  => 'zz',
-                        'room_number' => 'xx',
-                        'username'    => 'yy',
+                        'store_name'  => $store_name,
+                        'room_number' => $room_number,
+                        'username'    => $resident_name,
                     ]);
                 }
                 $taskflow = $this->taskflowmodel->createTaskflow(
