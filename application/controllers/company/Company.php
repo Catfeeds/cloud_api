@@ -88,8 +88,8 @@ class Company extends MY_Controller
 			$this->api_res(1006);
 			return false;
 		}
-		$this->debug('返回用户信息为-->'.$user);
-		$info_url  = 'https://api.weixin.qq.com/sns/userinfo?access_token=' . $user['access_token']. '&openid=' . $user['openid']. '&lang=zh_CN';
+		$this->debug('返回用户信息为-->', $user);
+		$info_url  = 'https://api.weixin.qq.com/sns/userinfo?access_token=' . $user['access_token'] . '&openid=' . $user['openid'] . '&lang=zh_CN';
 		$user_info = $this->httpCurl($info_url, 'get', 'json');
 		if (array_key_exists('errcode', $user_info)) {
 			log_message('error', '请求info:' . $user_info['errmsg']);
