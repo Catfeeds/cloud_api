@@ -123,10 +123,16 @@ class Residentmodel extends Basemodel {
         return $this->hasMany(Ordermodel::class, 'resident_id');
     }
 
-    //住户的合同信息
-    public function contract() {
+    //住户的入住合同信息
+    public function contract(){
 
-        return $this->hasOne(Contractmodel::class, 'resident_id');
+        return $this->hasMany(Contractmodel::class,'resident_id')->where('rent_type','!=',Contractmodel::RENT_RESERVE);
+    }
+
+    //住户预定合同
+    public function reserve_contract()
+    {
+        return $this->hasMany(Contractmodel::class,'resident_id')->where('rent_type',Contractmodel::RENT_RESERVE);
     }
 
     //住户的用户信息
@@ -290,7 +296,7 @@ class Residentmodel extends Basemodel {
             $data['time']  = $resident->book_time->format('Y-m-d');
         }
 
-        if ($contract = $resident->contract) {
+        if ($contract = $resident->contract()->first()) {
             $data = array_merge($data, [
                 'contract' => [
                     'id'       => $contract->id,

@@ -931,7 +931,7 @@ class Resident extends MY_Controller {
         $rent_type  = $input['rent_type'];
         $contract_time  = $input['contract_time'];
         $begin_time = $input['begin_time'];
-        $book_time  = $input['book_time'];
+        $book_time  = $input['begin_time'];
         $end_time   = $this->residentmodel->contractEndDate($begin_time,$contract_time);
         $remark     = isset($input['remark']) ? $input['remark'] : '';
         $special_term   = isset($input['special_term']) ? $input['special_term'] : '';
@@ -965,9 +965,9 @@ class Resident extends MY_Controller {
             $resident->card_number = $card_number;
             $resident->book_money  = $book_money;
             $resident->rent_type   = $rent_type;
-            $resident->contract_time   = $contract_time;
-            $resident->begin_time  = $begin_time;
-            $resident->end_time    = $end_time;
+            $resident->reserve_contract_time   = $contract_time;
+            $resident->reserve_begin_time  = $begin_time;
+            $resident->reserve_end_time    = $end_time;
             $resident->book_time   = $book_time;
             $resident->employee_id = $this->employee->id;
             $resident->status      = Residentmodel::STATE_NOTPAY;
