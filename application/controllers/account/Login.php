@@ -100,7 +100,7 @@ class Login extends MY_Controller {
                 $this->m_redis->storeUserInfo($bxid, $user->toJson());
                 $company_id = $user->company_id;
                 //从redis获取公司信息并刷新，如果没有 则查数据库并存储到redis
-                $company_id = 1;
+//                $company_id = 1;
                 if (!$this->m_redis->getCompanyInfo($company_id, true)) {
                     $company_info = Companymodel::find($company_id);
                     $this->m_redis->storeCompanyInfo($company_id, $company_info->toJson());
@@ -171,7 +171,7 @@ class Login extends MY_Controller {
                     $company_info = Companymodel::find($company_id);
                     $this->m_redis->storeCompanyInfo($company_id, $company_info->toJson());
                 }
-                $company_id = 1;
+//                $company_id = 1;
             }
             $token     = $this->m_jwt->generateJwtToken($bxid, $company_id);
             $privilege = json_decode($this->m_redis->getCompanyInfo($company_id))->privilege;
