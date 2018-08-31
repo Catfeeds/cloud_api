@@ -943,7 +943,7 @@ class Resident extends MY_Controller {
             return;
         }
         $this->load->model('roomunionmodel');
-        $room = Roomunionmodel::where('store_id',$this->employee->id)->find($room_id);
+        $room = Roomunionmodel::where('store_id',$this->employee->store_id)->find($room_id);
         if (!$room) {
             $this->api_res(1007);
             return;
