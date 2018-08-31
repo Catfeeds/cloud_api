@@ -931,6 +931,7 @@ class Resident extends MY_Controller {
         $rent_type  = $input['rent_type'];
         $contract_time  = $input['contract_time'];
         $begin_time = $input['begin_time'];
+        $book_time  = $input['book_time'];
         $end_time   = $this->residentmodel->contractEndDate($begin_time,$contract_time);
         $remark     = isset($input['remark']) ? $input['remark'] : '';
         $special_term   = isset($input['special_term']) ? $input['special_term'] : '';
@@ -943,7 +944,7 @@ class Resident extends MY_Controller {
             return;
         }
         $this->load->model('roomunionmodel');
-        $room = Roomunionmodel::where('store_id',$this->employee->id)->find($room_id);
+        $room = Roomunionmodel::where('store_id',$this->employee->store_id)->find($room_id);
         if (!$room) {
             $this->api_res(1007);
             return;
@@ -967,6 +968,7 @@ class Resident extends MY_Controller {
             $resident->contract_time   = $contract_time;
             $resident->begin_time  = $begin_time;
             $resident->end_time    = $end_time;
+            $resident->book_time   = $book_time;
             $resident->employee_id = $this->employee->id;
             $resident->status      = Residentmodel::STATE_NOTPAY;
             $resident->remark      = $remark;
