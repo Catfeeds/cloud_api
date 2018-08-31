@@ -6,7 +6,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Time:        14:47
  * Describe:    微信相关操作
  */
-class Wechat
+class Wechat extends MY_Controller
 {
 	/**
 	 * 通过code换取access_token
