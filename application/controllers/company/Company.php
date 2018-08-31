@@ -79,9 +79,24 @@ class Company extends MY_Controller
 			$this->api_res(1002);
 			return false;
 		}
-		$wechat    = new Wechat();
-		$info      = $wechat->getAccessToken($post['code']);
-		$user_info = $wechat->getWXUserInfo($info);
+		$code   = $post['code'];
+		$appid  = config_item('wx_web_appid');
+		$secret = config_item('wx_web_secret');
+		$url    = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid=' . $appid . '&secret=' . $secret . '&code=' . $code . '&grant_type=authorization_code';
+		$user   = $this->httpCurl($url, 'get', 'json');
+		if (array_key_exists('errcode', $user) || empty($user['openid'])) {
+			log_message('error', 'GET_ACCESS_TOKEN' . $user['errmsg']);
+			$this->api_res(1006);
+			return false;
+		}
+		$this->debug('返回用户信息为-->'.$user);
+		$info_url  = 'https://api.weixin.qq.com/sns/userinfo?access_token=' . $user['access_token']. '&openid=' . $user['openid']. '&lang=zh_CN';
+		$user_info = $this->httpCurl($info_url, 'get', 'json');
+		if (array_key_exists('errcode', $user_info)) {
+			log_message('error', '请求info:' . $user_info['errmsg']);
+			$this->api_res(1006);
+			return false;
+		}
 		switch ($user_info['sex']) {
 			case 1:
 				$gender = 'M';
