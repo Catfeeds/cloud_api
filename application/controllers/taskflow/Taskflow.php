@@ -82,6 +82,89 @@ class Taskflow extends MY_Controller{
     public function showAllTaskflow()
     {
         $input  = $this->input->post(null,true);
+        $e_store_ids  = explode(',',$this->employee->store_ids);
+        $e_position_id  = $this->employee->position_id;
+        //我发起的
+        $mycreate_ids   = Taskflowmodel::where('employee_id',$this->employee->id)->pluck('id')->toArray();
+        $myapprove_ids  = Taskflowrecordmodel::where('employee_id',$this->employee->id)->pluck('taskflow_id')->toArray();
+        $mylist_ids = Taskflowstepmodel::
+            where('status','!=',Taskflowstepmodel::STATE_APPROVED)
+            ->whereIn('store_id',$e_store_ids)
+            ->groupBy('taskflow_id')
+            ->having('company_id',COMPANY_ID)
+            ->get()
+            ->map(function($res) use ($e_position_id){
+                $s_position_ids = explode(',',$res->position_ids);
+                if(in_array($e_position_id,$s_position_ids)){
+                    return $res->taskflow_id;
+                }else{
+                    return null;
+                }
+            })->toArray();
+        $list=[];
+        foreach ($mylist_ids as $key=>$value){
+            if($value){
+                $list[]=$value;
+            }
+        }
+        $merge_ids  = array_merge($mycreate_ids,$myapprove_ids,$list);
+        //先判断权限
+        $e_store_ids  = explode(',',$this->employee->store_ids);
+        $where  = [];
+        if (!empty($input['store_id'])) {
+            $where['store_id']  = $input['store_id'];
+            if (!in_array($input['store_id'],$e_store_ids)) {
+                $this->api_res(1011);
+                return;
+            }
+        }
+        empty($input['type'])?:$where['type']=$input['type'];
+        empty($input['status'])?:$where['status']=$input['status'];
+        $page   = (int)(empty($input['page'])?1:$input['page']);
+        $per_page   = (empty(($input['per_page'])))?PAGINATE:$input['per_page'];
+        $count  = Taskflowmodel::where($where)
+            ->whereIn('store_id',$e_store_ids)
+            ->whereIn('id',$merge_ids)
+            ->count();
+        $totalPage  = ceil($count/$per_page);
+        if ($page>$totalPage) {
+            $this->api_res(0,['taskflows'=>[],'page'=>$page,'totalPage'=>$totalPage,'count'=>$count]);
+            return;
+        }
+        $offset    = $per_page * ($page - 1);
+        $this->load->model('storemodel');
+        $this->load->model('positionmodel');
+        $this->load->model('roomunionmodel');
+        $this->load->model('roomtypemodel');
+        $this->load->model('checkoutmodel');
+        $this->load->model('pricecontrolmodel');
+        $this->load->model('reserveordermodel');
+        $this->load->model('serviceordermodel');
+        $this->load->model('warningrecordmodel');
+        $taskflows  = Taskflowmodel::with(['step'=>function($query){
+            $query->with(['employee'=>function($query){
+                $query->with('position');
+            }]);
+        }])
+            ->with('store')
+            ->with('roomunion')
+            ->with('roomtype')
+            ->with($this->withs)
+            ->where($where)
+            ->whereIn('store_id',$e_store_ids)
+            ->whereIn('id',$merge_ids)
+            ->offset($offset)
+            ->limit($per_page)
+            ->get();
+        $this->api_res(0,['taskflows'=>$taskflows,'page'=>$page,'totalPage'=>$totalPage,'count'=>$count]);
+    }
+
+    /**
+     * 展示全部审批
+     */
+    public function showAllTaskflows()
+    {
+        $input  = $this->input->post(null,true);
         //先判断权限
         $e_store_ids  = explode(',',$this->employee->store_ids);
         $where  = [];

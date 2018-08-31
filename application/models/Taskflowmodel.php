@@ -416,17 +416,21 @@ class Taskflowmodel extends Basemodel
         }
         $this->CI->load->model('taskflowstepmodel');
         $this->CI->load->model('taskflowrecordmodel');
-        $step_audit_first = $taskflow->steps()->whereIn('status', [Taskflowstepmodel::STATE_AUDIT, Taskflowstepmodel::STATE_UNAPPROVED])->first();
-        $update_arr       = ['status' => Taskflowmodel::STATE_CLOSED];
-        if (!empty($step_audit_first)) {
-            $step_audit_first->employee_id = $this->CI->employee->id;
-            $step_audit_first->status      = Taskflowstepmodel::STATE_UNAPPROVED;
-            $step_audit_first->remark      = '关闭任务流';
-            $step_audit_first->save();
-            $this->createRecord($step_audit_first);
-            $update_arr['step_id'] = $step_audit_first->id;
-        }
-        $taskflow->status = Taskflowmodel::STATE_CLOSED;
+//        $step_audit_first = $taskflow->steps()->whereIn('status', [Taskflowstepmodel::STATE_AUDIT, Taskflowstepmodel::STATE_UNAPPROVED])->first();
+//        $update_arr       = ['status' => Taskflowmodel::STATE_CLOSED];
+//        if (!empty($step_audit_first)) {
+//            $step_audit_first->employee_id = $this->CI->employee->id;
+//            $step_audit_first->status      = Taskflowstepmodel::STATE_UNAPPROVED;
+//            $step_audit_first->remark      = '关闭任务流';
+//            $step_audit_first->save();
+//            $this->createRecord($step_audit_first);
+//            $update_arr['step_id'] = $step_audit_first->id;
+//        }
+//        $taskflow->status = Taskflowmodel::STATE_CLOSED;
+//        $taskflow->save();
+        $taskflow->steps()->delete();
+        $taskflow->record()->delete();
+        $taskflow->deleted_at   = date('Y-m-d H:i:s',time());
         $taskflow->save();
         return true;
     }
