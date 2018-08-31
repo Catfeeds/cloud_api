@@ -54,6 +54,7 @@ class Company extends MY_Controller
 		$this->load->helper('check');
 		if (!isMobile($post['phone'])) {
 			log_message('debug', '请检查手机号码');
+			$this->api_res(1002, ['error' => '请检查手机号码']);
 			return false;
 		}
 		$phone = $post['phone'];
@@ -75,7 +76,7 @@ class Company extends MY_Controller
 		$post = $this->input->post(null, true);
 		if (empty($post['code']) || !isset($post['code'])) {
 			log_message('error', '没有上传code');
-			$this->api_res(10002);
+			$this->api_res(1002);
 			return false;
 		}
 		$wechat    = new Wechat();
@@ -105,6 +106,7 @@ class Company extends MY_Controller
 		$emplyee = new Employeemodel();
 		$res     = $emplyee->updateEmployee(intval($post['id']), $user);
 		if (!$res) {
+			log_message('error', '添加用户信息失败');
 			$this->api_res(1009);
 			return false;
 		} else {
@@ -120,18 +122,19 @@ class Company extends MY_Controller
 		$this->load->model('companymodel');
 		$post = $this->input->post(null, true);
 		if (!$this->validationAuth()) {
-			$fieldarr = ['name','legal_person','phone','id_number','idcard_front','idcard_back','brand','brand_intro','license','license_image'];
+			$fieldarr = ['name', 'legal_person', 'phone', 'id_number', 'idcard_front', 'idcard_back', 'brand', 'brand_intro', 'license', 'license_image'];
 			$this->api_res(1002, ['errmsg' => $this->form_first_error($fieldarr)]);
 			return false;
 		}
 		$this->load->helper('check');
 		if (!isIdNumber($post['id_number'])) {
 			log_message('debug', '请填写正确的身份证号码');
+			$this->api_res(1002, ['error' => '请填写正确的身份证号码']);
 			return false;
 		}
 		
 		$company_id = COMPANY_ID;
-		$company = Companymodel::Find($company_id);
+		$company    = Companymodel::Find($company_id);
 		
 		$company->fill($post);
 		$company->license_image = $this->splitAliossUrl($post['license_image']);
@@ -151,7 +154,7 @@ class Company extends MY_Controller
 	{
 		$this->load->model('companymodel');
 		$company_id = COMPANY_ID;
-		$company = Companymodel::Find($company_id)->toArray();
+		$company    = Companymodel::Find($company_id)->toArray();
 		$this->api_res($company);
 	}
 	
