@@ -321,16 +321,25 @@ class Order extends MY_Controller {
      */
     private function checkContract($resident) {
         //没有办理入住的时候, 合同时长是0, 这个时候不需要合同, 如果住户的状态是已经支付过的, 也不用检查
-        if (0 == $resident->contract_time OR Residentmodel::STATE_NORMAL == $resident->status) {
+//        if (0 == $resident->contract_time OR Residentmodel::STATE_NORMAL == $resident->status OR 0==$resident->reserve_contract_time) {
+//            return true;
+//        }
+        if (Residentmodel::STATE_NORMAL == $resident->status) {
             return true;
         }
-
-        if (empty($resident->contract)) {
-            log_message('error', '未检测到该住户的合同, 请生成后重试!');
-            return false;
-            //throw new \Exception('未检测到该住户的合同, 请生成后重试!');
+        if (0!=$resident->reserve_contract_time) {
+            if(empty($resident->reserve_contract()->first())){
+                log_message('error', '未检测到该住户的合同, 请生成后重试!');
+                return false;
+            }
         }
-
+        if (0!=$resident->contract_time){
+            if (empty($resident->contract()->first())) {
+                log_message('error', '未检测到该住户的合同, 请生成后重试!');
+                return false;
+                //throw new \Exception('未检测到该住户的合同, 请生成后重试!');
+            }
+        }
         return true;
     }
 

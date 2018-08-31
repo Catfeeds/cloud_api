@@ -14,6 +14,13 @@ class Contractmodel extends Basemodel {
     protected $hidden = ['deleted_at'];
 
     /**
+     * 合同的类型
+     */
+    const RENT_LONG     = 'LONG';
+    const RENT_SHORT    = 'SHORT';
+    const RENT_RESERVE  = 'RESERVE';
+
+    /**
      * 签署状态
      */
     const STATUS_GENERATED = 'GENERATED'; // 未签署
