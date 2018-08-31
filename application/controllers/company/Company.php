@@ -72,7 +72,6 @@ class Company extends MY_Controller
 	public function boundWechat()
 	{
 		$this->load->model('employeemodel');
-		$this->load->library('wechat');
 		$post = $this->input->post(null, true);
 		if (empty($post['code']) || !isset($post['code'])) {
 			log_message('error', '没有上传code');
