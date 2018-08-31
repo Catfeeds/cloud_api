@@ -32,7 +32,7 @@ class Order extends MY_Controller {
             return;
         }
         $room = $resident->room;
-        $orders = $room->orders()->where('status', $status)->get();
+        $orders = $resident->orders()->where('status', $status)->get();
         $totalMoney = number_format($orders->sum('money'), 2);
 
         $this->api_res(0, ['totalMoney' => $totalMoney, 'orders' => $orders->toArray(), 'resident' => $resident->toArray(), 'room' => $room->toArray()]);
