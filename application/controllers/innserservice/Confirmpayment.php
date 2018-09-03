@@ -20,7 +20,7 @@ class ConfirmPayment extends MY_Controller {
         $this->load->model('storepaymodel');
         $this->load->model('ordermodel');
         $dt    = Carbon::now()->subDays(30);
-        $store_psys = Storepaymodel::where('notify_date', '>=', $dt)->where('status', Storepaymodel::STATE_UDONE)->whereHas('order',function($query){
+        $store_psys = Storepaymodel::where('created_at', '>=', $dt)->where('status', Storepaymodel::STATE_UDONE)->whereHas('order',function($query){
             $query->where('status', Ordermodel::STATE_PENDING)->where('pay_type', Ordermodel::PAYWAY_JSAPI);
         })->get()->toArray();
         if (!$store_psys) {
