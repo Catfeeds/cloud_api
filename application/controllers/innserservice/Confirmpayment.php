@@ -1,7 +1,8 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 use EasyWeChat\Foundation\Application;
-
+use Illuminate\Database\Capsule\Manager as DB;
+use Carbon\Carbon;
 /**
  * Created by PhpStorm.
  * User: Administrator
@@ -17,58 +18,99 @@ class ConfirmPayment extends MY_Controller {
 
     public function confirm() {
         $this->load->model('storepaymodel');
-        // $this->load->model('ordermodel');
-        // $dt    = Carbon::now()->subDays(30);
-        // $order = Storepaymodel::where(function ($query) {
-        //     $query->orwhereHas('order', function ($query) {
-        //         $query->where('pay_type', 'JSAPI')->where('status', 'CONFIRM');
-        //     });
-        // })->where('created_at', '>=', $dt)->get()->toArray();
-        // if (!$order) {
-        //     log_message('debug', '没有查询到付完款未确认的账单');
-        //     $this->api_res(0);
-        //     return false;
-        // }
-        // $this->load->helper('common');
-        log_message("info", "start confirm");
-        $out_trade_no = '3549_2018081320493537';
-        $store        = Storepaymodel::where("out_trade_no", $out_trade_no)->first(["store_id"]);
-        $app          = new Application($this->getCustomerWechatConfig($store->store_id));
-        $result       = $app->payment->query($out_trade_no);
-        log_message("info", "check wechat payment status" . json_encode($result));
+        $this->load->model('ordermodel');
+        $dt    = Carbon::now()->subDays(30);
+        $store_psys = Storepaymodel::where('notify_date', '>=', $dt)->where('status', Storepaymodel::STATE_UDONE)->whereHas('order',function($query){
+            $query->where('status', Ordermodel::STATE_PENDING)->where('pay_type', Ordermodel::PAYWAY_JSAPI);
+        })->get()->toArray();
+        if (!$store_psys) {
+            log_message('debug', '没有查询到付完款未确认的账单');
+            $this->api_res(0);
+            return false;
+        }
 
-        $out_trade_no = '3707_2018082516570017';
-        $store        = Storepaymodel::where("out_trade_no", $out_trade_no)->first(["store_id"]);
-        $app          = new Application($this->getCustomerWechatConfig($store->store_id));
-        $result       = $app->payment->query($out_trade_no);
-        log_message("info", "check wechat payment status" . json_encode($result));
-
-        $out_trade_no = '2967_2018082516345955';
-        $store        = Storepaymodel::where("out_trade_no", $out_trade_no)->first(["store_id"]);
-        $app          = new Application($this->getCustomerWechatConfig($store->store_id));
-        $result       = $app->payment->query($out_trade_no);
-        log_message("info", "check wechat payment status" . json_encode($result));
-
-        return;
-        log_message("debug", "try to check " . count($order) . " payments");
-        foreach ($order as $value) {
+        foreach ($store_psys as $value) {
             $out_trade_no = $value['out_trade_no'];
             if (empty($out_trade_no)) {
                 continue;
             }
 
-            log_message("debug", "try to check wechat jsapi payment $out_trade_no");
+            $app          = new Application($this->getCustomerWechatConfig($value['store_id']));
+            /*log_message("debug", "try to check wechat jsapi payment $out_trade_no");*/
             $result = $app->payment->query($out_trade_no);
-            if ($result->return_code == 'SUCCESS' && $result->trade_state == 'SUCCESS') {
-                $update_statsu = Ordermodel::where('id', $value['data']['orders'][0]['id'])->update(['status' => 'COMPLATE']);
-                if (!$update_statsu) {
-                    log_message('error', '修改微信订单状态出错');
-                } else {
-                    log_message('info', "微信订单 $out_trade_no 状态成功.");
-                }
+            if ($result->return_code == 'SUCCESS' && $result->result_code == 'SUCCESS' && $result->trade_state == 'SUCCESS') {
+               $this->ordersConfirm($value);
             } else {
                 log_message('info', "微信订单 $out_trade_no 确认出错，错误为：" . json_encode($result));
             }
         }
+        $this->api_res(0);
+    }
+
+    private function ordersConfirm($value)
+    {
+        try {
+            DB::beginTransaction();
+
+            $this->load->model('residentmodel');
+            $this->load->model('ordermodel');
+            $resident = Residentmodel::with('orders')->find($value['resident_id']);
+
+            log_message('debug', 'notify-arrived--->' . $value['out_trade_no']);
+
+            if (empty($resident)) {
+                return true;
+            }
+            $orders = $resident->orders()->where('status', Ordermodel::STATE_PENDING)->where('out_trade_no', $value['out_trade_no'])->get();
+            if (!count($orders)) {
+                return true;
+            }
+            $pay_date = date('Y-m-d H:i:s', time());
+
+            foreach ($orders as $order) {
+                $orderIds[] = $order->id;
+                $order->pay_date = $pay_date;
+                $order->status = Ordermodel::STATE_CONFIRM;
+                $order->out_trade_no = $value['out_trade_no'];
+                //$order->out_trade_no = $notify->out_trade_no;
+                $order->save();
+
+                if ($order->type == 'DEIVCE') {
+                    $this->load->model('devicemodel');
+                    $temp = Devicemodel::find($order->other_id);
+                    if (!empty($temp)) {
+                        $temp->status = Devicemodel::STATE_CONFIRM;
+                        $temp->save();
+                    }
+                }
+
+                if ($order->type == 'UTILITY') {
+                    $this->load->model('utilitymodel');
+                    $temp = Utilitymodel::find($order->other_id);
+                    if (!empty($temp)) {
+                        $temp->status = Utilitymodel::STATE_CONFIRM;
+                        $temp->save();
+                    }
+                }
+            }
+
+            $this->load->model('couponmodel');
+            Couponmodel::whereIn('order_id', $orderIds)->update(['status' => Couponmodel::STATUS_USED]);
+
+            $this->load->model('storepaymodel');
+            $store_pay = Storepaymodel::where('resident_id', $resident->id)->where('out_trade_no', $value['out_trade_no'])->first();
+
+            if (!empty($store_pay)) {
+                $store_pay->notify_date = $pay_date;
+                $store_pay->status = 'DONE';
+                $store_pay->save();
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            log_message('error', $e->getMessage());
+            throw $e;
+        }
+        return true;
     }
 }

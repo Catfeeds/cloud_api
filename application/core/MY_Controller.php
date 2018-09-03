@@ -273,7 +273,10 @@ class MY_Controller extends CI_Controller {
             $merchant_id = $store->payment_merchant_id;
             $key         = $store->payment_key;
         }
-
+        $debug = true;
+        if(ENVIRONMENT == 'production'){
+            $debug = false;
+        }
         return [
             'debug'   => $debug,
             'app_id'  => config_item('wx_map_appid'),
