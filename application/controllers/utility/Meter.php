@@ -268,19 +268,19 @@ class Meter extends MY_Controller
             }
             $sql            = Meterreadingtransfermodel::with('roomunion')->with('store')->where('year',$year)->where('month',$month)
                             ->where('type',$type)->where('resident_id',$resident_id);
-            $sql_last       = Meterreadingtransfermodel::where('year',$year_last)->where('month',$month_last)
+            $sql_last       = Meterreadingtransfermodel::with('roomunion')->with('store')->where('year',$year_last)->where('month',$month_last)
                             ->where('type',$type)->where('resident_id',$resident_id);
             //本月月末水电读数
             $this_reading   = $sql->where('status',Meterreadingtransfermodel::NORMAL)->first($filed);
             //上月月末水电读数
             $last_reading   = $sql_last->where('status',Meterreadingtransfermodel::NORMAL)->first($filed);
             //换表初始读数
-            $new_reading    = Meterreadingtransfermodel::where('year',$year)->where('month',$month)
+            $new_reading    = Meterreadingtransfermodel::with('roomunion')->with('store')->where('year',$year)->where('month',$month)
                             ->where('type',$type)->where('resident_id',$resident_id)
                             ->where('status',Meterreadingtransfermodel::NEW_METER)
                             ->first($filed);
             //入住时读数
-            $rent_reading    = Meterreadingtransfermodel::where('year',$year)->where('month',$month)
+            $rent_reading    = Meterreadingtransfermodel::with('roomunion')->with('store')->where('year',$year)->where('month',$month)
                             ->where('type',$type)->where('resident_id',$resident_id)
                             ->where('status',Meterreadingtransfermodel::NEW_RENT)
                             ->first($filed);
