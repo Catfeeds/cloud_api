@@ -260,7 +260,7 @@ class Meter extends MY_Controller
         $resident_ids   = Roomunionmodel::where('store_id',$store_id)->get(['resident_id'])->toArray();
         $error          = [];
         $sum            = 0;
-        $filed          = ['id','store_id','room_id','resident_id','type','year','month','this_reading','this_time','weight','status','order_id'];
+        $filed          = ['id','store_id','room_id','resident_id','type','year','month','this_reading','this_time','weight','status','order_id','confirmed'];
         foreach ($resident_ids as $k=>$v){
             $resident_id    = $resident_ids[$k]['resident_id'];
             if ($resident_id == 0){
@@ -271,7 +271,7 @@ class Meter extends MY_Controller
             $sql_last       = Meterreadingtransfermodel::where('year',$year_last)->where('month',$month_last)
                             ->where('type',$type)->where('resident_id',$resident_id);
             //本月月末水电读数
-            $this_reading   = $sql->where('status',Meterreadingtransfermodel::NORMAL)->first();
+            $this_reading   = $sql->where('status',Meterreadingtransfermodel::NORMAL)->first($filed);
             //上月月末水电读数
             $last_reading   = $sql_last->where('status',Meterreadingtransfermodel::NORMAL)->first($filed);
             //换表初始读数
@@ -280,7 +280,7 @@ class Meter extends MY_Controller
                             ->where('status',Meterreadingtransfermodel::NEW_METER)
                             ->first($filed);
             //入住时读数
-            $rent_rading    = Meterreadingtransfermodel::where('year',$year)->where('month',$month)
+            $rent_reading    = Meterreadingtransfermodel::where('year',$year)->where('month',$month)
                             ->where('type',$type)->where('resident_id',$resident_id)
                             ->where('status',Meterreadingtransfermodel::NEW_RENT)
                             ->first($filed);
@@ -300,15 +300,19 @@ class Meter extends MY_Controller
                 if(!empty($new_reading)){
                     $order = $this->addUtilityOrder($this_reading,$new_reading,$year,$month);
                     if ($order){
+	                    $this_reading->confirmed = 1;$this_reading->save();
+	                    $new_reading->confirmed = 1;$new_reading->save();
                         $sum +=1;
                     }else{
                         $number = $this_reading->roomunion->number;
                         $error[]    = '房间'."$number".'的账单生成失败';
                         log_message('error','房间'."$number".'的账单生成失败');
                     }
-                } elseif (!empty($rent_rading)){
-                    $order = $this->addUtilityOrder($this_reading,$rent_rading,$year,$month);
+                } elseif (!empty($rent_reading)){
+                    $order = $this->addUtilityOrder($this_reading,$rent_reading,$year,$month);
                     if ($order){
+	                    $this_reading->confirmed = 1;$this_reading->save();
+	                    $rent_reading->confirmed = 1;$rent_reading->save();
                         $sum +=1;
                     }else{
                         $number = $this_reading->roomunion->number;
@@ -318,6 +322,8 @@ class Meter extends MY_Controller
                 }else{
                     $order = $this->addUtilityOrder($this_reading,$last_reading,$year,$month);
                     if ($order){
+	                    $this_reading->confirmed = 1;$this_reading->save();
+	                    $last_reading->confirmed = 1;$last_reading->save();
                         $sum +=1;
                     }else{
                         $number = $this_reading->roomunion->number;
@@ -381,7 +387,7 @@ class Meter extends MY_Controller
             'transfer_id_s'=> $last_reading->id,
             'transfer_id_e'=> $this_reading->id,
         ];
-        log_message('debug','customer_id为-->'."$this_reading->resident->customer_id");
+        log_message('debug','customer_id为-->'."$this_reading->resident");
         $order->fill($arr);
         if ($order->save()){
             return $order->id;
