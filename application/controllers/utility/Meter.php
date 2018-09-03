@@ -381,10 +381,9 @@ class Meter extends MY_Controller
             'transfer_id_s'=> $last_reading->id,
             'transfer_id_e'=> $this_reading->id,
         ];
+        log_message('debug','customer_id为-->'."$this_reading->resident->customer_id");
         $order->fill($arr);
         if ($order->save()){
-            $this_reading->confirmed = 1;$this_reading->save();
-            $last_reading->confirmed = 1;$last_reading->save();
             return $order->id;
         }else{
             return false;
