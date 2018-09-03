@@ -87,6 +87,8 @@ class Residentmodel extends Basemodel {
         'refund_time',
         'begin_time',
         'end_time',
+        'reserve_begin_time',
+        'reserve_end_time',
         'created_at',
         'updated_at',
     ];
