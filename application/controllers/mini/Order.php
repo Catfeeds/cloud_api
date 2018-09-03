@@ -250,8 +250,12 @@ class Order extends MY_Controller {
             DB::rollBack();
             throw $e;
         }
-        $res =  $this->sendCoupon($resident_id);
-        $this->api_res(0,['res'=>$res]);
+        $room_order = Ordermodel::whereIn('id', $orderIds)->where('type', Ordermodel::PAYTYPE_ROOM)->get();
+        if($room_order) {
+            $bind = $this->bindCoupon($resident_id);
+            $res = $this->sendCoupon($resident_id);
+        }
+        $this->api_res(0);
     }
 
     /**
@@ -565,8 +569,14 @@ class Order extends MY_Controller {
             DB::rollBack();
             throw $e;
         }
-        $res =  $this->sendCoupon($resident_id);
-        $this->api_res(0,['res'=>$res]);
+
+        $room_order = Ordermodel::whereIn('id', $orderIds)->where('type', Ordermodel::PAYTYPE_ROOM)->get();
+        if($room_order) {
+            $bind = $this->bindCoupon($resident_id);
+            $res = $this->sendCoupon($resident_id);
+
+        }
+        $this->api_res(0);
     }
 
     /**
@@ -680,5 +690,9 @@ class Order extends MY_Controller {
         }
         return $res;
     }
-
+    //办理入住时绑定优惠券
+    private function bindCoupon($resident_id){
+        $bindCoupon = new Couponmodel();
+        $bindCoupon->bindCoupon($resident_id);
+    }
 }
