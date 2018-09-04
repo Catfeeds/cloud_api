@@ -74,6 +74,13 @@ class Contract extends MY_Controller {
                 $residents[] = $resident[$key]['id'];
             }
         }
+        if(!empty($post['type'])){
+            if($post['type']=='RESERVE'){
+                $where['rent_type'] = 'RESERVE';
+            }else{
+                $where['rent_type'] = null;
+            }
+        }
 
         $contract = new Contractmodel();
         $count = ceil($contract->count( $store_ids, $residents, $where, $search)/PAGINATE);
@@ -102,6 +109,8 @@ class Contract extends MY_Controller {
                 ->map(function ($s) {
                     $s['begin_time'] = date('Y-m-d', strtotime($s['resident']['begin_time']));
                     $s['end_time']   = date('Y-m-d', strtotime($s['resident']['end_time']));
+                    $s['reserve_begin_time']    = date('Y-m-d', strtotime($s['resident']['reserve_begin_time']));
+                    $s['reserve_end_time']    = date('Y-m-d', strtotime($s['resident']['reserve_end_time']));
                     return $s;
                 })->toArray();
         }
