@@ -283,5 +283,27 @@ class Couponmodel extends Basemodel {
 
         return $discount;
     }
+  //优惠券绑定住户
+    public function bindCoupon($resident_id)
+    {
+        $customer = Residentmodel::where('id', $resident_id)->select(['customer_id'])->first();
+        if(!$customer){
+            log_message('debug','用户: '.$resident_id.'未找到');
+            return;
+        }
 
+        $coupon = Couponmodel::where('status', Couponmodel::STATUS_UNUSED)->where('customer_id', $customer->customer_id);
+        if(!$coupon){
+            log_message('debug','用户: '.$customer.'无可绑定的优惠券');
+            return;
+        }
+
+        $bindResident = $coupon->update(['resident_id' => $resident_id]);
+        if(!$bindResident){
+            log_message('debug','住户：'.$resident_id.'绑定优惠券失败');
+            return;
+        }
+
+        return true;
+    }
 }
