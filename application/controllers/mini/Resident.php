@@ -975,7 +975,7 @@ class Resident extends MY_Controller {
             $resident->employee_id = $this->employee->id;
             $resident->status      = Residentmodel::STATE_NOTPAY;
             $resident->remark      = $remark;
-            $resident->special_term= $special_term;
+            $resident->reserve_special_term= $special_term;
             $resident->store_id    = $this->employee->store_id;
             $resident->rent_price  = $room->rent_price;
             $resident->property_price  = $room->property_price;

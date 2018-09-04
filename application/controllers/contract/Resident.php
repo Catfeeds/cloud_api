@@ -24,9 +24,10 @@ class Resident extends MY_Controller {
         $this->load->model('storemodel');
         $post     = $this->input->post(NULL, true);
         $serial   = $post['id'];
-        $filed    = ['id', 'contract_id', 'resident_id', 'store_id', 'room_id', 'status', 'created_at','rent_type'];
         $resident = Contractmodel::where('resident_id', $serial)->with('store')->with('roomunion')->with('residents')
-            ->get($filed)
+            ->with('employee')
+            ->orderBy('created','DESC')
+            ->get()
             ->map(function($s){
                 if($s->rent_type=='RESERVE'){
                     $s->begin_time    = $s->resident->reserve_begin_time->format('Y-m-d');
