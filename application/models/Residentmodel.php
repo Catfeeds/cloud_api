@@ -306,10 +306,10 @@ class Residentmodel extends Basemodel {
         if (0 < $resident->book_money) {
             $data['booking'] = [
                 'money' => $resident->book_money,
-                'time'  => $resident->reserve_begin_time->format('Y-m-d'),
+                'time'  => $resident->book_time->format('Y-m-d'),
             ];
             $data['money'] = $resident->book_money;
-            $data['time']  = $resident->reserve_begin_time->format('Y-m-d');
+            $data['time']  = $resident->book_time->format('Y-m-d');
         }
 
         if ($contract = $resident->contract()->first()) {

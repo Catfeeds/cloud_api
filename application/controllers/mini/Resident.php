@@ -970,7 +970,7 @@ class Resident extends MY_Controller {
             $resident->reserve_end_time    = $end_time;
             $resident->begin_time  = $begin_time;
             $resident->end_time    = $end_time;
-            $resident->contract_time= $contract_time;
+//            $resident->contract_time= $contract_time;
             $resident->book_time   = $book_time;
             $resident->employee_id = $this->employee->id;
             $resident->status      = Residentmodel::STATE_NOTPAY;
