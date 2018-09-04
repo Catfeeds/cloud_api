@@ -97,6 +97,14 @@ class Residentmodel extends Basemodel {
         'data' => 'array',
     ];
 
+    /**
+     * @当前房间在住的住户
+     */
+    public function current_room()
+    {
+        return $this->hasOne(Roomunionmodel::class,'resident_id');
+    }
+
 //     protected $hidden  = ['created_at'];
 
     //住户的房间信息
@@ -221,6 +229,7 @@ class Residentmodel extends Basemodel {
             'book_money'          => $resident->book_money,
             'book_time'           => $resident->book_time,
             'contract_time'       => $resident->contract_time,
+            'reserve_contract_time'       => $resident->reserve_contract_time,
             'rent_type'           => $resident->rent_type,
             'pay_type'            => $resident->pay_frequency,
             'first_pay'           => $resident->first_pay_money,
@@ -234,6 +243,11 @@ class Residentmodel extends Basemodel {
         if (0 < $resident->contract_time) {
             $data['begin_time'] = Carbon::parse($resident->begin_time)->toDateString();
             $data['end_time']   = Carbon::parse($resident->end_time)->toDateString();
+        }
+
+        if (0 < $resident->reserve_contract_time) {
+            $data['reserve_begin_time'] = Carbon::parse($resident->reserve_begin_time)->toDateString();
+            $data['reserve_end_time']   = Carbon::parse($resident->reserve_end_time)->toDateString();
         }
 
         if (self::STATE_NORMAL == $resident->status) {
@@ -292,10 +306,10 @@ class Residentmodel extends Basemodel {
         if (0 < $resident->book_money) {
             $data['booking'] = [
                 'money' => $resident->book_money,
-                'time'  => $resident->book_time->format('Y-m-d'),
+                'time'  => $resident->reserve_begin_time->format('Y-m-d'),
             ];
             $data['money'] = $resident->book_money;
-            $data['time']  = $resident->book_time->format('Y-m-d');
+            $data['time']  = $resident->reserve_begin_time->format('Y-m-d');
         }
 
         if ($contract = $resident->contract()->first()) {
