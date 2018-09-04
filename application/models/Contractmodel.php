@@ -56,8 +56,7 @@ class Contractmodel extends Basemodel {
 
     // 合约信息
     public function residents() {
-        return $this->belongsTo(Residentmodel::class, 'resident_id')->select('id',
-            'begin_time', 'end_time', 'refund_time', 'real_rent_money', 'pay_frequency', 'deposit_month', 'name_two', 'deposit_money');
+        return $this->belongsTo(Residentmodel::class, 'resident_id');
     }
 
     /**
