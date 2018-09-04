@@ -38,7 +38,7 @@ class Contractmodel extends Basemodel {
 
     //经办人
     public function employee() {
-        return $this->belongsTo(Employeemodel::class, 'employee_id')->select('id', 'name');
+        return $this->belongsTo(Employeemodel::class, 'employee_id');
     }
     //门店城市 店名
     public function store() {

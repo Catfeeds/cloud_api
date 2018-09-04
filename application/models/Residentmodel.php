@@ -136,7 +136,7 @@ class Residentmodel extends Basemodel {
     //住户的入住合同信息
     public function contract(){
 
-        return $this->hasMany(Contractmodel::class,'resident_id')->where('rent_type','!=',Contractmodel::RENT_RESERVE);
+        return $this->hasMany(Contractmodel::class,'resident_id')->whereNull('rent_type');
     }
 
     //住户预定合同
