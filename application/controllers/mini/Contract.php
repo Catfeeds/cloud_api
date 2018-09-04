@@ -126,6 +126,7 @@ class Contract extends MY_Controller {
 
         $rooms = Residentmodel::with('roomunion')
             ->where($where)
+            ->whereHas('current_room')
             ->whereIn('room_id', $room_ids)
             ->whereIn('status', ['NOT_PAY', 'PRE_RESERVE'])
             ->orderBy('updated_at', 'ASC')
