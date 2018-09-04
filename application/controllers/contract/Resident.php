@@ -26,7 +26,7 @@ class Resident extends MY_Controller {
         $serial   = $post['id'];
         $resident = Contractmodel::where('resident_id', $serial)->with('store')->with('roomunion')->with('residents')
             ->with('employee')
-            ->orderBy('created','DESC')
+            ->orderBy('created_at','DESC')
             ->get()
             ->map(function($s){
                 if($s->rent_type=='RESERVE'){
