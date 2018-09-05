@@ -241,11 +241,13 @@ CREATE TABLE `boss_community` (
   `bus` text COMMENT '交通',
   `images` text,
   `describe` text COMMENT '描述',
+  `sale` enum('N','Y') NOT NULL DEFAULT 'Y' COMMENT '是否上架',
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   `deleted_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1116,6 +1118,9 @@ CREATE TABLE `boss_room_union` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '集中式房间id',
   `company_id` int(10) NOT NULL DEFAULT '0' COMMENT '公司ID',
   `store_id` int(11) unsigned DEFAULT NULL COMMENT '门店id',
+  `community_id` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '小区ID(分布式)',
+  `house_id` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '房屋ID(分布式)',
+  `type` enum('UNION','DOT') NOT NULL DEFAULT 'UNION' COMMENT 'UNION 集中式；DOT 分布式',
   `building_id` int(11) DEFAULT NULL COMMENT '楼栋id',
   `building_name` varchar(128) DEFAULT NULL COMMENT '楼栋名称',
   `room_type_id` int(11) unsigned DEFAULT NULL COMMENT '房型id',
@@ -1153,7 +1158,7 @@ CREATE TABLE `boss_room_union` (
   `electricity_price` decimal(10,2) DEFAULT NULL COMMENT '展示的电费',
   `device_id` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2174 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2722 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
