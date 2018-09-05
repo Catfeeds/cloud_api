@@ -250,7 +250,9 @@ class Taskflowmodel extends Basemodel
         }
         log_message('debug', $type . ' notify  ' . $msg);
         switch ($type) {
-            case self::TYPE_CHECKOUT||self::TYPE_CHECKOUT_NO_LIABILITY||self::TYPE_CHECKOUT_UNDER_CONTRACT:
+            case self::TYPE_CHECKOUT:
+            case self::TYPE_CHECKOUT_NO_LIABILITY:
+            case self::TYPE_CHECKOUT_UNDER_CONTRACT:
                 $this->sendCheckoutMsg(json_decode($msg), $employees);
                 break;
             case self::TYPE_PRICE:
