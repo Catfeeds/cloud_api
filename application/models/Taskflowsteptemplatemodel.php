@@ -9,6 +9,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class Taskflowsteptemplatemodel extends Basemodel
 {
     const TYPE_CHECKOUT = 'CHECKOUT';
+    const TYPE_CHECKOUT_NO_LIABILITY = 'NO_LIABILITY';  //免责退房任务流
+    const TYPE_CHECKOUT_UNDER_CONTRACT = 'UNDER_CONTRACT';  //违约退房任务流
     const TYPE_PRICE    = 'PRICE';
     const TYPE_RESERVE  = 'RESERVE';
     const TYPE_SERVICE  = 'SERVICE';

@@ -209,7 +209,7 @@ class Template extends MY_Controller{
             array(
                 'field' => 'type',
                 'label' => '类型',
-                'rules' => 'trim|in_list[CHECKOUT,PRICE,RESERVE,SERVICE,WARNING]',
+                'rules' => 'trim|in_list[CHECKOUT,PRICE,RESERVE,SERVICE,WARNING,NO_LIABILITY,UNDER_CONTRACT]',
             ),
         );
     }

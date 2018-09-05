@@ -17,7 +17,9 @@ class Taskflowmodel extends Basemodel
     const STATE_UNAPPROVED = 'UNAPPROVED';
     const STATE_CLOSED     = 'CLOSED';
 
-    const TYPE_CHECKOUT = 'CHECKOUT';
+    const TYPE_CHECKOUT = 'CHECKOUT';                   //正常退房任务流
+    const TYPE_CHECKOUT_NO_LIABILITY = 'NO_LIABILITY';  //免责退房任务流
+    const TYPE_CHECKOUT_UNDER_CONTRACT = 'UNDER_CONTRACT';  //违约退房任务流
     const TYPE_PRICE    = 'PRICE';
     const TYPE_RESERVE  = 'RESERVE';
     const TYPE_SERVICE  = 'SERVICE';
@@ -248,7 +250,7 @@ class Taskflowmodel extends Basemodel
         }
         log_message('debug', $type . ' notify  ' . $msg);
         switch ($type) {
-            case self::TYPE_CHECKOUT:
+            case self::TYPE_CHECKOUT||self::TYPE_CHECKOUT_NO_LIABILITY||self::TYPE_CHECKOUT_UNDER_CONTRACT:
                 $this->sendCheckoutMsg(json_decode($msg), $employees);
                 break;
             case self::TYPE_PRICE:
@@ -280,7 +282,7 @@ class Taskflowmodel extends Basemodel
     {
         $data = [
             'first'    => "用户:{$body->name}提交了退房申请,请尽快处理!",
-            'keyword1' => '退房申请',
+            'keyword1' => "{$body->type}退房申请",
             'keyword2' => $body->create_name,
             'keyword3' => Carbon::now()->toDateTimeString(),
             'keyword4' => "退租:{$body->store_name}-{$body->number}",

@@ -132,19 +132,49 @@ class Checkout extends MY_Controller {
             Residentmodel::where('id', $input['resident_id'])->update(['status' => 'CHECKOUT']);
             $this->load->model('taskflowmodel');
             $this->load->model('storemodel');
-            $msg    = json_encode([
+            $msg    = [
                 'store_name'=> Storemodel::find($store_id)->name,
                 'number'    => Roomunionmodel::find($input['room_id'])->number,
                 'name'      => $resident->name,
                 'create_name'   => $this->employee->name,
                 'phone'     => $resident->phone,
-            ]);
-            $taskflow_id   = $this->taskflowmodel->createTaskflow(COMPANY_ID,Taskflowmodel::TYPE_CHECKOUT,$this->employee->store_id,$checkout->room_id,Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id,null,null,$msg);
-            if ($taskflow_id) {
-                $checkout->taskflow_id  = $taskflow_id;
-                $checkout->status  = 'AUDIT';
-                $checkout->save();
+            ];
+            switch ($input['type']) {
+                case 'NORMAL_REFUND':
+                    $msg['type']='正常';
+                    $msg = json_encode($msg);
+                    $taskflow_id   = $this->taskflowmodel->createTaskflow(COMPANY_ID,Taskflowmodel::TYPE_CHECKOUT,$this->employee->store_id,$checkout->room_id,Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id,null,null,$msg);
+                    if ($taskflow_id) {
+                        $checkout->taskflow_id  = $taskflow_id;
+                        $checkout->status  = 'AUDIT';
+                        $checkout->save();
+                    }
+                    break;
+                case 'UNDER_CONTRACT':
+                    $msg['type']='违约';
+                    $msg = json_encode($msg);
+                    $taskflow_id   = $this->taskflowmodel->createTaskflow(COMPANY_ID,Taskflowmodel::TYPE_CHECKOUT_UNDER_CONTRACT,$this->employee->store_id,$checkout->room_id,Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id,null,null,$msg);
+                    if ($taskflow_id) {
+                        $checkout->taskflow_id  = $taskflow_id;
+                        $checkout->status  = 'AUDIT';
+                        $checkout->save();
+                    }
+                    break;
+                case 'NO_LIABILITY':
+                    $msg['type']='免责';
+                    $msg = json_encode($msg);
+                    $taskflow_id   = $this->taskflowmodel->createTaskflow(COMPANY_ID,Taskflowmodel::TYPE_CHECKOUT_NO_LIABILITY,$this->employee->store_id,$checkout->room_id,Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id,null,null,$msg);
+                    if ($taskflow_id) {
+                        $checkout->taskflow_id  = $taskflow_id;
+                        $checkout->status  = 'AUDIT';
+                        $checkout->save();
+                    }
+                    break;
+                default:
+                    break;
+
             }
+
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
@@ -560,7 +590,7 @@ class Checkout extends MY_Controller {
             array(
                 'field' => 'type',
                 'label' => '退房类型',
-                'rules' => 'required|trim|in_list[NORMAL_REFUND,UNDER_CONTRACT]',
+                'rules' => 'required|trim|in_list[NORMAL_REFUND,UNDER_CONTRACT,NO_LIABILITY]',
             ),
 /*            array(
                 'field' => 'water',
