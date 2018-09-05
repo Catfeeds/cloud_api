@@ -21,13 +21,12 @@ class Community extends MY_Controller
 	public function addCommunity()
 	{
 		$field = [
-			'store_id', 'name', 'province', 'city', 'district', 'address', 'describe', 'history', 'shop', 'relax', 'bus',
+			'store_id', 'name', 'province', 'city', 'district', 'address', 'describe', 'images'
 		];
 		if (!$this->validationText($this->validateConfig())) {
 			$this->api_res(1002, ['error' => $this->form_first_error($field)]);
 			return;
 		}
-		
 		$post = $this->input->post(null, true);
 		if (Communitymodel::where('name', $post['name'])->first()) {
 			$this->api_res(1008);
@@ -35,7 +34,7 @@ class Community extends MY_Controller
 		}
 		$community = new Communitymodel();
 		$community->fill($post);
-		
+		$community->image = $this->splitAliossUrl($post['images'], true);
 		if ($community->save()) {
 			$this->api_res(0, ['community_id' => $community->id]);
 		} else {
@@ -49,7 +48,7 @@ class Community extends MY_Controller
 	public function listCommunity()
 	{
 		$field  = [
-			'id', 'store_id', 'name', 'province', 'city', 'sale', 'district', 'address', 'describe', 'history', 'shop', 'relax', 'bus',
+			'id', 'store_id', 'name', 'province', 'city', 'district', 'sale', 'address'
 		];
 		$post   = $this->input->post(null, true);
 		$page   = intval(isset($post['page']) ? $post['page'] : 1);
@@ -62,9 +61,8 @@ class Community extends MY_Controller
 			$this->api_res(0, ['count' => $count, 'community' => []]);
 			return;
 		}
-		$this->load->model('roomdotmodel');
-		$this->load->model('storemodel');
-		$communitys = Communitymodel::with('room')->with('store')->where($where)->offset($offset)->limit(PAGINATE)
+		$this->load->model('roomunionmodel');
+		$communitys = Communitymodel::with('room')->where($where)->offset($offset)->limit(PAGINATE)
 			->get($field)
 			->map(function ($community) {
 				$community['count'] = $community->room->count();
@@ -74,12 +72,58 @@ class Community extends MY_Controller
 	}
 	
 	/**
+	 * 编辑小区信息
+	 */
+	public function updateCommunity()
+	{
+		$field = [
+			'store_id', 'name', 'province', 'city', 'district', 'address', 'describe', 'images'
+		];
+		if (!$this->validationText($this->validateConfig())) {
+			$this->api_res(1002, ['error' => $this->form_first_error($field)]);
+			return;
+		}
+		$post         = $this->input->post(null, true);
+		$community_id = $this->input->post('community_id', true);
+		$community    = Communitymodel::findOrFail($community_id);
+		$community->fill($post);
+		$community->image = $this->splitAliossUrl($post['images'],true);
+		if ($community->save()) {
+			$this->api_res(0, ['community_id' => $community->id]);
+		} else {
+			$this->api_res(1009);
+		}
+	}
+	
+	/**
+	 * 下架小区
+	 */
+	public function deleteCommunity()
+	{
+		$community_id = $this->input->post('community_id', true);
+		if (!$community_id) {
+			$this->api_res(1005);
+			return;
+		}
+		if (!$community = Communitymodel::find($community_id)) {
+			$this->api_res(1007);
+			return;
+		}
+		$community->sale = "N";
+		if ($community->save()) {
+			$this->api_res(0);
+		} else {
+			$this->api_res(1009);
+		}
+	}
+	
+	/**
 	 * 搜索小区（按名称）
 	 */
 	public function searchCommunity()
 	{
 		$field  = [
-			'id', 'store_id', 'name', 'province', 'city', 'district', 'address',
+			'id', 'store_id', 'name', 'province', 'city', 'district', 'address'
 		];
 		$post   = $this->input->post(null, true);
 		$page   = intval(isset($post['page']) ? $post['page'] : 1);
@@ -115,51 +159,6 @@ class Community extends MY_Controller
 			$this->api_res(0, ['community' => $community]);
 		} else {
 			$this->api_res(1007);
-		}
-	}
-	
-	/**
-	 * 编辑小区信息
-	 */
-	public function updateCommunity()
-	{
-		$field = [
-			'store_id', 'name', 'province', 'city', 'district', 'address', 'describe', 'history', 'shop', 'relax', 'bus',
-		];
-		if (!$this->validationText($this->validateConfig())) {
-			$this->api_res(1002, ['error' => $this->form_first_error($field)]);
-			return;
-		}
-		$post         = $this->input->post(null, true);
-		$community_id = $this->input->post('community_id', true);
-		$community    = Communitymodel::findOrFail($community_id);
-		$community->fill($post);
-		if ($community->save()) {
-			$this->api_res(0, ['community_id' => $community->id]);
-		} else {
-			$this->api_res(1009);
-		}
-	}
-	
-	/**
-	 * 下架小区
-	 */
-	public function deleteCommunity()
-	{
-		$community_id = $this->input->post('community_id', true);
-		if (!$community_id) {
-			$this->api_res(1005);
-			return;
-		}
-		if (!$community = Communitymodel::find($community_id)) {
-			$this->api_res(1007);
-			return;
-		}
-		$community->sale = "N";
-		if ($community->save()) {
-			$this->api_res(0);
-		} else {
-			$this->api_res(1009);
 		}
 	}
 	
@@ -236,35 +235,15 @@ class Community extends MY_Controller
 				'label' => '地址',
 				'rules' => 'required|trim',
 			],
-			/*array(
-			'field' => 'images',
-			'label' => '门店图片',
-			'rules' => 'required|trim',
-			),*/
+			[
+				'field' => 'images',
+				'label' => '门店图片',
+				'rules' => 'required|trim',
+			],
 			[
 				'field' => 'describe',
 				'label' => '门店描述',
 				'rules' => 'required|trim',
-			],
-			[
-				'field' => 'history',
-				'label' => '配套医院',
-				'rules' => 'trim',
-			],
-			[
-				'field' => 'shop',
-				'label' => '配套商场',
-				'rules' => 'trim',
-			],
-			[
-				'field' => 'relax',
-				'label' => '配套休闲',
-				'rules' => 'trim',
-			],
-			[
-				'field' => 'bus',
-				'label' => '配套交通',
-				'rules' => 'trim',
 			],
 		];
 		return $config;

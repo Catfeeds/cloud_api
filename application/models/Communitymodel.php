@@ -21,7 +21,7 @@ class Communitymodel extends Basemodel {
 
     //小区的房间
     public function room() {
-        return $this->hasMany(Roomdotmodel::class, 'community_id')->select(['community_id']);
+        return $this->hasMany(Roomunionmodel::class, 'community_id')->select(['community_id']);
     }
 
     //小区所属门店
