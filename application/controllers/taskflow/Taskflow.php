@@ -305,7 +305,7 @@ class Taskflow extends MY_Controller{
             return;
         }
         switch ($taskflow->type) {
-            case Taskflowmodel::TYPE_CHECKOUT:
+            case Taskflowmodel::TYPE_CHECKOUT||Taskflowmodel::TYPE_CHECKOUT_NO_LIABILITY||Taskflowmodel::TYPE_CHECKOUT_UNDER_CONTRACT:
                 $data   = $this->showCheckoutInfo($taskflow_id);
                 break;
             case Taskflowmodel::TYPE_PRICE:
@@ -482,7 +482,7 @@ class Taskflow extends MY_Controller{
             if ($steps_audit_count==0) {
                 $taskflow->status   = Taskflowmodel::STATE_APPROVED;
                 switch ($taskflow->type) {
-                    case Taskflowmodel::TYPE_CHECKOUT:
+                    case Taskflowmodel::TYPE_CHECKOUT||Taskflowmodel::TYPE_CHECKOUT_UNDER_CONTRACT||Taskflowmodel::TYPE_CHECKOUT_NO_LIABILITY:
                         $this->doneCheckout($taskflow);
                         break;
                     case Taskflowmodel::TYPE_PRICE:

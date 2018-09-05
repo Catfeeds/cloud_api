@@ -9,6 +9,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class Taskflowtemplatemodel extends Basemodel
 {
     const TYPE_CHECKOUT = 'CHECKOUT'; //退房
+    const TYPE_CHECKOUT_NO_LIABILITY = 'NO_LIABILITY';  //免责退房任务流
+    const TYPE_CHECKOUT_UNDER_CONTRACT = 'UNDER_CONTRACT';  //违约退房任务流
     const TYPE_PRICE    = 'PRICE';      //调价
     const TYPE_RESERVE  = 'RESERVE';    //预约看房
     const TYPE_SERVICE  = 'SERVICE';    //服务订单
@@ -53,6 +55,8 @@ class Taskflowtemplatemodel extends Basemodel
         return [
             self::TYPE_PRICE,
             self::TYPE_CHECKOUT,
+            self::TYPE_CHECKOUT_NO_LIABILITY,
+            self::TYPE_CHECKOUT_UNDER_CONTRACT
         ];
     }
 }
