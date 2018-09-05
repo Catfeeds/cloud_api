@@ -75,8 +75,12 @@ class Operation extends MY_Controller {
             ->map(function ($s) {
                 $s->begin_time = date('Y-m-d', strtotime($s->residents->begin_time->toDateTimeString()));
                 $s->end_time   = date('Y-m-d', strtotime($s->residents->end_time->toDateTimeString()));
-                $s->reserve_begin_time   = date('Y-m-d', strtotime($s->residents->reserve_begin_time->toDateTimeString()));
-                $s->reserve_end_time   = date('Y-m-d', strtotime($s->residents->reserve_end_time->toDateTimeString()));
+                if (!empty($s->residents->reserve_begin_time)) {
+                    $s->reserve_begin_time   = date('Y-m-d', strtotime($s->residents->reserve_begin_time->toDateTimeString()));
+                }
+                if (!empty($s->residents->reserve_end_time)) {
+                    $s->reserve_end_time   = date('Y-m-d', strtotime($s->residents->reserve_end_time->toDateTimeString()));
+                }
                 return $s;
             });
         $this->api_res(0, ['info' => $operation]);
