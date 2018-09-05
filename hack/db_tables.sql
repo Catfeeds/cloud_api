@@ -1851,6 +1851,25 @@ CREATE TABLE `boss_price_control` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE `risk_record` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `resident_id` int(11) DEFAULT NULL,
+  `company_id` int(11) DEFAULT NULL,
+  `store_id` int(11) DEFAULT NULL,
+  `room_id` int(11) DEFAULT NULL,
+  `risk_type` enum('LOCKLONG','LOCKERROR','HOTWATERUP','COLDWATERUP','ELECUP') DEFAULT NULL,
+  `risk_effect` int(11) DEFAULT NULL,
+  `risk_record_id` varchar(255) DEFAULT NULL,
+  `batch` varchar(255) DEFAULT NULL,
+  `desc` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_risk_record_deleted_at` (`deleted_at`)
+) ENGINE=InnoDB AUTO_INCREMENT=946 DEFAULT CHARSET=utf8;
+
+
 
 
 
