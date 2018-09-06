@@ -23,7 +23,7 @@ class Roomdot extends MY_Controller
 	{
 		$field = [
 			'store_id', 'community_id', 'building_name', 'unit', 'number', 'layer', 'layer_total', 'room_number',
-			'hall_number', 'toilet_number', 'area', 'rooms'
+			'hall_number', 'toilet_number', 'area', 'rooms', 'toward'
 		];
 		$post  = $this->input->post(null, true);
 		//验证房屋
@@ -92,9 +92,9 @@ class Roomdot extends MY_Controller
 					'house_id'     => $house_id,
 					'number'       => $value['the_room_number'],
 					'area'         => $value['room_area'],
-					'toward'       => $value['room_toward'],
 					'feature'      => $value['room_feature'],
 					'provides'     => $value['room_provides'],
+					'layer'        => $post['layer'],
 					'created_at'   => date('Y-m-d H:i:s', time()),
 					'updated_at'   => date('Y-m-d H:i:s', time()),
 				];
@@ -301,6 +301,11 @@ class Roomdot extends MY_Controller
 				'label' => '房屋面积',
 				'rules' => 'trim|required|numeric',
 			],
+			[
+				'field' => 'toward',
+				'label' => '朝向',
+				'rules' => 'trim|required|in_list[E,W,S,N,EW,SN]',
+			],
 		];
 		return $config;
 	}
@@ -320,11 +325,6 @@ class Roomdot extends MY_Controller
 				'field' => 'room_area',
 				'label' => '房间面积',
 				'rules' => 'required|trim|numeric',
-			],
-			[
-				'field' => 'room_toward',
-				'label' => '房间朝向',
-				'rules' => 'required|trim|in_list[E,W,S,N,EW,SN]',
 			],
 			[
 				'field' => 'room_feature',

@@ -125,8 +125,11 @@ class Community extends MY_Controller
 	public function getCommunity()
 	{
 		$community_id = $this->input->post('community_id', true);
-		$this->load->model('storemodel');
-		if ($community = Communitymodel::with('store')->find($community_id)) {
+		$community = Communitymodel::where('id',$community_id)->get()->map(function ($s){
+			$s->images = $this->fullAliossUrl(json_decode($s->images,true),true);
+			return $s;
+		});
+		if ($community) {
 			$this->api_res(0, ['community' => $community]);
 		} else {
 			$this->api_res(1007);
