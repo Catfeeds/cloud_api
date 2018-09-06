@@ -35,7 +35,7 @@ class Community extends MY_Controller
 		}
 		$community = new Communitymodel();
 		$community->fill($post);
-		$community->image = json_encode($this->splitAliossUrl($post['images'], true),true);
+		$community->images = json_encode($this->splitAliossUrl($post['images'], true),true);
 		if ($community->save()) {
 			$this->api_res(0, ['community_id' => $community->id]);
 		} else {
@@ -62,7 +62,7 @@ class Community extends MY_Controller
 			$this->api_res(0, ['count' => $count, 'community' => []]);
 			return;
 		}
-		$this->load->model('roomdotmodel');
+		$this->load->model('roomunionmodel');
 		$communitys = Communitymodel::with('room')->where($where)->where('name', 'like', "%$name%")->offset($offset)->limit(PAGINATE)
 			->get($field)
 			->map(function ($community) {
@@ -89,7 +89,7 @@ class Community extends MY_Controller
 		$community_id = $this->input->post('community_id', true);
 		$community    = Communitymodel::findOrFail($community_id);
 		$community->fill($post);
-		$community->image = $this->splitAliossUrl($post['images'],true);
+		$community->images = json_encode($this->splitAliossUrl($post['images'],true),true);
 		if ($community->save()) {
 			$this->api_res(0, ['community_id' => $community->id]);
 		} else {
@@ -207,13 +207,13 @@ class Community extends MY_Controller
 				'rules' => 'required|trim',
 			],
 			[
-				'field' => 'images',
-				'label' => '门店图片',
+				'field' => 'describe',
+				'label' => '门店描述',
 				'rules' => 'required|trim',
 			],
 			[
-				'field' => 'describe',
-				'label' => '门店描述',
+				'field' => 'images[]',
+				'label' => '图片',
 				'rules' => 'required|trim',
 			],
 		];
