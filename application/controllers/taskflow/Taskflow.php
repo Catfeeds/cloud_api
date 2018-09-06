@@ -155,6 +155,7 @@ class Taskflow extends MY_Controller{
             ->whereIn('id',$merge_ids)
             ->offset($offset)
             ->limit($per_page)
+            ->orderBy('updated_at','desc')
             ->get();
         $this->api_res(0,['taskflows'=>$taskflows,'page'=>$page,'totalPage'=>$totalPage,'count'=>$count]);
     }
