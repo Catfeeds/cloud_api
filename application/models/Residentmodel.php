@@ -271,13 +271,23 @@ class Residentmodel extends Basemodel {
         //             ]);
         //         }
 
+//        if (0 < $resident->discount_id) {
+//            $activity = $resident->discount;
+//            $data     = array_merge($data, [
+//                'rent_discount' => [
+//                    'id'       => $activity->id,
+//                    'name'     => $activity->name,
+//                    'discount' => $activity->coupontypes()->first()->discount,
+//                ],
+//            ]);
+//        }
         if (0 < $resident->discount_id) {
             $activity = $resident->discount;
             $data     = array_merge($data, [
                 'rent_discount' => [
                     'id'       => $activity->id,
                     'name'     => $activity->name,
-                    'discount' => $activity->coupontypes()->first()->discount,
+                    'discount' => $activity,
                 ],
             ]);
         }
