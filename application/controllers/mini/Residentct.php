@@ -116,7 +116,7 @@ class Residentct extends MY_Controller {
         $post = $this->input->post(null, true);
         $id   = isset($post['id']) ? $post['id'] : null;
 
-        $resident               = Residentmodel::with('customer', 'contract', 'roomunion')->find($id)->toArray();
+        $resident               = Residentmodel::with('customer', 'contract','reserve_contract', 'roomunion')->find($id)->toArray();
         $resident['card_one']   = $this->fullAliossUrl($resident['card_one']);
         $resident['card_two']   = $this->fullAliossUrl($resident['card_two']);
         $resident['card_three'] = $this->fullAliossUrl($resident['card_three']);

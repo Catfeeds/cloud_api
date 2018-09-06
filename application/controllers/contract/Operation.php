@@ -73,12 +73,12 @@ class Operation extends MY_Controller {
         $operation = Contractmodel::where('id', $serial)->with('store')->with('room')->with('employee')
             ->with('residents')->get()
             ->map(function ($s) {
-                $s->begin_time = date('Y-m-d', strtotime($s->residents->begin_time->toDateTimeString()));
-                $s->end_time   = date('Y-m-d', strtotime($s->residents->end_time->toDateTimeString()));
-                if (!empty($s->residents->reserve_begin_time)) {
-                    $s->reserve_begin_time   = date('Y-m-d', strtotime($s->residents->reserve_begin_time->toDateTimeString()));
+                if ($s->residents->contarct_time>0) {
+                    $s->begin_time = date('Y-m-d', strtotime($s->residents->begin_time->toDateTimeString()));
+                    $s->end_time   = date('Y-m-d', strtotime($s->residents->end_time->toDateTimeString()));
                 }
-                if (!empty($s->residents->reserve_end_time)) {
+                if ($s->residents->reserve_contract_time>0) {
+                    $s->reserve_begin_time   = date('Y-m-d', strtotime($s->residents->reserve_begin_time->toDateTimeString()));
                     $s->reserve_end_time   = date('Y-m-d', strtotime($s->residents->reserve_end_time->toDateTimeString()));
                 }
                 return $s;
