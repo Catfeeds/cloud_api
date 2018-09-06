@@ -93,10 +93,15 @@ class Bill extends MY_Controller {
         $sumMoney   = $orders->sum('money');
         $sumPaid    = $orders->sum('paid');
         $sumDiscount    = $sumMoney-$sumPaid;
-        $resident   = $bill->resident()->with('discount')->first();
+        $resident   = $bill->resident;
+        if ($resident->created_at>'2018-07-01') {
+            $couponInfo = $resident->discount;
+        }else{
+            $couponInfo = null;
+        }
         $discount   = array_merge($orders->where('coupon','!=',null)->toArray(),[]);
 
-        $this->api_res(0,['sumMoney'=>$sumMoney,'sumPaid'=>$sumPaid,'sumDiscount'=>$sumDiscount,'resident'=>$resident,'discount'=>$discount,'orders'=>$orders]);
+        $this->api_res(0,['sumMoney'=>$sumMoney,'sumPaid'=>$sumPaid,'sumDiscount'=>$sumDiscount,'resident'=>$resident,'discount'=>$discount,'orders'=>$orders,'couponInfo'=>$couponInfo]);
 
         /*
          * ROOM
