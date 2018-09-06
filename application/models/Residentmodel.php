@@ -87,6 +87,8 @@ class Residentmodel extends Basemodel {
         'refund_time',
         'begin_time',
         'end_time',
+        'reserve_begin_time',
+        'reserve_end_time',
         'created_at',
         'updated_at',
     ];
@@ -94,6 +96,14 @@ class Residentmodel extends Basemodel {
     protected $casts = [
         'data' => 'array',
     ];
+
+    /**
+     * @当前房间在住的住户
+     */
+    public function current_room()
+    {
+        return $this->hasOne(Roomunionmodel::class,'resident_id');
+    }
 
 //     protected $hidden  = ['created_at'];
 
@@ -123,10 +133,16 @@ class Residentmodel extends Basemodel {
         return $this->hasMany(Ordermodel::class, 'resident_id');
     }
 
-    //住户的合同信息
-    public function contract() {
+    //住户的入住合同信息
+    public function contract(){
 
-        return $this->hasOne(Contractmodel::class, 'resident_id');
+        return $this->hasMany(Contractmodel::class,'resident_id')->whereNull('rent_type');
+    }
+
+    //住户预定合同
+    public function reserve_contract()
+    {
+        return $this->hasMany(Contractmodel::class,'resident_id')->where('rent_type',Contractmodel::RENT_RESERVE);
     }
 
     //住户的用户信息
@@ -213,6 +229,7 @@ class Residentmodel extends Basemodel {
             'book_money'          => $resident->book_money,
             'book_time'           => $resident->book_time,
             'contract_time'       => $resident->contract_time,
+            'reserve_contract_time'       => $resident->reserve_contract_time,
             'rent_type'           => $resident->rent_type,
             'pay_type'            => $resident->pay_frequency,
             'first_pay'           => $resident->first_pay_money,
@@ -226,6 +243,11 @@ class Residentmodel extends Basemodel {
         if (0 < $resident->contract_time) {
             $data['begin_time'] = Carbon::parse($resident->begin_time)->toDateString();
             $data['end_time']   = Carbon::parse($resident->end_time)->toDateString();
+        }
+
+        if (0 < $resident->reserve_contract_time) {
+            $data['reserve_begin_time'] = Carbon::parse($resident->reserve_begin_time)->toDateString();
+            $data['reserve_end_time']   = Carbon::parse($resident->reserve_end_time)->toDateString();
         }
 
         if (self::STATE_NORMAL == $resident->status) {
@@ -290,7 +312,7 @@ class Residentmodel extends Basemodel {
             $data['time']  = $resident->book_time->format('Y-m-d');
         }
 
-        if ($contract = $resident->contract) {
+        if ($contract = $resident->contract()->first()) {
             $data = array_merge($data, [
                 'contract' => [
                     'id'       => $contract->id,

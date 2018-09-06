@@ -14,6 +14,13 @@ class Contractmodel extends Basemodel {
     protected $hidden = ['deleted_at'];
 
     /**
+     * 合同的类型
+     */
+    const RENT_LONG     = 'LONG';
+    const RENT_SHORT    = 'SHORT';
+    const RENT_RESERVE  = 'RESERVE';
+
+    /**
      * 签署状态
      */
     const STATUS_GENERATED = 'GENERATED'; // 未签署
@@ -31,7 +38,7 @@ class Contractmodel extends Basemodel {
 
     //经办人
     public function employee() {
-        return $this->belongsTo(Employeemodel::class, 'employee_id')->select('id', 'name');
+        return $this->belongsTo(Employeemodel::class, 'employee_id');
     }
     //门店城市 店名
     public function store() {
@@ -49,8 +56,7 @@ class Contractmodel extends Basemodel {
 
     // 合约信息
     public function residents() {
-        return $this->belongsTo(Residentmodel::class, 'resident_id')->select('id',
-            'begin_time', 'end_time', 'refund_time', 'real_rent_money', 'pay_frequency', 'deposit_month', 'name_two', 'deposit_money');
+        return $this->belongsTo(Residentmodel::class, 'resident_id');
     }
 
     /**

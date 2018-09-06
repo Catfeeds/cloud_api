@@ -157,9 +157,11 @@ class Pricecontrol extends MY_Controller
         $input  = $this->input->post(null,true);
         //查找房间，判断权限
         $this->load->model('roomunionmodel');
+        $this->load->model('storemodel');
         $this->load->model('pricecontrolmodel');
         $room   = Roomunionmodel::find($input['room_id']);
         $store_id   = $room->store_id;
+        $store  = Storemodel::find($store_id);
         $e_store_ids    = explode(',',$this->employee->store_ids);
         if (!in_array($store_id,$e_store_ids)) {
             $this->api_res(1019);
@@ -205,7 +207,14 @@ class Pricecontrol extends MY_Controller
                     return;
                 }
                 //创建调价任务流
-                $taskflow_id    = $this->taskflowmodel->createTaskflow(Taskflowmodel::TYPE_PRICE,$store_id,$input['room_id']);
+                $msg    = json_encode([
+                    'store_name'    => $store->name,
+                    'number'        => $room->number,
+                    'create_name'          => $this->employee->name,
+                    'type'          => ($input['type']=='ROOM')?'房租服务费':'物业服务费',
+                    'money'         => $input['new_price'],
+                ]);
+                $taskflow_id    = $this->taskflowmodel->createTaskflow(COMPANY_ID,Taskflowmodel::TYPE_PRICE,$store_id,$input['room_id'],Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id,null,null,$msg);
                 if ($taskflow_id) {
                     $data['taskflow_id']    = $taskflow_id;
                     $data['status']         = Pricecontrolmodel::STATE_AUDIT;

@@ -15,7 +15,7 @@ class Order extends MY_Controller {
     }
 
     /**
-     * 检索某个房间下的订单, 用于未交费支付时显示
+     * 检索某个住户下的订单, 用于未交费支付时显示
      */
     public function showByRoom() {
         $input       = $this->input->post(null, true);
@@ -26,21 +26,16 @@ class Order extends MY_Controller {
         $this->load->model('ordermodel');
         $this->load->model('residentmodel');
 
-        $room = Roomunionmodel::where('store_id', $this->employee->store_id)->find($room_id);
-//        $room   = Roomunionmodel::find(126);
-
-        if (empty($room)) {
+        $resident = Residentmodel::where('store_id', $this->employee->store_id)->find($resident_id);
+        if (empty($resident)) {
             $this->api_res(1007);
             return;
         }
-
-        $resident = $room->resident;
-
+        $room = $resident->room;
         $orders = $resident->orders()->where('status', $status)->get();
-
         $totalMoney = number_format($orders->sum('money'), 2);
 
-        $this->api_res(0, ['totalMoney' => $totalMoney, 'orders' => $orders, 'resident' => $resident, 'room' => $room]);
+        $this->api_res(0, ['totalMoney' => $totalMoney, 'orders' => $orders->toArray(), 'resident' => $resident->toArray(), 'room' => $room->toArray()]);
     }
 
     /**
@@ -120,7 +115,7 @@ class Order extends MY_Controller {
         //根据类型  房间 物业费 ...
         //根据支付方式
 
-        $field = ['status', 'type', 'room_number'];
+        $field = ['status', 'type', 'room_number', 'resident_id'];
         if (!$this->validationText($this->validateList())) {
             $this->api_res(1002, ['error' => $this->form_first_error($field)]);
             return;
@@ -179,6 +174,11 @@ class Order extends MY_Controller {
             array(
                 'field' => 'room_number',
                 'label' => '房间号',
+                'rules' => 'trim',
+            ),
+            array(
+                'field' => 'resident_id',
+                'label' => '住户id',
                 'rules' => 'trim',
             ),
         );
@@ -250,8 +250,12 @@ class Order extends MY_Controller {
             DB::rollBack();
             throw $e;
         }
-        $res =  $this->sendCoupon($resident_id);
-        $this->api_res(0,['res'=>$res]);
+        $room_order = Ordermodel::whereIn('id', $orderIds)->where('type', Ordermodel::PAYTYPE_ROOM)->get();
+        if($room_order) {
+            $bind = $this->bindCoupon($resident_id);
+            $res = $this->sendCoupon($resident_id);
+        }
+        $this->api_res(0);
     }
 
     /**
@@ -328,16 +332,25 @@ class Order extends MY_Controller {
      */
     private function checkContract($resident) {
         //没有办理入住的时候, 合同时长是0, 这个时候不需要合同, 如果住户的状态是已经支付过的, 也不用检查
-        if (0 == $resident->contract_time OR Residentmodel::STATE_NORMAL == $resident->status) {
+//        if (0 == $resident->contract_time OR Residentmodel::STATE_NORMAL == $resident->status OR 0==$resident->reserve_contract_time) {
+//            return true;
+//        }
+        if (Residentmodel::STATE_NORMAL == $resident->status) {
             return true;
         }
-
-        if (empty($resident->contract)) {
-            log_message('error', '未检测到该住户的合同, 请生成后重试!');
-            return false;
-            //throw new \Exception('未检测到该住户的合同, 请生成后重试!');
+        if (0!=$resident->reserve_contract_time) {
+            if(empty($resident->reserve_contract()->first())){
+                log_message('error', '未检测到该住户的合同, 请生成后重试!');
+                return false;
+            }
         }
-
+        if (0!=$resident->contract_time){
+            if (empty($resident->contract()->first())) {
+                log_message('error', '未检测到该住户的合同, 请生成后重试!');
+                return false;
+                //throw new \Exception('未检测到该住户的合同, 请生成后重试!');
+            }
+        }
         return true;
     }
 
@@ -537,7 +550,7 @@ class Order extends MY_Controller {
         } else {
             $coupons = null;
         }
-
+        log_message('Debug','小程序确认转账时优惠券id为'.$coupons);
         try {
             DB::beginTransaction();
             //如果有使用优惠券, 检查优惠券是否可以使用
@@ -556,8 +569,14 @@ class Order extends MY_Controller {
             DB::rollBack();
             throw $e;
         }
-        $res =  $this->sendCoupon($resident_id);
-        $this->api_res(0,['res'=>$res]);
+
+        $room_order = Ordermodel::whereIn('id', $orderIds)->where('type', Ordermodel::PAYTYPE_ROOM)->get();
+        if($room_order) {
+            $bind = $this->bindCoupon($resident_id);
+            $res = $this->sendCoupon($resident_id);
+
+        }
+        $this->api_res(0);
     }
 
     /**
@@ -570,7 +589,7 @@ class Order extends MY_Controller {
      */
     private function checkCoupons($resident, $orders, $coupons) {
         //没有优惠券, 则直接返回
-        if (0 == count($coupons)) {
+        if (!$coupons) {
             return true;
         }
 
@@ -653,22 +672,27 @@ class Order extends MY_Controller {
         return $res;
     }
 //发放优惠券
-   private function sendCoupon($resident_id){
-       $res = '';
-       $order = Ordermodel::where('resident_id',$resident_id)->where('type','room')->select(['month'])->first();
-       $resident = Residentmodel::where('id',$resident_id)->select(['old_phone'])->first();
-       if($order) {
-           $this->load->model('activitymodel');
-           $this->load->model('storeactivitymodel');
-           $this->load->model('activityprizemodel');
-           $this->load->model('customermodel');
-           $activity = new Activitymodel();
-           if (!$resident->old_phone) {
-               $res = $activity->sendCheckIn($resident_id,$order->month);
-           } else {
-               $res = $activity->sendOldbeltNew($resident->old_phone,$order->month);
-           }
-       }
-       return $res;
-   }
+    private function sendCoupon($resident_id){
+        $res = '';
+        $order = Ordermodel::where('resident_id',$resident_id)->where('type','room')->select(['month'])->first();
+        $resident = Residentmodel::where('id',$resident_id)->select(['old_phone'])->first();
+        if($order) {
+            $this->load->model('activitymodel');
+            $this->load->model('storeactivitymodel');
+            $this->load->model('activityprizemodel');
+            $this->load->model('customermodel');
+            $activity = new Activitymodel();
+            if (!$resident->old_phone) {
+                $res = $activity->sendCheckIn($resident_id,$order->month);
+            } else {
+                $res = $activity->sendOldbeltNew($resident->old_phone,$order->month);
+            }
+        }
+        return $res;
+    }
+    //办理入住时绑定优惠券
+    private function bindCoupon($resident_id){
+        $bindCoupon = new Couponmodel();
+        $bindCoupon->bindCoupon($resident_id);
+    }
 }

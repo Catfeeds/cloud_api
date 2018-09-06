@@ -121,7 +121,11 @@ class Roomunionmodel extends Basemodel {
             ->whereIn('status', ['GENERATE', 'AUDITED', 'PENDING'])
             ->select('id', 'room_id', 'resident_id', 'type', 'status');
     }
-
+    public function pendOrder() {
+        return $this->hasMany(Ordermodel::class, 'room_id')
+            ->whereIn('status', ['PENDING'])
+            ->select('id', 'room_id', 'resident_id', 'type', 'status');
+    }
 //    public function utilities()
     //    {
     //        return $this->hasMany(Utilitymodel::class, 'room_id');
@@ -188,7 +192,7 @@ class Roomunionmodel extends Basemodel {
         $arrears_count = 0;
         $Remove_status        = array_except($where, 'status');
 
-        $this->details = Roomunionmodel::orderBy('number')->with('room_type')->with('resident')->with('order')
+        $this->details = Roomunionmodel::orderBy('number')->with('room_type')->with('resident')->with('pendOrder')
             ->where($Remove_status)->whereBetween('updated_at', $time)
             ->where('number','like','%'.$number.'%')
             ->get($filed)->groupBy('layer')
@@ -197,7 +201,8 @@ class Roomunionmodel extends Basemodel {
                 global $arrears_count;
                 $count = 0;
                 foreach ($s as $key => $value) {
-                    if (!empty($s[$key]['order'])) {
+                    $s[$key]['order'] = $s[$key]['pend_order'];
+                    if (!empty($s[$key]['pend_order'])) {
                         $count += 1;
                     }
                 }
@@ -215,7 +220,7 @@ class Roomunionmodel extends Basemodel {
         }
         $this->arrears_count = $arrears_count;
         if (isset($where['status']) && $where['status'] == 'ARREARS') {
-            $this->details = Roomunionmodel::orderBy('number')->with('room_type')->with('resident')->with('order')
+            $this->details = Roomunionmodel::orderBy('number')->with('room_type')->with('resident')->with('pendOrder')
                 ->where($Remove_status)->whereBetween('updated_at', $time)->whereHas('order')
                 ->where('number','like','%'.$number.'%')
                 ->get($filed)->groupBy('layer')
@@ -224,7 +229,8 @@ class Roomunionmodel extends Basemodel {
                     global $arrears_count;
                     $count = 0;
                     foreach ($s as $key => $value) {
-                        if (!empty($s[$key]['order'])) {
+                        $s[$key]['order'] = $s[$key]['pend_order'];
+                        if (!empty($s[$key]['pend_order'])) {
                             $count += 1;
                         }
                     }
@@ -232,7 +238,7 @@ class Roomunionmodel extends Basemodel {
                     return [$s, 'arrears_count' => $arrears_count];
                 })->toArray();
         } else {
-            $this->details = Roomunionmodel::orderBy('number')->with('room_type')->with('resident')->with('order')
+            $this->details = Roomunionmodel::orderBy('number')->with('room_type')->with('resident')->with('pendOrder')
                 ->where($where)->whereBetween('updated_at', $time)
                 ->where('number','like','%'.$number.'%')
                 ->get($filed)->groupBy('layer')
@@ -241,7 +247,8 @@ class Roomunionmodel extends Basemodel {
                     global $arrears_count;
                     $count = 0;
                     foreach ($s as $key => $value) {
-                        if (!empty($s[$key]['order'])) {
+                        $s[$key]['order'] = $s[$key]['pend_order'];
+                        if (!empty($s[$key]['pend_order'])) {
                             $count += 1;
                         }
                     }

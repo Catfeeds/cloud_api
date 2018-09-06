@@ -69,12 +69,18 @@ class Operation extends MY_Controller {
         $this->load->model('storemodel');
         $post      = $this->input->post(NULL, true);
         $serial    = $post['id'];
-        $filed     = ['id', 'contract_id', 'resident_id', 'room_id', 'status', 'view_url', 'store_id'];
-        $operation = Contractmodel::where('id', $serial)->with('store')->with('room')
-            ->with('residents')->get($filed)
+//        $filed     = ['id', 'contract_id', 'resident_id', 'room_id', 'status', 'view_url', 'store_id','created_at',''];
+        $operation = Contractmodel::where('id', $serial)->with('store')->with('room')->with('employee')
+            ->with('residents')->get()
             ->map(function ($s) {
-                $s->begin_time = date('Y-m-d', strtotime($s->residents->begin_time->toDateTimeString()));
-                $s->end_time   = date('Y-m-d', strtotime($s->residents->end_time->toDateTimeString()));
+                if ($s->residents->contarct_time>0) {
+                    $s->begin_time = date('Y-m-d', strtotime($s->residents->begin_time->toDateTimeString()));
+                    $s->end_time   = date('Y-m-d', strtotime($s->residents->end_time->toDateTimeString()));
+                }
+                if ($s->residents->reserve_contract_time>0) {
+                    $s->reserve_begin_time   = date('Y-m-d', strtotime($s->residents->reserve_begin_time->toDateTimeString()));
+                    $s->reserve_end_time   = date('Y-m-d', strtotime($s->residents->reserve_end_time->toDateTimeString()));
+                }
                 return $s;
             });
         $this->api_res(0, ['info' => $operation]);

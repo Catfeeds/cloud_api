@@ -363,8 +363,8 @@ class Order extends MY_Controller {
     public function notify() {
         $input    = $this->input->post(null, true);
         $where  = [];
-        empty($input['store_id'])?$where['store_id']=$input['room_id']:null;
-        empty($input['room_id'])?$where['room_id']=$input['room_id']:null;
+        empty($input['store_id'])?null:$where['store_id']=$input['store_id'];
+        empty($input['room_id'])?null:$where['room_id']=$input['room_id'];
         $this->load->helper('common');
         $app    = new Application(getWechatCustomerConfig());
         $failed = [];
@@ -381,7 +381,7 @@ class Order extends MY_Controller {
 //            ->where('is_notify', 0)
             ->get()
             ->groupBy('resident_id');
-
+        log_message("debug", "准备推送账单 门店: $store_id, 总计: ".count($pendingOrders));
         foreach ($pendingOrders as $resident_id => $orders) {
             $resident = Residentmodel::find($resident_id);
             if (empty($resident)) {

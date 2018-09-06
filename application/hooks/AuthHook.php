@@ -45,6 +45,7 @@ class AuthHook {
         return array(
             'account/login/logintest',
             'ping/index',
+            'company/company/test',
             'mini/login/gettoken',
             'mini/login/handleloginstatus',
             'account/login/login',
@@ -64,6 +65,9 @@ class AuthHook {
             'mini/contract/archive',
             'utility/utility/listutility1',
 
+            'company/company/sendcode',
+            'company/company/register',
+            'company/company/boundwechat',
         );
     }
 
@@ -160,7 +164,7 @@ class AuthHook {
     private function saas(){
        
         $company_id = COMPANY_ID;
-        
+
         if(!empty($company_id)){
             // if(!$this->CI->load->is_loaded('companymodel')){
                 $this->CI->load->model('companymodel');

@@ -136,6 +136,7 @@ CREATE TABLE `boss_api` (
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `boss_bill` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `company_id` int(10) NOT NULL DEFAULT '0' COMMENT '公司ID',
   `sequence_number` char(32) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT '流水号',
   `store_id` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '公寓的id',
   `employee_id` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '员工的id',
@@ -240,11 +241,13 @@ CREATE TABLE `boss_community` (
   `bus` text COMMENT '交通',
   `images` text,
   `describe` text COMMENT '描述',
+  `sale` enum('N','Y') NOT NULL DEFAULT 'Y' COMMENT '是否上架',
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   `deleted_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -523,6 +526,7 @@ CREATE TABLE `boss_house` (
   `kitchen_count` tinyint(4) NOT NULL DEFAULT '0' COMMENT '几厨',
   `toilet_number` tinyint(4) NOT NULL DEFAULT '0' COMMENT '几卫',
   `people_count` smallint(5) NOT NULL,
+  `toward` enum('SN','EW','N','S','W','E') NOT NULL DEFAULT 'S' COMMENT '朝向',
   `status` enum('REPAIR','RENT','BLANK') NOT NULL DEFAULT 'BLANK' COMMENT '房间状态:空 出租 维修',
   `area` decimal(10,0) NOT NULL COMMENT '面积',
   `address` varchar(255) NOT NULL DEFAULT '' COMMENT '地址',
@@ -713,6 +717,7 @@ CREATE TABLE `boss_operations` (
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `boss_order` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `company_id` int(10) NOT NULL DEFAULT '0' COMMENT '公司ID',
   `number` char(32) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT '订单号',
   `sequence_number` char(32) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT '流水号',
   `new_number` char(32) COLLATE utf8_unicode_ci DEFAULT NULL,
@@ -1112,7 +1117,11 @@ CREATE TABLE `boss_room_type` (
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `boss_room_union` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '集中式房间id',
+  `company_id` int(10) NOT NULL DEFAULT '0' COMMENT '公司ID',
   `store_id` int(11) unsigned DEFAULT NULL COMMENT '门店id',
+  `community_id` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '小区ID(分布式)',
+  `house_id` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '房屋ID(分布式)',
+  `type` enum('UNION','DOT') NOT NULL DEFAULT 'UNION' COMMENT 'UNION 集中式；DOT 分布式',
   `building_id` int(11) DEFAULT NULL COMMENT '楼栋id',
   `building_name` varchar(128) DEFAULT NULL COMMENT '楼栋名称',
   `room_type_id` int(11) unsigned DEFAULT NULL COMMENT '房型id',
@@ -1127,6 +1136,7 @@ CREATE TABLE `boss_room_union` (
   `property_price` decimal(10,2) DEFAULT NULL COMMENT '物业费',
   `status` enum('BLANK','RESERVE','RENT','ARREARS','REFUND','OCCUPIED','OTHER','REPAIR') NOT NULL DEFAULT 'BLANK' COMMENT '''房间状态:空 预订 正常出租 欠费出租 退房 占用 其他 维修''',
   `keeper` varchar(255) DEFAULT NULL COMMENT '管家',
+  `feature` enum('MT','S','M') NOT NULL DEFAULT 'M' COMMENT '相对于分布式房间M:主卧,S:次卧,MT:主卧独卫',
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   `deleted_at` datetime DEFAULT NULL,
@@ -1150,7 +1160,7 @@ CREATE TABLE `boss_room_union` (
   `electricity_price` decimal(10,2) DEFAULT NULL COMMENT '展示的电费',
   `device_id` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2174 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2722 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1577,24 +1587,26 @@ CREATE TABLE `fx_company` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
   `bxid` int(10) DEFAULT NULL,
   `name` varchar(255) NOT NULL DEFAULT '' COMMENT '公司名称',
-  `nickname` varchar(64) DEFAULT NULL COMMENT '公司简称',
+  `nickname` varchar(64) DEFAULT '' COMMENT '公司简称',
   `address` text NOT NULL COMMENT '公司地址',
+  `store_type` enum('centralized','distributed') NOT NULL DEFAULT 'centralized' COMMENT 'centralized 集中式；distributed 分布式',
+  `scale` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '规模（大概房间数）',
   `contact_user` varchar(64) NOT NULL DEFAULT '' COMMENT '联系人',
-  `contact_phone` varchar(11) NOT NULL DEFAULT '0' COMMENT '联系电话',
+  `contact_phone` varchar(13) NOT NULL DEFAULT '0' COMMENT '联系电话',
   `base_position` enum('SUPER') NOT NULL DEFAULT 'SUPER' COMMENT 'super',
-  `phone` varchar(14) DEFAULT NULL,
+  `phone` varchar(14) DEFAULT '' COMMENT '电话',
   `openid` varchar(64) DEFAULT '' COMMENT '微信openid',
   `unionid` varchar(64) DEFAULT NULL,
-  `license` varchar(128) NOT NULL COMMENT '营业执照',
+  `license` varchar(128) NOT NULL DEFAULT '' COMMENT '营业执照',
+  `expiretime` timestamp NOT NULL DEFAULT '2037-12-31 00:00:00' COMMENT '失效时间',
   `remark` text COMMENT '备注信息',
-  `status` enum('NORMAL','CLOSE','UNSCAN') NOT NULL DEFAULT 'UNSCAN' COMMENT '状态(正常，关闭，未扫码)',
+  `status` enum('NORMAL','CLOSE','UNAUTH','UNSCAN') NOT NULL DEFAULT 'UNAUTH' COMMENT '状态(正常，关闭，未认证，未扫码)',
   `privilege` varchar(255) NOT NULL DEFAULT 'MOD_BASE' COMMENT '权限，开通的模块\nMOD_ALL\nMOD_BASE,MOD_A,MOD_B,MOD_C',
   `created_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `updated_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `deleted_at` datetime DEFAULT NULL,
-  `expiretime` timestamp NOT NULL DEFAULT '2037-12-30 16:00:00' COMMENT '失效时间',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1840,6 +1852,25 @@ CREATE TABLE `boss_price_control` (
   `deleted_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `risk_record` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `resident_id` int(11) DEFAULT NULL,
+  `company_id` int(11) DEFAULT NULL,
+  `store_id` int(11) DEFAULT NULL,
+  `room_id` int(11) DEFAULT NULL,
+  `risk_type` enum('LOCKLONG','LOCKERROR','HOTWATERUP','COLDWATERUP','ELECUP') DEFAULT NULL,
+  `risk_effect` int(11) DEFAULT NULL,
+  `risk_record_id` varchar(255) DEFAULT NULL,
+  `batch` varchar(255) DEFAULT NULL,
+  `desc` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_risk_record_deleted_at` (`deleted_at`)
+) ENGINE=InnoDB AUTO_INCREMENT=946 DEFAULT CHARSET=utf8;
+
 
 
 

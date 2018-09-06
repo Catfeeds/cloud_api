@@ -24,39 +24,20 @@ class Home extends MY_Controller {
         //未缴费订单
         $this->load->model('roomtypemodel');
         $store_id = $this->employee->store_id;
-        //未缴费订单
-        $room = Roomunionmodel::with('order') //
-        ->where('store_id' ,$store_id)
-            ->whereHas('order')
-            ->orderBy('number', 'ASC')
-            ->get()
-            ->groupBy('layer')
-            ->map(function ($room) {
-                $roominfo                  = $room->toArray();
-                $roominfo['count_total']   = count($room);
-                $roominfo['count_arrears'] = 0;
-                for ($i = 0; $i < $roominfo['count_total']; $i++) {
-                    if (!empty($roominfo[$i]['order'])) {
-                        $roominfo['count_arrears'] += 1;
-                    }
-                }
-                global $count;
-                $count += $roominfo['count_arrears'];
-                return $count;
-            })
-            ->toArray();
-        if($room) {
-            $data['tipsnum']['order'] = end($room);
+        $where['status'] = 'PENDING';
+        $where['store_id'] = $store_id;
+        $this->load->model('customermodel');
+        $orders = Ordermodel::where($where)->with('resident')->get()->groupBy('room_id')->count();
+        if($orders) {
+            $data['tipsnum']['order'] = $orders;
         }else{
             $data['tipsnum']['order'] = 0;
         }
         //缴费订单确认
-        $this->load->model('customermodel');
         $where['status']= 'CONFIRM';
-        $where['store_id'] = $this->employee->store_id;
-        $order = $this->ordermodel->ordersOfRooms($where);
-        if($order){
-            $data['tipsnum']['sureorder'] = $order['total'];
+        $orders = Ordermodel::where($where)->with('resident')->get()->groupBy('room_id')->count();
+        if($orders){
+            $data['tipsnum']['sureorder'] = $orders;
         }else{
             $data['tipsnum']['sureorder'] = 0;
         }

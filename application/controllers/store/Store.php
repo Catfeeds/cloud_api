@@ -180,7 +180,6 @@ class Store extends MY_Controller
             $this->api_res(1005);
             return;
         }
-//        $this->api_res(0,['des'=>$this->input->post('describe')]);
         $field = [
             'rent_type', 'status', 'name', 'theme', 'province', 'city', 'district', 'address', 'contact_user',
             'counsel_phone', 'counsel_time', 'images', 'describe',
@@ -260,9 +259,9 @@ class Store extends MY_Controller
     }
 
     /**
-     * 添加集中式门店
+     * 添加门店
      */
-    public function addStoreUnion()
+    public function addStore()
     {
         $field = [
             'rent_type', 'status', 'name', 'theme', 'province', 'city', 'district', 'address', 'contact_user',
@@ -279,7 +278,7 @@ class Store extends MY_Controller
         }
         $images = $this->splitAliossUrl($post['images'], true);
         $images = json_encode($images);
-        if (Storemodel::where(['company_id' => COMPANY_ID, 'rent_type' => 'UNION', 'name' => $post['name']])->first()) {
+        if (Storemodel::where(['company_id' => COMPANY_ID, 'rent_type' => $post['rent_type'], 'name' => $post['name']])->first()) {
             $this->api_res(1008);
             return;
         }
@@ -420,9 +419,12 @@ class Store extends MY_Controller
                 ),
             ),
             array(
-                'field' => 'rent_type',
-                'label' => '门店类型',
-                'rules' => 'required|trim|in_list[UNION]',
+	            'field' => 'rent_type',
+	            'label' => '门店类型',
+	            'rules' => 'required|trim|in_list[UNION,DOT]',
+	            'errors' => array(
+		            'required' => '门店类型不能为空.',
+	            ),
             ),
             array(
                 'field' => 'status',

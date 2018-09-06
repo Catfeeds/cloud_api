@@ -13,6 +13,8 @@ class Employeemodel extends Basemodel {
 
     protected $hidden = ['created_at', 'update_at', 'deleted_at'];
 
+    protected $fillable = ['nickname','gender','avatar','openid','unionid','province','city','country'];
+    
     public function store() {
         return $this->belongsTo(Storemodel::class, 'store_id');
     }
@@ -121,6 +123,20 @@ class Employeemodel extends Basemodel {
             $my_cities[] = $city;
         }
         return $my_cities;
+    }
+	
+	/**
+	 * 根据id更新员工信息
+	 */
+    public function updateEmployee($employee_id,$info)
+    {
+    	$employee = $this->Find($employee_id);
+	    $employee->fill($info);
+	    if ($employee->save()){
+	    	return true;
+	    }else{
+	    	return false;
+	    }
     }
 
 }

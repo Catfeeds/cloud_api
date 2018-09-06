@@ -338,26 +338,19 @@ class Ordermodel extends Basemodel {
      * 检索订单, 不包括已生成和已审核的订单
      **/
     public function ordersOfRooms(array $where, $page = 1, $perPage = PAGINATE) {
-        $query = Ordermodel::with('roomunion');
-
-        $query = $query->where($where);
+        $query = Ordermodel::where($where);
 
 //        var_dump($query->get()->toArray());exit;
 
         $orders = $query
             ->with('resident')
-            ->whereHas('resident_room')
-//            ->whereHas('resident')
-            /*->whereHas('roomunion',function ($query){
-        $query->where('resident_id','>',0);
-        })*/
             ->whereNotIn('status', [Ordermodel::STATE_AUDITED, Ordermodel::STATE_GENERATED])
             ->where(function ($query) {})
             ->orderBy('status', 'ASC')
 //            ->orderBy('room_id', 'ASC')
             ->orderBy('updated_at', 'ASC')
             ->get()
-            ->groupBy('room_id');
+            ->groupBy('resident_id');
 
         $pagination = [
             'total'        => $orders->count(),
@@ -370,14 +363,15 @@ class Ordermodel extends Basemodel {
             ->map(function ($items) {
                 $order = $items->first();
 //                log_message('error','RESIDENT_ID'.$order->resident_id);
+                if($order->resident){
+                    $room = Roomunionmodel::find($order->resident->room_id);
                 return [
                     'room'     => [
-                        'id'     => $order->roomunion->id,
-                        'number' => $order->roomunion->number,
+                        'id'     => $room->id,
+                        'number' => $room->number,
                     ],
                     'orders'   => [
                         'status'     => $order->status,
-//                        'status_name'   => config('strongberry.orderName.status')[$order->status],
                         'amount'     => number_format($items->sum('paid'), 2),
                         'months'     => $items->pluck('month')->unique()->values(),
                         'updated_at' => $order->updated_at->format('Y-m-d'),
@@ -389,6 +383,7 @@ class Ordermodel extends Basemodel {
                         'remark' => $order->resident_id > 0 ? $order->resident->remark : '',
                     ],
                 ];
+                }
             })
             ->values();
 
@@ -411,15 +406,15 @@ class Ordermodel extends Basemodel {
         }
 
         switch ($order->type) {
-        case Ordermodel::PAYTYPE_DEVICE:
-            $tmpOrder = Smartdevicemodel::find($order->other_id);
-            break;
-        case Ordermodel::PAYTYPE_UTILITY:
-            $tmpOrder = Utilitymodel::find($order->other_id);
-            break;
-        default:
-            $tmpOrder = NULL;
-            break;
+            case Ordermodel::PAYTYPE_DEVICE:
+                $tmpOrder = Smartdevicemodel::find($order->other_id);
+                break;
+            case Ordermodel::PAYTYPE_UTILITY:
+                $tmpOrder = Utilitymodel::find($order->other_id);
+                break;
+            default:
+                $tmpOrder = NULL;
+                break;
         }
 
         if (!$tmpOrder) {

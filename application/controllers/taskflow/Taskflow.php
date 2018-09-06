@@ -10,7 +10,7 @@ use Illuminate\Database\Capsule\Manager as DB;
  */
 class Taskflow extends MY_Controller{
 
-    protected $withs=['checkout','price','reserve','service'];
+    protected $withs=['checkout','price','reserve','service','warning'];
 
     public function __construct()
     {
@@ -51,6 +51,7 @@ class Taskflow extends MY_Controller{
         $this->load->model('pricecontrolmodel');
         $this->load->model('reserveordermodel');
         $this->load->model('serviceordermodel');
+        $this->load->model('warningrecordmodel');
         $taskflows  = Taskflowmodel::with(['step'=>function($query){
             $query->with(['employee'=>function($query){
                 $query->with('position');
@@ -64,7 +65,7 @@ class Taskflow extends MY_Controller{
             ->where('employee_id',$employee_id)
             ->offset($offset)
             ->limit($per_page)
-            ->orderBy('id','DESC')
+            ->orderBy('updated_at','DESC')
             ->get();
             /*->map(function($res){
                 $position_ids   = explode(',',$res->step->position_ids);
@@ -79,6 +80,90 @@ class Taskflow extends MY_Controller{
      * 展示全部审批
      */
     public function showAllTaskflow()
+    {
+        $input  = $this->input->post(null,true);
+        $e_store_ids  = explode(',',$this->employee->store_ids);
+        $e_position_id  = $this->employee->position_id;
+        //我发起的
+        $mycreate_ids   = Taskflowmodel::where('employee_id',$this->employee->id)->pluck('id')->toArray();
+        $myapprove_ids  = Taskflowrecordmodel::where('employee_id',$this->employee->id)->pluck('taskflow_id')->toArray();
+        $mylist_ids = Taskflowstepmodel::
+            where('status','!=',Taskflowstepmodel::STATE_APPROVED)
+            ->whereIn('store_id',$e_store_ids)
+            ->groupBy('taskflow_id')
+            ->having('company_id',COMPANY_ID)
+            ->get()
+            ->map(function($res) use ($e_position_id){
+                $s_position_ids = explode(',',$res->position_ids);
+                if(in_array($e_position_id,$s_position_ids)){
+                    return $res->taskflow_id;
+                }else{
+                    return null;
+                }
+            })->toArray();
+        $list=[];
+        foreach ($mylist_ids as $key=>$value){
+            if($value){
+                $list[]=$value;
+            }
+        }
+        $merge_ids  = array_merge($mycreate_ids,$myapprove_ids,$list);
+        //先判断权限
+        $e_store_ids  = explode(',',$this->employee->store_ids);
+        $where  = [];
+        if (!empty($input['store_id'])) {
+            $where['store_id']  = $input['store_id'];
+            if (!in_array($input['store_id'],$e_store_ids)) {
+                $this->api_res(1011);
+                return;
+            }
+        }
+        empty($input['type'])?:$where['type']=$input['type'];
+        empty($input['status'])?:$where['status']=$input['status'];
+        $page   = (int)(empty($input['page'])?1:$input['page']);
+        $per_page   = (empty(($input['per_page'])))?PAGINATE:$input['per_page'];
+        $count  = Taskflowmodel::where($where)
+            ->whereIn('store_id',$e_store_ids)
+            ->whereIn('id',$merge_ids)
+            ->count();
+        $totalPage  = ceil($count/$per_page);
+        if ($page>$totalPage) {
+            $this->api_res(0,['taskflows'=>[],'page'=>$page,'totalPage'=>$totalPage,'count'=>$count]);
+            return;
+        }
+        $offset    = $per_page * ($page - 1);
+        $this->load->model('storemodel');
+        $this->load->model('positionmodel');
+        $this->load->model('roomunionmodel');
+        $this->load->model('roomtypemodel');
+        $this->load->model('checkoutmodel');
+        $this->load->model('pricecontrolmodel');
+        $this->load->model('reserveordermodel');
+        $this->load->model('serviceordermodel');
+        $this->load->model('warningrecordmodel');
+        $taskflows  = Taskflowmodel::with(['step'=>function($query){
+            $query->with(['employee'=>function($query){
+                $query->with('position');
+            }]);
+        }])
+            ->with('store')
+            ->with('roomunion')
+            ->with('roomtype')
+            ->with($this->withs)
+            ->where($where)
+            ->whereIn('store_id',$e_store_ids)
+            ->whereIn('id',$merge_ids)
+            ->offset($offset)
+            ->limit($per_page)
+            ->orderBy('updated_at','desc')
+            ->get();
+        $this->api_res(0,['taskflows'=>$taskflows,'page'=>$page,'totalPage'=>$totalPage,'count'=>$count]);
+    }
+
+    /**
+     * 展示全部审批
+     */
+    public function showAllTaskflows()
     {
         $input  = $this->input->post(null,true);
         //先判断权限
@@ -112,6 +197,7 @@ class Taskflow extends MY_Controller{
         $this->load->model('pricecontrolmodel');
         $this->load->model('reserveordermodel');
         $this->load->model('serviceordermodel');
+        $this->load->model('warningrecordmodel');
         $taskflows  = Taskflowmodel::with(['step'=>function($query){
             $query->with(['employee'=>function($query){
                 $query->with('position');
@@ -125,33 +211,9 @@ class Taskflow extends MY_Controller{
             ->whereIn('store_id',$e_store_ids)
             ->offset($offset)
             ->limit($per_page)
+            ->orderBy('updated_at','desc')
             ->get();
         $this->api_res(0,['taskflows'=>$taskflows,'page'=>$page,'totalPage'=>$totalPage,'count'=>$count]);
-    }
-
-    /**
-     * 创建任务流create
-     */
-    public function create()
-    {
-        $input  = $this->input->post(null,true);
-        $room_id= $input['room_id'];
-        //找到房间所在的门店
-        $this->load->model('roomunionmodel');
-        $room   = Roomunionmodel::find($room_id);
-        if (!$room) {
-            $this->api_res(1007);
-            return;
-        }
-        $store_id   = $room->store_id;
-        $type   = $input['type'];
-        $taskflow_id    = $this->taskflowmodel->createTaskflow($room_id,$type,$store_id);
-        if (!$taskflow_id) {
-            $this->api_res(1020);
-            return;
-        }
-        $this->api_res(0,['taskflow_id'=>$taskflow_id]);
-
     }
 
     /**
@@ -175,7 +237,7 @@ class Taskflow extends MY_Controller{
         $page   = (int)(empty($input['page'])?1:$input['page']);
         $per_page   = (empty(($input['per_page'])))?PAGINATE:$input['per_page'];
         $count  = Taskflowrecordmodel::where('employee_id',$this->employee->id)
-            ->where($where)->groupBy('taskflow_id')->count();
+            ->where($where)->groupBy('taskflow_id')->get()->count();
         $totalPage  = ceil($count/$per_page);
         if ($page>$totalPage) {
             $this->api_res(0,['steps'=>[],'page'=>$page,'totalPage'=>$totalPage,'count'=>$count]);
@@ -190,6 +252,7 @@ class Taskflow extends MY_Controller{
         $this->load->model('pricecontrolmodel');
         $this->load->model('reserveordermodel');
         $this->load->model('serviceordermodel');
+        $this->load->model('warningrecordmodel');
         $steps  = Taskflowrecordmodel::with(['taskflow'=>function($query){
             $query->with(['step'=>function($query){
                 $query->with(['employee'=>function($query){
@@ -206,7 +269,7 @@ class Taskflow extends MY_Controller{
             ->offset($offset)
             ->limit($per_page)
             ->groupBy('taskflow_id')
-            ->orderBy('id','DESC')
+            ->orderBy('updated_at','DESC')
             ->get();
         $this->api_res(0,['steps'=>$steps,'page'=>$page,'totalPage'=>$totalPage,'count'=>$count]);
     }
@@ -245,6 +308,8 @@ class Taskflow extends MY_Controller{
         }
         switch ($taskflow->type) {
             case Taskflowmodel::TYPE_CHECKOUT:
+            case Taskflowmodel::TYPE_CHECKOUT_NO_LIABILITY:
+            case Taskflowmodel::TYPE_CHECKOUT_UNDER_CONTRACT:
                 $data   = $this->showCheckoutInfo($taskflow_id);
                 break;
             case Taskflowmodel::TYPE_PRICE:
@@ -255,6 +320,9 @@ class Taskflow extends MY_Controller{
                 break;
             case Taskflowmodel::TYPE_SERVICE:
                 $data   = $this->showService($taskflow_id);
+                break;
+            case Taskflowmodel::TYPE_WARNING:
+                $data   = $this->showWarning($taskflow_id);
                 break;
             default:
                 $data   = [];
@@ -303,6 +371,7 @@ class Taskflow extends MY_Controller{
         $this->load->model('pricecontrolmodel');
         $this->load->model('reserveordermodel');
         $this->load->model('serviceordermodel');
+        $this->load->model('warningrecordmodel');
         $audit  = Taskflowstepmodel::with(['taskflow'=>function($query){
             $query->with('employee')->with(['step'=>function($a){
                 $a->with(['employee'=>function($query){
@@ -327,7 +396,8 @@ class Taskflow extends MY_Controller{
                     return null;
                 }
             })
-            ->where('id','>',0);
+            ->where('id','>',0)
+            ->sortByDesc('taskflow.updated_at');
 
         $count  = $audit->count();
         $totalPage  = ceil($count/$per_page);
@@ -344,7 +414,7 @@ class Taskflow extends MY_Controller{
         $this->api_res(0,['audits'=>$res,'page'=>$page,'totalPage'=>$totalPage,'count'=>$count]);
     }
 
-    private function validate()
+    private function validateAudit()
     {
         return array(
             array(
@@ -371,7 +441,7 @@ class Taskflow extends MY_Controller{
     public function audit()
     {
         $input  = $this->input->post(null,true);
-        if(!$this->validationText($this->validate())){
+        if(!$this->validationText($this->validateAudit())){
             $this->api_res(1002,['error'=>$this->form_first_error()]);
             return;
         }
@@ -418,6 +488,8 @@ class Taskflow extends MY_Controller{
                 $taskflow->status   = Taskflowmodel::STATE_APPROVED;
                 switch ($taskflow->type) {
                     case Taskflowmodel::TYPE_CHECKOUT:
+                    case Taskflowmodel::TYPE_CHECKOUT_UNDER_CONTRACT:
+                    case Taskflowmodel::TYPE_CHECKOUT_NO_LIABILITY:
                         $this->doneCheckout($taskflow);
                         break;
                     case Taskflowmodel::TYPE_PRICE:
@@ -430,8 +502,11 @@ class Taskflow extends MY_Controller{
                     case Taskflowmodel::TYPE_SERVICE:
                         $this->doneService($taskflow);
                         break;
+                    case Taskflowmodel::TYPE_WARNING:
+                        $this->doneWarning($taskflow);
+                        break;
                     default:
-
+                        break;
                 }
             }
             $taskflow->save();
@@ -442,7 +517,66 @@ class Taskflow extends MY_Controller{
             DB::rollBack();
             throw  $e;
         }
+        $this->notifyNext($taskflow);
         $this->api_res(0);
+    }
+
+    /**
+     * 审核通过通知下一个人
+     */
+    private function notifyNext($taskflow)
+    {
+        $employees   = $this->taskflowmodel->listEmployees($taskflow->id);
+        if(!empty($employees)){
+            try{
+                switch ($taskflow->type){
+                    case Taskflowmodel::TYPE_CHECKOUT:
+                    case Taskflowmodel::TYPE_CHECKOUT_UNDER_CONTRACT:
+                    case Taskflowmodel::TYPE_CHECKOUT_NO_LIABILITY:
+                        $this->load->model('checkoutmodel');
+                        $this->load->model('storemodel');
+                        $this->load->model('roomunionmodel');
+                        $this->load->model('residentmodel');
+                        $checkout   = $taskflow->checkout;
+                        $resident   = Residentmodel::find('resident_id');
+                        $msg    = json_encode([
+                            'store_name'=> Storemodel::find($checkout->store_id)->name,
+                            'number'    => Roomunionmodel::find($checkout->room_id)->number,
+                            'create_name'   => Employeemodel::find($checkout->employee_id)->name,
+                            'name'      => $resident->name,
+                            'phone'     => $resident->phone,
+                        ]);
+                        break;
+                    case Taskflowmodel::TYPE_PRICE:
+                        $this->load->model('storemodel');
+                        $this->load->model('pricecontrolmodel');
+                        $this->load->model('roomunionmodel');
+                        $price  = $taskflow->price;
+                        $store  = Storemodel::find($price->store_id);
+                        $room   = Roomunionmodel::find($price->room_id);
+                        $msg    = json_encode([
+                            'store_name'    => $store->name,
+                            'number'        => $room->number,
+                            'create_name'          => Employeemodel::find($taskflow->employee_id)->name,
+                            'type'          => ($price->type=='ROOM')?'房租服务费':'物业服务费',
+                            'money'         => $price->new_money,
+                        ]);
+                        break;
+                    case Taskflowmodel::TYPE_WARNING:
+                        $msg    = [];
+                        break;
+                    default:
+                        $msg    = [];
+                        break;
+                }
+                if(!empty($msg)){
+                    $this->taskflowmodel->notify($taskflow->type, $msg, $employees);
+                }
+            }catch (Exception $e) {
+                log_message('error','审核流通知下一位失败：'.$e->getMessage());
+            }
+        }
+        return true;
     }
 
     /**
@@ -589,8 +723,21 @@ class Taskflow extends MY_Controller{
         return $service;
     }
 
-
     /**
+     * 风险预警展示
+     */
+    private function showWarning($taskflow_id)
+    {
+        $this->load->model('warningrecordmodel');
+        $this->load->model('roomunionmodel');
+        $this->load->model('storemodel');
+        $this->load->model('residentmodel');
+        $warning    = Taskflowmodel::find($taskflow_id)->warning()->with(['roomunion','store','resident'])->first();
+        return $warning;
+    }
+
+
+        /**
      * 退房审核完成
      */
     private function doneCheckout($taskflow)
@@ -621,6 +768,13 @@ class Taskflow extends MY_Controller{
     }
 
     /**
+     * 预警处理
+     */
+    private function doneWarning($taskflow){
+        return;
+    }
+
+    /**
      * 调价审核完成
      */
     private function donePrice($taskflow)
@@ -638,5 +792,69 @@ class Taskflow extends MY_Controller{
         }
         $room->save();
     }
+
+    /*************************************** 远程调用 *********************************************/
+    /**
+     * 创建任务流create
+     * @param room_id房间id
+     * @param store_id
+     * @param type
+     * @param create_role
+     * @param company_id
+     */
+    public function create()
+    {
+        $input  = $this->input->post(null,true);
+        $filed  = ['room_id','store_id','type','create_role'];
+        if (!$this->validationText($this->validationCreate())) {
+           $this->api_res(1002,['error'=>$this->form_first_error($filed)]);
+           return;
+        }
+        $room_id    = $input['room_id'];
+        $store_id   = $input['store_id'];
+        $company_id = $input['company_id'];
+        $type       = $input['type'];
+        $role_create= $input['role_create'];
+        //核验房间
+        $this->load->model('roomunionmodel');
+        $room   = Roomunionmodel::where('store_id',$store_id)->where('company_id',$company_id)->find($room_id);
+        if (!$room) {
+            $this->api_res(1007);
+            return;
+        }
+        //创建审核流，如果没有设置模板返回null
+        $taskflow_id    = $this->taskflowmodel->createTaskflow($company_id,$type,$store_id,$room_id,$role_create,null);
+        if (!$taskflow_id) {
+            $this->api_res(10024);
+            return;
+        }
+        $this->api_res(0,['taskflow_id'=>$taskflow_id]);
+    }
+
+    /**
+     * 创建任务流验证
+     */
+ /*   public function validationCreate()
+    {
+        return [
+            array(
+                'field' => 'room_id',
+                'rules' => 'trim|required|integer',
+            ),
+            array(
+                'field' => 'store_id',
+                'rules' => 'trim|required|integer',
+            ),
+            array(
+                'field' => 'type',
+                'rules' => 'trim|required|in_list[WARNING]',
+            ),
+            array(
+                'field' => 'create_role',
+                'rules' => 'trim|required|in_list[EMPLOYEE,CUSTOMER,SYSTEM]',
+            ),
+        ];
+    }*/
+
 
 }

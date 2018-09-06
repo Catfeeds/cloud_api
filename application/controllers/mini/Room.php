@@ -1,6 +1,6 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
-
+use Illuminate\Database\Capsule\Manager as DB;
 /**
  * Author:      hfq<1326432154@qq.com>
  * Date:        2018/5/23
@@ -38,23 +38,11 @@ class Room extends MY_Controller {
         if (!empty($post['building_id'])) {$where['building_id'] = intval($post['building_id']);};
         if (!empty($post['status'])) {$status = $post['status'];} else { $status = null;};
         $where['store_id'] = $this->employee->store_id;
-//        $where['store_id']  = 1;
-
-        $filed = ['id', 'layer', 'status', 'number', 'room_type_id'];
+        $filed = ['id', 'layer', 'status', 'number', 'room_type_id', 'resident_id'];
         $this->load->model('roomtypemodel');
         if ($status == 'ARREARS') {
-            /* $room   =  DB::select("select u.`id`, u.`layer`, u.`status`, u.`number`, u.`room_type_id` ".
-            " from `boss_room_union` as u ".
-            " inner join `boss_order` as oo ".
-            "              on u.`id` = oo.`room_id`  ".
-            " where (u.`store_id` = ?) and u.`deleted_at` is null  ".
-            "          and oo.`status` in ('GENERATE', 'AUDITED', 'PENDING')  ".
-            "         and oo.`deleted_at` is null ".
-            " order by u.`number` asc ",[8]);*/
-
-            $room = Roomunionmodel::with('room_type')->with('order') //->with('due')
+            $room = Roomunionmodel::with('room_type')->with('pendOrder')
                 ->where($where)
-                ->whereHas('order')
                 ->orderBy('number', 'ASC')
                 ->get($filed)->groupBy('layer')
                 ->map(function ($room) {
@@ -67,21 +55,10 @@ class Room extends MY_Controller {
                     $roominfo['count_due']     = 0;
                     for ($i = 0; $i < $roominfo['count_total']; $i++) {
                         $status = $roominfo[$i]['status'];
-                        /*if ($status == 'RENT'){
-                    $roominfo['count_rent']     += 1;
-                    }
-                    if ($status == 'BLANK'){
-                    $roominfo['count_blank']    += 1;
-                    }*/
-                        if (!empty($roominfo[$i]['order'])) {
+                        if (!empty($roominfo[$i]['pend_order'])) {
+                            $room[$i]->order = $roominfo[$i]['pend_order'];
                             $roominfo['count_arrears'] += 1;
                         }
-                        /*if (!empty($roominfo[$i]['due'])){
-                $roominfo['count_due']  += 1;
-                }
-                if ($status == 'REPAIR'){
-                $roominfo['count_repair']   += 1;
-                }*/
                     }
                     return [$room, 'count' => [
                         'count_total'   => $roominfo['count_total'],
@@ -95,7 +72,7 @@ class Room extends MY_Controller {
                 ->toArray();
         } elseif ($status == 'DUE') {
             $room = Roomunionmodel::with('room_type')->with('due') //->with('order')
-                ->where($where)->whereHas('due')->orderBy('number', 'ASC')
+            ->where($where)->orderBy('number', 'ASC')
                 ->get($filed)->groupBy('layer')
                 ->map(function ($room) {
                     $roominfo                  = $room->toArray();
@@ -106,22 +83,9 @@ class Room extends MY_Controller {
                     $roominfo['count_repair']  = 0;
                     $roominfo['count_due']     = 0;
                     for ($i = 0; $i < $roominfo['count_total']; $i++) {
-                        /*$status = $roominfo[$i]['status'];
-                    if ($status == 'RENT'){
-                    $roominfo['count_rent']     += 1;
-                    }
-                    if ($status == 'BLANK'){
-                    $roominfo['count_blank']    += 1;
-                    }
-                    if (!empty($roominfo[$i]['order'])){
-                    $roominfo['count_arrears']  += 1;
-                    }*/
                         if (!empty($roominfo[$i]['due'])) {
                             $roominfo['count_due'] += 1;
                         }
-                        /*if ($status == 'REPAIR'){
-                $roominfo['count_repair']   += 1;
-                }*/
                     }
                     return [$room, 'count' => [
                         'count_total'   => $roominfo['count_total'],
@@ -134,7 +98,7 @@ class Room extends MY_Controller {
                 })
                 ->toArray();
         } elseif ($status == null) {
-            $room = Roomunionmodel::with('room_type')->with('due')->with('order')
+            $room = Roomunionmodel::with('room_type')->with('due')->with('pendOrder')
                 ->where($where)->orderBy('number', 'ASC')
                 ->get($filed)->groupBy('layer')
                 ->map(function ($room) {
@@ -153,7 +117,8 @@ class Room extends MY_Controller {
                         if ($status == 'BLANK') {
                             $roominfo['count_blank'] += 1;
                         }
-                        if (!empty($roominfo[$i]['order'])) {
+                        if (!empty($roominfo[$i]['pend_order'])) {
+                            $room[$i]->order = $roominfo[$i]['pend_order'];
                             $roominfo['count_arrears'] += 1;
                         }
                         if (!empty($roominfo[$i]['due'])) {
@@ -174,7 +139,7 @@ class Room extends MY_Controller {
                 })
                 ->toArray();
         } else {
-            $room = Roomunionmodel::with('room_type') /*->with('due')->with('order')*/
+            $room = Roomunionmodel::with('room_type')
                 ->where($where)->where('status', $status)->orderBy('number', 'ASC')
                 ->get($filed)->groupBy('layer')
                 ->map(function ($room) {
@@ -216,7 +181,54 @@ class Room extends MY_Controller {
         }
         $this->api_res(0, ['list' => $room]);
     }
+    public function listOrderRoom(){
+        $this->load->model('ordermodel');
+        $this->load->model('residentmodel');
+        $post  = $this->input->post(null, true);
+        $where = [];
+        if (!empty($post['building_id'])) {$where['building_id'] = intval($post['building_id']);};
+        if (!empty($post['status'])) {$status = $post['status'];} else { $status = null;};
+        $where['store_id'] = $this->employee->store_id;
+        if(empty($post['building_id'])){
+            $post['building_id'] = "4,5";
+        }
+        $this->load->model('roomtypemodel');
+        if ($status == 'ARREARS') {
+            $room   =  DB::select("select u.`id`, u.`layer`, u.`status`,u.`building_id` ,u.`number`, u.`room_type_id`, ty.`id` as `room_type_id`,ty.`name`  ".
+                " from `boss_room_union` as u ".
+                " left join `boss_order` as oo on u.`id` = oo.`room_id`".
+                " left join `boss_room_type` as ty on u.`room_type_id` = ty.`id`".
+                " where (u.`store_id` = ?) and u.`deleted_at` is null and (oo.`company_id` = ".COMPANY_ID.")".
+                "          and oo.`status` in ('PENDING')  ".
+                "          and oo.`deleted_at` is null ".
+                "          and u.`building_id` in(".$post['building_id'].")".
+                "          group by u.`id`".
+                " order by u.`number` asc ",[$where['store_id']]);
+        } elseif ($status == 'DUE') {
+            $room   =  DB::select("select u.`id`, u.`layer`, u.`status`, u.`number`, u.`room_type_id`, ty.`name`,".
+                "re.`id` as `resident_id`, re.`end_time`, re.`room_id` ".
+                " from `boss_room_union` as u ".
+                " left join `boss_resident` as re on u.`id` = re.`room_id`".
+                " left join `boss_room_type` as ty on u.`room_type_id` = ty.`id`".
+                " where (u.`store_id` = ?) and u.`deleted_at` is null ".
+                " and re.`end_time` between '".date('Y-m-d H:i:s', time())."' and '". date('Y-m-d H:i:s', strtotime('+1month'))."'  ".
+                "         and re.`deleted_at` is null ".
+                "          and u.`building_id` in(".$post['building_id'].")".
+                "         group by u.`id`".
+                " order by u.`number` asc ",[$where['store_id']]);
+        } else {
+            $room   =  DB::select("select u.`id`, u.`layer`, u.`status`, u.`number`, u.`room_type_id`, ty.`name`".
+                " from `boss_room_union` as u ".
+                " left join `boss_room_type` as ty on u.`room_type_id` = ty.`id`".
+                " where (u.`store_id` = ?) and u.`deleted_at` is null ".
+                "         and u.`building_id` in(".$post['building_id'].")".
+                "         and u.`status` = '".$status."' ".
+                "         group by u.`id`".
+                " order by u.`number` asc ",[$where['store_id']]);
+        }
+        $this->api_res(0, ['list' => $room]);
 
+    }
     /**
      *  门店下的房间状态统计
      */

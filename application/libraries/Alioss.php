@@ -425,7 +425,7 @@ class Alioss {
 		$this->client_name = $this->file_name;
 
 		// Is the file type allowed to be uploaded?
-		if ( ! $this->is_allowed_filetype())
+		if ( ! $this->is_allowed_filetype(TRUE))
 		{
 			$this->set_error('upload_invalid_filetype', 'debug');
 			return FALSE;

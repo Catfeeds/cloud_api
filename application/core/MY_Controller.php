@@ -273,7 +273,10 @@ class MY_Controller extends CI_Controller {
             $merchant_id = $store->payment_merchant_id;
             $key         = $store->payment_key;
         }
-
+        $debug = true;
+        if(ENVIRONMENT == 'production'){
+            $debug = false;
+        }
         return [
             'debug'   => $debug,
             'app_id'  => config_item('wx_map_appid'),
@@ -294,5 +297,49 @@ class MY_Controller extends CI_Controller {
                 'key_path'    => config_item('customer_wechat_payment_key_path'),
             ],
         ];
+    }
+
+    public function debug() {
+        $this->wlog("debug", $this->sprint(func_get_args()));
+    }
+    public function info() {
+        $this->wlog("info", $this->sprint(func_get_args()));
+    }
+    public function warn() {
+        $this->wlog("warn", $this->sprint(func_get_args()));
+    }
+    public function error() {
+        $this->wlog("error", $this->sprint(func_get_args()));
+    }
+    protected function sprint($args) {
+        $msg = "";
+        foreach ($args as $key => $value) {
+            switch (gettype($value)) {
+            case 'integer':
+            case 'double':
+            case 'string':
+                $msg .= $value . " ";
+                break;
+            default:
+                $msg .= json_encode($value) . " ";
+                break;
+            }
+        }
+        return $msg;
+    }
+    protected function wlog($level, $msg) {
+        $step      = 1;
+        $backtrace = debug_backtrace();
+        array_shift($backtrace);
+        if (count($backtrace) <= ($step + 1)) {
+            log_message($level, $msg);
+            return;
+        }
+        $c  = $backtrace[$step]["class"];
+        $fc = $backtrace[$step]["function"];
+        $fe = strstr($backtrace[$step - 1]["file"], 'controllers');
+        $l  = $backtrace[$step - 1]["line"];
+
+        log_message($level, "[$fe.($c.$fc):$l] $msg");
     }
 }
