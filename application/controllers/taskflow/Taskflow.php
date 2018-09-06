@@ -65,7 +65,7 @@ class Taskflow extends MY_Controller{
             ->where('employee_id',$employee_id)
             ->offset($offset)
             ->limit($per_page)
-            ->orderBy('id','DESC')
+            ->orderBy('updated_at','DESC')
             ->get();
             /*->map(function($res){
                 $position_ids   = explode(',',$res->step->position_ids);
@@ -155,6 +155,7 @@ class Taskflow extends MY_Controller{
             ->whereIn('id',$merge_ids)
             ->offset($offset)
             ->limit($per_page)
+            ->orderBy('updated_at','desc')
             ->get();
         $this->api_res(0,['taskflows'=>$taskflows,'page'=>$page,'totalPage'=>$totalPage,'count'=>$count]);
     }
@@ -210,6 +211,7 @@ class Taskflow extends MY_Controller{
             ->whereIn('store_id',$e_store_ids)
             ->offset($offset)
             ->limit($per_page)
+            ->orderBy('updated_at','desc')
             ->get();
         $this->api_res(0,['taskflows'=>$taskflows,'page'=>$page,'totalPage'=>$totalPage,'count'=>$count]);
     }
@@ -267,7 +269,7 @@ class Taskflow extends MY_Controller{
             ->offset($offset)
             ->limit($per_page)
             ->groupBy('taskflow_id')
-            ->orderBy('id','DESC')
+            ->orderBy('updated_at','DESC')
             ->get();
         $this->api_res(0,['steps'=>$steps,'page'=>$page,'totalPage'=>$totalPage,'count'=>$count]);
     }
@@ -394,7 +396,8 @@ class Taskflow extends MY_Controller{
                     return null;
                 }
             })
-            ->where('id','>',0);
+            ->where('id','>',0)
+            ->sortByDesc('taskflow.updated_at');
 
         $count  = $audit->count();
         $totalPage  = ceil($count/$per_page);
