@@ -54,7 +54,7 @@ class Community extends MY_Controller
 		$post   = $this->input->post(null, true);
 		$page   = intval(isset($post['page']) ? $post['page'] : 1);
 		$offset = $offset = PAGINATE * ($page - 1);
-		$name   = empty($post['name']) ? $post['name'] : '';
+		$name   = !empty($post['name']) ? $post['name'] : '';
 		(isset($post['store_id']) && !empty($post['store_id'])) ? $where['store_id'] = $post['store_id'] : $where = [];
 		
 		$count = ceil(Communitymodel::where($where)->where('name', 'like', "%$name%")->count() / PAGINATE);
