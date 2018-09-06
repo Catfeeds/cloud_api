@@ -209,7 +209,10 @@ class Utility extends MY_Controller {
         if (!empty($post['status'])) {$where['confirmed']= intval($post['status']);}
         if (!empty($post['month'])) {$where['month'] = intval($post['month']);}
         if (!empty($post['year'])) {$where['year'] = intval($post['year']);}
-        if (!empty($post['type'])){$where['type'] = $post['type'];}
+        if (!empty($post['type'])) {
+            $where_public['type'] = $post['type'];
+            $where_special['boss_meter_reading_transfer.type'] = $post['type'];
+        }
         $number = empty($post['number'])?'':$post['number'];
         $count  = ceil(Meterreadingtransfermodel::whereIn('store_id',$store_ids)->where($where)->where($where_public)
                 ->where(function ($query) use ($number) {

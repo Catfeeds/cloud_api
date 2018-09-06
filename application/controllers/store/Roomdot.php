@@ -23,7 +23,7 @@ class Roomdot extends MY_Controller
 	{
 		$field = [
 			'store_id', 'community_id', 'building_name', 'unit', 'number', 'layer', 'layer_total', 'room_number',
-			'hall_number', 'toilet_number', 'area',
+			'hall_number', 'toilet_number', 'area', 'rooms', 'toward'
 		];
 		$post  = $this->input->post(null, true);
 		//验证房屋
@@ -36,7 +36,6 @@ class Roomdot extends MY_Controller
 			$this->api_res(1002, ['error' => '房屋图片不能为空']);
 			return;
 		}
-		
 		//遍历验证房间
 		$rooms = isset($post['rooms']) ? $post['rooms'] : null;
 		if (!$rooms || !is_array($rooms)) {
@@ -93,9 +92,9 @@ class Roomdot extends MY_Controller
 					'house_id'     => $house_id,
 					'number'       => $value['the_room_number'],
 					'area'         => $value['room_area'],
-					'toward'       => $value['room_toward'],
 					'feature'      => $value['room_feature'],
 					'provides'     => $value['room_provides'],
+					'layer'        => $post['layer'],
 					'created_at'   => date('Y-m-d H:i:s', time()),
 					'updated_at'   => date('Y-m-d H:i:s', time()),
 				];
@@ -111,53 +110,6 @@ class Roomdot extends MY_Controller
 		} catch (Exception $e) {
 			DB::rollback();
 			throw $e;
-		}
-	}
-	
-	/**
-	 * 批量编辑分布式房间
-	 */
-	public function batchUpdateDot()
-	{
-		$field = ['store_id', 'community_id',
-		          'contract_template_long_id', 'contract_template_short_id', 'contract_template_reserve_id',
-		          //            'contract_min_time','contract_max_time','deposit_type','pay_frequency_allow'
-		];
-		$post  = $this->input->post(null, true);
-		//验证基本信息
-		if (!$this->validationText($this->validateBatchDotConfig())) {
-			$this->api_res(1002, ['error' => $this->form_first_error($field)]);
-			return;
-		}
-		//验证付款周期
-		//        $pay_frequency_allows = isset($post['pay_frequency_allow'])?$post['pay_frequency_allow']:null;
-		//        if(!$pay_frequency_allows || !is_array($pay_frequency_allows)){
-		//            $this->api_res(1002,['error'=>'允许的支付周期错误']);
-		//            return;
-		//        }
-		//        foreach ($pay_frequency_allows as $pay_frequency_allow ){
-		//            $a['pay_frequency_allow']   = $pay_frequency_allow;
-		//            if(!$this->validationText($this->validatePayConfig(),$a)){
-		//                $this->api_res(1002,['error'=>$this->form_first_error($field)]);
-		//                return;
-		//            }
-		//        }
-		$this->load->model('roomdotmodel');
-		$rooms   = Roomdotmodel::where(['store_id' => $post['store_id'], 'community_id' => $post['community_id']]);
-		$updates = [
-			'contract_template_long_id'    => $post['contract_template_long_id'],
-			'contract_template_short_id'   => $post['contract_template_short_id'],
-			'contract_template_reserve_id' => $post['contract_template_reserve_id'],
-			'updated_at'                   => date('Y-m-d H:i:s', time()),
-			//            'contract_min_time'     => $post['contract_min_time'],
-			//            'contract_max_time'     => $post['contract_max_time'],
-			//            'deposit_type'          => $post['deposit_type'],
-			//            'pay_frequency_allow'   => json_encode($post['pay_frequency_allow']),
-		];
-		if ($rooms->update($updates)) {
-			$this->api_res(0);
-		} else {
-			$this->api_res(1009);
 		}
 	}
 	
@@ -349,6 +301,11 @@ class Roomdot extends MY_Controller
 				'label' => '房屋面积',
 				'rules' => 'trim|required|numeric',
 			],
+			[
+				'field' => 'toward',
+				'label' => '朝向',
+				'rules' => 'trim|required|in_list[E,W,S,N,EW,SN]',
+			],
 		];
 		return $config;
 	}
@@ -368,11 +325,6 @@ class Roomdot extends MY_Controller
 				'field' => 'room_area',
 				'label' => '房间面积',
 				'rules' => 'required|trim|numeric',
-			],
-			[
-				'field' => 'room_toward',
-				'label' => '房间朝向',
-				'rules' => 'required|trim|in_list[E,W,S,N,EW,SN]',
 			],
 			[
 				'field' => 'room_feature',
