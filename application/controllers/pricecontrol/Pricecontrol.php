@@ -178,11 +178,27 @@ class Pricecontrol extends MY_Controller
             'employee_id'   => $this->employee->id,
             'created_at'    => Carbon::now()->toDateTimeString(),
             'updated_at'    => Carbon::now()->toDateTimeString(),
-            ];
-        if ($input['type']==Pricecontrolmodel::TYPE_ROOM) {
-            $data['ori_price']  = empty($room->rent_price)?0:$room->rent_price;
-        } elseif ($input['type']==Pricecontrolmodel::TYPE_MANAGEMENT) {
-            $data['ori_price']  = empty($room->property_price)?0:$room->property_price;
+        ];
+
+
+        switch ($input['type']) {
+            case Pricecontrolmodel::TYPE_ROOM:
+                $data['ori_price']  = empty($room->rent_price)?0:$room->rent_price;
+                break;
+            case Pricecontrolmodel::TYPE_MANAGEMENT:
+                $data['ori_price']  = empty($room->property_price)?0:$room->property_price;
+                break;
+            case Pricecontrolmodel::TYPE_ELECTRICITY:
+                $data['ori_price']  = empty($room->electricity_price)?0:$room->electricity_price;
+                break;
+            case Pricecontrolmodel::TYPE_WATER:
+                $data['ori_price']  = empty($room->cold_water_price)?0:$room->cold_water_price;
+                break;
+            case Pricecontrolmodel::TYPE_HOTWATER:
+                $data['ori_price']  = empty($room->hot_water_price)?0:$room->hot_water_price;
+                break;
+            default:
+                break;
         }
         //判断该公司有没有调价审批模板
         $this->load->model('taskflowtemplatemodel');
@@ -207,13 +223,14 @@ class Pricecontrol extends MY_Controller
                     return;
                 }
                 //创建调价任务流
-                $msg    = json_encode([
+                $msg_data   = [
                     'store_name'    => $store->name,
                     'number'        => $room->number,
-                    'create_name'          => $this->employee->name,
-                    'type'          => ($input['type']=='ROOM')?'房租服务费':'物业服务费',
+                    'create_name'   => $this->employee->name,
+                    'type'          => $input['type'],
                     'money'         => $input['new_price'],
-                ]);
+                ];
+                $msg    = json_encode($msg_data);
                 $taskflow_id    = $this->taskflowmodel->createTaskflow(COMPANY_ID,Taskflowmodel::TYPE_PRICE,$store_id,$input['room_id'],Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id,null,null,$msg);
                 if ($taskflow_id) {
                     $data['taskflow_id']    = $taskflow_id;
@@ -236,10 +253,24 @@ class Pricecontrol extends MY_Controller
      */
     private function doChangePrice($room,$type,$new_price)
     {
-        if ($type==Pricecontrolmodel::TYPE_ROOM) {
-            $room->rent_price   = $new_price;
-        } elseif ($type==Pricecontrolmodel::TYPE_MANAGEMENT) {
-            $room->property_price   = $new_price;
+        switch ($type) {
+            case Pricecontrolmodel::TYPE_ROOM;
+                $room->rent_price   = $new_price;
+                break;
+            case Pricecontrolmodel::TYPE_MANAGEMENT;
+                $room->property_price   = $new_price;
+                break;
+            case Pricecontrolmodel::TYPE_ELECTRICITY;
+                $room->electricity_price = $new_price;
+                break;
+            case Pricecontrolmodel::TYPE_WATER;
+                $room->cold_water_price = $new_price;
+                break;
+            case Pricecontrolmodel::TYPE_HOTWATER;
+                $room->hot_water_price  = $new_price;
+                break;
+            default;
+                break;
         }
         return $room->save();
     }
@@ -282,6 +313,125 @@ class Pricecontrol extends MY_Controller
                 ]
             ),
         );
+    }
+
+    /**
+     * 批量水电调价
+     */
+    public function batchCreate()
+    {
+        $input  = $this->input->post(null,true);
+        $field  = ['store_id','community_id','electricity_price','cold_water_price','hot_water_price'];
+        if (!$this->validationText($this->validateBatchCreate())) {
+            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+            return;
+        }
+        if (empty($input['store_id'])) {
+            $this->api_res('1002');
+            return;
+        }
+        $where  = [];
+        if (!empty($input['community_id'])) {
+            $community_id   = $input['community_id'];
+            $where['community_id']  = $community_id;
+        } else {
+            $community_id   = null;
+        }
+        $remark = empty($input['reamrk'])?'无':$input['remark'];
+        $electricity_price  = $input['electricity_price'];
+        $cold_water_price   = $input['cold_water_price'];
+        $hot_water_price    = $input['hot_water_price'];
+        $update_arr = [
+            'electricity_price' => $electricity_price,
+            'cold_water_price'  => $cold_water_price,
+            'hot_water_price'   => $hot_water_price
+        ];
+        $this->load->model('pricecontrolmodel');
+        $rooms  = Roomunionmodel::where('store_id',$input['store_id'])->where($where)->get();
+        $records    = [];
+        foreach ($rooms as $room) {
+            $records[]  = [
+                'company_id'    => $room->company_id,
+                'store_id'      => $input['store_id'],
+                'community_id'  => $community_id,
+                'room_id'       => $room->id,
+                'type'          => Pricecontrolmodel::TYPE_ELECTRICITY,
+                'status'        => Pricecontrolmodel::STATE_DONE,
+                'employee_id'   => $this->employee->id,
+                'ori_price'     => $room->electricity_price,
+                'new_price'     => $electricity_price,
+                'remark'        => $remark,
+                ];
+            $records[]  = [
+                'company_id'    => $room->company_id,
+                'store_id'      => $input['store_id'],
+                'community_id'  => $community_id,
+                'room_id'       => $room->id,
+                'type'          => Pricecontrolmodel::TYPE_WATER,
+                'status'        => Pricecontrolmodel::STATE_DONE,
+                'employee_id'   => $this->employee->id,
+                'ori_price'     => $room->cold_water_price,
+                'new_price'     => $cold_water_price,
+                'remark'        => $remark,
+            ];
+            $records[]  = [
+                'company_id'    => $room->company_id,
+                'store_id'      => $input['store_id'],
+                'community_id'  => $community_id,
+                'room_id'       => $room->id,
+                'type'          => Pricecontrolmodel::TYPE_HOTWATER,
+                'status'        => Pricecontrolmodel::STATE_DONE,
+                'employee_id'   => $this->employee->id,
+                'ori_price'     => $room->hot_water_price,
+                'new_price'     => $hot_water_price,
+                'remark'        => $remark,
+            ];
+        }
+        $this->load->model('pricecontrolmodel');
+        try {
+            DB::beginTransaction();
+            Roomunionmodel::where('store_id',$input['store_id'])->where($where)->update($update_arr);
+            Pricecontrolmodel::insert($records);
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+        $this->api_res(0);
+    }
+
+    /**
+     * 批量修改参数验证
+     */
+    private function validateBatchCreate()
+    {
+        return [
+            [
+                'field' => 'store_id',
+                'label' => '门店',
+                'rules' => 'trim|required',
+            ],
+            [
+                'field' => 'community_id',
+                'label' => '小区',
+                'rules' => 'trim',
+            ],
+            [
+                'field' => 'electricity_price',
+                'label' => '电费单价',
+                'rules' => 'trim|required',
+            ],
+            [
+                'field' => 'cold_water_price',
+                'label' => '冷水单价',
+                'rules' => 'trim|required',
+            ],
+            [
+                'field' => 'hot_water_price',
+                'label' => '热水价格',
+                'rules' => 'trim|required',
+            ],
+        ];
     }
 
 }
