@@ -290,7 +290,7 @@ class Pricecontrol extends MY_Controller
             array(
                 'field' => 'type',
                 'label' => '调价范围（房租或者物业费）',
-                'rules' => 'trim|required|in_list[ROOM,MANAGEMENT]',
+                'rules' => 'trim|required|in_list[ROOM,MANAGEMENT,ELECTRICITY,WATER,HOTWATER]',
                 'errors'=> [
                     'required'  => '请选择%s',
                 ]
