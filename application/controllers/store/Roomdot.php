@@ -306,6 +306,11 @@ class Roomdot extends MY_Controller
 				'label' => '朝向',
 				'rules' => 'trim|required|in_list[E,W,S,N,EW,SN]',
 			],
+			[
+				'field' => 'images[]',
+				'label' => '朝向',
+				'rules' => 'trim|required',
+			],
 		];
 		return $config;
 	}
