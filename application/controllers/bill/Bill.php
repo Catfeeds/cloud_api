@@ -37,7 +37,7 @@ class Bill extends MY_Controller {
         $bills = Billmodel::with(['roomunion', 'store', 'resident', 'employee'])
             ->offset($offset)->limit(PAGINATE)
             ->where($where)->whereIn('store_id', $store_ids)
-            ->whereBetween('pay_date', [$start_date, $end_date])
+            ->whereBetween('created_at', [$start_date, $end_date])
             ->orderBy('sequence_number', 'desc')
             ->where(function ($query) use ($search) {
                 $query->orWhereHas('resident', function ($query) use ($search) {
@@ -56,7 +56,7 @@ class Bill extends MY_Controller {
 
         $billnumber = Billmodel::with(['roomunion', 'store', 'resident', 'employee'])
             ->where($where)->whereIn('store_id', $store_ids)
-            ->whereBetween('pay_date', [$start_date, $end_date])
+            ->whereBetween('created_at', [$start_date, $end_date])
             ->where(function ($query) use ($search) {
                 $query->orWhereHas('resident', function ($query) use ($search) {
                     $query->where('name', 'like', "%$search%");
