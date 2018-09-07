@@ -91,9 +91,9 @@ class Bill extends MY_Controller {
         $orders = Ordermodel::with(['coupon'=>function($query){
             $query->with('coupon_type');
         }])->where('sequence_number',$sequence)->get();
-        $sumMoney   = $orders->sum('money');
-        $sumPaid    = $orders->sum('paid');
-        $sumDiscount    = $sumMoney-$sumPaid;
+        $sumMoney   = number_format($orders->sum('money'),2,'.','');
+        $sumPaid    = number_format($orders->sum('paid'),2,'.','');
+        $sumDiscount    = number_format($sumMoney-$sumPaid,2,'.','');
         $resident   = $bill->resident;
         $discount   = array_merge($orders->where('coupon','!=',null)->toArray(),[]);
 
