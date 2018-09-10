@@ -27,7 +27,10 @@ class Pricecontrol extends MY_Controller
         $post      = $this->input->post(null, true);
         $page      = isset($post['page']) ? intval($post['page']) : 1;
         $offset    = PAGINATE * ($page - 1);
-        $filed     = ['id', 'store_id', 'building_id', 'number', 'room_type_id', 'rent_price', 'property_price', 'updated_at'];
+        $filed     = [
+            'id', 'store_id', 'building_id', 'number', 'room_type_id',
+            'rent_price', 'property_price', 'updated_at',
+            'electricity_price','cold_water_price','hot_water_price'];
         $where     = [];
         $store_ids = explode(',', $this->employee->store_ids);
         if (!empty($post['store_id'])) {$where['store_id'] = intval($post['store_id']);};
