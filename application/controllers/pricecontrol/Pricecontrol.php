@@ -24,6 +24,7 @@ class Pricecontrol extends MY_Controller
         $this->load->model('buildingmodel');
         $this->load->model('roomtypemodel');
         $this->load->model('communitymodel');
+        $this->load->model('housemodel');
 
         $post      = $this->input->post(null, true);
         $page      = isset($post['page']) ? intval($post['page']) : 1;
@@ -31,6 +32,7 @@ class Pricecontrol extends MY_Controller
         $filed     = [
             'id', 'store_id', 'building_id', 'number', 'room_type_id',
             'rent_price', 'property_price', 'updated_at',
+            'community_id','house_id',
             'electricity_price','cold_water_price','hot_water_price'];
         $where     = [];
         $store_ids = explode(',', $this->employee->store_ids);
@@ -46,6 +48,7 @@ class Pricecontrol extends MY_Controller
             $price = Roomunionmodel::orderBy('number')
                 ->with('store_s')->with('building_s')->with('room_type')
                 ->with('community')
+                ->with('house')
                 ->where($where)->whereIn('store_id', $store_ids)
                 ->take(PAGINATE)->skip($offset)->get($filed)
                 ->map(function ($s) {
