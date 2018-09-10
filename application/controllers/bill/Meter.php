@@ -96,15 +96,15 @@ class Meter extends MY_Controller {
             case Meterreadingtransfermodel::TYPE_ELECTRIC:
                 $type = Ordermodel::PAYTYPE_ELECTRIC;
                 // $price  = $resident->electricity_price;
-                $price = $roomunion->store->electricity_price;
+                $price = $roomunion->electricity_price;
                 break;
             case Meterreadingtransfermodel::TYPE_WATER_H:
                 $type  = Ordermodel::PAYTYPE_WATER_HOT;
-                $price = $roomunion->store->hot_water_price;
+                $price = $roomunion->hot_water_price;
                 break;
             case Meterreadingtransfermodel::TYPE_WATER_C:
                 $type  = Ordermodel::PAYTYPE_WATER;
-                $price = $roomunion->store->water_price;
+                $price = $roomunion->cold_water_price;
                 break;
             default:
                 throw new Exception('未识别的账单类型！');

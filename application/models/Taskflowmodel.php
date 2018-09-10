@@ -269,12 +269,37 @@ class Taskflowmodel extends Basemodel
 
     protected function sendPriceMsg($body, $employees = [])
     {
+        if (!empty($body->type)) {
+            switch ($body->type) {
+                case Pricecontrolmodel::TYPE_ROOM:
+                    $type   = '房租服务费';
+                    break;
+                case Pricecontrolmodel::TYPE_MANAGEMENT:
+                    $type   = '物业服务费';
+                    break;
+                case Pricecontrolmodel::TYPE_ELECTRICITY:
+                    $type   = '房间电费单价';
+                    break;
+                case Pricecontrolmodel::TYPE_WATER:
+                    $type   = '房间冷水单价';
+                    break;
+                case Pricecontrolmodel::TYPE_HOTWATER:
+                    $type   = '房间热水单价';
+                    break;
+                default:
+                    $type = '未知类型';
+                    break;
+            }
+        }else{
+            $type = '未知类型';
+        }
+
         $data = [
             'first'    => "有新的调价审核",
             'keyword1' => "{$body->store_name}-{$body->number}的调价申请",
             'keyword2' => "{$body->create_name}",
             'keyword3' => date('Y-m-d H:i:s'),
-            'keyword4' => "调价类型:{$body->type}，调价金额:{$body->money}",
+            'keyword4' => "调价类型:{$type}，调价金额:{$body->money}",
             'remark'   => '请尽快处理!',
         ];
         

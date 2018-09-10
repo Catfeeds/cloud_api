@@ -557,8 +557,8 @@ class Taskflow extends MY_Controller{
                         $msg    = json_encode([
                             'store_name'    => $store->name,
                             'number'        => $room->number,
-                            'create_name'          => Employeemodel::find($taskflow->employee_id)->name,
-                            'type'          => ($price->type=='ROOM')?'房租服务费':'物业服务费',
+                            'create_name'   => Employeemodel::find($taskflow->employee_id)->name,
+                            'type'          => $price->type,
                             'money'         => $price->new_money,
                         ]);
                         break;
@@ -785,10 +785,24 @@ class Taskflow extends MY_Controller{
         $price->status  = Pricecontrolmodel::STATE_DONE;
         $price->save();
         $room   = $price->roomunion;
-        if ($price->type == Pricecontrolmodel::TYPE_ROOM) {
-            $room->rent_price   = $price->new_price;
-        } elseif ($price->type == Pricecontrolmodel::TYPE_MANAGEMENT) {
-            $room->property_price   = $price->new_price;
+        switch ($price->type) {
+            case Pricecontrolmodel::TYPE_ROOM:
+                $room->rent_price   = $price->new_price;
+                break;
+            case Pricecontrolmodel::TYPE_MANAGEMENT:
+                $room->property_price   = $price->new_price;
+                break;
+            case Pricecontrolmodel::TYPE_ELECTRICITY:
+                $room->electricity_price   = $price->new_price;
+                break;
+            case Pricecontrolmodel::TYPE_WATER:
+                $room->cold_water_price   = $price->new_price;
+                break;
+            case Pricecontrolmodel::TYPE_HOTWATER:
+                $room->hot_water_price   = $price->new_price;
+                break;
+            default:
+                break;
         }
         $room->save();
     }

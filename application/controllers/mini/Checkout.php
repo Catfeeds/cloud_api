@@ -206,7 +206,7 @@ class Checkout extends MY_Controller {
         }else{
             $month      = $month+1;
         }
-        $roomunion      = Roomunionmodel::where('id',$post['room_id'])->first(['building_id','store_id']);
+        $roomunion      = Roomunionmodel::where('id',$post['room_id'])->first(['building_id','store_id','cold_water_price','electricity_price','hot_water_price']);
         $building_id    = $roomunion->building_id;
         $store_id       = $roomunion->store_id;
         $price          = Storemodel::where('id',$store_id)->first(['id','water_price','hot_water_price','electricity_price']);
@@ -248,7 +248,7 @@ class Checkout extends MY_Controller {
             ];
             $coldwater->fill($arr_coldwater);
             if ($coldwater->save() && isset($last_coldwater->this_reading)) {
-                $money['water'] = (floatval($post['coldwater_reading']) - $last_coldwater->this_reading) * $price->water_price;
+                $money['water'] = (floatval($post['coldwater_reading']) - $last_coldwater->this_reading) * $roomunion->cold_water_price;
                 if (0.01 > $money['water']) {
                     return null;
                 }
@@ -273,7 +273,7 @@ class Checkout extends MY_Controller {
             ];
             $electric->fill($arr_electric);
             if($electric->save()&&isset($last_electric->this_reading)){
-                $money['electric']      = (floatval($post['electric_reading']) - $last_electric->this_reading) * $price->electricity_price;
+                $money['electric']      = (floatval($post['electric_reading']) - $last_electric->this_reading) * $roomunion->electricity_price;
                 if (0.01 > $money['electric']) {
                     return null;
                 }
@@ -298,7 +298,7 @@ class Checkout extends MY_Controller {
             ];
             $hotwater->fill($arr_hotwater);
             if($hotwater->save()&&isset($last_hotwater->this_reading)){
-                $money['hot_water']     = (floatval($post['hotwater_reading']) - $last_hotwater->this_reading) * $price->hot_water_price;
+                $money['hot_water']     = (floatval($post['hotwater_reading']) - $last_hotwater->this_reading) * $roomunion->hot_water_price;
                 if (0.01 > $money['hot_water']) {
                     return null;
                 }
