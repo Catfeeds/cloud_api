@@ -23,6 +23,7 @@ class Pricecontrol extends MY_Controller
         $this->load->model('storemodel');
         $this->load->model('buildingmodel');
         $this->load->model('roomtypemodel');
+        $this->load->model('communitymodel');
 
         $post      = $this->input->post(null, true);
         $page      = isset($post['page']) ? intval($post['page']) : 1;

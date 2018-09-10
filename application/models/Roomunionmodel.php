@@ -78,6 +78,10 @@ class Roomunionmodel extends Basemodel {
         return $this->belongsTo(Storemodel::class, 'store_id')->select('id', 'name');
     }
 
+    public function community()
+    {
+        return $this->belongsTo(Communitymodel::class,'community_id');
+    }
     //房间所属楼栋信息
     public function building() {
 
