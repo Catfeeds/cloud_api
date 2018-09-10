@@ -181,6 +181,141 @@ class Room extends MY_Controller {
         }
         $this->api_res(0, ['list' => $room]);
     }
+	
+	/**
+	 * 处理上传读数
+	 */
+    public function details()
+    {
+	    $this->load->model('storemodel');
+	    $post     = $this->input->post(null, true);
+	    $where    = [];
+	    $store_id = $this->employee->store_id;
+	    //房间状态
+	    $status = trim($post['status']);
+	    $where['boss_room_union.store_id'] = $store_id;
+	    //判断房间类型
+	    $type = Storemodel::where('id', $store_id)->first(['rent_type']);
+	    if ($type->rent_type == 'DOT') {
+		    if (!empty($post['community_id'])) {
+			    $where['boss_room_union.community_id'] = intval($post['community_id']);
+		    }
+		    $this->dotRooms($where, $status);
+		    return;
+	    } elseif ($type->rent_type == 'UNION') {
+		    $this->unionRooms($where, $status);
+		    return;
+	    } else {
+		    $this->api_res(0);
+	    }
+    }
+	
+	/**
+	 * 获取分布式房间列表
+	 */
+    public function unionRooms($where, $status)
+    {
+        $rooms = Roomunionmodel::where($where);
+    }
+	
+	/**
+	 * 获取分布式房间列表
+	 */
+	public function dotRooms()
+	{
+		$post     = $this->input->post(null, true);
+		$where    = [];
+		$store_id = $this->employee->store_id;
+		//房间状态
+		if (!empty($post['status'])){
+			if(!in_array(trim($post['status']),['ARREARS','DUE','RENT','BLANK','OCCUPY'])){
+				$this->api_res(1002);
+				return;
+			}
+		}
+		$status = trim($post['status']);
+		$where['boss_room_union.store_id'] = $store_id;
+		if (!empty($post['community_id'])) {
+			$where['boss_room_union.community_id'] = intval($post['community_id']);
+		}
+		$filed = [
+			'boss_room_union.id as room_id', 'boss_room_union.number as room_number',
+			'boss_room_union.house_id as house_id','boss_room_union.status',
+			'boss_room_union.rent_price as room_price','boss_room_union.end_time',
+			'boss_order.status as order_status',
+			'boss_community.name as c_name','boss_house.building_name','boss_house.unit',
+			'boss_house.number as house_number', 'boss_room_union.feature',
+		];
+		if ($status == 'ARREARS') {
+			$rooms = Roomunionmodel::leftJoin('boss_community', 'boss_community.id', '=', 'boss_room_union.community_id')
+				->leftJoin('boss_resident', 'boss_resident.id', '=', 'boss_room_union.resident_id')
+				->leftJoin('boss_house', 'boss_house.id', '=', 'boss_room_union.house_id')
+				->leftJoin('boss_order', function ($jion) {
+					$jion->on('boss_order.room_id', '=', 'boss_room_union.id')
+						->on('boss_room_union.resident_id', '=', 'boss_order.resident_id')
+						->where('boss_order.status', '=', 'PENDING');
+				})
+				->select($filed)
+				->orderBy('boss_room_union.number')
+				->where($where)
+				->where('boss_order.status', 'PENDING')
+				->where('boss_room_union.status','RENT')
+				->groupBy('boss_room_union.id')
+				->get()->map(function ($room) {
+					$room->status = Roomunionmodel::STATE_ARREARS;
+					$room->address = $room->c_name.$room->building_name.'(栋)'.$room->unit.'(单元)'.$room->house_number;
+					return $room;
+				})
+				->groupBy('address');
+		}
+		elseif ($status == 'DUE'){
+			$rooms = Roomunionmodel::leftJoin('boss_community', 'boss_community.id', '=', 'boss_room_union.community_id')
+				->leftJoin('boss_resident', 'boss_resident.id', '=', 'boss_room_union.resident_id')
+				->leftJoin('boss_house', 'boss_house.id', '=', 'boss_room_union.house_id')
+				->leftJoin('boss_order', function ($jion) {
+					$jion->on('boss_order.room_id', '=', 'boss_room_union.id')
+						->on('boss_room_union.resident_id', '=', 'boss_order.resident_id')
+						->where('boss_order.status', '=', 'PENDING');
+				})
+				->select($filed)
+				->orderBy('boss_room_union.number')
+				->where($where)
+				->where('boss_room_union.status','RENT')
+				->where('boss_room_union.end_time','<=',date('Y-m-d H:i:s',strtotime('+30days')))
+				->groupBy('boss_room_union.id')
+				->get()->map(function ($room) {
+					$room->address = $room->c_name.$room->building_name.'(栋)'.$room->unit.'(单元)'.$room->house_number;
+					return $room;
+				})
+				->groupBy('address');
+		}else{
+			$rooms = Roomunionmodel::leftJoin('boss_community', 'boss_community.id', '=', 'boss_room_union.community_id')
+				->leftJoin('boss_resident', 'boss_resident.id', '=', 'boss_room_union.resident_id')
+				->leftJoin('boss_house', 'boss_house.id', '=', 'boss_room_union.house_id')
+				->leftJoin('boss_order', function ($jion) {
+					$jion->on('boss_order.room_id', '=', 'boss_room_union.id')
+						->on('boss_room_union.resident_id', '=', 'boss_order.resident_id')
+						->where('boss_order.status', '=', 'PENDING');
+				})
+				->select($filed)
+				->orderBy('boss_room_union.number')
+				->where($where)
+				->groupBy('boss_room_union.id')
+				->get()->map(function ($room) {
+					if ($room->status == Roomunionmodel::STATE_RENT && $room->order_status == 'PENDING') {
+						$room->status = Roomunionmodel::STATE_ARREARS;
+					}
+					if ($room->status == Roomunionmodel::STATE_RENT && $room->end_time != NULL && $room->end_time <= date('Y-m-d H:i:s',strtotime('+30days'))) {
+						$room->status = 'DUE';
+					}
+					$room->address = $room->c_name.$room->building_name.'(栋)'.$room->unit.'(单元)'.$room->house_number;
+					return $room;
+				})
+				->groupBy('address');
+		}
+		$this->api_res(0,['list'=>$rooms]);
+	}
+    
     public function listOrderRoom(){
         $this->load->model('ordermodel');
         $this->load->model('residentmodel');
