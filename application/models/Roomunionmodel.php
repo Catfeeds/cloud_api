@@ -149,33 +149,20 @@ class Roomunionmodel extends Basemodel
 			->whereIn('status', ['PENDING'])
 			->select('id', 'room_id', 'resident_id', 'type', 'status');
 	}
-//    public function utilities()
-	//    {
-	//        return $this->hasMany(Utilitymodel::class, 'room_id');
-	//    }
 	
 	public function devices()
 	{
 		return $this->hasMany(Devicemodel::class, 'room_id');
 	}
-
-//    //房屋公共智能设备
-	//    public function housesmartdevice(){
-	//
-	//        return $this->belongsTo(Smartdevicemodel::class,'house_smart_device_id');
-	//    }
-	//
-	//    //房间的智能设备
-	//    public function smartdevice(){
-	//
-	//        return $this->belongsTo(SmartDevicemodel::class,'smart_device_id');
-	//    }
 	
-	//合租人信息
-	//    public function unionresident(){
-	//
-	//        return $this->hasMany(Unionresidentmodel::class,'room_id');
-	//    }
+	/**
+	 * 分布式房间的房屋信息
+	 */
+	public function house()
+	{
+		return $this->belongsTo(Housemodel::class, 'house_id')
+			->select('id','building_name','unit','number');
+	}
 	
 	/**
 	 * 是否空闲

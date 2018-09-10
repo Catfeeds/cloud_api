@@ -15,7 +15,7 @@ class Sellcontrol extends MY_Controller
 	}
 	
 	/**
-	 * 集中式销控列表
+	 * 集中式销控列表(此接口已废弃)
 	 */
 	public function details1()
 	{
@@ -94,13 +94,12 @@ class Sellcontrol extends MY_Controller
 		}
 		//门店ID
 		if (!empty($post['store_id'])) {
-			$where['boss_room_union.store_id'] = intval($post['store_id']);
-		} else {
-			$where['boss_room_union.store_id'] = $store_id;
+			$store_id = intval($post['store_id']);
 		}
+		$where['boss_room_union.store_id'] = $store_id;
 		$number = isset($post['number']) ? trim($post['number']) : null;
 		//判断房间类型
-		$type = Storemodel::where('id', $post['store_id'])->first(['rent_type']);
+		$type = Storemodel::where('id', $store_id)->first(['rent_type']);
 		if ($type->rent_type == 'DOT') {
 			if (!empty($post['community_id'])) {
 				$where['boss_room_union.community_id'] = intval($post['community_id']);

@@ -114,6 +114,24 @@ class Roomdot extends MY_Controller
 	}
 	
 	/**
+	 * 获取小区下空房间
+	 */
+	public function blankRoomOfCommunity()
+	{
+		$this->load->model('housemodel');
+		$this->load->model('roomunionmodel');
+		$community_id = $this->input->post('community_id');
+		if (!$community_id) {
+			$this->api_res(1005);
+			return;
+		}
+		$rooms = Roomunionmodel::with('house')->where('community_id',$community_id)
+			->where('status','BLANK')
+			->get(['id','number','rent_price','feature','house_id']);
+		$this->api_res(0, ['community' => $rooms]);
+	}
+	
+	/**
 	 * 分布式房间列表
 	 */
 	public function listDot()
