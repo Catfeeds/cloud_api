@@ -169,6 +169,17 @@ class Community extends MY_Controller
 	}
 	
 	/**
+	 * 获取当前门店下的小区
+	 */
+	public function communityOfStore()
+	{
+		$store_id   = $this->employee->store_id;
+		$community  = Communitymodel::where('store_id',$store_id)->get(['id', 'name']);
+		$this->api_res(0, ['community' => $community]);
+	}
+	
+	
+	/**
 	 * @return array
 	 * 小区字段的验证规则
 	 */
