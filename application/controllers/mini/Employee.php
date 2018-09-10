@@ -22,7 +22,7 @@ class Employee extends MY_Controller {
         $category = Employeemodel::with(['position' => function ($query) {
             $query->select('id', 'name');
         }])->with(['store' => function ($query) {
-            $query->select('id', 'name');
+            $query->select('id', 'name', 'rent_type');
         }])->where('bxid', CURRENT_ID)->get($field);
         $this->api_res(0, $category);
     }

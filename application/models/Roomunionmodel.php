@@ -339,6 +339,7 @@ class Roomunionmodel extends Basemodel
 			->orderBy('boss_room_union.number')
 			->where($where)
 			->where('boss_order.status', 'PENDING')
+			->where('boss_room_union.status','RENT')
 			->where('boss_room_union.number', 'like', "%$number%")
 			->groupBy('boss_room_union.id')
 			->get()->map(function ($room) {
@@ -374,6 +375,7 @@ class Roomunionmodel extends Basemodel
 			->orderBy('boss_room_union.number')
 			->where($where)
 			->where('boss_order.status', 'PENDING')
+			->where('boss_room_union.status','RENT')
 			->where('boss_room_union.number', 'like', "%$number%")
 			->groupBy('boss_room_union.id')
 			->get()->map(function ($room) {
