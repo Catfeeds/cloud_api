@@ -276,6 +276,7 @@ class Roomunionmodel extends Basemodel
 				if ($room->status == Roomunionmodel::STATE_RENT && $room->order_status == 'PENDING') {
 					$room->status = Roomunionmodel::STATE_ARREARS;
 				}
+				$room->room_type = $room->count_room.'室'.$room->count_toilet.'厅';
 				return $room;
 			})
 			->groupBy('layer');
@@ -300,7 +301,8 @@ class Roomunionmodel extends Basemodel
 			'boss_room_union.house_id as house_id','boss_room_union.status',
 			'boss_room_union.rent_price as room_price',
 			'boss_resident.name as name', 'boss_order.status as order_status',
-			'boss_room_union.feature'
+			'boss_community.name as c_name','boss_house.building_name','boss_house.unit',
+			'boss_house.number as house_number', 'boss_room_union.feature',
 		];
 		$rooms = Roomunionmodel::leftJoin('boss_community', 'boss_community.id', '=', 'boss_room_union.community_id')
 			->leftJoin('boss_resident', 'boss_resident.id', '=', 'boss_room_union.resident_id')
@@ -320,9 +322,11 @@ class Roomunionmodel extends Basemodel
 				if ($room->status == Roomunionmodel::STATE_RENT && $room->order_status == 'PENDING') {
 					$room->status = Roomunionmodel::STATE_ARREARS;
 				}
+				$room->room_type = $this->feature($room->feature);
+				$room->address = $room->c_name.$room->building_name.'(栋)'.$room->unit.'(单元)'.$room->house_number;
 				return $room;
 			})
-			->groupBy('house_id');
+			->groupBy('address');
 		return $rooms;
 	}
 	
@@ -368,7 +372,8 @@ class Roomunionmodel extends Basemodel
 			'boss_room_union.house_id as house_id','boss_room_union.status',
 			'boss_room_union.rent_price as room_price',
 			'boss_resident.name as name', 'boss_order.status as order_status',
-			'boss_room_union.feature'
+			'boss_community.name as c_name','boss_house.building_name','boss_house.unit',
+			'boss_house.number as house_number', 'boss_room_union.feature',
 		];
 		$rooms = Roomunionmodel::leftJoin('boss_community', 'boss_community.id', '=', 'boss_room_union.community_id')
 			->leftJoin('boss_resident', 'boss_resident.id', '=', 'boss_room_union.resident_id')
@@ -386,10 +391,33 @@ class Roomunionmodel extends Basemodel
 			->groupBy('boss_room_union.id')
 			->get()->map(function ($room) {
 				$room->status = Roomunionmodel::STATE_ARREARS;
+				$room->room_type = $this->feature($room->feature);
+				$room->address = $room->c_name.$room->building_name.'(栋)'.$room->unit.'(单元)'.$room->house_number;
 				return $room;
 			})
-			->groupBy('house_id');
+			->groupBy('address');
 		return $rooms;
+	}
+	
+	/**
+	 * 转换feature
+	 */
+	public function feature($feature)
+	{
+		switch ($feature){
+			case 'M' :
+				return '主卧';
+				break;
+			case 'S' :
+				return '次卧';
+				break;
+			case 'MT' :
+				return '独卫主卧';
+				break;
+			default :
+				return '';
+				break;
+		}
 	}
 	
 	/**
