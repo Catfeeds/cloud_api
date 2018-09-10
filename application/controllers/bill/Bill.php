@@ -37,7 +37,7 @@ class Bill extends MY_Controller {
         $bills = Billmodel::with(['roomunion', 'store', 'resident', 'employee'])
             ->offset($offset)->limit(PAGINATE)
             ->where($where)->whereIn('store_id', $store_ids)
-            ->whereBetween('pay_date', [$start_date, $end_date])
+            ->whereBetween('created_at', [$start_date, $end_date])
             ->orderBy('sequence_number', 'desc')
             ->where(function ($query) use ($search) {
                 $query->orWhereHas('resident', function ($query) use ($search) {
@@ -56,7 +56,7 @@ class Bill extends MY_Controller {
 
         $billnumber = Billmodel::with(['roomunion', 'store', 'resident', 'employee'])
             ->where($where)->whereIn('store_id', $store_ids)
-            ->whereBetween('pay_date', [$start_date, $end_date])
+            ->whereBetween('created_at', [$start_date, $end_date])
             ->where(function ($query) use ($search) {
                 $query->orWhereHas('resident', function ($query) use ($search) {
                     $query->where('name', 'like', "%$search%");
@@ -83,7 +83,6 @@ class Bill extends MY_Controller {
             $this->api_res(1007);
             return;
         }
-
         $this->load->model('couponmodel');
         $this->load->model('coupontypemodel');
         $this->load->model('residentmodel');
@@ -91,13 +90,18 @@ class Bill extends MY_Controller {
         $orders = Ordermodel::with(['coupon'=>function($query){
             $query->with('coupon_type');
         }])->where('sequence_number',$sequence)->get();
-        $sumMoney   = $orders->sum('money');
-        $sumPaid    = $orders->sum('paid');
-        $sumDiscount    = $sumMoney-$sumPaid;
+        $sumMoney   = number_format($orders->sum('money'),2,'.','');
+        $sumPaid    = number_format($orders->sum('paid'),2,'.','');
+        $sumDiscount    = number_format($sumMoney-$sumPaid,2,'.','');
         $resident   = $bill->resident;
+        if ($resident->created_at>'2018-07-01') {
+            $couponInfo = $resident->discount;
+        }else{
+            $couponInfo = null;
+        }
         $discount   = array_merge($orders->where('coupon','!=',null)->toArray(),[]);
 
-        $this->api_res(0,['sumMoney'=>$sumMoney,'sumPaid'=>$sumPaid,'sumDiscount'=>$sumDiscount,'resident'=>$resident,'discount'=>$discount,'orders'=>$orders]);
+        $this->api_res(0,['sumMoney'=>$sumMoney,'sumPaid'=>$sumPaid,'sumDiscount'=>$sumDiscount,'resident'=>$resident,'discount'=>$discount,'orders'=>$orders,'couponInfo'=>$couponInfo]);
 
         /*
          * ROOM

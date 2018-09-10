@@ -151,74 +151,7 @@ class Roomunion extends MY_Controller {
         $buildings = Roomunionmodel::where($where)->select(['store_id', 'building_id', 'building_name'])->groupBy('building_id')->get();
         $this->api_res(0, ['buildings' => $buildings]);
     }
-
-    /**
-     * 集中式房间列表
-     */
-    public function listUnion() {
-        $field = [
-            'boss_room_union.id as room_id', 'boss_room_union.number as room_number', 'boss_room_union.store_id',
-            'boss_store.name as store_name', 'boss_room_union.building_name', 'boss_store.province', 'boss_store.city',
-            'boss_store.district', 'boss_store.address', 'boss_room_union.rent_price', 'boss_room_union.property_price',
-            'boss_room_union.keeper', 'boss_room_union.status', 'boss_room_type.name as room_type_name',
-        ];
-        $post      = $this->input->post(null, true);
-        $page      = isset($post['page']) ? intval(strip_tags(trim($post['page']))) : 1;
-        $offset    = PAGINATE * ($page - 1);
-        $where     = [];
-        $store_ids = explode(',', $this->employee->store_ids);
-
-        (isset($post['store_id']) && !empty($post['store_id'])) ? $where['boss_room_union.store_id'] = intval(strip_tags(trim($post['store_id']))) : null;
-
-        (isset($post['building_id']) && !empty($post['building_id'])) ? $where['boss_room_union.building_id'] = intval(strip_tags(trim($post['building_id']))) : null;
-
-        $search = isset($post['search']) ? $post['search'] : '';
-        $this->load->model('roomunionmodel');
-        $this->load->model('storemodel');
-        if ($search) {
-            $store_ids = Storemodel::where('district', 'like', "%$search%")
-                ->orWhere('address', 'like', "%$search%")
-                ->get(['id'])
-                ->map(function ($a) {
-                    return $a->id;
-                });
-            $count = ceil(Roomunionmodel::whereIn('store_id', $store_ids)
-                    ->orWhere('number', 'like', "%$search%")
-                    ->where($where)
-                    ->count() / PAGINATE);
-            if ($page > $count) {
-                $this->api_res(0, ['count' => $count, 'rooms' => []]);
-                return;
-            }
-            $rooms = Roomunionmodel::leftJoin('boss_store', 'boss_store.id', '=', 'boss_room_union.store_id')
-                ->leftJoin('boss_room_type', 'boss_room_type.id', '=', 'boss_room_union.room_type_id')
-                ->select($field)
-                ->offset($offset)
-                ->limit(PAGINATE)
-                ->orderBy('boss_room_union.id','number')
-                ->whereIn('boss_room_union.store_id', $store_ids)
-                ->where($where)
-                ->orWhere(function ($query) use ($search) {
-                    $query->where('boss_room_union.number', 'like', "%$search%");
-                })
-                ->get();
-            $this->api_res(0, ['count' => $count, 'rooms' => $rooms]);
-            return;
-        }
-
-        $count = ceil(Roomunionmodel::where($where)->whereIn('store_id', $store_ids)->count() / PAGINATE);
-        if ($page > $count) {
-            $this->api_res(0, ['count' => $count, 'rooms' => []]);
-            return;
-        }
-        $rooms = Roomunionmodel::leftJoin('boss_store', 'boss_store.id', '=', 'boss_room_union.store_id')
-            ->leftJoin('boss_room_type', 'boss_room_type.id', '=', 'boss_room_union.room_type_id')
-            ->select($field)->offset($offset)->limit(PAGINATE)->orderBy('boss_room_union.id','number')
-            ->where($where)->whereIn('boss_room_union.store_id', $store_ids)
-            ->get();
-        $this->api_res(0, ['count' => $count, 'rooms' => $rooms]);
-    }
-    
+	
     /**
      * 房间列表
      */
@@ -259,7 +192,9 @@ class Roomunion extends MY_Controller {
             }
             $rooms = Roomunionmodel::leftJoin('boss_store', 'boss_store.id', '=', 'boss_room_union.store_id')
                 ->leftJoin('boss_room_type', 'boss_room_type.id', '=', 'boss_room_union.room_type_id')
-                ->select($field)
+	            ->leftJoin('boss_community', 'boss_community.id', '=', 'boss_room_union.community_id')
+	            ->leftJoin('boss_house', 'boss_house.id', '=', 'boss_room_union.house_id')
+	            ->select($field)
                 ->offset($offset)
                 ->limit(PAGINATE)
                 ->orderBy('boss_room_union.id','number')
@@ -268,7 +203,26 @@ class Roomunion extends MY_Controller {
                 ->orWhere(function ($query) use ($search) {
                     $query->where('boss_room_union.number', 'like', "%$search%");
                 })
-                ->get();
+                ->get()->map(function ($s){
+		            //处理分布式数据展示
+		            if($s->rent_type == 'DOT'){
+			            //楼栋
+			            if (isset($s->building_name)&&!empty($s->building_name)){
+				            $building_name = $s->building_name."(栋)";
+			            }else{
+				            $building_name = '';
+			            }
+			            //单元
+			            if (isset($s->unit)&&!empty($s->unit)){
+				            $unit = $s->unit."(单元)";
+			            }else{
+				            $unit = '';
+			            }
+			            $s->store_name      = $s->store_name.$building_name.$unit.$s->number;
+			            $s->room_type_name  = $this->feature($s->feature);
+		            }
+		            return $s;
+	            });
             $this->api_res(0, ['count' => $count, 'rooms' => $rooms]);
             return;
         }

@@ -88,11 +88,6 @@ class Roomunionmodel extends Basemodel {
         return $this->belongsTo(Buildingmodel::class, 'building_id')->select('id', 'name');
     }
 
-    public function community()
-    {
-        return $this->belongsTo(Communitymodel::class,'community_id');
-    }
-
     //房间的长租合同模板
     public function long_template() {
         return $this->belongsTo(Contracttemplatemodel::class, 'contract_template_long_id')
