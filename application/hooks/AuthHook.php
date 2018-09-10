@@ -68,6 +68,8 @@ class AuthHook {
             'company/company/sendcode',
             'company/company/register',
             'company/company/boundwechat',
+            
+            'events/auth'
         );
     }
 

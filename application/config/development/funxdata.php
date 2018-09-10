@@ -29,6 +29,10 @@ $config['tmplmsg_employee_Reserve'] = 'dWQgnPZ5rBhbnTuHh0YSJ30V_wMbvgTREknhjG4op
 //微信开放平台网页授权的信息
 $config['wx_web_appid']  = 'wx75fd74e2316b2355';
 $config['wx_web_secret'] = '70fa3a7fe658be97552788fc764f5434';
+$config['wx_web_token']  = 'oeV3UkLfMwNwguXWVaZ';//消息校验Token
+$config['wx_web_key']    = 'ffgu5NvMLEKQRP2NSwFEjq7hNNRAOuiHsdKLVAAfuIy';//消息加解密Key
+$config['wx_info_url']   = 'http://wx.funxdata.com/events/callback/$APPID$';//消息与事件接收URL
+$config['wx_auth_url']   = 'http://wx.funxdata.com/events/auth';//授权事件接收URL
 
 /**
 用途: 微信租户端公众号的信息
