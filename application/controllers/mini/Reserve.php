@@ -87,6 +87,7 @@ class Reserve extends MY_Controller {
             $taskflow   = $reserve->taskflow;
             $this->taskflowmodel->closeTaskflow($taskflow);
         }
+        $reserve->employee_id   = $this->employee->id;
         $reserve->fill($post);
         $reserve->status = $status;
         if ($reserve->save()) {

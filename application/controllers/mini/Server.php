@@ -217,6 +217,7 @@ class Server extends MY_Controller {
                     Ordermodel::destroy($server->order_id);
                 }
                 $server->deal = $status;
+                $server->employee_id    = $this->employee->id;
                 if (!$server->save()) {
                     $this->api_res(1009);
                     return;
@@ -231,6 +232,7 @@ class Server extends MY_Controller {
                 $this->load->model('taskflowmodel');
                 $taskflow   = $server->taskflow;
                 if($this->taskflowmodel->approveTaskflow($taskflow)){
+                    $server->employee_id    = $this->employee->id;
                     $server->deal = $status;
                     $server->save();
                 }
