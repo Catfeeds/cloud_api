@@ -133,18 +133,26 @@ class Events extends MY_Controller
 	public function auth()
 	{
 		$input      = $this->input->get(null, true);     //url上携带参数
-		$encryptMsg = $this->input->post(null, true);    //通过post方式推送的加密xml数据
+		$encryptMsg = file_get_contents('php://input');//微信推送信息
 		$this->debug('url上携带参数为', $input);
 		$timestamp = empty($input['timestamp']) ? "" : trim($input['timestamp']);
 		$nonce     = empty($input['nonce']) ? "" : trim($input['nonce']);
 		$msg_sign  = empty($input['msg_signature']) ? "" : trim($input['msg_signature']);
 		$pc        = new WXBizMsgCrypt($this->token, $this->aesKey, $this->appid);
+		//接收XML数据
+		$xml_tree = new DOMDocument();
+		$xml_tree->loadXML($encryptMsg);
+		$array_e = $xml_tree->getElementsByTagName('Encrypt');
+		$encrypt = $array_e->item(0)->nodeValue;
+		$format = "<xml><ToUserName><![CDATA[toUser]]></ToUserName><Encrypt><![CDATA[%s]]></Encrypt></xml>";
+		$from_xml = sprintf($format, $encrypt);
+		log_message('debug', $from_xml);
 		//开始消息解密，解密内容存入msg变量
 		$msg     = '';
-		$errCode = $pc->decryptMsg($msg_sign, $timestamp, $nonce, $encryptMsg, $msg);
+		$errCode = $pc->decryptMsg($msg_sign, $timestamp, $nonce, $from_xml, $msg);
 		if ($errCode == 0) {
 			// 从解密内容中获取ComponentVerifyTicket
-			log_message('debug', '-----开始解码-----');
+			log_message('debug', '开始解码-->'.$msg);
 			$xml = new DOMDocument();
 			$xml->loadXML($msg);
 			$array_e = $xml->getElementsByTagName('ComponentVerifyTicket');
@@ -159,9 +167,7 @@ class Events extends MY_Controller
 	
 	public function test()
 	{
-//		$this->load->library('m_redis');
 		echo 1;
-//		$this->m_redis->getTicket();
 	}
 	
 	/**
