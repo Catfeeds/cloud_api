@@ -8,7 +8,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  *
  */
 class Storepaymodel extends Basemodel {
-    const STATE_UDONE = 'UDONE'; // 调起微信配置时的状态
+    const STATE_UNDONE = 'UNDONE'; // 调起微信配置时的状态
     const STATE_DONE  = 'DONE'; //  微信回调支付成功状态
     protected $table = 'boss_store_pay';
     protected $casts = ['data' => 'array'];
