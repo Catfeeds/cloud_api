@@ -1,6 +1,6 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
-include_once(APPPATH . '/libraries/WXBizMsgCrypt.php');
+include_once(APPPATH . '/libraries/wxBizMsgCrypt.php');
 
 /**
  * Author:      hfq<1326432154@qq.com>
@@ -159,9 +159,9 @@ class Events extends MY_Controller
 	
 	public function test()
 	{
-		$this->load->library('m_redis');
+//		$this->load->library('m_redis');
 		echo 1;
-		$this->m_redis->getTicket();
+//		$this->m_redis->getTicket();
 	}
 	
 	/**
