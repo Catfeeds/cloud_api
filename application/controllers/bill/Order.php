@@ -244,7 +244,7 @@ class Order extends MY_Controller {
             array(
                 'field' => 'type',
                 'label' => '账单类型',
-                'rules' => 'required|trim|in_list[ROOM,DEIVCE,UTILITY,REFUND,DEPOSIT_R,DEPOSIT_O,MANAGEMENT,OTHER,RESERVE,CLEAN,WATER,ELECTRICITY,COMPENSATION,REPAIR,HOT_WATER,OVERDUE]',
+                'rules' => 'required|trim|in_list[ROOM,DEIVCE,REFUND,DEPOSIT_R,DEPOSIT_O,MANAGEMENT,OTHER,RESERVE,CLEAN,WATER,ELECTRICITY,COMPENSATION,REPAIR,HOT_WATER,OVERDUE]',
             ),
             array(
                 'field' => 'money',
