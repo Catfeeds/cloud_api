@@ -13,6 +13,11 @@ class Login extends MY_Controller {
         $this->load->model('companymodel');
         $this->load->library('m_redis');
     }
+    
+    public function test()
+    {
+    	echo 1;
+    }
     /**
      * 手机或者微信登陆
      * 接收参数 type code
