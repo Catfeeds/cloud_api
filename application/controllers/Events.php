@@ -22,13 +22,12 @@ class Events extends MY_Controller
 	{
 		parent::__construct();
 		$this->load->library('m_redis');
-		$this->appid       = /*config_item('wx_web_appid')*/'wx9defe092caec0d8b';
-		$this->secret      = config_item('wx_web_secret');
+		$this->appid       = config_item('wx_cloud_appid');
+		$this->secret      = config_item('wx_cloud_secret');
 		$this->token       = config_item('wx_web_token');
-		$this->aesKey      = config_item('wx_web_key');
-		$this->re_url      = config_item('wx_info_url');//消息时间接收回调地址
+		$this->aesKey      = config_item('wx_web_key');//消息加解密Key
+		$this->re_url      = config_item('wx_info_url');//消息事件接收回调地址
 		$this->re_auth_url = config_item('wx_auth_url');//授权回调地址
-		
 	}
 	
 	/*********************************************************
@@ -46,15 +45,32 @@ class Events extends MY_Controller
 	 *      pre_auth_code :     预授权码
 	 *      redirect_uri :      回调URI
 	 */
-	public function authorization()
+	public function authLocation()
 	{
 		if ($this->m_redis->getPreAuthCode()) {
 			$pre_auth_code = $this->m_redis->getPreAuthCode();
 		} else {
 			$pre_auth_code = $this->getPreAuthCode();
 		}
-//		$url = "https://mp.weixin.qq.com/cgi-bin/componentloginpage?component\_appid=$this->appid&pre\_auth\_code=$pre_auth_code&redirect\_uri=$this->re_url";
-//		header();
+		$url = "https://mp.weixin.qq.com/cgi-bin/componentloginpage?component\_appid=$this->appid&pre\_auth\_code=$pre_auth_code&redirect\_uri=$this->re_auth_url";
+		header("Location: " . $url, TRUE, 301);
+	}
+	
+	/**
+	 * 功能:获取授权码
+	 *      用户授权之后的回调，微信平台将返回用户的授权码auth_code和过期时间expires_in=600
+	 */
+	public function authCallBack()
+	{
+		$input = $this->input->get(null, true);     //url上携带参数
+		if (empty($input['auth_code']) || $input['expires_in']) {
+			log_message('error', '授权回调参数有误');
+		}
+		$this->debug('授权回调袖带参数为-->', $input);
+		$auth_code  = empty($input['auth_code']) ? "" : trim($input['auth_code']);
+		$expires_in = empty($input['expires_in']) ? "" : trim($input['expires_in']);
+		$this->m_redis->saveAuthCode($auth_code, $expires_in);
+		return $auth_code;
 	}
 	
 	/**
@@ -101,8 +117,8 @@ class Events extends MY_Controller
 	 */
 	private function getAccessToken()
 	{
-		if ($this->m_redis->getTicket()) {
-			$this->ticket = $this->m_redis->getTicket();
+		if ($this->m_redis->getComponentVerifyTicket()) {
+			$this->ticket = $this->m_redis->getComponentVerifyTicket();
 		} else {
 			log_message('debug', '--ticket获取失败--');
 			return false;

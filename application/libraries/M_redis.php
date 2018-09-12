@@ -220,4 +220,21 @@ class M_redis
 		return $token;
 	}
 	
+	/**
+	 * 存储第三方AuthCode
+	 */
+	public function saveAuthCode($redis,$time = 9*60){
+		$key    = AUTHCODE;
+		$this->redis->set($key,$redis,$time);
+		return true;
+	}
+	
+	/**
+	 * 存储第三方AccessToken
+	 */
+	public function getAuthCode(){
+		$key    = AUTHCODE;
+		$token  = $this->redis->get($key);
+		return $token;
+	}
 }

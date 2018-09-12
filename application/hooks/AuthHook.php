@@ -34,6 +34,13 @@ class AuthHook {
             'mini/contract/archive',
 
             'ping/index',
+            
+            'company/company/sendcode',
+            'company/company/register',
+            'company/company/boundwechat',
+
+            'events/auth',
+            'events/authLocation',
         ];
     }
 
@@ -69,7 +76,8 @@ class AuthHook {
             'company/company/register',
             'company/company/boundwechat',
             
-            'events/auth'
+            'events/auth',
+			'events/authLocation',
         );
     }
 

@@ -29,20 +29,23 @@ $config['tmplmsg_employee_Reserve'] = 'dWQgnPZ5rBhbnTuHh0YSJ30V_wMbvgTREknhjG4op
 //微信开放平台网页授权的信息
 $config['wx_web_appid']  = 'wx75fd74e2316b2355';
 $config['wx_web_secret'] = '70fa3a7fe658be97552788fc764f5434';
-$config['wx_web_token']  = 'oeV3UkLfMwNwguXWVaZ';//消息校验Token
-$config['wx_web_key']    = 'ffgu5NvMLEKQRP2NSwFEjq7hNNRAOuiHsdKLVAAfuIy';//消息加解密Key
-$config['wx_info_url']   = 'http://wx.funxdata.com/events/callback/$APPID$';//消息与事件接收URL
-$config['wx_auth_url']   = 'http://wx.funxdata.com/events/auth';//授权事件接收URL
+
+$config['wx_cloud_appid'] = 'wx9defe092caec0d8b';//消息校验Token
+$config['wx_cloud_serect'] = 'd1720553a99965aa314d82e0e7f4655f';//消息校验Token
+$config['wx_cloud_token'] = 'oeV3UkLfMwNwguXWVaZ';//消息校验Token
+$config['wx_cloud_key']   = 'ffgu5NvMLEKQRP2NSwFEjq7hNNRAOuiHsdKLVAAfuIy';//消息加解密Key
+$config['wx_info_url']    = 'http://wx.funxdata.com/events/callback/$APPID$';//消息与事件接收URL
+$config['wx_auth_url']    = 'http://wx.funxdata.com/events/authcallback';//授权回调URL
 
 /**
-用途: 微信租户端公众号的信息
-微信公众平台类型: 公众号
-公众号名称: 梵响数据
-微信号: funxdata
-管理邮箱: slfw@fun-x.cn
-原始ID: gh_08cb40357652
-AppID: wxd8da84ed2a26aa06
-主域名: tapi.web.funxdata.com
+ * 用途: 微信租户端公众号的信息
+ * 微信公众平台类型: 公众号
+ * 公众号名称: 梵响数据
+ * 微信号: funxdata
+ * 管理邮箱: slfw@fun-x.cn
+ * 原始ID: gh_08cb40357652
+ * AppID: wxd8da84ed2a26aa06
+ * 主域名: tapi.web.funxdata.com
  */
 $config['wx_map_appid']   = 'wxd8da84ed2a26aa06';
 $config['wx_map_secret']  = '00e6fd3ce1151e3d2bd0e01c98c925d3';
@@ -58,15 +61,15 @@ $config['customer_wechat_payment_cert_path'] = '';
 $config['customer_wechat_payment_key_path'] = '';
 
 /**
-测试环境里 员工端和租户端共用了公众号
-用途: 微信员工端端公众号的信息
-微信公众平台类型: 公众号
-公众号名称: 梵响数据
-微信号: funxdata
-管理邮箱: slfw@fun-x.cn
-原始ID: gh_08cb40357652
-AppID: wxd8da84ed2a26aa06
-主域名: tapi.web.funxdata.com
+ * 测试环境里 员工端和租户端共用了公众号
+ * 用途: 微信员工端端公众号的信息
+ * 微信公众平台类型: 公众号
+ * 公众号名称: 梵响数据
+ * 微信号: funxdata
+ * 管理邮箱: slfw@fun-x.cn
+ * 原始ID: gh_08cb40357652
+ * AppID: wxd8da84ed2a26aa06
+ * 主域名: tapi.web.funxdata.com
  */
 $config['wx_employee_appid']   = 'wxd8da84ed2a26aa06';
 $config['wx_employee_secret']  = '00e6fd3ce1151e3d2bd0e01c98c925d3';
@@ -77,32 +80,32 @@ $config['tmplmsg_employee_Reserve'] = 'qCwYA7zOn-s5cxx8zLBcXpa-n24N_2dZIbV3K0dbE
 
 // 任务提醒
 /**
-{{first.DATA}}
-名称：{{keyword1.DATA}}
-发起人：{{keyword2.DATA}}
-接收时间：{{keyword3.DATA}}
-评审对象：{{keyword4.DATA}}
-{{remark.DATA}}
+ * {{first.DATA}}
+ * 名称：{{keyword1.DATA}}
+ * 发起人：{{keyword2.DATA}}
+ * 接收时间：{{keyword3.DATA}}
+ * 评审对象：{{keyword4.DATA}}
+ * {{remark.DATA}}
  */
 $config['tmplmsg_employee_TaskRemind'] = 'KcKwVNf5s5M-aZU93PtVjFFIcIxmNLE1vtMT1V80pq8';
 
 // 告警通知
 /**
-{{first.DATA}}
-时间：{{keyword1.DATA}}
-内容：{{keyword2.DATA}}
-{{remark.DATA}}
+ * {{first.DATA}}
+ * 时间：{{keyword1.DATA}}
+ * 内容：{{keyword2.DATA}}
+ * {{remark.DATA}}
  */
 $config['tmplmsg_employee_Warning'] = '9NCwhWn0bV8QgUBvjFxzTD37Wj_x-uIYorKEaEHE-cc';
 
 /**
-用途: 员工端相关配置信息
-微信公众平台类型: 小程序
-小程序名称: 梵响数据
-管理邮箱: egg@fun-x.cn
-原始ID: gh_240bd483e3f3
-AppID: wx5721f56e75cc901e
-主域名: tapi.boss.funxdata.com
+ * 用途: 员工端相关配置信息
+ * 微信公众平台类型: 小程序
+ * 小程序名称: 梵响数据
+ * 管理邮箱: egg@fun-x.cn
+ * 原始ID: gh_240bd483e3f3
+ * AppID: wx5721f56e75cc901e
+ * 主域名: tapi.boss.funxdata.com
  */
 $config['miniAppid']   = 'wx5721f56e75cc901e';
 $config['miniSecret']  = 'c2681fbb7a0cb09b3817bc7706a57163';
