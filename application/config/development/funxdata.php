@@ -31,7 +31,7 @@ $config['wx_web_appid']  = 'wx75fd74e2316b2355';
 $config['wx_web_secret'] = '70fa3a7fe658be97552788fc764f5434';
 
 $config['wx_cloud_appid'] = 'wx9defe092caec0d8b';//消息校验Token
-$config['wx_cloud_serect'] = 'd1720553a99965aa314d82e0e7f4655f';//消息校验Token
+$config['wx_cloud_secret'] = 'd1720553a99965aa314d82e0e7f4655f';//消息校验Token
 $config['wx_cloud_token'] = 'oeV3UkLfMwNwguXWVaZ';//消息校验Token
 $config['wx_cloud_key']   = 'ffgu5NvMLEKQRP2NSwFEjq7hNNRAOuiHsdKLVAAfuIy';//消息加解密Key
 $config['wx_info_url']    = 'http://wx.funxdata.com/events/callback/$APPID$';//消息与事件接收URL
