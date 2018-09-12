@@ -165,5 +165,59 @@ class M_redis
         $token  = $this->redis->get($key);
         return $token;
     }
-
+	
+	/**
+	 * 存储ComponentVerifyTicket
+	 */
+	public function saveComponentVerifyTicket($redis){
+		$key    = COMPONENTVERIFYTICKT;
+		$this->redis->set($key,$redis,2*60*60);
+		return true;
+	}
+	
+	/**
+	 * 获取ComponentVerifyTicket
+	 */
+	public function getComponentVerifyTicket(){
+		$key    = COMPONENTVERIFYTICKT;
+		$token  = $this->redis->get($key);
+		return $token;
+	}
+	
+	/**
+	 * 存储第三方AccessToken
+	 */
+	public function saveAccessToken($redis){
+		$key    = ACCESSTOKEN;
+		$this->redis->set($key,$redis,110*60);
+		return true;
+	}
+	
+	/**
+	 * 存储第三方AccessToken
+	 */
+	public function getAccessToken(){
+		$key    = ACCESSTOKEN;
+		$token  = $this->redis->get($key);
+		return $token;
+	}
+	
+	/**
+	 * 存储第三方PreAuthCode
+	 */
+	public function savePreAuthCode($redis){
+		$key    = PREAUTHCODE;
+		$this->redis->set($key,$redis,9*60);
+		return true;
+	}
+	
+	/**
+	 * 存储第三方AccessToken
+	 */
+	public function getPreAuthCode(){
+		$key    = PREAUTHCODE;
+		$token  = $this->redis->get($key);
+		return $token;
+	}
+	
 }
