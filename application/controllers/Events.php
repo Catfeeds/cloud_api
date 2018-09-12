@@ -159,7 +159,7 @@ class Events extends MY_Controller
 			//解密得到的ticket
 			$this->ticket = $array_e->item(0)->nodeValue;
 			log_message('debug', '解密得到的ticket为-->' . $this->ticket);
-			$this->m_redis->saveAccessToken($this->ticket);
+			$this->m_redis->saveComponentVerifyTicket($this->ticket);
 		} else {
 			log_message('error', '解密失败-->' . $errCode);
 		}
