@@ -82,7 +82,7 @@ class Events extends MY_Controller
 	 *      pre_auth_code：            预授权码
 	 *      expires_in：                有效期，为10分钟
 	 */
-	private function getPreAuthCode()
+	public function getPreAuthCode()
 	{
 		if ($this->m_redis->getAccessToken()) {
 			$access_token = $this->m_redis->getAccessToken();
@@ -92,6 +92,7 @@ class Events extends MY_Controller
 		$url  = 'https://api.weixin.qq.com/cgi-bin/component/api_create_preauthcode?component_access_token=' . "$access_token";
 		$data = ['component_appid' => $this->appid];
 		$res  = $this->httpCurl($url, 'post', 'json', $data);
+		$this->debug('获取预授权码-->',$res);
 		if (array_key_exists('errcode', $res)) {
 			log_message('error', '获取预授权码失败--> ' . $res['errmsg']);
 			return false;
@@ -115,7 +116,7 @@ class Events extends MY_Controller
 	 *      component_access_token    第三方平台access_token
 	 *      expires_in                有效期7200s
 	 */
-	private function getAccessToken()
+	public function getAccessToken()
 	{
 		if ($this->m_redis->getComponentVerifyTicket()) {
 			$this->ticket = $this->m_redis->getComponentVerifyTicket();
@@ -130,6 +131,7 @@ class Events extends MY_Controller
 			"component_verify_ticket" => $this->ticket,
 		];
 		$res  = $this->httpCurl($url, 'post', 'json', $data);
+		$this->debug('获取AccessToken返回-->',$res);
 		if (array_key_exists('errcode', $res)) {
 			log_message('error', '获取AccessToken失败-> ' . $res['errmsg']);
 			return false;
