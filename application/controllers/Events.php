@@ -132,8 +132,9 @@ class Events extends MY_Controller
 			"component_verify_ticket" => $this->ticket,
 		];
 		$this->debug('POST参数为-->',$data);
-//		$res  = $this->httpCurl($url, 'post', 'json', $data);
-		$res    = (new Client())->request('POST', $url, $data)->getBody()->getContents();
+		$res  = $this->httpCurl($url, 'post', 'json', $data);
+//		$res    = (new Client())->request('POST', $url, $data)->getBody()->getContents();
+//		$res    = json_decode($res,true);
 		$this->debug('获取AccessToken返回-->',$res);
 		if (array_key_exists('errcode', $res)) {
 			log_message('error', '获取AccessToken失败-> ' . $res['errmsg']);
