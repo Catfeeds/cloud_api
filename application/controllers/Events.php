@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+use GuzzleHttp\Client;
 include_once(APPPATH . '/libraries/wxBizMsgCrypt.php');
-
 /**
  * Author:      hfq<1326432154@qq.com>
  * Date:        2018/8/29
@@ -91,6 +91,7 @@ class Events extends MY_Controller
 		}
 		$url  = 'https://api.weixin.qq.com/cgi-bin/component/api_create_preauthcode?component_access_token=' . "$access_token";
 		$data = ['component_appid' => $this->appid];
+		$this->debug('POST参数为-->',$data);
 		$res  = $this->httpCurl($url, 'post', 'json', $data);
 		$this->debug('获取预授权码-->',$res);
 		if (array_key_exists('errcode', $res)) {
@@ -130,7 +131,9 @@ class Events extends MY_Controller
 			"component_appsecret"     => $this->secret,
 			"component_verify_ticket" => $this->ticket,
 		];
-		$res  = $this->httpCurl($url, 'post', 'json', $data);
+		$this->debug('POST参数为-->',$data);
+//		$res  = $this->httpCurl($url, 'post', 'json', $data);
+		$res    = (new Client())->request('POST', $url, $data)->getBody()->getContents();
 		$this->debug('获取AccessToken返回-->',$res);
 		if (array_key_exists('errcode', $res)) {
 			log_message('error', '获取AccessToken失败-> ' . $res['errmsg']);
