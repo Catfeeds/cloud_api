@@ -22,7 +22,7 @@ class Events extends MY_Controller
 	{
 		parent::__construct();
 		$this->load->library('m_redis');
-		$this->appid       = config_item('wx_web_appid');
+		$this->appid       = /*config_item('wx_web_appid')*/'wx9defe092caec0d8b';
 		$this->secret      = config_item('wx_web_secret');
 		$this->token       = config_item('wx_web_token');
 		$this->aesKey      = config_item('wx_web_key');
