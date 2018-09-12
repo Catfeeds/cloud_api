@@ -24,8 +24,8 @@ class Events extends MY_Controller
 		$this->load->library('m_redis');
 		$this->appid       = config_item('wx_cloud_appid');
 		$this->secret      = config_item('wx_cloud_secret');
-		$this->token       = config_item('wx_web_token');
-		$this->aesKey      = config_item('wx_web_key');//消息加解密Key
+		$this->token       = config_item('wx_cloud_token');
+		$this->aesKey      = config_item('wx_cloud_key');//消息加解密Key
 		$this->re_url      = config_item('wx_info_url');//消息事件接收回调地址
 		$this->re_auth_url = config_item('wx_auth_url');//授权回调地址
 	}
