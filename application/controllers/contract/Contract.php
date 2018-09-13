@@ -205,7 +205,7 @@ class Contract extends MY_Controller {
         $data   = [];
         foreach ($residents as $resident){
             if (empty($resident->contract->toArray())) {
-               continue;
+                continue;
             }
             if($resident->contract[0]->status == 'GENERATED'){
                 $status = '未签署';
@@ -226,6 +226,7 @@ class Contract extends MY_Controller {
                 'contract_number'   => $resident->contract[0]->contract_id,
                 'store_name'        => $resident->store->name,
                 'room_address'      => $resident->roomunion->number,
+                'area'              => $resident->roomunion->area,
                 'resident_name'     => $resident->name,
                 'rent_price'        => $resident->real_rent_money,
                 'property_price'    => $resident->real_property_costs,
@@ -292,6 +293,7 @@ class Contract extends MY_Controller {
                 'contract_number'   => $resident->reserve_contract[0]->contract_id,
                 'store_name'        => $resident->store->name,
                 'room_address'      => $resident->roomunion->number,
+                'area'              => $resident->roomunion->area,
                 'resident_name'     => $resident->name,
                 'rent_price'        => $resident->rent_price,
                 'property_price'    => $resident->property_price,
@@ -341,20 +343,21 @@ class Contract extends MY_Controller {
 
     private function setExcelFirstRow(Spreadsheet $phpexcel) {
         $phpexcel->getActiveSheet()->setCellValue('A1', '合同编号')
-            ->setCellValue('B1', '房间号')
-            ->setCellValue('C1', '门店名称')
-            ->setCellValue('D1', '住户姓名')
-            ->setCellValue('E1', '租金')
-            ->setCellValue('F1', '物业费')
-            ->setCellValue('G1', '合同开始时间')
-            ->setCellValue('H1', '合同结束时间')
-            ->setCellValue('I1', '合同时长')
-            ->setCellValue('J1', '支付周期')
-            ->setCellValue('K1', '押金月份')
-            ->setCellValue('L1', '定金')
-            ->setCellValue('M1', '经办人')
-            ->setCellValue('N1', '合同状态')
-            ->setCellValue('O1', 'url地址');
+            ->setCellValue('B1', '门店名称')
+            ->setCellValue('C1', '房间号')
+            ->setCellValue('D1', '面积')
+            ->setCellValue('E1', '住户姓名')
+            ->setCellValue('F1', '租金')
+            ->setCellValue('G1', '物业费')
+            ->setCellValue('H1', '合同开始时间')
+            ->setCellValue('I1', '合同结束时间')
+            ->setCellValue('J1', '合同时长')
+            ->setCellValue('K1', '支付周期')
+            ->setCellValue('L1', '押金月份')
+            ->setCellValue('M1', '定金')
+            ->setCellValue('N1', '经办人')
+            ->setCellValue('O1', '合同状态')
+            ->setCellValue('P1', 'url地址');
 
     }
 
@@ -364,7 +367,7 @@ class Contract extends MY_Controller {
         $phpexcel->getActiveSheet()->getColumnDimension('C')->setWidth(12);
         $phpexcel->getActiveSheet()->getColumnDimension('D')->setWidth(12);
         $phpexcel->getActiveSheet()->getColumnDimension('E')->setWidth(12);
-        $phpexcel->getActiveSheet()->getColumnDimension('F')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('F')->setWidth(12);
         $phpexcel->getActiveSheet()->getColumnDimension('G')->setWidth(10);
         $phpexcel->getActiveSheet()->getColumnDimension('H')->setWidth(10);
         $phpexcel->getActiveSheet()->getColumnDimension('I')->setWidth(10);
@@ -373,7 +376,8 @@ class Contract extends MY_Controller {
         $phpexcel->getActiveSheet()->getColumnDimension('L')->setWidth(10);
         $phpexcel->getActiveSheet()->getColumnDimension('M')->setWidth(10);
         $phpexcel->getActiveSheet()->getColumnDimension('N')->setWidth(10);
-        $phpexcel->getActiveSheet()->getColumnDimension('O')->setWidth(80);
+        $phpexcel->getActiveSheet()->getColumnDimension('O')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('P')->setWidth(80);
     }
 
 }
