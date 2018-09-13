@@ -230,10 +230,28 @@ class M_redis
 	}
 	
 	/**
-	 * 存储第三方AccessToken
+	 * 获取第三方AuthCode
 	 */
 	public function getAuthCode(){
 		$key    = AUTHCODE;
+		$token  = $this->redis->get($key);
+		return $token;
+	}
+	
+	/**
+	 * 存储授权方authorizer_access_token
+	 */
+	public function saveAuthorAccessToken($redis){
+		$key    = AUTHORACCESSTOKEN;
+		$this->redis->set($key,$redis,110*60);
+		return true;
+	}
+	
+	/**
+	 * 获取授权方authorizer_access_token
+	 */
+	public function getAuthorAccessToken(){
+		$key    = AUTHORACCESSTOKEN;
 		$token  = $this->redis->get($key);
 		return $token;
 	}

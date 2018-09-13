@@ -77,8 +77,9 @@ class AuthHook {
             'company/company/boundwechat',
             
             'events/auth',
-//            'contract/contract/export',
             'events/authlocation',
+			'events/callback',
+
         );
     }
 
