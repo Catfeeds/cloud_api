@@ -98,6 +98,21 @@ class Residentmodel extends Basemodel {
     ];
 
     /**
+     * 经办人
+     */
+    public function employee()
+    {
+        return $this->belongsTo(Employeemodel::class,'employee_id');
+    }
+
+    /**
+     * 门店
+     */
+    public function store(){
+        return $this->belongsTo(Storemodel::class,'store_id');
+    }
+
+    /**
      * @当前房间在住的住户
      */
     public function current_room()

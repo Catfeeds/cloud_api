@@ -1,5 +1,6 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 /**
  * Author:      hfq<1326432154@qq.com>
  * Date:        2018/6/8
@@ -116,4 +117,263 @@ class Contract extends MY_Controller {
         }
         $this->api_res(0, ['list' => $order, 'count' => $count]);
     }
+
+    /**
+     * 合同导出
+     */
+    public function export()
+    {
+        $this->load->model('contractmodel');
+        $this->load->model('residentmodel');
+        $this->load->model('roomunionmodel');
+        $this->load->model('coupontypemodel');
+        $this->load->model('coupontypemodel');
+        $this->load->model('activitymodel');
+        $this->load->model('storemodel');
+        $this->load->model('employeemodel');
+        $input  = $this->input->post(null,true);
+        $where  = [
+            'store_id'    => $input['store_id'],
+            'time_type'   => $input['time_type'], //'START','END'
+            'type'        => $input['type'],        //'CHECKIN','RESERVE'
+            'time_start'  => $input['time_start'],
+            'time_end'    => $input['time_end'],
+        ];
+        if ($input['type']=='CHECKIN') {
+            $type_name  = '入住';
+        }else{
+            $type_name  = '预定';
+        }
+        $store  = Storemodel::findOrFail($input['store_id']);
+        $data   = $this->exportData($where);
+        $filename   = date('Y-m-d',time()).$store->name.$type_name.'合同.Xlsx';
+        $row      = count($data) + 3;
+        $phpexcel   = new Spreadsheet();
+        $sheet    = $phpexcel->getActiveSheet();
+        $this->setSheet($phpexcel,$filename,$row);
+        $sheet->fromArray($data, null, 'A2'); //想excel中写入数据
+        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($phpexcel, 'Xlsx');
+        header("Pragma: public");
+        header("Expires: 0");
+        header("Content-Type:application/octet-stream");
+        header("Content-Transfer-Encoding:binary");
+        header('Cache-Control: max-age=0');
+        header("Content-Disposition:attachment;filename=$filename");
+        $writer->save('php://output');
+        exit;
+    }
+
+    /**
+     * 导出合同的数据
+     */
+    private function exportData($where)
+    {
+        if ($where['type']=='CHECKIN') {
+            $data   = $this->exportCheckInData($where);
+        } elseif($where['type']=='RESERVE') {
+            $data   = $this->exportReserveData($where);
+        } else {
+            $data   = [];
+        }
+        return $data;
+    }
+
+    /**
+     * 入住合同数据
+     */
+    private function exportCheckInData($where)
+    {
+        if ($where['time_type']=='BEGIN') {
+            $residents   = Residentmodel::with('contract')
+                ->with('roomunion')
+                ->with('employee')
+                ->with('store')
+                ->where('store_id',$where['store_id'])
+                ->where('contract_time','>',0)
+                ->whereBetween('begin_time',[$where['time_start'],$where['time_end']])
+                ->get();
+        } elseif ($where['time_type']=='END') {
+            $residents   = Residentmodel::with('contract')
+                ->with('roomunion')
+                ->with('employee')
+                ->with('store')
+                ->where('store_id',$where['store_id'])
+                ->where('contract_time','>',0)
+                ->whereBetween('end_time',[$where['time_start'],$where['time_end']])
+                ->get();
+        }
+        $data   = [];
+        foreach ($residents as $resident){
+            if (empty($resident->contract->toArray())) {
+               continue;
+            }
+            if($resident->contract[0]->status == 'GENERATED'){
+                $status = '未签署';
+            }elseif ($resident->contract[0]->status == 'SIGNING') {
+                $status = '签属中';
+            }elseif($resident->contract[0]->status == 'ARCHIVED'){
+                $status = '签署完成';
+            }else{
+                $status = '未签署';
+            }
+
+            if($resident->contract[0]->view_url=='url_view'){
+                $url='';
+            }else{
+                $url=$resident->contract[0]->view_url;
+            }
+            $data[] = [
+                'contract_number'   => $resident->contract[0]->contract_id,
+                'store_name'        => $resident->store->name,
+                'room_address'      => $resident->roomunion->number,
+                'resident_name'     => $resident->name,
+                'rent_price'        => $resident->real_rent_money,
+                'property_price'    => $resident->real_property_costs,
+                'begin_time'        => $resident->begin_time->format('Y-m-d'),
+                'end_time'          => $resident->end_time->format('Y-m-d'),
+                'contract_time'     => $resident->contract_time,
+                'pay_frequency'     => $resident->pay_frequency,
+                'deposit_month'     => $resident->deposit_month,
+                'book_money'        => $resident->book_money,
+                'employee'          => $resident->employee->name,
+                'status'            => $status,
+                'url'               => $url,
+            ];
+        }
+
+        return $data;
+    }
+
+    /**
+     * 预定合同数据
+     */
+    private function exportReserveData($where)
+    {
+        if ($where['time_type']=='BEGIN') {
+            $residents   = Residentmodel::with('reserve_contract')
+                ->with('roomunion')
+                ->with('employee')
+                ->with('store')
+                ->where('store_id',$where['store_id'])
+                ->where('reserve_contract_time','>',0)
+                ->whereBetween('reserve_begin_time',[$where['time_start'],$where['time_end']])
+                ->get();
+        } elseif ($where['time_type']=='END') {
+            $residents   = Residentmodel::with('reserve_contract')
+                ->with('roomunion')
+                ->with('employee')
+                ->with('store')
+                ->where('store_id',$where['store_id'])
+                ->where('reserve_contract_time','>',0)
+                ->whereBetween('reserve_end_time',[$where['time_start'],$where['time_end']])
+                ->get();
+        }
+        $data   = [];
+        foreach ($residents as $resident){
+            if (empty($resident->reserve_contract->toArray())) {
+                continue;
+            }
+            if($resident->reserve_contract[0]->status == 'GENERATED'){
+                $status = '未签署';
+            }elseif ($resident->reserve_contract[0]->status == 'SIGNING') {
+                $status = '签属中';
+            }elseif($resident->reserve_contract[0]->status == 'ARCHIVED'){
+                $status = '签署完成';
+            }else{
+                $status = '未签署';
+            }
+
+            if($resident->reserve_contract[0]->view_url=='url_view'){
+                $url='';
+            }else{
+                $url=$resident->reserve_contract[0]->view_url;
+            }
+            $data[] = [
+                'contract_number'   => $resident->reserve_contract[0]->contract_id,
+                'store_name'        => $resident->store->name,
+                'room_address'      => $resident->roomunion->number,
+                'resident_name'     => $resident->name,
+                'rent_price'        => $resident->rent_price,
+                'property_price'    => $resident->property_price,
+                'begin_time'        => $resident->reserve_begin_time->format('Y-m-d'),
+                'end_time'          => $resident->reserve_end_time->format('Y-m-d'),
+                'contract_time'     => $resident->reserve_contract_time,
+                'pay_frequency'     => 0,
+                'deposit_month'     => 0,
+                'book_money'        => $resident->book_money,
+                'employee'          => $resident->employee->name,
+                'status'            => $status,
+                'url'               => $url,
+            ];
+        }
+
+        return $data;
+    }
+
+
+
+    /**
+     * 设置导出表
+     */
+    private function setSheet(Spreadsheet $spreadsheet,$filename,$row)
+    {
+        $this->createPHPExcel($spreadsheet,$filename);
+        $this->setExcelFirstRow($spreadsheet);
+        $this->setExcelColumnWidth($spreadsheet); //设置Excel每列宽度
+        return $spreadsheet;
+    }
+
+    /**
+     * 导出合同的excel设置
+     */
+    private function createPHPExcel(Spreadsheet $phpexcel, $filename) {
+        $phpexcel->getProperties()
+            ->setCreator('梵响数据')
+            ->setLastModifiedBy('梵响数据')
+            ->setTitle($filename)
+            ->setSubject($filename)
+            ->setDescription($filename)
+            ->setKeywords($filename)
+            ->setCategory($filename);
+        $phpexcel->setActiveSheetIndex(0);
+        return $phpexcel;
+    }
+
+    private function setExcelFirstRow(Spreadsheet $phpexcel) {
+        $phpexcel->getActiveSheet()->setCellValue('A1', '合同编号')
+            ->setCellValue('B1', '房间号')
+            ->setCellValue('C1', '门店名称')
+            ->setCellValue('D1', '住户姓名')
+            ->setCellValue('E1', '租金')
+            ->setCellValue('F1', '物业费')
+            ->setCellValue('G1', '合同开始时间')
+            ->setCellValue('H1', '合同结束时间')
+            ->setCellValue('I1', '合同时长')
+            ->setCellValue('J1', '支付周期')
+            ->setCellValue('K1', '押金月份')
+            ->setCellValue('L1', '定金')
+            ->setCellValue('M1', '经办人')
+            ->setCellValue('N1', '合同状态')
+            ->setCellValue('O1', 'url地址');
+
+    }
+
+    private function setExcelColumnWidth(Spreadsheet $phpexcel) {
+        $phpexcel->getActiveSheet()->getColumnDimension('A')->setWidth(22);
+        $phpexcel->getActiveSheet()->getColumnDimension('B')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('C')->setWidth(12);
+        $phpexcel->getActiveSheet()->getColumnDimension('D')->setWidth(12);
+        $phpexcel->getActiveSheet()->getColumnDimension('E')->setWidth(12);
+        $phpexcel->getActiveSheet()->getColumnDimension('F')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('G')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('H')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('I')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('J')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('K')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('L')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('M')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('N')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('O')->setWidth(80);
+    }
+
 }
