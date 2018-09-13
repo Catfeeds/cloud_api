@@ -1597,6 +1597,9 @@ CREATE TABLE `fx_company` (
   `phone` varchar(14) DEFAULT '' COMMENT '电话',
   `openid` varchar(64) DEFAULT '' COMMENT '微信openid',
   `unionid` varchar(64) DEFAULT NULL,
+  `authorizer_appid`  varchar(32)  NOT NULL DEFAULT '' COMMENT '授权方AppId' AFTER `deleted_at`,
+  `authorizer_refresh_token`  varchar(64)  NOT NULL DEFAULT '' COMMENT '授权方的刷新令牌' AFTER `authorizer_appid`,
+  `nick_name`  varchar(128) NOT NULL DEFAULT '' COMMENT '授权方昵称' AFTER `authorizer_refresh_token`,
   `license` varchar(128) NOT NULL DEFAULT '' COMMENT '营业执照',
   `expiretime` timestamp NOT NULL DEFAULT '2037-12-31 00:00:00' COMMENT '失效时间',
   `remark` text COMMENT '备注信息',
@@ -1607,6 +1610,38 @@ CREATE TABLE `fx_company` (
   `deleted_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `fx_company_wxinfo`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `fx_company_wxinfo` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `company_id` int(10) NOT NULL DEFAULT '0' COMMENT '公司ID',
+  `nick_name` varchar(128) NOT NULL DEFAULT '' COMMENT '授权方昵称',
+  `head_img` varchar(255) NOT NULL DEFAULT '' COMMENT '授权方头像',
+  `service_type_info` enum('2','1','0') DEFAULT NULL COMMENT '授权方公众号类型，0订阅号，1由历史老帐号升级订阅号，2服务号',
+  `verify_type_info` enum('5','4','3','2','1','0','-1') DEFAULT NULL COMMENT '授权方认证类型，-1代表未认证，0代表微信认证，1代表新浪微博认证，2代表腾讯微博认证，3代表已资质认证通过但还未通过名称认证，4代表已资质认证通过、还未通过名称认证，但通过了新浪微博认证，5代表已资质认证通过、还未通过名称认证，但通过了腾讯微博认证',
+  `user_name` varchar(64) NOT NULL DEFAULT '' COMMENT '授权方公众号的原始ID',
+  `principal_name` varchar(128) NOT NULL DEFAULT '' COMMENT '公众号的主体名称',
+  `alias` varchar(64) DEFAULT NULL COMMENT '授权方公众号所设置的微信号，可能为空',
+  `open_store` enum('1','0') DEFAULT NULL COMMENT '是否开通微信门店功能 ',
+  `open_scan` enum('1','0') DEFAULT NULL COMMENT '是否开通微信扫商品功能',
+  `open_pay` enum('1','0') DEFAULT NULL COMMENT '是否开通微信支付功能',
+  `open_card` enum('1','0') DEFAULT NULL COMMENT '是否开通微信卡券功能',
+  `open_shake` enum('1','0') DEFAULT NULL COMMENT '是否开通微信摇一摇功能',
+  `qrcode_url` varchar(255) NOT NULL DEFAULT '' COMMENT '二维码图片的URL',
+  `func_info` varchar(255) DEFAULT '' COMMENT '公众号授权给开发者的权限集列表,ID为1到15时分别代表： 1.消息管理权限 2.用户管理权限 3.帐号服务权限 4.网页服务权限 5.微信小店权限 6.微信多客服权限 7.群发与通知权限 8.微信卡券权限 9.微信扫一扫权限 10.微信连WIFI权限 11.素材管理权限 12.微信摇周边权限 13.微信门店权限 14.微信支付权限 15.自定义菜单权限 请注意： 1）该字段的返回不会考虑公众号是否具备该权限集的权限（因为可能部分具备），请根据公众号的帐号类型和认证情况，来判断公众号的接口权限',
+  `created_at` datetime DEFAULT '0000-00-00 00:00:00',
+  `updated_at` datetime DEFAULT '0000-00-00 00:00:00',
+  `deleted_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
