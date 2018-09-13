@@ -187,6 +187,7 @@ class Contract extends MY_Controller {
             $residents   = Residentmodel::with('contract')
                 ->with('roomunion')
                 ->with('employee')
+                ->with('current_room')
                 ->with('store')
                 ->where('store_id',$where['store_id'])
                 ->where('contract_time','>',0)
@@ -196,6 +197,7 @@ class Contract extends MY_Controller {
             $residents   = Residentmodel::with('contract')
                 ->with('roomunion')
                 ->with('employee')
+                ->with('current_room')
                 ->with('store')
                 ->where('store_id',$where['store_id'])
                 ->where('contract_time','>',0)
@@ -215,6 +217,12 @@ class Contract extends MY_Controller {
                 $status = '签署完成';
             }else{
                 $status = '未签署';
+            }
+
+            if(empty($resident->current_room)){
+                $contract_status    = '已解除';
+            }else{
+                $contract_status    = '未解除';
             }
 
             if($resident->contract[0]->view_url=='url_view'){
@@ -239,6 +247,7 @@ class Contract extends MY_Controller {
                 'employee'          => $resident->employee->name,
                 'status'            => $status,
                 'url'               => $url,
+                'contract_status'   => $contract_status
             ];
         }
 
@@ -254,6 +263,7 @@ class Contract extends MY_Controller {
             $residents   = Residentmodel::with('reserve_contract')
                 ->with('roomunion')
                 ->with('employee')
+                ->with('current_room')
                 ->with('store')
                 ->where('store_id',$where['store_id'])
                 ->where('reserve_contract_time','>',0)
@@ -263,6 +273,7 @@ class Contract extends MY_Controller {
             $residents   = Residentmodel::with('reserve_contract')
                 ->with('roomunion')
                 ->with('employee')
+                ->with('current_room')
                 ->with('store')
                 ->where('store_id',$where['store_id'])
                 ->where('reserve_contract_time','>',0)
@@ -282,6 +293,12 @@ class Contract extends MY_Controller {
                 $status = '签署完成';
             }else{
                 $status = '未签署';
+            }
+
+            if(empty($resident->current_room)){
+                $contract_status    = '已解除';
+            }else{
+                $contract_status    = '未解除';
             }
 
             if($resident->reserve_contract[0]->view_url=='url_view'){
@@ -306,6 +323,7 @@ class Contract extends MY_Controller {
                 'employee'          => $resident->employee->name,
                 'status'            => $status,
                 'url'               => $url,
+                'contract_status'   => $contract_status
             ];
         }
 
@@ -357,7 +375,8 @@ class Contract extends MY_Controller {
             ->setCellValue('M1', '定金')
             ->setCellValue('N1', '经办人')
             ->setCellValue('O1', '合同状态')
-            ->setCellValue('P1', 'url地址');
+            ->setCellValue('P1', 'url地址')
+            ->setCellValue('Q1', '是否已经解除');
 
     }
 
@@ -378,6 +397,7 @@ class Contract extends MY_Controller {
         $phpexcel->getActiveSheet()->getColumnDimension('N')->setWidth(10);
         $phpexcel->getActiveSheet()->getColumnDimension('O')->setWidth(10);
         $phpexcel->getActiveSheet()->getColumnDimension('P')->setWidth(80);
+        $phpexcel->getActiveSheet()->getColumnDimension('Q')->setWidth(10);
     }
 
 }
