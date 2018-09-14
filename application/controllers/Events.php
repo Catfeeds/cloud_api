@@ -272,6 +272,7 @@ class Events extends MY_Controller
 	 */
 	public function auth()
 	{
+		log_message('debug','1111111111111111111111');
 		$input      = $this->input->get(null, true);     //url上携带参数
 		$encryptMsg = file_get_contents('php://input');//微信推送信息
 		$this->debug('url上携带参数为', $input);
@@ -299,11 +300,14 @@ class Events extends MY_Controller
 			$array_e = $xml->getElementsByTagName('ComponentVerifyTicket');
 			$this->debug('获取ComponentVerifyTicket',$array_e);
 			//解密得到的ticket
-			if (!empty($array_e)){
+			if (empty($array_e->item(0))){
+				$this->ticket = NULL;
+			}else{
 				$this->ticket = $array_e->item(0)->nodeValue;
-				log_message('debug', '解密得到的ticket为-->' . $this->ticket);
-				$this->m_redis->saveComponentVerifyTicket($this->ticket);
 			}
+//			$this->ticket = $array_e->item(0)->nodeValue;
+			log_message('debug', '解密得到的ticket为-->' . $this->ticket);
+			$this->m_redis->saveComponentVerifyTicket($this->ticket);
 			echo 'success';
 		} else {
 			log_message('error', '解密失败-->' . $errCode);
