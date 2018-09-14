@@ -143,8 +143,7 @@ class Roomunionmodel extends Basemodel {
 	 */
 	public function house()
 	{
-		return $this->belongsTo(Housemodel::class, 'house_id')
-			->select('id','building_name','unit','number');
+		return $this->belongsTo(Housemodel::class, 'house_id');
 	}
 	
 	/**
