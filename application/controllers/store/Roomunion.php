@@ -299,9 +299,11 @@ class Roomunion extends MY_Controller {
         $this->load->model('roomtypemodel');
         $this->load->model('contracttemplatemodel');
         $this->load->model('communitymodel');
+        $this->load->model('housemodel');
         $room = Roomunionmodel::with('store')
             ->with('roomtype')
             ->with('community')
+            ->with('house')
             ->with('long_template')
             ->with('short_template')
             ->with('reserve_template')
@@ -324,7 +326,7 @@ class Roomunion extends MY_Controller {
      */
     public function submitUnion() {
         $field = ['room_id', 'provides',
-            'contract_template_long_id', 'contract_template_short_id', 'contract_template_reserve_id',
+//            'contract_template_long_id', 'contract_template_short_id', 'contract_template_reserve_id',
 //            'contract_min_time','contract_max_time','deposit_type','pay_frequency_allow'
         ];
         if (!$this->validationText($this->validateSubmitUnion())) {
@@ -338,9 +340,9 @@ class Roomunion extends MY_Controller {
             $this->api_res(1007);
             return;
         }
-        $room->contract_template_long_id    = $post['contract_template_long_id'];
-        $room->contract_template_short_id   = $post['contract_template_short_id'];
-        $room->contract_template_reserve_id = $post['contract_template_reserve_id'];
+//        $room->contract_template_long_id    = $post['contract_template_long_id'];
+//        $room->contract_template_short_id   = $post['contract_template_short_id'];
+//        $room->contract_template_reserve_id = $post['contract_template_reserve_id'];
         $room->provides                     = $post['provides'];
         if ($room->save()) {
             $this->api_res(0);
@@ -368,21 +370,21 @@ class Roomunion extends MY_Controller {
 
     private function validateSubmitUnion() {
         return array(
-            array(
-                'field' => 'contract_template_long_id',
-                'label' => '选择长租合同模板',
-                'rules' => 'trim|required|integer',
-            ),
-            array(
-                'field' => 'contract_template_short_id',
-                'label' => '选择短租合同模板',
-                'rules' => 'trim|required|integer',
-            ),
-            array(
-                'field' => 'contract_template_reserve_id',
-                'label' => '选择预定合同模板',
-                'rules' => 'trim|required|integer',
-            ),
+//            array(
+//                'field' => 'contract_template_long_id',
+//                'label' => '选择长租合同模板',
+//                'rules' => 'trim|required|integer',
+//            ),
+//            array(
+//                'field' => 'contract_template_short_id',
+//                'label' => '选择短租合同模板',
+//                'rules' => 'trim|required|integer',
+//            ),
+//            array(
+//                'field' => 'contract_template_reserve_id',
+//                'label' => '选择预定合同模板',
+//                'rules' => 'trim|required|integer',
+//            ),
             array(
                 'field' => 'room_id',
                 'label' => '房间id',
