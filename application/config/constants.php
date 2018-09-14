@@ -84,13 +84,6 @@ defined('EXIT_DATABASE') OR define('EXIT_DATABASE', 8); // database error
 defined('EXIT__AUTO_MIN') OR define('EXIT__AUTO_MIN', 9); // lowest automatically-assigned error code
 defined('EXIT__AUTO_MAX') OR define('EXIT__AUTO_MAX', 125); // highest automatically-assigned error code
 
-//定义请求数据的方法
-if (!is_cli()) {
-    define('IS_POST', strtolower($_SERVER["REQUEST_METHOD"]) == 'post'); //判断是否是post方法
-    define('IS_GET', strtolower($_SERVER["REQUEST_METHOD"]) == 'get'); //判断是否是get方法
-    define('IS_OPTIONS', strtolower($_SERVER["REQUEST_METHOD"]) == 'options'); //判断是否是post方法
-    define('IS_AJAX', isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest'); //判断是否是ajax请求
-}
 
 //自定义常量
 define('WXID', 'unionid'); //验证用户的用到的微信标识 （openid/unionid）
