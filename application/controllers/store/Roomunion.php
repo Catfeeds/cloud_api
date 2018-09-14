@@ -284,7 +284,7 @@ class Roomunion extends MY_Controller {
      */
     public function getUnion() {
         $field = ['id', 'store_id', 'room_type_id', 'layer', 'area', 'layer_total', 'rent_price', 'property_price', 'provides',
-            'contract_template_long_id', 'contract_template_short_id', 'contract_template_reserve_id',
+            'contract_template_long_id', 'contract_template_short_id', 'contract_template_reserve_id','community_id'
 //            'contract_min_time','contract_max_time','deposit_type','pay_frequency_allow'
         ];
         $post    = $this->input->post(null, true);
