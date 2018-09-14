@@ -53,8 +53,7 @@ class Events extends MY_Controller
 			$pre_auth_code = $this->getPreAuthCode();
 		}
 		$url = "https://mp.weixin.qq.com/cgi-bin/componentloginpage?component\_appid=$this->appid&pre\_auth\_code=$pre_auth_code&redirect\_uri=$this->re_auth_url";
-		header('Access-Control-Allow-Origin: *');
-		header("Location: " . $url, TRUE, 301);
+		$this->api_res(0,$url);
 	}
 	
 	/**
