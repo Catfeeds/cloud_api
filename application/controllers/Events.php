@@ -290,15 +290,18 @@ class Events extends MY_Controller
 		log_message('debug', $from_xml);
 		//开始消息解密，解密内容存入msg变量
 		$msg     = '';
-		log_message('debug', '开始解码-->' . $msg);
+		log_message('debug', '开始解码-->' );
 		$errCode = $pc->decryptMsg($msg_sign, $timestamp, $nonce, $from_xml, $msg);
 		if ($errCode == 0) {
 			// 从解密内容中获取ComponentVerifyTicket
 			$xml = new DOMDocument();
 			$xml->loadXML($msg);
 			$array_e = $xml->getElementsByTagName('ComponentVerifyTicket');
+			$this->debug('获取ComponentVerifyTicket',$array_e);
 			//解密得到的ticket
-			$this->ticket = $array_e->item(0)->nodeValue;
+			if ($array_e->item(0)->nodeValue){
+				$this->ticket = $array_e->item(0)->nodeValue;
+			}
 			echo 'success';
 			log_message('debug', '解密得到的ticket为-->' . $this->ticket);
 			$this->m_redis->saveComponentVerifyTicket($this->ticket);
