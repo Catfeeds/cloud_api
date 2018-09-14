@@ -299,7 +299,7 @@ class Events extends MY_Controller
 			$array_e = $xml->getElementsByTagName('ComponentVerifyTicket');
 			$this->debug('获取ComponentVerifyTicket',$array_e);
 			//解密得到的ticket
-			if ($array_e->item(0)->nodeValue){
+			if ($array_e){
 				$this->ticket = $array_e->item(0)->nodeValue;
 			}
 			echo 'success';
