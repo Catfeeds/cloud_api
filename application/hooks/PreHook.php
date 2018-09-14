@@ -17,7 +17,8 @@ class PreHook {
         header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
 
         //允许所有的options请求
-        if (IS_OPTIONS) {
+        $my_request = empty($_SERVER['REQUEST_METHOD']) ? '' : array($_SERVER['REQUEST_METHOD']);
+        if ($my_request == 'options') {
             header('HTTP/1.1 200 OK');
             exit;
         }
@@ -27,7 +28,7 @@ class PreHook {
         $query_string = empty($_SERVER["QUERY_STRING"]) ? array() : array($_SERVER["QUERY_STRING"]);
 
         $this->check_data($query_string, $this->url_arr);
-        //  $this->check_data($_GET,$this->args_arr);
+         $this->check_data($_GET,$this->args_arr);
         $this->check_data($_POST, $this->args_arr);
         $this->check_data($_COOKIE, $this->args_arr);
         $this->check_data($referer, $this->args_arr);

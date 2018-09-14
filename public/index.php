@@ -53,14 +53,7 @@
  *
  * NOTE: If you change these, also change the error_reporting() code below
  */
-if (!function_exists('is_cli')) {
-
-    function is_cli() {
-        return (PHP_SAPI === 'cli' OR defined('STDIN'));
-    }
-}
-
-if (is_cli()) {
+ if ((PHP_SAPI === 'cli' OR defined('STDIN'))) {
     define('ENVIRONMENT', 'production');
 } else {
     define('ENVIRONMENT', isset($_SERVER['CI_ENV']) ? $_SERVER['CI_ENV'] : 'development');

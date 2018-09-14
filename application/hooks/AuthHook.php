@@ -108,6 +108,7 @@ class AuthHook {
                 $this->auth($full_path);
             }
         }catch (Exception $e) {
+            log_message('error',$e->getMessage());
             // var_dump($e);exit;
             header('HTTP/1.1 401 Forbidden'); 
             header("Content-Type:application/json;charset=UTF-8");
