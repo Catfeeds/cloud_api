@@ -298,13 +298,19 @@ class Roomunion extends MY_Controller {
         $this->load->model('storemodel');
         $this->load->model('roomtypemodel');
         $this->load->model('contracttemplatemodel');
+        $this->load->model('communitymodel');
         $room = Roomunionmodel::with('store')
             ->with('roomtype')
+            ->with('community')
             ->with('long_template')
             ->with('short_template')
             ->with('reserve_template')
             ->select($field)->find($room_id);
-        $room->roomtype->description = strip_tags(htmlspecialchars_decode($room->roomtype->description));
+        if($room->store->rent_type=='UNION'){
+            $room->roomtype->description = strip_tags(htmlspecialchars_decode($room->roomtype->description));
+        }else{
+            $room->commnuity->describe  = strip_tags(htmlspecialchars_decode($room->commnuity->describe));
+        }
 
         if (!$room) {
             $this->api_res(1007);
