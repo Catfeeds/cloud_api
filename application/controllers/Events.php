@@ -284,6 +284,7 @@ class Events extends MY_Controller
 		$xml_tree->loadXML($encryptMsg);
 		$array_e  = $xml_tree->getElementsByTagName('Encrypt');
 		$encrypt  = $array_e->item(0)->nodeValue;
+		echo 'success';
 		$format   = "<xml><ToUserName><![CDATA[toUser]]></ToUserName><Encrypt><![CDATA[%s]]></Encrypt></xml>";
 		$from_xml = sprintf($format, $encrypt);
 		log_message('debug', $from_xml);
@@ -449,7 +450,7 @@ class Events extends MY_Controller
 				//第三方平台全网发布检测普通文本消息测试
 				if (strtolower($msgObj->MsgType) == 'text' && $content == 'TESTCOMPONENT_MSG_TYPE_TEXT') {
 					$toUsername = trim($msgObj->ToUserName);
-					if ($toUsername == 'gh_08cb40357652') {
+					if ($toUsername == 'gh_3c884a361561') {
 						$content = 'TESTCOMPONENT_MSG_TYPE_TEXT_callback';
 						echo $this->responseText($msgObj, $content);
 					}
@@ -457,7 +458,7 @@ class Events extends MY_Controller
 				//第三方平台全网发布检测返回api文本消息测试
 				if (strpos($content, 'QUERY_AUTH_CODE') !== false) {
 					$toUsername = trim($msgObj->ToUserName);
-					if ($toUsername == 'gh_08cb40357652') {
+					if ($toUsername == 'gh_3c884a361561') {
 						$query_auth_code = str_replace('QUERY_AUTH_CODE:', '', $content);
 						if ($this->m_redis->getAccessToken()) {
 							$access_token = $this->m_redis->getAccessToken();
