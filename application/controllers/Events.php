@@ -299,12 +299,12 @@ class Events extends MY_Controller
 			$array_e = $xml->getElementsByTagName('ComponentVerifyTicket');
 			$this->debug('获取ComponentVerifyTicket',$array_e);
 			//解密得到的ticket
-			if ($array_e){
+			if (!empty($array_e)){
 				$this->ticket = $array_e->item(0)->nodeValue;
+				log_message('debug', '解密得到的ticket为-->' . $this->ticket);
+				$this->m_redis->saveComponentVerifyTicket($this->ticket);
 			}
 			echo 'success';
-			log_message('debug', '解密得到的ticket为-->' . $this->ticket);
-			$this->m_redis->saveComponentVerifyTicket($this->ticket);
 		} else {
 			log_message('error', '解密失败-->' . $errCode);
 		}
