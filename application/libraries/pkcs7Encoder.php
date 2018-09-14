@@ -192,19 +192,19 @@ class Prpcrypt
 			$result      = $pkc_encoder->decode($decrypted);
 			//去除16位随机字符串,网络字节序和AppId
 			if (strlen($result) < 16)
-				return "";
+				return [0,null];
 			$content     = substr($result, 16, strlen($result));
 			$len_list    = unpack("N", substr($content, 0, 4));
 			$xml_len     = $len_list[1];
 			$xml_content = substr($content, 4, $xml_len);
 			$from_appid  = substr($content, $xml_len + 4);
 		} catch (Exception $e) {
-			//print $e;
 			return [ErrorCode::$IllegalBuffer, null];
 		}
-		if ($from_appid != $appid)
+		if ($from_appid != $appid){
 			return [ErrorCode::$ValidateAppidError, null];
-		return [0, $xml_content];
+		}
+		return [0,$xml_content];
 	}
 	
 	/**
