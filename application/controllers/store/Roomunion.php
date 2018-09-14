@@ -309,7 +309,7 @@ class Roomunion extends MY_Controller {
         if($room->store->rent_type=='UNION'){
             $room->roomtype->description = strip_tags(htmlspecialchars_decode($room->roomtype->description));
         }else{
-            $room->commnuity->describe  = strip_tags(htmlspecialchars_decode($room->commnuity->describe));
+            $room->community->describe  = strip_tags(htmlspecialchars_decode($room->community->describe));
         }
 
         if (!$room) {
