@@ -284,6 +284,7 @@ class Events extends MY_Controller
 		$xml_tree->loadXML($encryptMsg);
 		$array_e  = $xml_tree->getElementsByTagName('Encrypt');
 		$encrypt  = $array_e->item(0)->nodeValue;
+		echo 'success';
 		$format   = "<xml><ToUserName><![CDATA[toUser]]></ToUserName><Encrypt><![CDATA[%s]]></Encrypt></xml>";
 		$from_xml = sprintf($format, $encrypt);
 		log_message('debug', $from_xml);
@@ -300,7 +301,6 @@ class Events extends MY_Controller
 			$this->ticket = $array_e->item(0)->nodeValue;
 			log_message('debug', '解密得到的ticket为-->' . $this->ticket);
 			$this->m_redis->saveComponentVerifyTicket($this->ticket);
-			echo 'success';
 		} else {
 			log_message('error', '解密失败-->' . $errCode);
 		}
