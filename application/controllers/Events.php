@@ -187,7 +187,7 @@ class Events extends MY_Controller
 			$company->func_info         = json_encode($res['authorization_info']->func_info, true);
 			if ($company->save()) {
 				return true;
-			}else{
+			} else {
 				return false;
 			}
 		}
@@ -308,42 +308,108 @@ class Events extends MY_Controller
 	/**
 	 * 消息与事件接收URL
 	 */
+	function callBack1($appid)
+	{
+		log_message('info', 'AppId' . "$appid" . '发来消息');
+		$input      = $this->input->get(null, true);     //url上携带参数
+		$encryptMsg = file_get_contents('php://input');//微信推送信息
+		$this->debug('url上携带参数为', $input);
+		$timestamp = empty($input['timestamp']) ? "" : trim($input['timestamp']);
+		$nonce     = empty($input['nonce']) ? "" : trim($input['nonce']);
+		$msg_sign  = empty($input['msg_signature']) ? "" : trim($input['msg_signature']);
+		//解密
+		$pc      = new WXBizMsgCrypt($this->token, $this->aesKey, $this->appid);
+		$msg     = '';
+		$errCode = $pc->decryptMsg($msg_sign, $timestamp, $nonce, $encryptMsg, $msg);
+		if ($errCode != 0) {
+			log_message('error', '解码失败-->' . $errCode);
+		}
+		log_message('info', '解密后-->' . "$msg");
+		$param = json_decode(json_encode(simplexml_load_string($msg, 'SimpleXMLElement', LIBXML_NOCDATA)), true);
+		//生成返回公众号的消息
+		$xmlTpl = "<xml>
+            <ToUserName><![CDATA[%s]]></ToUserName>
+            <FromUserName><![CDATA[%s]]></FromUserName>
+            <CreateTime>%s</CreateTime>
+            <MsgType><![CDATA[text]]></MsgType>
+            <Content><![CDATA[%s]]></Content>
+            </xml>";
+		//判断事件
+		$keyword = isset ($param ['Content']) ? trim($param ['Content']) : '';
+		if (isset($param ['Event']) && $param ['ToUserName'] == 'gh_3c884a361561') { // 案例1
+			$contentStr = $param ['Event'] . 'from_callback';
+		} elseif ($keyword == "TESTCOMPONENT_MSG_TYPE_TEXT") { // 案例2
+			$contentStr = "TESTCOMPONENT_MSG_TYPE_TEXT_callback";
+		} elseif (strpos($keyword, "QUERY_AUTH_CODE:") !== false) { // 案例3
+			$ticket                          = str_replace("QUERY_AUTH_CODE:", "", $keyword);
+			$contentStr                      = $ticket . "_from_api";
+			$tokenInfo                       = WechatOpenApiLogic::getAuthorizerAccessTokenByAuthCode($ticket);
+			$param ['authorizerAccessToken'] = $tokenInfo ['authorization_info'] ['authorizer_access_token'];
+			
+			self::sendServiceMsg($param ['FromUserName'], $param ['ToUserName'], 1, $contentStr); // 客服消息接口
+			
+			return 1;
+		}
+		$result = '';
+		if (!empty ($contentStr)) {
+			$result = sprintf($xmlTpl, $param ['FromUserName'], $param ['ToUserName'], time(), $contentStr);
+			if (isset ($_GET ['encrypt_type']) && $_GET ['encrypt_type'] == 'aes') { // 密文传输
+				$msgCryptObj = new WXBizMsgCrypt ($this->token, $this->aesKey, $this->appid);
+				$encryptMsg  = '';
+				$msgCryptObj->encryptMsg($result, $_GET ['timestamp'], $_GET ['nonce'], $encryptMsg);
+				$result = $encryptMsg;
+			}
+		}
+	}
+	
+	
+	/**
+	 * 消息与事件接收URL
+	 */
 	public function callBack($appid)
 	{
 		// 每个授权小程序的appid，在第三方平台的消息与事件接收URL中设置了 $APPID$
-		$authorizer_appid = $appid;
-		log_message('info','AppID为-->'."$authorizer_appid".'发送消息');
+		log_message('info', 'AppId' . "$appid" . '发来消息');
 		// 每个授权小程序传来的加密消息
 		$postStr = file_get_contents("php://input");
-		if (!empty($postStr)){
+		if (!empty($postStr)) {
 			$postObj = simplexml_load_string($postStr, 'SimpleXMLElement', LIBXML_NOCDATA);
+			
 			$toUserName = trim($postObj->ToUserName);
-			$encrypt = trim($postObj->Encrypt);
-			$format = "<xml><ToUserName><![CDATA[{$toUserName}]]></ToUserName><Encrypt><![CDATA[%s]]></Encrypt></xml>";
+			$encrypt    = trim($postObj->Encrypt);
+			
+			$format   = "<xml>
+						<ToUserName><![CDATA[{$toUserName}]]></ToUserName>
+						<Encrypt><![CDATA[%s]]></Encrypt></xml>";
 			$from_xml = sprintf($format, $encrypt);
-			$inputs = array(
-				'encrypt_type' => '',
-				'timestamp' => '',
-				'nonce' => '',
+			
+			$inputs = [
+				'encrypt_type'  => '',
+				'timestamp'     => '',
+				'nonce'         => '',
 				'msg_signature' => '',
-				'signature' => ''
-			);
+				'signature'     => '',
+			];
 			foreach ($inputs as $key => $value) {
 				$tmp = $_REQUEST[$key];
-				if (!empty($tmp)){
+				if (!empty($tmp)) {
 					$inputs[$key] = $tmp;
 				}
 			}
 			
 			// 第三方收到公众号平台发送的消息
-			$msg = '';
-			$timeStamp = $inputs['timestamp'];
-			$msg_sign = $inputs['msg_signature'];
-			$nonce = $inputs['nonce'];
-			$pc = new WXBizMsgCrypt($this->token, $this->aesKey, $this->appid);
-			$errCode = $pc->decryptMsg($msg_sign, $timeStamp, $nonce, $from_xml, $msg);
+			$msg            = '';
+			$timeStamp      = $inputs['timestamp'];
+			$msg_sign       = $inputs['msg_signature'];
+			$nonce          = $inputs['nonce'];
+			$token          = $this->token;
+			$encodingAesKey = $this->aesKey;
+			$appid          = $this->appid;
+			$appsecret      = $this->secret;
+			$pc             = new WXBizMsgCrypt($token, $encodingAesKey, $appid);
+			$errCode        = $pc->decryptMsg($msg_sign, $timeStamp, $nonce, $from_xml, $msg);
 			if ($errCode == 0) {
-				$msgObj = simplexml_load_string($msg, 'SimpleXMLElement', LIBXML_NOCDATA);
+				$msgObj  = simplexml_load_string($msg, 'SimpleXMLElement', LIBXML_NOCDATA);
 				$content = trim($msgObj->Content);
 				//第三方平台全网发布检测普通文本消息测试
 				if (strtolower($msgObj->MsgType) == 'text' && $content == 'TESTCOMPONENT_MSG_TYPE_TEXT') {
@@ -358,8 +424,25 @@ class Events extends MY_Controller
 					$toUsername = trim($msgObj->ToUserName);
 					if ($toUsername == 'gh_08cb40357652') {
 						$query_auth_code = str_replace('QUERY_AUTH_CODE:', '', $content);
-						$params = $this->dedeLogic->api_query_auth($query_auth_code);
-						$authorizer_access_token = $params['authorization_info']['authorizer_access_token'];
+						if ($this->m_redis->getAccessToken()) {
+							$access_token = $this->m_redis->getAccessToken();
+						} else {
+							$access_token = $this->getAccessToken();
+						}
+						$url  = 'https://api.weixin.qq.com/cgi-bin/component/api_query_auth?component_access_token=' . "$access_token";
+						$data = [
+							'component_appid'    => $this->appid,
+							'authorization_code' => $query_auth_code,
+						];
+						$this->debug('POST参数为-->', $data);
+						$res = $this->httpCurl($url, 'post', 'json', json_encode($data, true));
+						if (array_key_exists('errcode', $res)) {
+							log_message('error', '获取authorizer_access_token失败--> ' . $res['errmsg']);
+							return false;
+						} else {
+							log_message('debug', '获取authorizer_access_token成功');
+							$authorizer_access_token = $res['authorization_info']['authorizer_access_token'];
+						}
 						$content = "{$query_auth_code}_from_api";
 						$this->sendServiceText($msgObj, $content, $authorizer_access_token);
 					}
@@ -374,10 +457,10 @@ class Events extends MY_Controller
 	 */
 	public function responseText($object = '', $content = '')
 	{
-		if (!isset($content) || empty($content)){
+		if (!isset($content) || empty($content)) {
 			return "";
 		}
-		$xmlTpl =   "<xml>
+		$xmlTpl = "<xml>
                         <ToUserName><![CDATA[%s]]></ToUserName>
                         <FromUserName><![CDATA[%s]]></FromUserName>
                         <CreateTime>%s</CreateTime>
@@ -394,24 +477,23 @@ class Events extends MY_Controller
 	public function sendServiceText($object = '', $content = '', $access_token = '')
 	{
 		/* 获得openId值 */
-		$openid = (string)$object->FromUserName;
-		$post_data = array(
-			'touser'    => $openid,
-			'msgtype'   => 'text',
-			'text'      => array(
-				'content'   => $content
-			)
-		);
+		$openid    = (string)$object->FromUserName;
+		$post_data = [
+			'touser'  => $openid,
+			'msgtype' => 'text',
+			'text'    => [
+				'content' => $content,
+			],
+		];
 		$this->sendMessages($post_data, $access_token);
 	}
 	
 	/**
 	 * 发送消息-客服消息
 	 */
-	public function sendMessages($post_data = array(), $access_token = '')
+	public function sendMessages($post_data = [], $access_token = '')
 	{
 		$url = "https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token={$access_token}";
-		$this->httpCurl($url, 'POST', json_encode($post_data, JSON_UNESCAPED_UNICODE));
+		$this->httpCurl($url, 'POST', 'json', json_encode($post_data, JSON_UNESCAPED_UNICODE));
 	}
-
 }
