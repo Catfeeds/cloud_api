@@ -52,7 +52,7 @@ class Events extends MY_Controller
 		} else {
 			$pre_auth_code = $this->getPreAuthCode();
 		}
-		$url = "https://mp.weixin.qq.com/cgi-bin/componentloginpage?component\_appid=$this->appid&pre\_auth\_code=$pre_auth_code&redirect\_uri=$this->re_auth_url";
+		$url = "https://mp.weixin.qq.com/cgi-bin/componentloginpage?component_appid=$this->appid&pre_auth_code=$pre_auth_code&redirect_uri=$this->re_auth_url";
 		$this->api_res(0,$url);
 	}
 	
