@@ -7,12 +7,13 @@ class Companymodel extends Basemodel
 {
 	protected $table = 'fx_company';
 	protected $hidden = ['deleted_at', 'created_at', 'updated_at'];
-	protected $fillable = ['bxid', 'name', 'nickname', 'address', 'contact_user', 'contact_phone',
-	                       'base_position', 'phone', 'openid', 'unionid', 'license', 'remark',
-	                       'status', 'privilege', 'expiretime',''];
+	protected $fillable = [
+	    'bxid', 'name', 'nickname', 'address', 'contact_user', 'contact_phone',
+        'base_position', 'phone', 'openid', 'unionid', 'license', 'remark',
+        'status', 'privilege', 'expiretime','brand','brand_intro','legal_person','id_number',];
 	
 	const STATE_UNSCAN = 'UNSCAN'; //未扫码
-	const STATE_UNANTH = 'UNANTH'; //未认证
+	const STATE_UNANTH = 'UNAUTH'; //未认证
 	const STATE_NORMAL = 'NORMAL'; //正常
 	const STATE_CLOSE  = 'CLOSE';  //关闭
     const STATE_REGISTER    = 'REGISTER';
