@@ -219,7 +219,7 @@ class Login extends MY_Controller {
         $position_id = $this->employee->position_id;
 //        $position_id = 19;
         $pc_privilege_ids_string = Positionmodel::where('id', $position_id)->first(['pc_privilege_ids']);
-        $employee_all_privilege  = explode(',', $pc_privilege_ids_string);
+        $employee_all_privilege  = explode(',', $pc_privilege_ids_string->pc_privilege_ids);
 
         $privileges_one = privilegemodel::where('parent_id', 0)->get(['id', 'parent_id', 'name'])->toArray();
         if (!$privileges_one) {
@@ -252,7 +252,7 @@ class Login extends MY_Controller {
             }
             if ($i == 0) {
                 if ($key == 0) {
-                    $privileges_one[$key]['privige'] = 'yse';
+                    $privileges_one[$key]['privige'] = 'yes';
                     $privileges_one[$key]['list']    = $temps;
                 } else {
                     $privileges_one[$key]['privige'] = 'no';
