@@ -20,5 +20,4 @@ class Positionmodel extends Basemodel {
 
         return $this->hasMany(Employeemodel::class, 'position_id')->select('id', 'position_id');
     }
-
 }
