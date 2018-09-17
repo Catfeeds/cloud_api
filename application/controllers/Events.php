@@ -57,29 +57,18 @@ class Events extends MY_Controller
 	}
 	
 	/**
-	 * 功能:获取授权码
-	 *      用户授权之后的回调，微信平台将返回用户的授权码auth_code和过期时间expires_in=600
+	 * 功能：通过授权码获取
+	 *      授权方接口调用令牌authorizer_access_token
+	 *      接口调用凭据刷新令牌authorizer_refresh_token
 	 */
-	public function authCallBack()
+	public function getAuthRefreshToken()
 	{
-		$input = $this->input->get(null, true);     //url上携带参数
+		$input = $this->input->post(null, true);     //url上携带参数
 		if (empty($input['auth_code']) || $input['expires_in']) {
 			log_message('error', '授权回调参数有误');
 		}
 		$this->debug('授权回调携带参数为-->', $input);
 		$auth_code  = empty($input['auth_code']) ? "" : trim($input['auth_code']);
-		$expires_in = empty($input['expires_in']) ? "" : trim($input['expires_in']);
-		$this->getAuthRefreshToken($auth_code);
-		return true;
-	}
-	
-	/**
-	 * 功能：通过授权码获取
-	 *      授权方接口调用令牌authorizer_access_token
-	 *      接口调用凭据刷新令牌authorizer_refresh_token
-	 */
-	public function getAuthRefreshToken($auth_code)
-	{
 		if ($this->m_redis->getAccessToken()) {
 			$access_token = $this->m_redis->getAccessToken();
 		} else {
@@ -98,9 +87,9 @@ class Events extends MY_Controller
 		} else {
 			log_message('debug', '获取authorizer_access_token成功');
 			$this->m_redis->saveAuthorAccessToken($res['authorization_info']['authorizer_access_token']);
-			$this->load->model('companymodel');
+			$this->load->model('companywxinfomodel');
 			$company_id                       = COMPANY_ID;
-			$company                          = Companymodel::where('id', $company_id)->first();
+			$company                          = Companywxinfomodel::where('id', $company_id)->first();
 			$company->authorizer_appid        = $res['authorization_info']['authorizer_appid'];
 			$company->authorizer_access_token = $res['authorization_info']['authorizer_refresh_token'];
 			if ($company->save()) {
