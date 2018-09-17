@@ -79,6 +79,7 @@ class AuthHook {
             'events/auth',
             'events/authlocation',
 			'events/callback',
+			'events/test',
 
         );
     }

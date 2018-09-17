@@ -138,7 +138,6 @@ class WXBizMsgCrypt
 		}
 
 		$result = $pc->decrypt($encrypt, $this->appId);
-		log_message('info','解密结果为-->:'.json_encode($result));
 		if ($result[0] != 0) {
 			return $result[0];
 		}

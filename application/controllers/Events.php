@@ -53,6 +53,7 @@ class Events extends MY_Controller
 			$pre_auth_code = $this->getPreAuthCode();
 		}
 		$url = "https://mp.weixin.qq.com/cgi-bin/componentloginpage?component\_appid=$this->appid&pre\_auth\_code=$pre_auth_code&redirect\_uri=$this->re_auth_url";
+		header('Access-Control-Allow-Origin: *');
 		header("Location: " . $url, TRUE, 301);
 	}
 	
@@ -272,10 +273,9 @@ class Events extends MY_Controller
 	 */
 	public function auth()
 	{
-		log_message('debug','1111111111111111111111');
 		$input      = $this->input->get(null, true);     //url上携带参数
 		$encryptMsg = file_get_contents('php://input');//微信推送信息
-		$this->debug('url上携带参数为', $input);
+//		$this->debug('url上携带参数为', $input);
 		$timestamp = empty($input['timestamp']) ? "" : trim($input['timestamp']);
 		$nonce     = empty($input['nonce']) ? "" : trim($input['nonce']);
 		$msg_sign  = empty($input['msg_signature']) ? "" : trim($input['msg_signature']);
@@ -283,31 +283,41 @@ class Events extends MY_Controller
 		//接收XML数据
 		$xml_tree = new DOMDocument();
 		$xml_tree->loadXML($encryptMsg);
-		$array_e = $xml_tree->getElementsByTagName('Encrypt');
-		$encrypt = $array_e->item(0)->nodeValue;
-		echo 'success';
+		$array_e  = $xml_tree->getElementsByTagName('Encrypt');
+		$encrypt  = $array_e->item(0)->nodeValue;
 		$format   = "<xml><ToUserName><![CDATA[toUser]]></ToUserName><Encrypt><![CDATA[%s]]></Encrypt></xml>";
 		$from_xml = sprintf($format, $encrypt);
-		log_message('debug', $from_xml);
 		//开始消息解密，解密内容存入msg变量
-		$msg     = '';
-		log_message('debug', '开始解码-->' );
+		$msg = '';
+//		log_message('debug', '开始解码-->' );
 		$errCode = $pc->decryptMsg($msg_sign, $timestamp, $nonce, $from_xml, $msg);
 		if ($errCode == 0) {
 			// 从解密内容中获取ComponentVerifyTicket
 			$xml = new DOMDocument();
 			$xml->loadXML($msg);
-			$array_e = $xml->getElementsByTagName('ComponentVerifyTicket');
-			$this->debug('获取ComponentVerifyTicket',$array_e);
-			//解密得到的ticket
-			if (empty($array_e->item(0))){
-				$this->ticket = NULL;
-			}else{
-				$this->ticket = $array_e->item(0)->nodeValue;
+			$InfoType = $xml->getElementsByTagName('InfoType');
+//			$this->debug('获取InfoType',$InfoType);
+			switch ($InfoType->item(0)->nodeValue) {
+				case 'component_verify_ticket': {
+					//解密得到的ticket
+					$array_e      = $xml->getElementsByTagName('ComponentVerifyTicket');
+					$this->ticket = $array_e->item(0)->nodeValue;
+//					log_message('debug', '解密得到的ticket为-->' . $this->ticket);
+					$this->m_redis->saveComponentVerifyTicket($this->ticket);
+					break;
+				}
+				case 'authorized': {
+					break;
+				}
+				case 'unauthorized': {
+					break;
+				}
+				case 'updateauthorized': {
+					break;
+				}
+				
 			}
-//			$this->ticket = $array_e->item(0)->nodeValue;
-			log_message('debug', '解密得到的ticket为-->' . $this->ticket);
-			$this->m_redis->saveComponentVerifyTicket($this->ticket);
+			
 			echo 'success';
 		} else {
 			log_message('error', '解密失败-->' . $errCode);
@@ -319,41 +329,51 @@ class Events extends MY_Controller
 	 */
 	function callBack($appid)
 	{
-		log_message('info', 'AppId:' . "$appid " . '发来消息');
-		$input      = $this->input->get(null, true);     //url上携带参数
+		$i     = random_int(10000000, 20000000);
+		$input = $this->input->get(null, true);     //url上携带参数
+		log_message('info', "$i++" . 'AppId:' . "$appid " . '发来消息');
 		$encryptMsg = file_get_contents('php://input');//微信推送信息
-		$this->debug('url上携带参数-->', $input);
-		$this->debug('推送消息为-->', $encryptMsg);
+//		$this->debug('url上携带参数-->', $input);
+		$this->debug("$i++" . '推送消息为-->', $encryptMsg);
 		$timestamp = empty($input['timestamp']) ? "" : trim($input['timestamp']);
 		$nonce     = empty($input['nonce']) ? "" : trim($input['nonce']);
 		$msg_sign  = empty($input['msg_signature']) ? "" : trim($input['msg_signature']);
 		//解密
-		$pc      = new WXBizMsgCrypt($this->token, $this->aesKey, $this->appid);
-		$msg     = '';
-		$errCode = $pc->decryptMsg($msg_sign, $timestamp, $nonce, $encryptMsg, $msg);
+		$pc = new WXBizMsgCrypt($this->token, $this->aesKey, $this->appid);
+		
+		$xml_tree = new DOMDocument();
+		$xml_tree->loadXML($encryptMsg);
+		$toUserName= $xml_tree->getElementsByTagName('ToUserName')->item(0)->nodeValue;
+		$encrypt  = $xml_tree->getElementsByTagName('Encrypt')->item(0)->nodeValue;
+		$format = "<xml><ToUserName><![CDATA[{$toUserName}]]></ToUserName><Encrypt><![CDATA[%s]]></Encrypt></xml>";
+		$from_xml = sprintf($format, $encrypt);
+		$msg      = '';
+		$errCode  = $pc->decryptMsg($msg_sign, $timestamp, $nonce, $from_xml, $msg);
 		if ($errCode != 0) {
-			log_message('error', '解码失败-->' . $errCode);
+			log_message('error', "$i++" . '解码失败-->' . $errCode);
 		}
-		log_message('info', '解码成功-->' . "$msg");
+		log_message('info', "$i++" . '解码成功-->' . "$msg");
+		if (empty($msg)) {
+			return false;
+		}
+		$xml = new DOMDocument();
+		$xml->loadXML($msg);
 		$response = json_decode(json_encode(simplexml_load_string($msg, 'SimpleXMLElement', LIBXML_NOCDATA)), true);
-		$this->debug('将msg载入对象后-->', $response);
-		//生成返回公众号的消息
-		$textTpl = "<xml>
-            <ToUserName><![CDATA[%s]]></ToUserName>
-            <FromUserName><![CDATA[%s]]></FromUserName>
-            <CreateTime>%s</CreateTime>
-            <MsgType><![CDATA[text]]></MsgType>
-            <Content><![CDATA[%s]]></Content>
-            </xml>";
+		$this->debug("$i++" . '将msg载入对象后-->', $response);
 		//判断事件
 		$keyword = isset ($response ['Content']) ? trim($response ['Content']) : '';
+		$a = strpos($keyword, "QUERY_AUTH_CODE");
+		log_message('info', "$i++" . "$a");
 		if (isset($response ['Event']) && $response ['ToUserName'] == 'gh_3c884a361561') { // 案例1
+			log_message('info', "$i++" . '---------Event------');
 			$contentStr = $response ['Event'] . 'from_callback';
 		} elseif ($keyword == "TESTCOMPONENT_MSG_TYPE_TEXT") { // 案例2
+			log_message('info', "$i++" . '---------TESTCOMPONENT_MSG_TYPE_TEXT------');
 			$contentStr = "TESTCOMPONENT_MSG_TYPE_TEXT_callback";
-		} elseif (strpos($keyword, "QUERY_AUTH_CODE:") !== false) { // 案例3
-			$ticket     = str_replace("QUERY_AUTH_CODE:", "", $keyword);
-			$this->debug('测试公众号授权码-->',$ticket);
+		} elseif (strpos($keyword, "QUERY_AUTH_CODE") !== false) { // 案例3
+			log_message('info', "$i++" . '---------QUERY_AUTH_CODE------');
+			$ticket = str_replace("QUERY_AUTH_CODE:", "", $keyword);
+			$this->debug("$i++" . '测试公众号授权码-->', $ticket);
 			$contentStr = $ticket . "_from_api";
 			
 			if ($this->m_redis->getAccessToken()) {
@@ -361,13 +381,13 @@ class Events extends MY_Controller
 			} else {
 				$access_token = $this->getAccessToken();
 			}
-			$this->debug('第三方AccessToken-->', $access_token);
+			$this->debug("$i++" . '第三方AccessToken-->', $access_token);
 			$url  = 'https://api.weixin.qq.com/cgi-bin/component/api_query_auth?component_access_token=' . "$access_token";
 			$data = [
 				'component_appid'    => $this->appid,
 				'authorization_code' => $ticket,
 			];
-			$this->debug('POST参数为-->', $data);
+			$this->debug("$i++" . 'POST参数为-->', $data);
 			$res = $this->httpCurl($url, 'post', 'json', json_encode($data, true));
 			
 			$response ['authorizerAccessToken'] = $res ['authorization_info'] ['authorizer_access_token'];
@@ -382,79 +402,29 @@ class Events extends MY_Controller
 			];
 			$url  = "https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=" . $response ['authorizerAccessToken'];
 			$ret  = $this->httpCurl($url, 'post', 'json', json_encode($data));
-			$this->debug('客服消息', $ret);
+			$this->debug("$i++" . '客服消息', $ret);
 			
 			return 1;
 		}
 		$result = '';
 		if (!empty ($contentStr)) {
-			$result      = sprintf($textTpl, $response ['FromUserName'], $response ['ToUserName'], time(), $contentStr);
-			$msgCryptObj = new WXBizMsgCrypt ($this->token, $this->aesKey, $this->appid);
-			$encryptMsg  = '';
-			$msgCryptObj->encryptMsg($result, $timestamp, $nonce, $encryptMsg);
-			$result = $encryptMsg;
-		}
-		echo $result;
-		
-		//模拟粉丝发送文本消息给专用测试公众号
-		/*if ($response['MsgType'] == "text") {
-			$needle   = 'QUERY_AUTH_CODE:';
-			$tmparray = explode($needle, $response['Content']);
-			if (count($tmparray) > 1) {
-				//3、模拟粉丝发送文本消息给专用测试公众号，第三方平台方需在5秒内返回空串
-				//表明暂时不回复，然后再立即使用客服消息接口发送消息回复粉丝
-				//将$query_auth_code$的值赋值给API所需的参数authorization_code
-				$authorization_code = str_replace($needle, '', $response['Content']);
-				$this->debug('授权码authorization_code', $authorization_code);
-				//使用授权码换取公众号或小程序的接口调用凭据和授权信息
-				if ($this->m_redis->getAccessToken()) {
-					$access_token = $this->m_redis->getAccessToken();
-				} else {
-					$access_token = $this->getAccessToken();
-				}
-				$url  = 'https://api.weixin.qq.com/cgi-bin/component/api_query_auth?component_access_token=' . "$access_token";
-				$data = [
-					'component_appid'    => $this->appid,
-					'authorization_code' => $authorization_code,
-				];
-				$this->debug('POST参数为-->', $data);
-				$res = $this->httpCurl($url, 'post', 'json', json_encode($data, true));
-				if (array_key_exists('errcode', $res)) {
-					log_message('error', '获取authorizer_access_token失败--> ' . $res['errmsg']);
-					return false;
-				} else {
-					log_message('debug', '获取authorizer_access_token成功');
-					$authorizer_access_token = $res['authorization_info']['authorizer_access_token'];
-				}
-				$this->debug('授权方access_token', $authorizer_access_token);
-				$content_re = $authorization_code . "_from_api";
-				echo '';
-				//調用客服接口
-				$data = [
-					"touser"  => $response['FromUserName'],
-					"msgtype" => "text",
-					"text"    => [
-						"content" => $content_re,
-					],
-				];
-				$url  = "https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=" . $authorizer_access_token;
-				$ret  = $this->httpCurl($url, 'post', 'json', json_encode($data));
-				$this->debug('客服消息', $ret);
-			} else {
-				//模拟粉丝发送文本消息给专用测试公众号
-				$contentx     = "TESTCOMPONENT_MSG_TYPE_TEXT_callback";
-				$responseText = sprintf($textTpl, $response['FromUserName'], $response['ToUserName'], $response['CreateTime'], $contentx);
-				$echo_msg     = '';
-				$errCode      = $pc->encryptMsg($responseText, $timestamp, $nonce, $echo_msg);
-				echo $echo_msg;
+			//生成返回公众号的消息
+			$textTpl = "<xml>
+            <ToUserName><![CDATA[%s]]></ToUserName>
+            <FromUserName><![CDATA[%s]]></FromUserName>
+            <CreateTime>%s</CreateTime>
+            <MsgType><![CDATA[text]]></MsgType>
+            <Content><![CDATA[%s]]></Content>
+            </xml>";
+			$result  = sprintf($textTpl, $response ['FromUserName'], $response ['ToUserName'], time(), $contentStr);
+			if (isset ($input ['encrypt_type']) && $input ['encrypt_type'] == 'aes') {
+				$msgCryptObj = new WXBizMsgCrypt ($this->token, $this->aesKey, $this->appid);
+				$encryptMsg  = '';
+				$msgCryptObj->encryptMsg($result, $timestamp, $nonce, $encryptMsg);
+				$result = $encryptMsg;
 			}
 		}
-		//模拟粉丝触发专用测试公众号的事件
-		if ($response['MsgType'] == 'event') {
-			$content      = $response['Event'] . "from_callback";
-			$responseText = sprintf($textTpl, $response['FromUserName'], $response['ToUserName'], $response['CreateTime'], $content);
-			$errCode      = $pc->encryptMsg($responseText, $timestamp, $nonce, $echo_msg);
-			echo $echo_msg;
-		}*/
+		echo $result;
+		$this->debug("$i++" . '输出结果为-->', $result);
 	}
 }
