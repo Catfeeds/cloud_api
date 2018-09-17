@@ -40,7 +40,6 @@ class AuthHook {
             'company/company/boundwechat',
 
             'events/auth',
-            'events/authlocation',
         ];
     }
 
@@ -77,7 +76,6 @@ class AuthHook {
             'company/company/boundwechat',
             
             'events/auth',
-            'events/authlocation',
 			'events/callback',
 			'events/test',
 
