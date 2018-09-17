@@ -154,6 +154,7 @@ class Company extends MY_Controller
 		$company->license_image = $this->splitAliossUrl($post['license_image']);
 		$company->idcard_front  = $this->splitAliossUrl($post['idcard_front']);
 		$company->idcard_back   = $this->splitAliossUrl($post['idcard_back']);
+		$company->statsu        = Companymodel::STATE_UNANTH;
 		if ($company->save()) {
 			$this->api_res(0);
 		} else {
