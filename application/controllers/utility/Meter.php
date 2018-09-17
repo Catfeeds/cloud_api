@@ -257,7 +257,9 @@ class Meter extends MY_Controller
         $type           = $input['type'];
         $store_id       = $input['store_id'];
 
-        $resident_ids   = Roomunionmodel::where('store_id',$store_id)->get(['resident_id'])->toArray();
+        $resident_ids   = Roomunionmodel::where('store_id',$store_id)
+            ->where('status',Roomunionmodel::STATE_RENT)
+            ->get(['resident_id'])->toArray();
         $error          = [];
         $sum            = 0;
         $filed          = ['id','store_id','room_id','resident_id','type','year','month','this_reading','this_time','weight','status','order_id','confirmed'];
