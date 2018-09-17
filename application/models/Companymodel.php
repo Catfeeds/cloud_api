@@ -14,7 +14,9 @@ class Companymodel extends Basemodel
 	const STATE_UNSCAN = 'UNSCAN'; //未扫码
 	const STATE_UNANTH = 'UNANTH'; //未认证
 	const STATE_NORMAL = 'NORMAL'; //正常
-	const STATE_CLOSE = 'CLOSE';  //关闭
+	const STATE_CLOSE  = 'CLOSE';  //关闭
+    const STATE_REGISTER    = 'REGISTER';
+    const STATE_UNAPPROVED  = 'UNAPPROVED';
 	
 	const TYPE_CENTRALIZED = 'centralized'; //集中式
 	const TYPE_DISTRIBUTED = 'distributed'; //集中式
@@ -65,9 +67,10 @@ class Companymodel extends Basemodel
 			$this->contact_phone = $post['phone'];
 			$this->store_type    = $post['type'];
 			$this->scale         = $post['number'];
+			$this->status        = self::STATE_REGISTER;
 			$this->save();
 			//查询权限
-			$privilege     = Privilegemodel::get(['id'])->toArray();
+			/*$privilege     = Privilegemodel::get(['id'])->toArray();
 			$privilege_ids = '';
 			foreach ($privilege as $key => $value) {
 				$privilege_ids .= $value['id'] . ',';
@@ -77,13 +80,14 @@ class Companymodel extends Basemodel
 			$position->company_id       = $this->id;
 			$position->name             = '超级管理员';
 			$position->pc_privilege_ids = $privilege_ids;
-			$position->save();
+			$position->save();*/
 			//创建新员工
 			$employee              = new Employeemodel();
 			$employee->name        = $post['name'];
 			$employee->phone       = $post['phone'];
 			$employee->company_id  = $this->id;
-			$employee->position_id = $position->id;
+//			$employee->position_id = $position->id;
+			$employee->position_id = 1;
 			$employee->type        = 'ADMIN';
 			$employee->position    = 'PRINCIPAL';
 			$employee->save();
@@ -96,7 +100,6 @@ class Companymodel extends Basemodel
 		} catch (Exception $e) {
 			DB::rollBack();
 			throw $e;
-			return false;
 		}
 	}
 }
