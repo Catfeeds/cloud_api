@@ -2,6 +2,8 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 include_once(APPPATH . '/libraries/wxBizMsgCrypt.php');
 
+use Illuminate\Database\Capsule\Manager as DB;
+
 /**
  * Author:      hfq<1326432154@qq.com>
  * Date:        2018/8/29
@@ -63,12 +65,12 @@ class Events extends MY_Controller
 	 */
 	public function getAuthRefreshToken()
 	{
-		$input = $this->input->post(null, true);     //url上携带参数
-		if (empty($input['auth_code']) || $input['expires_in']) {
-			log_message('error', '授权回调参数有误');
+		$input = $this->input->post(null, true);
+		if (empty($input['auth_code']) || !isset($input['auth_code'])) {
+			$this->api_res(1002);
+			return false;
 		}
-		$this->debug('授权回调携带参数为-->', $input);
-		$auth_code = empty($input['auth_code']) ? "" : trim($input['auth_code']);
+		$auth_code = $input['auth_code'];
 		if ($this->m_redis->getAccessToken()) {
 			$access_token = $this->m_redis->getAccessToken();
 		} else {
@@ -79,60 +81,54 @@ class Events extends MY_Controller
 			'component_appid'    => $this->appid,
 			'authorization_code' => $auth_code,
 		];
-		$this->debug('POST参数为-->', $data);
-		$res = $this->httpCurl($url, 'post', 'json', json_encode($data, true));
+		$res  = $this->httpCurl($url, 'post', 'json', json_encode($data, true));
 		if (array_key_exists('errcode', $res)) {
 			log_message('error', '获取authorizer_access_token失败--> ' . $res['errmsg']);
 			return false;
 		} else {
 			log_message('debug', '获取authorizer_access_token成功');
-			try {
-				DB::beginTransaction();
-				$this->m_redis->saveAuthorAccessToken($res['authorization_info']['authorizer_access_token']);
-				$this->load->model('companywxinfomodel');
-				$company_id                       = COMPANY_ID;
-				$company                          = new Companywxinfomodel();
-				$company->company                 = $company_id;
-				$company->authorizer_appid        = $res['authorization_info']['authorizer_appid'];
-				$company->authorizer_access_token = $res['authorization_info']['authorizer_refresh_token'];
-				$authorizer = Companywxinfomodel::where('company_id', $company_id)->first(['authorizer_refresh_token', 'authorizer_appid']);
-				$url        = 'https://api.weixin.qq.com/cgi-bin/component/api_get_authorizer_info?component_access_token=' . "$access_token";
-				$data       = [
-					'component_appid'  => $this->appid,
-					'authorizer_appid' => $authorizer->authorizer_appid,
-				];
-				$this->debug('POST参数为-->', $data);
-				$res = $this->httpCurl($url, 'post', 'json', json_encode($data, true));
-				if (array_key_exists('errcode', $res)) {
-					log_message('error', '获取授权方信息失败--> ' . $res['errmsg']);
-					return false;
-				} else {
-					log_message('debug', '--获取授权方信息成功--');
-					$this->load->model('companywxinfomodel');
-					$company_id                 = COMPANY_ID;
-					$company                    = Companywxinfomodel::where('company_id', $company_id)->first();
-					$company->nick_name         = $res['authorizer_info']->nick_name;
-					$company->head_img          = $res['authorizer_info']->head_img;
-					$company->service_type_info = $res['authorizer_info']->service_type_info;
-					$company->verify_type_info  = $res['authorizer_info']->verify_type_info;
-					$company->user_name         = $res['authorizer_info']->user_name;
-					$company->principal_name    = $res['authorizer_info']->principal_name;
-					$company->alias             = $res['authorizer_info']->alias;
-					$company->qrcode_url        = $res['authorizer_info']->qrcode_url;
-					$company->open_store        = $res['authorizer_info']->business_info->open_store;
-					$company->open_scan         = $res['authorizer_info']->business_info->open_scan;
-					$company->open_pay          = $res['authorizer_info']->business_info->open_pay;
-					$company->open_card         = $res['authorizer_info']->business_info->open_card;
-					$company->open_shake        = $res['authorizer_info']->business_info->open_shake;
-					$company->func_info         = json_encode($res['authorization_info']->func_info, true);
-					$company->save();
-					DB::commit();
-					$this->api_res(0);
+			$this->m_redis->saveAuthorAccessToken($res['authorization_info']['authorizer_access_token']);
+			$this->load->model('companywxinfomodel');
+			$company_id = COMPANY_ID;
+			$company    = Companywxinfomodel::where('company_id', $company_id)->first();
+			if (empty($company)) {
+				$company             = new Companywxinfomodel();
+				$company->company_id = $company_id;
+			}
+			$company->authorizer_appid        = $res['authorization_info']['authorizer_appid'];
+			$company->authorizer_access_token = $res['authorization_info']['authorizer_refresh_token'];
+			$url                              = 'https://api.weixin.qq.com/cgi-bin/component/api_get_authorizer_info?component_access_token=' . "$access_token";
+			$data                             = [
+				'component_appid'  => $this->appid,
+				'authorizer_appid' => $res['authorization_info']['authorizer_appid'],
+			];
+			$this->debug('POST参数为-->', $data);
+			$res = $this->httpCurl($url, 'post', 'json', json_encode($data, true));
+			if (array_key_exists('errcode', $res)) {
+				log_message('error', '获取授权方信息失败--> ' . $res['errmsg']);
+				return false;
+			} else {
+				log_message('debug', '--获取授权方信息成功--');
+				$company->nick_name         = $res['authorizer_info']->nick_name;
+				$company->head_img          = $res['authorizer_info']->head_img;
+				$company->service_type_info = $res['authorizer_info']->service_type_info;
+				$company->verify_type_info  = $res['authorizer_info']->verify_type_info;
+				$company->user_name         = $res['authorizer_info']->user_name;
+				$company->principal_name    = $res['authorizer_info']->principal_name;
+				$company->alias             = $res['authorizer_info']->alias;
+				$company->qrcode_url        = $res['authorizer_info']->qrcode_url;
+				$company->open_store        = $res['authorizer_info']->business_info->open_store;
+				$company->open_scan         = $res['authorizer_info']->business_info->open_scan;
+				$company->open_pay          = $res['authorizer_info']->business_info->open_pay;
+				$company->open_card         = $res['authorizer_info']->business_info->open_card;
+				$company->open_shake        = $res['authorizer_info']->business_info->open_shake;
+				$company->func_info         = json_encode($res['authorization_info']->func_info, true);
+				if ($company->save()){
+					$this->api_res(0, ['info' => $res['authorizer_info']]);
+				}else{
+					$this->api_res(1009);
+					log_message('error', '获取授权方信息失败');
 				}
-			} catch (Exception $e) {
-				DB::rollBack();
-				$this->api_res(1009);
-				log_message('error','获取授权方信息失败');
 			}
 		}
 	}
@@ -179,7 +175,7 @@ class Events extends MY_Controller
 			$access_token = $this->getAccessToken();
 		}
 		$this->load->model('companywxinfomodel');
-		$company_id    = COMPANY_ID;
+		$company_id = COMPANY_ID;
 		$authorizer = Companywxinfomodel::where('company_id', $company_id)->first(['authorizer_refresh_token', 'authorizer_appid']);
 		$url        = 'https://api.weixin.qq.com/cgi-bin/component/api_get_authorizer_info?component_access_token=' . "$access_token";
 		$data       = [
