@@ -62,11 +62,11 @@ class Employee extends MY_Controller {
         $page   = intval(isset($post['page']) ? $post['page'] : 1);
         $offset = PAGINATE * ($page - 1);
         $field  = ['id', 'name', 'phone', 'position_id', 'store_ids', 'hiredate', 'status'];
-        //define('COMPANY_ID', 4); //测试用
+        //define('get_instance()->company_id', 4); //测试用
         $where = isset($post['store_id']) ? ['store_id' => $post['store_id']] : [];
         if (isset($post['city']) && !empty($post['city'])) {
             $this->load->model('storemodel');
-            $store_ids = Storemodel::where('company_id', COMPANY_ID)
+            $store_ids = Storemodel::where('company_id', get_instance()->company_id)
                 ->where('city', $post['city'])->get(['id'])->map(function ($s) {
                 return $s->id;
             });
@@ -81,14 +81,14 @@ class Employee extends MY_Controller {
                 ->offset($offset)->limit(PAGINATE)->orderBy('status', 'asc')
                 ->orderBy('hiredate', 'asc')->get($field);
         } else {
-            $count = ceil((Employeemodel::where('company_id', COMPANY_ID)->count()) / PAGINATE);
+            $count = ceil((Employeemodel::where('company_id', get_instance()->company_id)->count()) / PAGINATE);
             if ($page > $count) {
                 $this->api_res(0, ['count' => $count, 'list' => []]);
                 return;
             }
             $employees = Employeemodel::with(['position' => function ($query) {
                 $query->select('id', 'name');
-            }])->where('company_id', COMPANY_ID)->offset($offset)
+            }])->where('company_id', get_instance()->company_id)->offset($offset)
                 ->limit(PAGINATE)->orderBy('status', 'asc')
                 ->orderBy('hiredate', 'asc')->get($field);
             $this->load->model('storemodel');
@@ -109,7 +109,7 @@ class Employee extends MY_Controller {
         $offset = PAGINATE * ($page - 1);
 
         $this->load->model('storemodel');
-        $store_ids = Storemodel::where('company_id', COMPANY_ID)->get(['id'])->map(function ($s) {
+        $store_ids = Storemodel::where('company_id', get_instance()->company_id)->get(['id'])->map(function ($s) {
             return $s->id;
         });
         $count = ceil((Employeemodel::whereIn('store_ids', $store_ids)
@@ -209,20 +209,20 @@ class Employee extends MY_Controller {
             return false;
         }
         $name        = $post['name'];
-        $isNameEqual = Employeemodel::where('company_id', COMPANY_ID)->where('name', $name)->first();
+        $isNameEqual = Employeemodel::where('company_id', get_instance()->company_id)->where('name', $name)->first();
         if ($isNameEqual) {
             $this->api_res(1013);
             return false;
         }
         $phone        = $post['phone'];
-        $isPhoneEqual = Employeemodel::where('company_id', COMPANY_ID)->where('phone', $phone)->first();
+        $isPhoneEqual = Employeemodel::where('company_id', get_instance()->company_id)->where('phone', $phone)->first();
         if ($isPhoneEqual) {
             $this->api_res(1015);
             return false;
         }
         $position = $post['position'];
         $this->load->model('positionmodel');
-        $position = Positionmodel::where('company_id', COMPANY_ID)
+        $position = Positionmodel::where('company_id', get_instance()->company_id)
             ->where('name', $position)->first(['id']);
         if (!$position) {
             $this->api_res(1009);
@@ -235,7 +235,7 @@ class Employee extends MY_Controller {
         $store_id      = $store_ids_arr[0];
 
         $employee              = new Employeemodel();
-        $employee->company_id  = COMPANY_ID;
+        $employee->company_id  = get_instance()->company_id;
         $employee->store_ids   = $store_ids;
         $employee->store_id    = $store_id;
         $employee->position_id = $position_id;
@@ -285,13 +285,13 @@ class Employee extends MY_Controller {
             return false;
         }
         $name        = $post['name'];
-        $isNameEqual = Employeemodel::where('company_id', COMPANY_ID)->where('name', $name)->first();
+        $isNameEqual = Employeemodel::where('company_id', get_instance()->company_id)->where('name', $name)->first();
         if ($isNameEqual && ($isNameEqual->id != $id)) {
             $this->api_res(1013);
             return false;
         }
         $phone        = $post['phone'];
-        $isPhoneEqual = Employeemodel::where('company_id', COMPANY_ID)->where('phone', $phone)->first();
+        $isPhoneEqual = Employeemodel::where('company_id', get_instance()->company_id)->where('phone', $phone)->first();
         if ($isPhoneEqual && ($isPhoneEqual->id != $id)) {
             $this->api_res(1015);
             return false;
@@ -302,7 +302,7 @@ class Employee extends MY_Controller {
             return false;
         }
         $this->load->model('positionmodel');
-        $position = Positionmodel::where('company_id', COMPANY_ID)
+        $position = Positionmodel::where('company_id', get_instance()->company_id)
             ->where('name', $position)->first(['id']);
         if (!$position) {
             $this->api_res(1009);

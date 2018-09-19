@@ -30,14 +30,14 @@ class Welcome_test extends TestCase
 	public function test_company()
 	{
 		$output = $this->request('GET', 'ping/index');
-		// log_message('debug','--CURRENT_ID-->'.CURRENT_ID);
+		// log_message('debug','--get_instance()->current_id-->'.get_instance()->current_id);
 		$this->assertContains('7123456', $output);
 	}
 
 	public function test_listgoods1()
 	{
 		$output = $this->request('POST', 'shop/goods/listgoods');
-		$this->assertEquals(99, CURRENT_ID);
+		$this->assertEquals(99, get_instance()->current_id);
 		$this->assertResponseCode(200);
 	}
 

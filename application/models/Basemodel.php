@@ -15,8 +15,8 @@ class CompanyScope implements Scope
 	{
 		// var_dump($model->getTable());exit;
 		
-		if (in_array($model->getTable(), SAASWHITELIST)&&defined('COMPANY_ID')) {
-			return $builder->where($model->getTable().'.company_id', '=', COMPANY_ID);
+		if (in_array($model->getTable(), SAASWHITELIST)&&defined('get_instance()->company_id')) {
+			return $builder->where($model->getTable().'.company_id', '=', get_instance()->company_id);
 		} else {
 			return $builder;
 		}
@@ -28,36 +28,36 @@ class UserObserver
 {
 	public function creating($user)
 	{
-		if (in_array($user->getTable(), SAASWHITELIST)&&defined('COMPANY_ID')) {
-			$user->company_id = COMPANY_ID;
+		if (in_array($user->getTable(), SAASWHITELIST)&&defined('get_instance()->company_id')) {
+			$user->company_id = get_instance()->company_id;
 		}
 	}
 	
 	public function updating($user)
 	{
-		if (in_array($user->getTable(), SAASWHITELIST)&&defined('COMPANY_ID')) {
-			$user->company_id = COMPANY_ID;
+		if (in_array($user->getTable(), SAASWHITELIST)&&defined('get_instance()->company_id')) {
+			$user->company_id = get_instance()->company_id;
 		}
 	}
 	
 	public function saving($user)
 	{
-		if (in_array($user->getTable(), SAASWHITELIST)&&defined('COMPANY_ID')) {
-			$user->company_id = COMPANY_ID;
+		if (in_array($user->getTable(), SAASWHITELIST)&&defined('get_instance()->company_id')) {
+			$user->company_id = get_instance()->company_id;
 		}
 	}
 	
 	public function deleting($user)
 	{
-		if (in_array($user->getTable(), SAASWHITELIST)&&defined('COMPANY_ID')) {
-			$user->company_id = COMPANY_ID;
+		if (in_array($user->getTable(), SAASWHITELIST)&&defined('get_instance()->company_id')) {
+			$user->company_id = get_instance()->company_id;
 		}
 	}
 	
 	public function restoring($user)
 	{
-		if (in_array($user->getTable(), SAASWHITELIST)&&defined('COMPANY_ID')) {
-			$user->company_id = COMPANY_ID;
+		if (in_array($user->getTable(), SAASWHITELIST)&&defined('get_instance()->company_id')) {
+			$user->company_id = get_instance()->company_id;
 		}
 	}
 	
@@ -69,7 +69,7 @@ class Basemodel extends Model
 	use SoftDeletes;
 	protected $dates = ['deleted_at'];
 	
-	//public static $where = ['cid'=>CURRENT_ID];
+	//public static $where = ['cid'=>get_instance()->current_id];
 	protected static function boot()
 	{
 		parent::boot();

@@ -55,7 +55,7 @@ class Employeemodel extends Basemodel {
         $where                         = [];
         empty($city) ?: $where['city'] = $city;
         require_once 'Storemodel.php';
-        $employee = static::where('bxid', CURRENT_ID)->get(['store_ids'])->first();
+        $employee = static::where('bxid', get_instance()->current_id)->get(['store_ids'])->first();
         if (!$employee) {
             return FALSE;
         }
@@ -68,7 +68,7 @@ class Employeemodel extends Basemodel {
     //获取当前登陆者拥有权限的某个城市的门店ids
     public static function getMyCitystoreids($city) {
         require_once 'Storemodel.php';
-        $employee = static::where('bxid', CURRENT_ID)->get(['store_ids'])->first();
+        $employee = static::where('bxid', get_instance()->current_id)->get(['store_ids'])->first();
         if (!$employee) {
             return FALSE;
         }
@@ -87,7 +87,7 @@ class Employeemodel extends Basemodel {
 
     //获取当前登陆者拥有权限的门店ids
     public static function getMyStoreids() {
-        $employee = static::where('bxid', CURRENT_ID)->get(['store_ids'])->first();
+        $employee = static::where('bxid', get_instance()->current_id)->get(['store_ids'])->first();
         if (!$employee) {
             return FALSE;
         }
@@ -99,7 +99,7 @@ class Employeemodel extends Basemodel {
     //获取当前登陆者拥有权限的城市
     public static function getMyCities() {
         require_once 'Storemodel.php';
-        $employee = static::where('bxid', CURRENT_ID)->get(['store_ids'])->first();
+        $employee = static::where('bxid', get_instance()->current_id)->get(['store_ids'])->first();
         if (!$employee) {
             return FALSE;
         }
@@ -115,7 +115,7 @@ class Employeemodel extends Basemodel {
     //获取当前登陆者公司所负责的所有城市
     public static function getMyCompanyCities() {
         require_once 'Storemodel.php';
-        $cities = Storemodel::where('company_id', COMPANY_ID)->get(['city'])->map(function ($c) {
+        $cities = Storemodel::where('company_id', get_instance()->company_id)->get(['city'])->map(function ($c) {
             return $c->city;
         });
         $cities = $cities->unique(); //去除集合中重复值

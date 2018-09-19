@@ -54,7 +54,7 @@ class Template extends MY_Controller {
         $file_url     = $post['file_url'];
         $url          = $this->splitAliossUrl($file_url);
         $store_id     = $this->employee->store_id;
-        $company_id   = COMPANY_ID;
+        $company_id   = get_instance()->company_id;
         if (Contracttemplatemodel::where(['name' => $name, 'store_id' => $store_id])->exists()) {
             $this->api_res(1008);
             return;
