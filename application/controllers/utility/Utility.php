@@ -268,7 +268,6 @@ class Utility extends MY_Controller {
                     return json_decode($record);
                 }
             })->toArray();
-
         $this->api_res(0,['list'=>$record,'count'=>$count]);
     }
 
