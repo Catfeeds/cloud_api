@@ -29,6 +29,7 @@ class Uploadreading extends MY_Controller
 		$year       = $this->input->post('year');
 		$sheetArray = $this->input->post('data');
 		$sheetArray = json_decode($sheetArray, true);
+		$this->debug('uploaddata--->',$sheetArray);
 		$type       = Meterreadingtransfermodel::TYPE_WATER_C;
 		$transfer   = new Meterreadingtransfermodel();
 		$data       = $transfer->checkAndGetInputData($sheetArray);
@@ -59,6 +60,7 @@ class Uploadreading extends MY_Controller
 		$year       = $this->input->post('year');
 		$sheetArray = $this->input->post('data');
 		$sheetArray = json_decode($sheetArray, true);
+		$this->debug('uploaddata--->',$sheetArray);
 		$type       = Meterreadingtransfermodel::TYPE_WATER_H;
 		$transfer   = new Meterreadingtransfermodel();
 		$data       = $transfer->checkAndGetInputData($sheetArray);
@@ -89,6 +91,7 @@ class Uploadreading extends MY_Controller
 		$year       = $this->input->post('year');
 		$sheetArray = $this->input->post('data');
 		$sheetArray = json_decode($sheetArray, true);
+		$this->debug('uploaddata--->',$sheetArray);
 		$type       = Meterreadingtransfermodel::TYPE_ELECTRIC;
 		$transfer   = new Meterreadingtransfermodel();
 		$data       = $transfer->checkAndGetInputData($sheetArray);
