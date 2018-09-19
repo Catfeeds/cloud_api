@@ -1,5 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 /**
  * Author:      hfq<1326432154@qq.com>
  * Date:        2018/6/9
@@ -128,7 +130,72 @@ class Resident extends MY_Controller {
         $resident = Contractmodel::where('id', $serial)->with('store')->with('roomunion')->with('residents')->get($filed);
         $this->api_res(0, ['resident' => $resident]);
     }
+    /*
+     * 住户信息导出
+     * */
+   public function residentToExcel(){
+       $this->load->model('roomunionmodel');
+       $this->load->model('storemodel');
+       $this->load->model('customermodel');
+       $store_id = $this->input->post('store_id');
+       $data = $this->input->post('data');
+       if(!$store_id || !$data){
+           $this->api_res(1002);
+           return false;
+       }
+       $filed     = ['id', 'name', 'customer_id', 'phone', 'room_id', 'card_number', 'created_at', 'status', 'name_two', 'phone_two'];
+       $store_ids = explode(',', $this->employee->store_ids);
+       $resident = Residentmodel::with('room')->with('customer_s')->whereIn('store_id', $store_ids)
+           ->where('created_at','>', $data)
+           ->where('store_id', $store_id)
+           ->orderBy('created_at', 'DESC')->get($filed)
+           ->map(function ($s) {
+               $s->room->store_name = (Storemodel::where('id', $s->room->store_id)->get(['name']))[0]['name'];
+               $s->createdat        = date('Y-m-d', strtotime($s->created_at->toDateTimeString()));
+               return $s;
+           });
+       if(!$resident){
+           $this->api_res(1007);
+           return false;
+       }
+       foreach ($resident as $order) {
+           $res                = [];
+           $res['name']        = $order->name;
+           $res['phone']       = $order->phone;
+           $res['card_number'] = $order->card_number;
+           $res['store_name']  = $order->room->store_name;
+           $res['created_at']  = $order->created_at;
+           $res['status']      = $order->status;
+           $res['name_two']    = empty($order->name_two) ? '' : $order->name_two;
+           $res['phone_two']   = empty($order->phone_two) ? '' : $order->phone_two;
+           $resident_excel[]   = $res;
+           $store              =  $order->room->store_name;
+       }
 
+       $objPHPExcel = new Spreadsheet();
+       $sheet       = $objPHPExcel->getActiveSheet();
+       $i           = 1;
+       $objPHPExcel->getActiveSheet()->setCellValue('A' . $i, '姓名');
+       $objPHPExcel->getActiveSheet()->setCellValue('B' . $i, '联系方式');
+       $objPHPExcel->getActiveSheet()->setCellValue('C' . $i, '证件号码');
+       $objPHPExcel->getActiveSheet()->setCellValue('D' . $i, '房屋地址');
+       $objPHPExcel->getActiveSheet()->setCellValue('E' . $i, '创建时间');
+       $objPHPExcel->getActiveSheet()->setCellValue('F' . $i, '状态');
+       $objPHPExcel->getActiveSheet()->setCellValue('G' . $i, '紧急联系人');
+       $objPHPExcel->getActiveSheet()->setCellValue('H' . $i, '紧急联系方式');
+       $sheet->fromArray($resident_excel, null, 'A2');
+       $writer = new Xlsx($objPHPExcel);
+       header("Pragma: public");
+       header("Expires: 0");
+       header("Cache-Control:must-revalidate, post-check=0, pre-check=0");
+       header("Content-Type:application/force-download");
+       header("Content-Type:application/vnd.ms-excel");
+       header("Content-Type:application/octet-stream");
+       header("Content-Type:application/download");
+       header("Content-Disposition:attachment;filename=$store.$data.'.xlsx'");
+       header("Content-Transfer-Encoding:binary");
+       $writer->save('php://output');
+   }
     /**
      * 住户账单信息
      */

@@ -2,6 +2,8 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 use Carbon\Carbon;
 use Illuminate\Database\Capsule\Manager as DB;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 /**
  * Author:      hfq<1326432154@qq.com>
  * Date:        2018/6/8
@@ -255,8 +257,68 @@ class Pricecontrol extends MY_Controller
         }
         $this->api_res(0,$price_id);
     }
+    /*
+     * 调价导出excel
+     * */
+        public function priceControlToExcel(){
+        $this->load->model('storemodel');
+        $this->load->model('buildingmodel');
+        $this->load->model('roomtypemodel');
+        $filed     = ['id', 'store_id', 'building_id', 'number', 'room_type_id', 'rent_price', 'property_price', 'updated_at', 'cold_water_price', 'electricity_price', 'hot_water_price'];
+        $store_id      = $this->input->post('store_id');
+        if(!$store_id){
+            $this->api_res(1002);
+            return false;
+        }
+        $store_ids = explode(',', $this->employee->store_ids);
+        $price = Roomunionmodel::orderBy('number')->with('store_s')->with('building_s')->with('room_type')
+              ->where('store_id', $store_id)-whereIn('store_id',$store_ids)->orderBy('updated_at')->get($filed)
+            ->map(function ($s) {
+                $s->updated = date('Y-m-d', strtotime($s->updated_at->toDateTimeString()));
+                return $s;
+            });
+            if(!$price){
+                $this->api_res(1007);
+                return false;
+            }
+            foreach ($price as $order) {
+                $res                        = [];
+                $res['address']             = $order->store_s->name;
+                $res['number']              = $order->number;
+                $res['type']                = empty($order->room_type->name) ? '' : $order->room_type->name;
+                $res['rent_price']          = empty($order->rent_price) ? '0.00' : $order->rent_price;
+                $res['property_price']      = empty($order->property_price) ? '0.00' : $order->property_price;
+                $res['hot_water_price']     = empty($order->hot_water_price) ? '0.00' : $order->hot_water_price;
+                $res['cold_water_price']    = empty($order->cold_water_price) ? '0.00' : $order->cold_water_price;
+                $res['electricity_price']   = empty($order->electricity_price) ? '0.00' : $order->electricity_price;
+                $room_excel[]   = $res;
+                $store = $order->store_s->name;
+            }
 
-
+            $objPHPExcel = new Spreadsheet();
+            $sheet       = $objPHPExcel->getActiveSheet();
+            $i           = 1;
+            $objPHPExcel->getActiveSheet()->setCellValue('A' . $i, '房屋地址');
+            $objPHPExcel->getActiveSheet()->setCellValue('B' . $i, '房间号');
+            $objPHPExcel->getActiveSheet()->setCellValue('C' . $i, '房型');
+            $objPHPExcel->getActiveSheet()->setCellValue('D' . $i, '住宿服务费');
+            $objPHPExcel->getActiveSheet()->setCellValue('E' . $i, '物业服务费');
+            $objPHPExcel->getActiveSheet()->setCellValue('F' . $i, '热水单价');
+            $objPHPExcel->getActiveSheet()->setCellValue('G' . $i, '冷水单价');
+            $objPHPExcel->getActiveSheet()->setCellValue('H' . $i, '电费单价');
+            $sheet->fromArray($room_excel, null, 'A2');
+            $writer = new Xlsx($objPHPExcel);
+            header("Pragma: public");
+            header("Expires: 0");
+            header("Cache-Control:must-revalidate, post-check=0, pre-check=0");
+            header("Content-Type:application/force-download");
+            header("Content-Type:application/vnd.ms-excel");
+            header("Content-Type:application/octet-stream");
+            header("Content-Type:application/download");
+            header("Content-Disposition:attachment;filename=$store .'.xlsx'");
+            header("Content-Transfer-Encoding:binary");
+            $writer->save('php://output');
+    }
     /**
      * 执行调价
      */
