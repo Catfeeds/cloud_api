@@ -132,9 +132,10 @@ class AuthHook {
         $apihash = hash('sha256',"$tks[0].$tks[1].$model->apisecret");
         // var_dump($apihash);exit;
         if($tks[2] == $apihash){
-            if(!defined('X_API_TOKEN')){
-                define('X_API_TOKEN' , $xapitoken);
-            }
+            // if(!defined('X_API_TOKEN')){
+            //     define('X_API_TOKEN' , $xapitoken);
+            // }
+            $this->CI->x_api_token = $xapitoken;
         }else{
             throw new Exception('x-api-toekn 认证失败');
         }
@@ -150,11 +151,11 @@ class AuthHook {
         $decoded      = $this->CI->m_jwt->decodeJwtToken($token);
         $d_bxid       = $decoded->bxid;
         $d_company_id = $decoded->company_id;
-        // if(!defined('get_instance()->current_id')){
-        //     define('get_instance()->current_id', $d_bxid);
+        // if(!defined('CURRENT_ID')){
+        //     define('CURRENT_ID', $d_bxid);
         // }
-        // if(!defined('get_instance()->company_id')){
-        //     define('get_instance()->company_id', $d_company_id);
+        // if(!defined('COMPANY_ID')){
+        //     define('COMPANY_ID', $d_company_id);
         // }
         $this->CI->current_id = $d_bxid;
         $this->CI->company_id = $d_company_id;
