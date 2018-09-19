@@ -30,7 +30,6 @@ class Welcome_test extends TestCase
 	public function test_company()
 	{
 		$output = $this->request('GET', 'ping/index');
-		// log_message('debug','--get_instance()->current_id-->'.get_instance()->current_id);
 		$this->assertContains('7123456', $output);
 	}
 
@@ -41,9 +40,9 @@ class Welcome_test extends TestCase
 		$this->assertResponseCode(200);
 	}
 
-	// public function test_listgoods2()
-	// {
-	// 	$output = $this->request('POST', 'shop/goods/listgoods');
-	//  $this->assertResponseCode(200);
-	// }
+	public function test_listgoods2()
+	{
+		$output = $this->request('POST', 'shop/goods/listgoods');
+	 $this->assertResponseCode(200);
+	}
 }
