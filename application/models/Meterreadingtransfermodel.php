@@ -51,6 +51,7 @@ class Meterreadingtransfermodel extends Basemodel
 	const OLD_METER = 'CHANGE_OLD'; //旧表
 	const NEW_METER = 'CHANGE_NEW'; //新表
 	const NEW_RENT = 'NEW_RENT'; //月中入住
+	const REFUND = 'REFUND'; //退房
 	
 	const  UNCONFIRMED = 0;
 	const  CONFIRMED = 1;

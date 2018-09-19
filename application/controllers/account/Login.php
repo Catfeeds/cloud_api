@@ -251,7 +251,7 @@ class Login extends MY_Controller {
                 }
             }
             if ($i == 0) {
-                if ($key == 0) {
+                if ($key == 0 &&$pc_privilege_ids_string->company_id != 0) {
                     $privileges_one[$key]['privige'] = 'yes';
                     $privileges_one[$key]['list']    = $temps;
                 } else {
