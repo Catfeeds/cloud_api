@@ -11,6 +11,6 @@ class Demo_test extends TestCase
     public function test_get_category_name()
     {
         $count = Companymodel::count();
-        $this->assertEquals(2, $count);
+        $this->assertEquals(7, $count);
     }
 }

@@ -132,7 +132,9 @@ class AuthHook {
         $apihash = hash('sha256',"$tks[0].$tks[1].$model->apisecret");
         // var_dump($apihash);exit;
         if($tks[2] == $apihash){
-            define('X_API_TOKEN' , $xapitoken);
+            if(!defined('X_API_TOKEN')){
+                define('X_API_TOKEN' , $xapitoken);
+            }
         }else{
             throw new Exception('x-api-toekn 认证失败');
         }
@@ -148,8 +150,13 @@ class AuthHook {
         $decoded      = $this->CI->m_jwt->decodeJwtToken($token);
         $d_bxid       = $decoded->bxid;
         $d_company_id = $decoded->company_id;
-        define('CURRENT_ID', $d_bxid);
-        define('COMPANY_ID', $d_company_id);
+        if(!defined('CURRENT_ID')){
+            define('CURRENT_ID', $d_bxid);
+        }
+        if(!defined('COMPANY_ID')){
+            define('COMPANY_ID', $d_company_id);
+        }
+        
         //SaaS权限验证
         $this->saas();
 
