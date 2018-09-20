@@ -40,6 +40,14 @@ redis:
 	 -p 6379:6379 \
 	 ${REDIS_IMG}
 
+test-in-docker:
+	docker run --rm \
+	 --name $(SERVICE)-testing \
+	 -v $(PWD):/var/www/html/ \
+	 -w /var/www/html/ \
+	 --link ${SERVICE}-redis:redis \
+	 $(DEV_UI_IMAGE) ./hack/test.sh
+
 image:
 	docker build -t $(IMG_HUB)/$(SERVICE):latest .
 
