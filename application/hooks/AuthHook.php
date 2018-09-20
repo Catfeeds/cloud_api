@@ -43,44 +43,7 @@ class AuthHook {
         ];
     }
 
-    /**
-     * 测试环境白名单
-     * 白名单内的不需要验证token
-     */
-    private function developmentAuth() {
-        return array(
-            'account/login/logintest',
-            'ping/index',
-            'company/company/test',
-            'mini/login/gettoken',
-            'mini/login/handleloginstatus',
-            'account/login/login',
-            'mini/contract/autosignnotify',
-            'bill/bill/test',
-            'demo/copy/run',
-            'demo/sheet/index',
-            'demo/test/test1',
-            'demo/test/testa',
-            'demo/test/getendtimerooms',
-            'demo/test/getendtimeresidentorder',
-            'mini/rerequire/getendtimerooms',
-            'bill/order/push',
-            'bill/order/notify',
-            'mini/contract/notify',
-            'mini/contract/autosign',
-            'mini/contract/archive',
-            'utility/utility/listutility1',
-
-            'company/company/sendcode',
-            'company/company/register',
-            'company/company/boundwechat',
-            
-            'events/auth',
-			'events/callback',
-			'events/test',
-
-        );
-    }
+   
 
     /**
      * 是否验证token
@@ -92,13 +55,9 @@ class AuthHook {
         $method    = $this->CI->router->fetch_method();
         $full_path = strtolower($directory . $class . '/' . $method);
         try {
-            if (ENVIRONMENT == 'production') {
-                $authArr = $this->productionAuth();
-            } else {
-                $authArr = $this->developmentAuth();
-            }
-            
-            
+           
+            $authArr = $this->productionAuth();
+          
             if(strtolower($directory) == 'innserservice/'){
                 //内部服务API认证
                 $this->apiAuth();
