@@ -272,7 +272,7 @@ class Pricecontrol extends MY_Controller
         }
         $store_ids = explode(',', $this->employee->store_ids);
         $price = Roomunionmodel::orderBy('number')->with('store_s')->with('building_s')->with('room_type')
-              ->where('store_id', $store_id)-whereIn('store_id',$store_ids)->orderBy('updated_at')->get($filed)
+              ->where('store_id', $store_id)->whereIn('store_id',$store_ids)->orderBy('updated_at')->get($filed)
             ->map(function ($s) {
                 $s->updated = date('Y-m-d', strtotime($s->updated_at->toDateTimeString()));
                 return $s;
