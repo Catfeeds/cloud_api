@@ -16,11 +16,11 @@ class ControllerDemo_test extends TestCase
 
 
 
-	public function test_company()
-	{
-		$output = $this->request('GET', 'ping/index');
-		$this->assertContains('7123456', $output);
-	}
+	// public function test_company()
+	// {
+	// 	$output = $this->request('GET', 'ping/index');
+	// 	$this->assertContains('7123456', $output);
+	// }
 
 	public function test_listgoods1()
 	{
