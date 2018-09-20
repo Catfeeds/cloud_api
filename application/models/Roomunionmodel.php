@@ -1,5 +1,6 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+use Carbon\Carbon;
 /**
  * Author:      zjh<401967974@qq.com>
  * Date:        2018/4/20 0020
@@ -21,6 +22,11 @@ class Roomunionmodel extends Basemodel {
     const STATE_REFUND   = 'REFUND'; // 退房
     const STATE_OTHER    = 'OTHER'; // 其他 保留
     const STATE_OCCUPIED = 'OCCUPIED'; // 房间被占用的状态, 可能是预约, 或者是办理入住后订单未确认之间的状态
+    /*
+     * UNION 集中式；DOT 分布式
+     * */
+    const TYPE_UNION = 'UNION';
+    const TYPE_DOT   = 'DOT';
 
     protected $table = 'boss_room_union';
 
@@ -485,4 +491,86 @@ class Roomunionmodel extends Basemodel {
 		
 		return true;
 	}
+    /*
+    * 检查上传数组
+    * */
+    public function checkAndGetInputData($sheetArray, $store_id){
+        $error      = [];
+        $store = Storemodel::where('id', $store_id)->select(['name'])->first();
+        foreach ($sheetArray as $key => $item) {
+            $count = count($item);
+            for( $i=0; $i<$count; $i++){
+                if(empty($item[$i])){
+                    $error = '上传数据不能为空';
+                    return $error;
+                }
+            }
+            //门店名称
+            $store_name = $item[0];
+            if ($store_name != $store->name) {
+                $error[] = '请检查门店名称:' . $store_name . ',与您选择的:' . $store->name . '不相符';
+                return $error;
+            }
+            //房型
+            $room_type = trim($item[1]);
+            $room = Roomtypemodel::where('store_id', $store_id)->where('name', $room_type)->select(['id'])->first();
+            if (!$room) {
+                $error[] = '请检查房型：' . $item[1] . ',查无此房型';
+                return $error;
+            }
+            //租金
+            $rent = trim($item[3]);
+            $hot_water = trim($item[4]);
+            $cold_water = trim($item[5]);
+            $property = trim($item[6]);
+            $electricity = trim($item[7]);
+            $layer = trim($item[9]);
+            if (!is_numeric($rent) || !is_numeric($hot_water) || !is_numeric($cold_water) || !is_numeric($property) || !is_numeric($layer) || !is_numeric($electricity)) {
+                $error[] = '请检查租金：' . $rent . '热水费：' . $hot_water . '冷水费：' . $cold_water . '电费：' . $electricity . '所在层：' . $layer .
+                    '物业费：'.$property. '必须为数字';
+                return $error;
+            }
+        }
+        return $error;
+    }
+
+    /*
+     * 导入数据
+     * */
+    public function writeReading($sheetArray, $store_id){
+        $data = [];
+        $error = [];
+        foreach ($sheetArray as $key => $value){
+            $arr = Roomunionmodel::where('store_id', $store_id)->where('number', $value[2])->count();
+            if(0 == $arr) {
+                $data[$key]['company_id'] = 1;
+                $data[$key]['store_id'] = $store_id;
+                $room = Roomtypemodel::where('store_id', $store_id)->where('name', $value[1])->select(['id'])->first();
+                $data[$key]['room_type_id'] = $room->id;
+                $data[$key]['layer'] = $value[9];
+                $data[$key]['number'] = $value[2];
+                $data[$key]['rent_price'] = $value[3];
+                $data[$key]['property_price'] = $value[4];
+                $data[$key]['status'] = Roomunionmodel::STATE_BLANK;
+                $data[$key]['created_at'] = Carbon::now();
+                $data[$key]['begin_time'] = Carbon::now();
+                $data[$key]['end_time'] = Carbon::now();
+                $data[$key]['area'] = $value[8];
+                $data[$key]['cold_water_price'] = $value[5];
+                $data[$key]['hot_water_price'] = $value[6];
+                $data[$key]['electricity_price'] = $value[7];
+                $data[$key]['type'] = Roomunionmodel::TYPE_UNION;
+                try {
+                    Roomunionmodel::insert($data[$key]);
+                } catch (Exception $e) {
+                    log_message('error', $e->getMessage());
+                    throw  $e;
+                }
+            }else{
+                $error[] = '房间号：'.$value[2].'出现重复';
+            }
+        }
+        return $error;
+    }
+
 }
