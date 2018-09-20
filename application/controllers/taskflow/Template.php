@@ -38,7 +38,7 @@ class Template extends MY_Controller{
         $description    = empty($input['description'])?'无':$input['description'];
         $name           = $input['name'];
         $type           = $input['type'];
-        $company_id     = get_instance()->company_id;
+        $company_id     = $this->company_id;
 //        $store_id       = $this->employee->store_id;
         if(Taskflowtemplatemodel::where(['company_id'=>$company_id,'name'=>$name])->exists()){
             $this->api_res(1008);
@@ -64,7 +64,7 @@ class Template extends MY_Controller{
                 $s_template = [];
                 $s_template['template_id'] = $template_id;
                 $s_template['name'] = empty($steps[$a]['name'])?"未设置":$steps[$a]['name'];
-                $s_template['company_id'] = get_instance()->company_id;
+                $s_template['company_id'] = $this->company_id;
                 $s_template['type'] = $type;
 //                $s_template['store_id'] = $store_id;
                 $s_template['seq']  = $a+1;
@@ -131,7 +131,7 @@ class Template extends MY_Controller{
                 $s_template = [];
                 $s_template['template_id'] = $template_id;
                 $s_template['name'] = empty($steps[$a]['name'])?"未设置":$steps[$a]['name'];
-                $s_template['company_id'] = get_instance()->company_id;
+                $s_template['company_id'] = $this->company_id;
                 $s_template['seq']    = $a+1;
                 $s_template['group']  = $template->group;
                 $s_template['position_ids']  = $steps[$a]['position_ids'];
@@ -168,7 +168,7 @@ class Template extends MY_Controller{
         $input  = $this->input->post(null,true);
         $template_id    = $input['template_id'];
         $template   = Taskflowtemplatemodel::with('step_template')->where(
-            ['company_id'=>get_instance()->company_id]
+            ['company_id'=>$this->company_id]
         )->findOrFail($template_id);
         $this->load->model('positionmodel');
         $template->step_template->map(function($res){
@@ -189,7 +189,7 @@ class Template extends MY_Controller{
         $templates  = Taskflowtemplatemodel::with(['employee'=>function($query){
             $query->select('name','id');
         }])
-            ->where('company_id',get_instance()->company_id)
+            ->where('company_id',$this->company_id)
             ->get(['id','company_id','name','type','description','employee_id','created_at','updated_at','data']);
 
         $this->api_res(0,$templates);
