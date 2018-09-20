@@ -94,7 +94,7 @@ class AuthHook {
             // if(!defined('X_API_TOKEN')){
             //     define('X_API_TOKEN' , $xapitoken);
             // }
-            $this->CI->x_api_token = $xapitoken;
+            $this->CI->x_api_token = $tks[0];
         }else{
             throw new Exception('x-api-toekn 认证失败');
         }
