@@ -1,7 +1,7 @@
 SERVICE:=admin-api
 # Variables
 PWD := $(shell pwd)
-DEV_UI_IMAGE := registry.cn-beijing.aliyuncs.com/wa/php-fpm:1.0.5
+DEV_UI_IMAGE := registry.cn-beijing.aliyuncs.com/wa/php-fpm:1.0.10
 IMG_HUB?=registry.cn-shenzhen.aliyuncs.com/funxdata
 REDIS_IMG?=registry.cn-beijing.aliyuncs.com/wa/redis:3.2
 # Version information
@@ -24,7 +24,7 @@ dev: redis
 	 -v $(PWD):/var/www/html/ \
 	 -w /var/www/html/ \
 	 --link ${SERVICE}-redis:redis \
-	 $(DEV_UI_IMAGE)
+	 $(DEV_UI_IMAGE) bash
 
 run: image
 	docker run --rm -it \
