@@ -29,7 +29,7 @@ class Store extends MY_Controller
     {
         $post = $this->input->post(null, true);
         $page = intval(isset($post['page']) ? $post['page'] : 1);
-        $where = ['company_id' => COMPANY_ID];
+        $where = ['company_id' => get_instance()->company_id];
 
         empty($post['city']) ?: $where['city'] = $post['city'];
         empty($post['type']) ?: $where['rent_type'] = $post['type'];
@@ -39,8 +39,8 @@ class Store extends MY_Controller
         $offset = PAGINATE * ($page - 1);
         $field = ['id', 'name', 'city', 'rent_type', 'address', 'contact_user', 'counsel_phone', 'status', 'created_at'];
         $count = ceil(Storemodel::where($where)->whereIn('id', $store_ids)->count() / PAGINATE);
-        $cities = Storemodel::where(['company_id' => COMPANY_ID])->groupBy('city')->get(['city']);
-        $types = isset($post['city']) ? Storemodel::where(['company_id' => COMPANY_ID])
+        $cities = Storemodel::where(['company_id' => get_instance()->company_id])->groupBy('city')->get(['city']);
+        $types = isset($post['city']) ? Storemodel::where(['company_id' => get_instance()->company_id])
             ->where('city', $post['city'])
             ->groupBy('rent_type')
             ->get(['rent_type'])
@@ -60,7 +60,7 @@ class Store extends MY_Controller
     public function searchStore()
     {
         $name = $this->input->post('name', true);
-        $where = ['company_id' => COMPANY_ID];
+        $where = ['company_id' => get_instance()->company_id];
         $page = intval($this->input->post('page', true) ? $this->input->post('page', true) : 1);
         $offset = PAGINATE * ($page - 1);
         $field = ['id', 'name', 'city', 'rent_type', 'address', 'contact_user', 'counsel_phone', 'status', 'created_at'];
@@ -82,7 +82,7 @@ class Store extends MY_Controller
     public function deleteStore()
     {
         $store_id = $this->input->post('store_id', true);
-        $where = ['company_id' => COMPANY_ID];
+        $where = ['company_id' => get_instance()->company_id];
         if (Storemodel::where($where)->find($store_id)->delete()) {
             $this->api_res(0);
         } else {
@@ -100,7 +100,7 @@ class Store extends MY_Controller
             $this->api_res(1005);
             return;
         }
-        $where = ['company_id' => COMPANY_ID];
+        $where = ['company_id' => get_instance()->company_id];
         $ids = Storemodel::where($where)->get(['id'])->map(function ($id) {
             return $id->id;
         })->toArray();
@@ -122,7 +122,7 @@ class Store extends MY_Controller
     public function showStore()
     {
         $city = $this->input->post('city', true);
-        $where = ['company_id' => COMPANY_ID];
+        $where = ['company_id' => get_instance()->company_id];
         empty($city) ?: $where['city'] = $city;
         $store_ids['id'] = explode(',', $this->employee->store_ids);
 
@@ -140,7 +140,7 @@ class Store extends MY_Controller
      */
     public function showCity()
     {
-        $where = ['company_id' => COMPANY_ID];
+        $where = ['company_id' => get_instance()->company_id];
         $city = Storemodel::where($where)->groupBy('city')->get(['city'])->map(function ($city) {
             return $city['city'];
         });
@@ -152,7 +152,7 @@ class Store extends MY_Controller
      */
     public function getStore()
     {
-        $where = ['company_id' => COMPANY_ID];
+        $where = ['company_id' => get_instance()->company_id];
         $store_id = $this->input->post('store_id', true);
         if (!$store_id) {
             $this->api_res(1005);
@@ -175,7 +175,7 @@ class Store extends MY_Controller
     public function updateStore()
     {
         $store_id = $this->input->post('store_id', true);
-        $where = ['company_id' => COMPANY_ID];
+        $where = ['company_id' => get_instance()->company_id];
         if (!$store_id) {
             $this->api_res(1005);
             return;
@@ -232,7 +232,7 @@ class Store extends MY_Controller
         }
         $images = $this->splitAliossUrl($post['images'], true);
         $images = json_encode($images);
-        if (Storemodel::where(['company_id' => COMPANY_ID, 'rent_type' => 'DOT', 'name' => $post['name']])->first()) {
+        if (Storemodel::where(['company_id' => get_instance()->company_id, 'rent_type' => 'DOT', 'name' => $post['name']])->first()) {
             $this->api_res(1008);
             return;
         }
@@ -241,14 +241,14 @@ class Store extends MY_Controller
             $insert = new Storemodel();
             $insert->fill($post);
             $insert->describe = htmlspecialchars($this->input->post('describe'));
-            $insert->company_id = COMPANY_ID;
+            $insert->company_id = get_instance()->company_id;
             $insert->images = $images;
             $insert->save();
             $this->load->model('employeemodel');
-            $employee = Employeemodel::where('id', CURRENT_ID)->get(['store_ids'])->first();
+            $employee = Employeemodel::where('id', $this->current_id)->get(['store_ids'])->first();
             $store_ids = $employee->store_ids;
             $store_ids = empty($store_ids) ? $insert->id : $store_ids . ',' . $insert->id;
-            Employeemodel::where('id', CURRENT_ID)->update(['store_ids'=>$store_ids]);
+            Employeemodel::where('id', $this->current_id)->update(['store_ids'=>$store_ids]);
             DB::commit();
             $this->api_res(0, ['store_id' => $insert->id]);
         } catch (Exception $e) {
@@ -278,7 +278,7 @@ class Store extends MY_Controller
         }
         $images = $this->splitAliossUrl($post['images'], true);
         $images = json_encode($images);
-        if (Storemodel::where(['company_id' => COMPANY_ID, 'rent_type' => $post['rent_type'], 'name' => $post['name']])->first()) {
+        if (Storemodel::where(['company_id' => get_instance()->company_id, 'rent_type' => $post['rent_type'], 'name' => $post['name']])->first()) {
             $this->api_res(1008);
             return;
         }
@@ -287,14 +287,14 @@ class Store extends MY_Controller
             $insert = new Storemodel();
             $insert->fill($post);
             $insert->describe = htmlspecialchars($this->input->post('describe'));
-            $insert->company_id = COMPANY_ID;
+            $insert->company_id = get_instance()->company_id;
             $insert->images = $images;
             $insert->save();
             $this->load->model('employeemodel');
-            $employee = Employeemodel::where('id', CURRENT_ID)->get(['store_ids'])->first();
+            $employee = Employeemodel::where('id', $this->current_id)->get(['store_ids'])->first();
             $store_ids = $employee->store_ids;
             $store_ids = empty($store_ids) ? $insert->id : $store_ids . ',' . $insert->id;
-            Employeemodel::where('id', CURRENT_ID)->update(['store_ids'=>$store_ids]);
+            Employeemodel::where('id', $this->current_id)->update(['store_ids'=>$store_ids]);
             DB::commit();
             $this->api_res(0, ['store_id' => $insert->id]);
         } catch (Exception $e) {

@@ -19,7 +19,7 @@ class Index extends MY_Controller
 
     public function index()
     {
-        echo 'ok->'.X_API_TOKEN;
+        echo 'ok->'.get_instance()->x_api_token;
     }
 
     //调用demo

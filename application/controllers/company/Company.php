@@ -147,7 +147,7 @@ class Company extends MY_Controller
 			return false;
 		}
 		
-		$company_id = COMPANY_ID;
+		$company_id = get_instance()->company_id;
 		$company    = Companymodel::Find($company_id);
 		
 		$company->fill($post);
@@ -168,7 +168,7 @@ class Company extends MY_Controller
 	public function companyInfo()
 	{
 		$this->load->model('companymodel');
-		$company_id = COMPANY_ID;
+		$company_id = get_instance()->company_id;
 		$company    = Companymodel::Find($company_id)->toArray();
 		$this->api_res($company);
 	}

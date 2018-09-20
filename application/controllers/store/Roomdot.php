@@ -86,7 +86,7 @@ class Roomdot extends MY_Controller
 			$room_insert  = [];
 			foreach ($rooms as $key => $value) {
 				$room_insert[] = [
-					'company_id'   => COMPANY_ID,
+					'company_id'   => get_instance()->company_id,
 					'store_id'     => $store_id,
 					'community_id' => $community_id,
 					'house_id'     => $house_id,

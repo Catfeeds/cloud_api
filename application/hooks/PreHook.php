@@ -28,7 +28,7 @@ class PreHook {
         $query_string = empty($_SERVER["QUERY_STRING"]) ? array() : array($_SERVER["QUERY_STRING"]);
 
         $this->check_data($query_string, $this->url_arr);
-         $this->check_data($_GET,$this->args_arr);
+        $this->check_data($_GET,$this->args_arr);
         $this->check_data($_POST, $this->args_arr);
         $this->check_data($_COOKIE, $this->args_arr);
         $this->check_data($referer, $this->args_arr);

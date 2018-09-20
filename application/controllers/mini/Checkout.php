@@ -143,7 +143,7 @@ class Checkout extends MY_Controller {
                 case 'NORMAL_REFUND':
                     $msg['type']='正常';
                     $msg = json_encode($msg);
-                    $taskflow_id   = $this->taskflowmodel->createTaskflow(COMPANY_ID,Taskflowmodel::TYPE_CHECKOUT,$this->employee->store_id,$checkout->room_id,Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id,null,null,$msg);
+                    $taskflow_id   = $this->taskflowmodel->createTaskflow(get_instance()->company_id,Taskflowmodel::TYPE_CHECKOUT,$this->employee->store_id,$checkout->room_id,Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id,null,null,$msg);
                     if ($taskflow_id) {
                         $checkout->taskflow_id  = $taskflow_id;
                         $checkout->status  = 'AUDIT';
@@ -153,7 +153,7 @@ class Checkout extends MY_Controller {
                 case 'UNDER_CONTRACT':
                     $msg['type']='违约';
                     $msg = json_encode($msg);
-                    $taskflow_id   = $this->taskflowmodel->createTaskflow(COMPANY_ID,Taskflowmodel::TYPE_CHECKOUT_UNDER_CONTRACT,$this->employee->store_id,$checkout->room_id,Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id,null,null,$msg);
+                    $taskflow_id   = $this->taskflowmodel->createTaskflow(get_instance()->company_id,Taskflowmodel::TYPE_CHECKOUT_UNDER_CONTRACT,$this->employee->store_id,$checkout->room_id,Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id,null,null,$msg);
                     if ($taskflow_id) {
                         $checkout->taskflow_id  = $taskflow_id;
                         $checkout->status  = 'AUDIT';
@@ -163,7 +163,7 @@ class Checkout extends MY_Controller {
                 case 'NO_LIABILITY':
                     $msg['type']='免责';
                     $msg = json_encode($msg);
-                    $taskflow_id   = $this->taskflowmodel->createTaskflow(COMPANY_ID,Taskflowmodel::TYPE_CHECKOUT_NO_LIABILITY,$this->employee->store_id,$checkout->room_id,Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id,null,null,$msg);
+                    $taskflow_id   = $this->taskflowmodel->createTaskflow(get_instance()->company_id,Taskflowmodel::TYPE_CHECKOUT_NO_LIABILITY,$this->employee->store_id,$checkout->room_id,Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id,null,null,$msg);
                     if ($taskflow_id) {
                         $checkout->taskflow_id  = $taskflow_id;
                         $checkout->status  = 'AUDIT';

@@ -333,7 +333,7 @@ class Room extends MY_Controller {
                 " from `boss_room_union` as u ".
                 " left join `boss_order` as oo on u.`id` = oo.`room_id`".
                 " left join `boss_room_type` as ty on u.`room_type_id` = ty.`id`".
-                " where (u.`store_id` = ?) and u.`deleted_at` is null and (oo.`company_id` = ".COMPANY_ID.")".
+                " where (u.`store_id` = ?) and u.`deleted_at` is null and (oo.`company_id` = ".get_instance()->company_id.")".
                 "          and oo.`status` in ('PENDING')  ".
                 "          and oo.`deleted_at` is null ".
                 "          and u.`building_id` in(".$post['building_id'].")".

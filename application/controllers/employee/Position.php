@@ -58,7 +58,7 @@ class Position extends MY_Controller {
         }
         $id          = $post['id'];
         $name        = $post['name'];
-        $isNameEqual = Positionmodel::where('company_id', COMPANY_ID)->where('name', $name)->first();
+        $isNameEqual = Positionmodel::where('company_id', get_instance()->company_id)->where('name', $name)->first();
         if ($isNameEqual && ($isNameEqual->id != $id)) {
             $this->api_res(1014);
             return false;
@@ -90,7 +90,7 @@ class Position extends MY_Controller {
         }
 
         $name        = $post['name'];
-        $isNameEqual = Positionmodel::where('company_id', COMPANY_ID)->where('name', $name)->first();
+        $isNameEqual = Positionmodel::where('company_id', get_instance()->company_id)->where('name', $name)->first();
         if ($isNameEqual) {
             $this->api_res(1014);
             return false;
@@ -103,7 +103,7 @@ class Position extends MY_Controller {
             DB::beginTransaction();
             $result = Positionmodel::insert(
                 ['name'            => $name,
-                    'company_id'       => COMPANY_ID,
+                    'company_id'       => get_instance()->company_id,
                     'pc_privilege_ids' => $pc_privilege_ids,
                     //'pc_privilege' => $pc_privilege,
                     //'mini_privilege' => $mini_privilege,
@@ -132,7 +132,7 @@ class Position extends MY_Controller {
         $page   = intval(isset($post['page']) ? $post['page'] : 1);
         $offset = PAGINATE * ($page - 1);
         $filed  = ['id', 'name', 'pc_privilege_ids', 'created_at'];
-        $count  = ceil((Positionmodel::where('company_id', COMPANY_ID)->count()) / PAGINATE);
+        $count  = ceil((Positionmodel::where('company_id', get_instance()->company_id)->count()) / PAGINATE);
         if ($page > $count) {
             $this->api_res(0, ['count' => $count, 'list' => []]);
             return;
@@ -141,7 +141,7 @@ class Position extends MY_Controller {
         $this->load->model('employeemodel');
         $positions = Positionmodel::with(['employee' => function ($query) {
             $query->where('status', 'ENABLE');
-        }])->where('company_id', COMPANY_ID)
+        }])->where('company_id', get_instance()->company_id)
             ->offset($offset)->limit(PAGINATE)->orderBy('created_at', 'asc')
             ->get($filed)->map(function ($a) {
             $a->count_z = $a->employee->count();
@@ -176,7 +176,7 @@ class Position extends MY_Controller {
         $name   = isset($post['name']) ? $post['name'] : null;
         $page   = intval(isset($post['page']) ? $post['page'] : 1);
         $offset = PAGINATE * ($page - 1);
-        $count  = ceil((Positionmodel::where('company_id', COMPANY_ID)
+        $count  = ceil((Positionmodel::where('company_id', get_instance()->company_id)
                 ->where('name', 'like', "%$name%")->count()) / PAGINATE);
         if ($page > $count) {
             $this->api_res(0, ['count' => $count, 'list' => []]);
@@ -185,7 +185,7 @@ class Position extends MY_Controller {
         $this->load->model('employeemodel');
         $positions = Positionmodel::with(['employee' => function ($query) {
             $query->where('status', 'ENABLE');
-        }])->where('company_id', COMPANY_ID)
+        }])->where('company_id', get_instance()->company_id)
             ->where('name', 'like', "%$name%")
             ->offset($offset)->limit(PAGINATE)
             ->orderBy('id', 'desc')
@@ -267,7 +267,7 @@ class Position extends MY_Controller {
      * 显示公司职位
      */
     public function showPositions() {
-        $position = Positionmodel::where('company_id', COMPANY_ID)->get(['id', 'name']);
+        $position = Positionmodel::where('company_id', get_instance()->company_id)->get(['id', 'name']);
         if (!$position) {
             $this->api_res(1009);
             return;
@@ -280,7 +280,7 @@ class Position extends MY_Controller {
      */
     public function deletePosition() {
         $id    = $this->input->post('id', true);
-        $where = ['company_id' => COMPANY_ID, 'id' => $id];
+        $where = ['company_id' => get_instance()->company_id, 'id' => $id];
         if (Positionmodel::where($where)->delete()) {
             $this->api_res(0);
             return;
@@ -309,7 +309,7 @@ class Position extends MY_Controller {
     public function showPosition()
     {
         //当前操作的门店
-        $positions  = Positionmodel::where('company_id',COMPANY_ID)->select(['id','name'])->get();
+        $positions  = Positionmodel::where('company_id',get_instance()->company_id)->select(['id','name'])->get();
         $this->api_res(0,$positions);
     }
 

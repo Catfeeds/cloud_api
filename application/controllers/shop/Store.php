@@ -17,7 +17,7 @@ class Store extends MY_Controller {
         //需放在MY_CONTROLLER
         if (defined(CURRENT_ID)) {
             $this->load->model('employeemodel');
-            $this->current_user = Funxadminmodel::where('bxid', CURRENT_ID)->all();
+            $this->current_user = Funxadminmodel::where('bxid', $this->current_id)->all();
         }
         //---END
 

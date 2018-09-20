@@ -56,7 +56,7 @@ class Login extends MY_Controller {
             $this->api_res(1018);
             return;
         }
-        $where = ['company_id' => COMPANY_ID];
+        $where = ['company_id' => get_instance()->company_id];
 
         $data['store'] = Storemodel::whereIn('id', $store_ids)->get(['id', 'name', 'province', 'city', 'district']);
 

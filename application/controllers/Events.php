@@ -89,7 +89,7 @@ class Events extends MY_Controller
 			log_message('debug', '获取authorizer_access_token成功');
 			$this->m_redis->saveAuthorAccessToken($res['authorization_info']['authorizer_access_token']);
 			$this->load->model('companywxinfomodel');
-			$company_id = COMPANY_ID;
+			$company_id = get_instance()->company_id;
 			$company    = Companywxinfomodel::where('company_id', $company_id)->first();
 			if (empty($company)) {
 				$company             = new Companywxinfomodel();
@@ -144,7 +144,7 @@ class Events extends MY_Controller
 			$access_token = $this->getAccessToken();
 		}
 		$this->load->model('companywxinfomodel');
-		$company    = COMPANY_ID;
+		$company    = get_instance()->company_id;
 		$authorizer = Companywxinfomodel::where('company_id', $company)->first(['authorizer_refresh_token', 'authorizer_appid']);
 		$url        = 'https:// api.weixin.qq.com /cgi-bin/component/api_authorizer_token?component_access_token=' . "$access_token";
 		$data       = [
@@ -175,7 +175,7 @@ class Events extends MY_Controller
 			$access_token = $this->getAccessToken();
 		}
 		$this->load->model('companywxinfomodel');
-		$company_id = COMPANY_ID;
+		$company_id = get_instance()->company_id;
 		$authorizer = Companywxinfomodel::where('company_id', $company_id)->first(['authorizer_refresh_token', 'authorizer_appid']);
 		$url        = 'https://api.weixin.qq.com/cgi-bin/component/api_get_authorizer_info?component_access_token=' . "$access_token";
 		$data       = [
@@ -190,7 +190,7 @@ class Events extends MY_Controller
 		} else {
 			log_message('debug', '--获取授权方信息成功--');
 			$this->load->model('companywxinfomodel');
-			$company_id                 = COMPANY_ID;
+			$company_id                 = get_instance()->company_id;
 			$company                    = Companywxinfomodel::where('company_id', $company_id)->first();
 			$company->nick_name         = $res['authorizer_info']->nick_name;
 			$company->head_img          = $res['authorizer_info']->head_img;

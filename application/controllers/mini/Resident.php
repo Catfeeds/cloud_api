@@ -979,7 +979,7 @@ class Resident extends MY_Controller {
             $resident->store_id    = $this->employee->store_id;
             $resident->rent_price  = $room->rent_price;
             $resident->property_price  = $room->property_price;
-            $resident->company_id  = COMPANY_ID;
+            $resident->company_id  = get_instance()->company_id;
             $a                     = $resident->save();
             //更新房间状态
             $this->occupiedByResident($room, $resident);

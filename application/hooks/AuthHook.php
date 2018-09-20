@@ -43,44 +43,7 @@ class AuthHook {
         ];
     }
 
-    /**
-     * 测试环境白名单
-     * 白名单内的不需要验证token
-     */
-    private function developmentAuth() {
-        return array(
-            'account/login/logintest',
-            'ping/index',
-            'company/company/test',
-            'mini/login/gettoken',
-            'mini/login/handleloginstatus',
-            'account/login/login',
-            'mini/contract/autosignnotify',
-            'bill/bill/test',
-            'demo/copy/run',
-            'demo/sheet/index',
-            'demo/test/test1',
-            'demo/test/testa',
-            'demo/test/getendtimerooms',
-            'demo/test/getendtimeresidentorder',
-            'mini/rerequire/getendtimerooms',
-            'bill/order/push',
-            'bill/order/notify',
-            'mini/contract/notify',
-            'mini/contract/autosign',
-            'mini/contract/archive',
-            'utility/utility/listutility1',
-
-            'company/company/sendcode',
-            'company/company/register',
-            'company/company/boundwechat',
-            
-            'events/auth',
-			'events/callback',
-			'events/test',
-
-        );
-    }
+   
 
     /**
      * 是否验证token
@@ -92,13 +55,9 @@ class AuthHook {
         $method    = $this->CI->router->fetch_method();
         $full_path = strtolower($directory . $class . '/' . $method);
         try {
-            if (ENVIRONMENT == 'production') {
-                $authArr = $this->productionAuth();
-            } else {
-                $authArr = $this->developmentAuth();
-            }
-            
-            
+           
+            $authArr = $this->productionAuth();
+          
             if(strtolower($directory) == 'innserservice/'){
                 //内部服务API认证
                 $this->apiAuth();
@@ -132,7 +91,10 @@ class AuthHook {
         $apihash = hash('sha256',"$tks[0].$tks[1].$model->apisecret");
         // var_dump($apihash);exit;
         if($tks[2] == $apihash){
-            define('X_API_TOKEN' , $xapitoken);
+            // if(!defined('X_API_TOKEN')){
+            //     define('X_API_TOKEN' , $xapitoken);
+            // }
+            $this->CI->x_api_token = $xapitoken;
         }else{
             throw new Exception('x-api-toekn 认证失败');
         }
@@ -148,20 +110,28 @@ class AuthHook {
         $decoded      = $this->CI->m_jwt->decodeJwtToken($token);
         $d_bxid       = $decoded->bxid;
         $d_company_id = $decoded->company_id;
-        define('CURRENT_ID', $d_bxid);
-        define('COMPANY_ID', $d_company_id);
+        // if(!defined('CURRENT_ID')){
+        //     define('CURRENT_ID', $d_bxid);
+        // }
+        // if(!defined('COMPANY_ID')){
+        //     define('COMPANY_ID', $d_company_id);
+        // }
+        $this->CI->current_id = $d_bxid;
+        $this->CI->company_id = $d_company_id;
+
+
         //SaaS权限验证
         $this->saas();
 
-        log_message('debug','C_ID'.COMPANY_ID);
-        $pre = substr(CURRENT_ID, 0, 2);
+        log_message('debug','C_ID'.get_instance()->company_id);
+        $pre = substr(get_instance()->current_id, 0, 2);
         if ($pre == SUPERPRE) {
             //super 拥有所有的权限
             $this->CI->position = 'SUPER';
         } else {
             $this->CI->position = 'EMPLOYEE';
             $this->CI->load->model('employeemodel');
-            $this->CI->employee = Employeemodel::where('bxid', CURRENT_ID)->first();
+            $this->CI->employee = Employeemodel::where('bxid', get_instance()->current_id)->first();
         }
         //操作记录测试
         if (!$this->operationRecord($full_path)) {
@@ -175,7 +145,7 @@ class AuthHook {
      //SaaS权限验证
     private function saas(){
        
-        $company_id = COMPANY_ID;
+        $company_id = get_instance()->company_id;
 
         if(!empty($company_id)){
             // if(!$this->CI->load->is_loaded('companymodel')){
@@ -205,7 +175,7 @@ class AuthHook {
     public function privilegeMatch($full_path) {
         $this->CI->load->model('employeemodel');
         $this->CI->load->model('positionmodel');
-        $employee = Employeemodel::with('position')->where('bxid', CURRENT_ID)->first(['id', 'position_id']);
+        $employee = Employeemodel::with('position')->where('bxid', get_instance()->current_id)->first(['id', 'position_id']);
         if (!$employee || !$employee->position) {
             header("Content-Type:application/json;charset=UTF-8");
             echo json_encode(array('rescode' => 1009, 'resmsg' => '操作数据库出错', 'data' => []));
@@ -224,13 +194,13 @@ class AuthHook {
         $this->CI->load->model('employeemodel');
         $this->CI->load->model('operationrecordmodel');
         $operation = new Operationrecordmodel();
-        $employee  = Employeemodel::where('bxid', CURRENT_ID)->first();
+        $employee  = Employeemodel::where('bxid', get_instance()->current_id)->first();
         if (!$employee) {
             return false;
         }
 
-        $operation->bxid        = CURRENT_ID;
-        $operation->company_id  = COMPANY_ID;
+        $operation->bxid        = get_instance()->current_id;
+        $operation->company_id  = get_instance()->company_id;
         $operation->employee_id = $employee->id;
         $operation->name        = $employee->name;
         $operation->url         = $full_path;
