@@ -245,10 +245,10 @@ class Store extends MY_Controller
             $insert->images = $images;
             $insert->save();
             $this->load->model('employeemodel');
-            $employee = Employeemodel::where('id', get_instance()->current_id)->get(['store_ids'])->first();
+            $employee = Employeemodel::where('id', $this->current_id)->get(['store_ids'])->first();
             $store_ids = $employee->store_ids;
             $store_ids = empty($store_ids) ? $insert->id : $store_ids . ',' . $insert->id;
-            Employeemodel::where('id', get_instance()->current_id)->update(['store_ids'=>$store_ids]);
+            Employeemodel::where('id', $this->current_id)->update(['store_ids'=>$store_ids]);
             DB::commit();
             $this->api_res(0, ['store_id' => $insert->id]);
         } catch (Exception $e) {
@@ -291,10 +291,10 @@ class Store extends MY_Controller
             $insert->images = $images;
             $insert->save();
             $this->load->model('employeemodel');
-            $employee = Employeemodel::where('id', get_instance()->current_id)->get(['store_ids'])->first();
+            $employee = Employeemodel::where('id', $this->current_id)->get(['store_ids'])->first();
             $store_ids = $employee->store_ids;
             $store_ids = empty($store_ids) ? $insert->id : $store_ids . ',' . $insert->id;
-            Employeemodel::where('id', get_instance()->current_id)->update(['store_ids'=>$store_ids]);
+            Employeemodel::where('id', $this->current_id)->update(['store_ids'=>$store_ids]);
             DB::commit();
             $this->api_res(0, ['store_id' => $insert->id]);
         } catch (Exception $e) {

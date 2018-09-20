@@ -215,7 +215,7 @@ class Activity extends MY_Controller
         $activity['name'] = $post['slogan'];
         $activity['description'] = $post['description'];
         $activity['limit'] = serialize($limit);
-        $activity['employee_id'] = get_instance()->current_id;
+        $activity['employee_id'] = $this->current_id;
         $activity['prize_id'] = $prize_id;
         $activity['share_img'] = $this->splitAliossUrl($post['images']);
         $activity['share_des'] = $post['share_des'];
@@ -273,7 +273,7 @@ class Activity extends MY_Controller
         $activity['end_time'] = $post['end_time'];
         $activity['description'] = $post['description'];
         $activity['limit'] = serialize($limit);
-        $activity['employee_id'] = get_instance()->current_id;
+        $activity['employee_id'] = $this->current_id;
         $activity['prize_id'] = $prize_id;
         $activity['share_img'] = $this->splitAliossUrl($post['images']);
         $activity['share_des'] = $post['share_des'];
@@ -337,7 +337,7 @@ class Activity extends MY_Controller
         $activity['coupon_info'] = $post['name'];
         $activity['start_time'] = $post['start_time'];
         $activity['end_time'] = $post['end_time'];
-        $activity['employee_id'] = get_instance()->current_id;
+        $activity['employee_id'] = $this->current_id;
         $activity['prize_id'] = $prize_id;
         $activity['activity_type'] = 'CHECKIN';
         $insertId = Activitymodel::insertGetId($activity);
@@ -392,7 +392,7 @@ class Activity extends MY_Controller
         $activity['description'] = $post['description'];
         $activity['start_time'] = $post['start_time'];
         $activity['end_time'] = $post['end_time'];
-        $activity['employee_id'] = get_instance()->current_id;
+        $activity['employee_id'] = $this->current_id;
         $activity['prize_id'] = $prize_id;
         $activity['activity_type'] = 'OLDBELTNEW';
         $insertId = Activitymodel::insertGetId($activity);

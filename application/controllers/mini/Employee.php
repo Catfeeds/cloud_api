@@ -23,7 +23,7 @@ class Employee extends MY_Controller {
             $query->select('id', 'name');
         }])->with(['store' => function ($query) {
             $query->select('id', 'name', 'rent_type');
-        }])->where('bxid', get_instance()->current_id)->get($field);
+        }])->where('bxid', $this->current_id)->get($field);
         $this->api_res(0, $category);
     }
 

@@ -88,7 +88,7 @@ class Server extends MY_Controller {
             return;
         }
         $store_id      = $this->employee->store_id;
-        $employee_id   = get_instance()->current_id;
+        $employee_id   = $this->current_id;
         $server_number = (new Serviceordermodel())->getOrderNumber();
         $order_number  = (new Ordermodel())->getOrderNumber();
         $this->load->model('residentmodel');
