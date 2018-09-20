@@ -178,7 +178,7 @@ class Pricecontrol extends MY_Controller
         }
 
         $data   = [
-            'company_id'=> get_instance()->company_id,
+            'company_id'=> $this->company_id,
             'store_id'  => $store_id,
             'room_id'   => $room->id,
             'type'      => $input['type'],
@@ -240,7 +240,7 @@ class Pricecontrol extends MY_Controller
                     'money'         => $input['new_price'],
                 ];
                 $msg    = json_encode($msg_data);
-                $taskflow_id    = $this->taskflowmodel->createTaskflow(get_instance()->company_id,Taskflowmodel::TYPE_PRICE,$store_id,$input['room_id'],Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id,null,null,$msg);
+                $taskflow_id    = $this->taskflowmodel->createTaskflow($this->company_id,Taskflowmodel::TYPE_PRICE,$store_id,$input['room_id'],Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id,null,null,$msg);
                 if ($taskflow_id) {
                     $data['taskflow_id']    = $taskflow_id;
                     $data['status']         = Pricecontrolmodel::STATE_AUDIT;

@@ -91,7 +91,7 @@ class Taskflow extends MY_Controller{
             where('status','!=',Taskflowstepmodel::STATE_APPROVED)
             ->whereIn('store_id',$e_store_ids)
             ->groupBy('taskflow_id')
-            ->having('company_id',get_instance()->company_id)
+            ->having('company_id',$this->company_id)
             ->get()
             ->map(function($res) use ($e_position_id){
                 $s_position_ids = explode(',',$res->position_ids);
@@ -386,7 +386,7 @@ class Taskflow extends MY_Controller{
             ->whereIn('store_id',$e_store_ids)
             ->where($where)
             ->groupBy('taskflow_id')
-            ->having('company_id',get_instance()->company_id)
+            ->having('company_id',$this->company_id)
             ->get()
             ->map(function($res) use ($e_position_id){
                 $s_position_ids = explode(',',$res->position_ids);
