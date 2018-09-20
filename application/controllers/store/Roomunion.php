@@ -1,6 +1,8 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 use Illuminate\Database\Capsule\Manager as DB;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
 /**
  * Author:      zjh<401967974@qq.com>
@@ -349,6 +351,84 @@ class Roomunion extends MY_Controller {
         } else {
             $this->api_res(1009);
         }
+    }
+    /*
+        * 获取集中式房源导入模版
+        * */
+    public function getUnionTemplate(){
+        $data = Array();
+        $objPHPExcel = new Spreadsheet();
+        $sheet       = $objPHPExcel->getActiveSheet();
+        $i           = 1;
+        $objPHPExcel->getActiveSheet()->setCellValue('A' . $i, '门店名称');
+        $objPHPExcel->getActiveSheet()->setCellValue('B' . $i, '房型');
+        $objPHPExcel->getActiveSheet()->setCellValue('C' . $i, '房间号');
+        $objPHPExcel->getActiveSheet()->setCellValue('D' . $i, '租金');
+        $objPHPExcel->getActiveSheet()->setCellValue('E' . $i, '物业费');
+        $objPHPExcel->getActiveSheet()->setCellValue('F' . $i, '热水单价');
+        $objPHPExcel->getActiveSheet()->setCellValue('G' . $i, '冷水单价');
+        $objPHPExcel->getActiveSheet()->setCellValue('H' . $i, '用电单价');
+        $objPHPExcel->getActiveSheet()->setCellValue('I' . $i, '面积');
+        $objPHPExcel->getActiveSheet()->setCellValue('J' . $i, '所在层');
+        $sheet->fromArray($data, null, 'A2');
+        $writer = new Xlsx($objPHPExcel);
+        header("Pragma: public");
+        header("Expires: 0");
+        header("Cache-Control:must-revalidate, post-check=0, pre-check=0");
+        header("Content-Type:application/force-download");
+        header("Content-Type:application/vnd.ms-excel");
+        header("Content-Type:application/octet-stream");
+        header("Content-Type:application/download");
+        header("Content-Disposition:attachment;filename='集中式房间模版.xlsx'");
+        header("Content-Transfer-Encoding:binary");
+        $writer->save('php://output');
+
+    }
+
+    /*
+     * 批量导入房间数据
+     * */
+    public function importRoomUnion(){
+        $this->load->model('storemodel');
+        $this->load->model('roomunionmodel');
+        $this->load->model('roomtypemodel');
+        $this->load->model('buildingmodel');
+        $store_id = $this->input->post('store_id', true);
+        if(!$store_id){
+            $this->api_res(1002);
+            return false;
+        }
+        $sheetArray = $this->uploadOssSheet();
+        $roomunion = new Roomunionmodel();
+        $data    = $roomunion->checkAndGetInputData($sheetArray, $store_id);
+        if(!empty($data)){
+            $this->api_res(10052,['error'=>$data]);
+            return;
+        }
+        $res        = $roomunion->writeReading($sheetArray, $store_id);
+        if (!empty($res)){
+            $this->api_res(10051,['error'=>$res]);
+        }else{
+            $this->api_res(0);
+        }
+    }
+
+    /**
+     * 转换表读数为数组
+     * @return array
+     */
+    private function uploadOssSheet() {
+        $url       = $this->input->post('url');
+        $f_open    = fopen($url, 'r');
+        $file_name = APPPATH . 'cache/test.xlsx';
+        file_put_contents($file_name, $f_open);
+        $inputFileType = \PhpOffice\PhpSpreadsheet\IOFactory::identify($file_name);
+        $reader        = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($inputFileType);
+        $reader->setReadDataOnly(true);
+        $excel = $reader->load($file_name);
+        $sheet = $excel->getActiveSheet()->toArray();
+        array_shift($sheet);
+        return $sheet;
     }
 
     /**

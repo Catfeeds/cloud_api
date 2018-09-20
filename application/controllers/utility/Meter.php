@@ -111,18 +111,15 @@ class Meter extends MY_Controller
                 continue;
             }
             //检查抄表时间
-            if(!isset($item[5])){
-                log_message('debug','房间：' . $item[1] . '时间未上传');
-                $error[]    = '房间：' . $item[1] . '时间未上传';
-                continue;
-            }elseif (!is_numeric($item[5]))
-            {
-                log_message('debug','房间：' . $item[1] . '时间格式错误');
-                $error[] = '房间：' . $item[1] . '时间格式错误正确格式为\'2018/12/12\'';
-                continue;
+            if(isset($item[5])){
+                $time   = date('Y-m-d H:i:s',strtotime($item[5]));
+                if(!$time||strtotime($item[5])==0){
+                    $error[] = '房间：' . $item[1] . '时间格式错误正确格式为\'2018-12-12\'';
+                    continue;
+                }
             }else{
-                $sheet  = new Date();
-                $time   =date('Y-m-d', $sheet->excelToTimestamp(intval($item[5])));
+                $error[]    = '房间：' . $item[1] . '时间未上传';
+                $time       = '';
             }
             $data[] = ['this_reading' => $read, 'number' => $number, 'weight' => $weight,'this_time' =>$time];
         }

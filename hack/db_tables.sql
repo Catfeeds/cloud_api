@@ -1378,7 +1378,7 @@ CREATE TABLE `boss_smart_device` (
   `room_id` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '房间id',
   `type` enum('LOCK','HOT_WATER_METER','COLD_WATER_METER','ELECTRIC_METER') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'LOCK' COMMENT '设备类型:门锁, 热水表, 冷水表, 电表',
   `serial_number` char(64) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT '设备编号',
-  `supplier` enum('CJOY','DANBAY','YEEUU') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'CJOY' COMMENT '设备供应商, 超仪, 蛋贝, 云柚',
+  `supplier` enum('CJOY','DANBAY','YEEUU','FUNXDATA') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'CJOY' COMMENT '设备供应商, 超仪, 蛋贝, 云柚',
   `created_at` datetime NOT NULL DEFAULT '2017-01-01 00:00:00' COMMENT '创建时间',
   `updated_at` datetime NOT NULL DEFAULT '2017-01-01 00:00:00' COMMENT '更新时间',
   `deleted_at` datetime DEFAULT NULL,

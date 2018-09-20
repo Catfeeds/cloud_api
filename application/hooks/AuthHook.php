@@ -16,12 +16,13 @@ class AuthHook {
         $this->CI = &get_instance(); //获取CI对象
     }
 
+    
+
     /**
-     * 生产环境的白名单
-     * 白名单内的不需要验证token
+     * 是否验证token
      */
-    private function productionAuth() {
-        return [
+    public function isAuth() {
+        $authArr = [
             'mini/login/gettoken',
             'mini/login/handleloginstatus',
             'account/login/login',
@@ -41,29 +42,19 @@ class AuthHook {
 
             'events/auth',
         ];
-    }
 
-   
-
-    /**
-     * 是否验证token
-     */
-    public function isAuth() {
-        
         $directory = $this->CI->router->fetch_directory();
         $class     = $this->CI->router->fetch_class();
         $method    = $this->CI->router->fetch_method();
         $full_path = strtolower($directory . $class . '/' . $method);
         try {
            
-            $authArr = $this->productionAuth();
-          
             if(strtolower($directory) == 'innserservice/'){
                 //内部服务API认证
                 $this->apiAuth();
             }else if (!in_array($full_path, $authArr)) {
                 //web端jwt认证
-                $this->auth($full_path);
+                $this->webAuth($full_path);
             }
         }catch (Exception $e) {
             log_message('error',$e->getMessage());
@@ -104,7 +95,7 @@ class AuthHook {
      * @param $full_path
      * 验证token的方法
      */
-    public function auth($full_path) {
+    public function webAuth($full_path) {
         $token        = $this->CI->input->get_request_header('token');
         log_message('debug','TOKEN-'.$token);
         $decoded      = $this->CI->m_jwt->decodeJwtToken($token);
