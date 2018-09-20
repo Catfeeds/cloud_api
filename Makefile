@@ -35,13 +35,13 @@ run: image
 	 $(IMG_HUB)/$(SERVICE):latest
 
 redis:
-	-docker run -d \
+	-@docker run -d \
 	 --name ${SERVICE}-redis \
 	 -p 6379:6379 \
 	 ${REDIS_IMG}
 
 test-in-docker: redis
-	docker run --rm \
+	@docker run --rm \
 	 --name $(SERVICE)-testing \
 	 -v $(PWD):/var/www/html/ \
 	 -w /var/www/html/ \
