@@ -91,15 +91,16 @@ class Meterreadingtransfermodel extends Basemodel
 	/**
 	 * 检测上传读数的正确性，并返回错误信息
 	 */
-	public function checkAndGetInputData($sheetArray)
+	public function checkInputData($sheetArray)
 	{
 		$data  = [];
 		$error = [];
+		$this_time = date('Y-m-d',time());
 		foreach ($sheetArray as $key => $item) {
 			//房间号
-			$number = $item[1];
+			$id = $item[0];
 			//检查表读数
-			$read = trim($item[2]);
+			$read = trim($item[3]);
 			if (!is_numeric($read) || 0 > $read || 1e8 < $read) {
 				$error[] = '请检查房间：' . $item[1] . '的表读数';
 				log_message('debug', '请检查房间：' . $item[1] . '的表读数');
@@ -114,20 +115,7 @@ class Meterreadingtransfermodel extends Basemodel
 				$error[] = '请检查房间：' . $item[1] . '的均摊比例';
 				continue;
 			}
-			//检查抄表时间
-			if (!isset($item[5])) {
-				log_message('debug', '房间：' . $item[1] . '时间未上传');
-				$error[] = '房间：' . $item[1] . '时间未上传';
-				continue;
-			} elseif (!is_numeric($item[5])) {
-				log_message('debug', '房间：' . $item[1] . '时间格式错误');
-				$error[] = '房间：' . $item[1] . '时间格式错误正确格式为\'2018/12/12\'';
-				continue;
-			} else {
-				$sheet = new Date();
-				$time  = date('Y-m-d', $sheet->excelToTimestamp(intval($item[5])));
-			}
-			$data[] = ['this_reading' => $read, 'number' => $number, 'weight' => $weight, 'this_time' => $time];
+			$data[] = ['id' => $id, 'this_reading' => $read, 'weight' => $weight, 'this_time' => $this_time];
 		}
 		if (empty($error)) {
 			return $data;
@@ -201,7 +189,7 @@ class Meterreadingtransfermodel extends Basemodel
 			->get()
 			->map(function ($s) {
 				$s->year  = date('Y', strtotime('+1 month'));
-				$s->month = date('m', strtotime('+2 month'));
+				$s->month = date('m', strtotime('+1 month'));
 				return $s;
 			})
 			->toArray();

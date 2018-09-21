@@ -118,5 +118,6 @@ class Uploadreading extends MY_Controller
 		$this->load->model('roomunionmodel');
 		$transfer = new Meterreadingtransfermodel();
 		$res = $transfer->fillReading();
+		$this->api_res(0);
 	}
 }

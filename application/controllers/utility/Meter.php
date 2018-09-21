@@ -32,8 +32,6 @@ class Meter extends MY_Controller
 		$this->load->model('smartdevicemodel');
 		$type       = $this->input->post('type');
 		$store_id   = $this->input->post('store_id');
-		$month      = $this->input->post('month');
-		$year       = $this->input->post('year');
 		$type       = $this->checkAndGetReadingType($type);                 //检查表计类型
 		$sheetArray = $this->uploadOssSheet();                              //转换excel读数为数组
 		$transfer   = new Meterreadingtransfermodel();
@@ -43,7 +41,7 @@ class Meter extends MY_Controller
 			return;
 		}
 		//存储导入数据
-		$res = $transfer->writeReading($data, $store_id, $type, $year, $month);
+		$res = $transfer->writeReading($data, $store_id, $type);
 		if (!empty($res)) {
 			$this->api_res(10051, ['error' => $res]);
 		} else {
@@ -86,149 +84,6 @@ class Meter extends MY_Controller
 		$sheet = $excel->getActiveSheet()->toArray();
 		array_shift($sheet);
 		return $sheet;
-	}
-	
-	/**
-	 * 检测上传读数的正确性，并返回错误信息
-	 */
-	private function checkAndGetInputData($sheetArray)
-	{
-		$data  = [];
-		$error = [];
-		foreach ($sheetArray as $key => $item) {
-			if (0 == $key || !$item[0] || !$item[1]) {
-				continue;
-			}
-			//房间号
-			$number = $item[1];
-			//检查表读数
-			$read = trim($item[2]);
-			if (!is_numeric($read) || 0 > $read || 1e8 < $read) {
-				$error[] = '请检查房间：' . $item[1] . '的表读数';
-				log_message('debug', '请检查房间：' . $item[1] . '的表读数');
-				continue;
-			}
-			//检查权重
-			$weight = isset($item[4]) ? (int)$item[4] : 100;
-			if (!$weight) {
-				$weight = 100;
-			} elseif (100 < $weight || 0 > $weight) {
-				log_message('debug', '请检查房间：' . $item[1] . '的均摊比例');
-				$error[] = '请检查房间：' . $item[1] . '的均摊比例';
-				continue;
-			}
-			//检查抄表时间
-			if (isset($item[5])) {
-				$time = date('Y-m-d H:i:s', strtotime($item[5]));
-				if (!$time || strtotime($item[5]) == 0) {
-					$error[] = '房间：' . $item[1] . '时间格式错误正确格式为\'2018-12-12\'';
-					continue;
-				}
-			} else {
-				$error[] = '房间：' . $item[1] . '时间未上传';
-				$time    = '';
-			}
-			$data[] = ['this_reading' => $read, 'number' => $number, 'weight' => $weight, 'this_time' => $time];
-		}
-		if (empty($error)) {
-			return $data;
-		} else {
-			$data = ['error' => $error];
-			return $data;
-		}
-	}
-	
-	/**
-	 * 处理上传的记录
-	 */
-	private function writeReading($data = [], $store_id, $type, $year, $month)
-	{
-		
-		$error = [];
-		//获取所有房间号(number)
-		$number = [];
-		foreach ($data as $key => $value) {
-			$number[] = $data[$key]['number'];
-		}
-		//根据房间号获取住户id(resident_id)，房间id(room_id)
-		$arr = Roomunionmodel::where('store_id', $store_id)->whereIn('number', $number)->orderBy('number')
-			->get(['id', 'number', 'resident_id', 'building_id'])->groupBy('number')->toArray();
-		//重组插入数据库所需数组
-		foreach ($data as $key => $value) {
-			$transfer                  = new Meterreadingtransfermodel();
-			$data[$key]['resident_id'] = $arr[$value['number']][0]['resident_id'];
-			$data[$key]['room_id']     = $arr[$value['number']][0]['id'];
-			$data[$key]['building_id'] = $arr[$value['number']][0]['building_id'];
-			$data[$key]['month']       = $month;
-			$data[$key]['year']        = $year;
-			$data[$key]['type']        = $type;
-			$data[$key]['store_id']    = $store_id;
-			$number                    = $value['number'];
-			$data[$key]                = array_except($data[$key], ['number', 'error']);
-			$transfer->fill($data[$key]);
-			try {
-				$transfer->save();
-			} catch (Exception $e) {
-				log_message("debug", '房间' . $number . '读数导入失败');
-				$error[] = '房间' . $number . '读数导入失败';
-			}
-		}
-		return $error;
-	}
-	
-	/*******************************************************************************************/
-	/***************************************智能表逻辑*******************************************/
-	/******************************************************************************************/
-	/**
-	 * 导入智能表读数
-	 */
-	public function smartDeviceUpdate()
-	{
-		$this->load->model('meterreadingmodel');
-		$this->load->model('smartdevicemodel');
-		$this->load->model('storemodel');
-		$this->load->model('roomunionmodel');
-		
-		$year    = $this->checkAndGetYear($this->input->post('year'), false);
-		$month   = $this->checkAndGetMonth($this->input->post('month'), false);
-		$day     = 28;
-		$time    = $year . '-' . $month . '-' . $day . '%';
-		$res_all = Meterreadingmodel::where('created_at', 'like', $time)->get()
-			->toArray();
-		if ($month == 12) {
-			$year  = $year + 1;
-			$month = 1;
-		} else {
-			$month = $month + 1;
-		}
-		$this->dealData($res_all, $year, $month);
-		$this->api_res(0);
-	}
-	
-	public function dealData($data, $year, $month)
-	{
-		$room_ids = [];
-		foreach ($data as $key => $value) {
-			$room_ids[] = $data[$key]['room_id'];
-		}
-		$arr = Roomunionmodel::whereIn('id', $room_ids)->orderBy('id')
-			->get(['id', 'resident_id', 'store_id', 'building_id'])->groupBy('id')->toArray();
-		foreach ($data as $key => $value) {
-			$data[$key]['store_id']      = $arr[$data[$key]['room_id']][0]['store_id'];
-			$data[$key]['resident_id']   = $arr[$data[$key]['room_id']][0]['resident_id'];
-			$room_id                     = $data[$key]['room_id'];
-			$type                        = $data[$key]['type'];
-			$sql                         = "select `serial_number` from boss_smart_device WHERE `room_id` = " . "$room_id" . " AND `type` =" . "'" . $type . "'";
-			$data[$key]['serial_number'] = (DB::select($sql))[0]->serial_number;
-			$data[$key]['building_id']   = $arr[$data[$key]['room_id']][0]['building_id'];
-			$data[$key]['month']         = $month;
-			$data[$key]['year']          = $year;
-			$data[$key]['this_time']     = $data[$key]['created_at'];
-			$data[$key]['this_reading']  = $data[$key]['reading'];
-			$data[$key]                  = array_except($data[$key], ['reading', 'created_at', 'updated_at', 'deleted_at', 'id']);
-		}
-		Meterreadingtransfermodel::insert($data);
-		return true;
 	}
 	
 	/*******************************************************************************************/
@@ -372,7 +227,7 @@ class Meter extends MY_Controller
 				break;
 		}
 		
-		if (!isset($last_reading->this_reading)){
+		if(!isset($last_reading->this_reading)){
 			return null;
 		}
 		
@@ -475,11 +330,6 @@ class Meter extends MY_Controller
 		$where['boss_meter_reading_transfer.status']       = 'NORMAL';
 		$transfer                                          = new Meterreadingtransfermodel();
 		$res                                               = $transfer->readingDetails($where);
-		$time                                              = Meterreadingtransfermodel::where($where)->first(['year', 'month']);
-		$store_name                                        = Storemodel::where('id', $post['store_id'])->first(['name'])->name;
-		$year                                              = $time->year;
-		$month                                             = $time->month;
-//		var_dump($res);
 		$objPHPExcel = new Spreadsheet();
 		$sheet       = $objPHPExcel->getActiveSheet();
 		$i           = 1;
@@ -490,15 +340,14 @@ class Meter extends MY_Controller
 		$objPHPExcel->getActiveSheet()->setCellValue('E' . $i, '权重');
 		$sheet->fromArray($res, null, 'A2');
 		$writer = new Xlsx($objPHPExcel);
-		header("Pragma: public");
-		header("Expires: 0");
-		header("Cache-Control:must-revalidate, post-check=0, pre-check=0");
-		header("Content-Type:application/force-download");
-		header("Content-Type:application/vnd.ms-excel");
-		header("Content-Type:application/octet-stream");
-		header("Content-Type:application/download");
-		header("Content-Disposition:attachment;filename=$store_name" . $year . '年' . $month . '月' . ".'.xlsx'");
-		header("Content-Transfer-Encoding:binary");
+		@header("Pragma: public");
+		@header("Expires: 0");
+		@header("Cache-Control:must-revalidate, post-check=0, pre-check=0");
+		@header("Content-Type:application/force-download");
+		@header("Content-Type:application/vnd.ms-excel");
+		@header("Content-Type:application/octet-stream");
+		@header("Content-Type:application/download");
+		@header("Content-Transfer-Encoding:binary");
 		$writer->save('php://output');
 	}
 }

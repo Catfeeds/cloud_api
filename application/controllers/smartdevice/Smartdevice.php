@@ -203,4 +203,17 @@ class Smartdevice extends MY_Controller
 		$this->form_validation->set_rules($config)->set_error_delimiters('', '');
 		return $this->form_validation->run();
 	}
+	
+	/**
+	 * 月末账单读数预生成
+	 */
+	public function fillReading()
+	{
+		$this->load->model('meterreadingtransfermodel');
+		$this->load->model('smartdevicemodel');
+		$this->load->model('roomunionmodel');
+		$transfer = new Meterreadingtransfermodel();
+		$res = $transfer->fillReading();
+		$this->api_res(0);
+	}
 }
