@@ -107,4 +107,16 @@ class Uploadreading extends MY_Controller
 			$this->api_res(0);
 		}
 	}
+	
+	/**
+	 * 月末账单读数预生成
+	 */
+	public function fillReading()
+	{
+		$this->load->model('meterreadingtransfermodel');
+		$this->load->model('smartdevicemodel');
+		$this->load->model('roomunionmodel');
+		$transfer = new Meterreadingtransfermodel();
+		$res = $transfer->fillReading();
+	}
 }

@@ -1,6 +1,8 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+
 use Carbon\Carbon;
+
 /**
  * Author:      zjh<401967974@qq.com>
  * Date:        2018/4/20 0020
@@ -8,125 +10,146 @@ use Carbon\Carbon;
  * Describe:    BOSS
  * 房间信息表(集中式)
  */
-class Roomunionmodel extends Basemodel {
-
-    const HALF = 'HALF'; //合租
-    const FULL = 'FULL'; //整租
-    /**
-     * 房间的状态
-     */
-    const STATE_BLANK    = 'BLANK'; // 空
-    const STATE_RESERVE  = 'RESERVE'; // 预订
-    const STATE_RENT     = 'RENT'; // 出租
-    const STATE_ARREARS  = 'ARREARS'; // 欠费
-    const STATE_REFUND   = 'REFUND'; // 退房
-    const STATE_OTHER    = 'OTHER'; // 其他 保留
-    const STATE_OCCUPIED = 'OCCUPIED'; // 房间被占用的状态, 可能是预约, 或者是办理入住后订单未确认之间的状态
-    /*
-     * UNION 集中式；DOT 分布式
-     * */
-    const TYPE_UNION = 'UNION';
-    const TYPE_DOT   = 'DOT';
-
-    protected $table = 'boss_room_union';
-
-    protected $fillable = [
-        'area',
-        'layer',
-        'number',
-        'status',
-        'end_time',
-        'device_id',
-        'begin_time',
-        'rent_price',
-        'resident_id',
-        'people_count',
-        'apartment_id',
-        'room_type_id',
-        'property_price',
-        'contract_template_short_id',
-        'contract_template_long_id',
-        'contract_template_reserve_id',
-    ];
-
-    protected $hidden = ['created_at', 'updated_at', 'deleted_at'];
-
-    //房型展示
-    public function room_type() {
-
-        return $this->belongsTo(Roomtypemodel::class, 'room_type_id')
-            ->select('id', 'name', 'room_number', 'hall_number', 'toilet_number');
-    }
-
-    //房型展示
-    public function roomtype() {
-
-        return $this->belongsTo(Roomtypemodel::class, 'room_type_id');
-    }
-
-    //房间住户信息
-    public function resident() {
-
-        return $this->belongsTo(Residentmodel::class, 'resident_id');
-    }
-
-    public function residents() {
-
-        return $this->belongsTo(Residentmodel::class, 'resident_id')->select('id');
-    }
-    //房间所属门店信息
-    public function store() {
-
-        return $this->belongsTo(Storemodel::class, 'store_id');
-    }
-    public function store_s() {
-
-        return $this->belongsTo(Storemodel::class, 'store_id')->select('id', 'name');
-    }
-
-    public function community()
-    {
-        return $this->belongsTo(Communitymodel::class,'community_id');
-    }
-    //房间所属楼栋信息
-    public function building() {
-
-        return $this->belongsTo(Buildingmodel::class, 'building_id');
-    }
-    public function building_s() {
-
-        return $this->belongsTo(Buildingmodel::class, 'building_id')->select('id', 'name');
-    }
-
-    //房间的长租合同模板
-    public function long_template() {
-        return $this->belongsTo(Contracttemplatemodel::class, 'contract_template_long_id')
-            ->where('rent_type', 'LONG')->select(['id', 'name']);
-    }
-    //房间的短租合同模板
-    public function short_template() {
-        return $this->belongsTo(Contracttemplatemodel::class, 'contract_template_short_id')
-            ->where('rent_type', 'SHORT')->select(['id', 'name']);
-    }
-    //房间的预定合同模板
-    public function reserve_template() {
-        return $this->belongsTo(Contracttemplatemodel::class, 'contract_template_reserve_id')
-            ->where('rent_type', 'RESERVE')->select(['id', 'name']);
-    }
-
-    /**
-     * 表计临时读数
-     */
-    public function meterreadingtransfer() {
-        return $this->hasMany(Meterreadingtransfermodel::class, 'room_id');
-    }
-
-    public function orders() {
-        return $this->hasMany(Ordermodel::class, 'room_id');
-    }
-
-    public function order() {
-        return $this->hasMany(Ordermodel::class, 'room_id')
+class Roomunionmodel extends Basemodel
+{
+	
+	const HALF = 'HALF'; //合租
+	const FULL = 'FULL'; //整租
+	/**
+	 * 房间的状态
+	 */
+	const STATE_BLANK = 'BLANK'; // 空
+	const STATE_RESERVE = 'RESERVE'; // 预订
+	const STATE_RENT = 'RENT'; // 出租
+	const STATE_ARREARS = 'ARREARS'; // 欠费
+	const STATE_REFUND = 'REFUND'; // 退房
+	const STATE_OTHER = 'OTHER'; // 其他 保留
+	const STATE_OCCUPIED = 'OCCUPIED'; // 房间被占用的状态, 可能是预约, 或者是办理入住后订单未确认之间的状态
+	/*
+	 * UNION 集中式；DOT 分布式
+	 * */
+	const TYPE_UNION = 'UNION';
+	const TYPE_DOT = 'DOT';
+	
+	protected $table = 'boss_room_union';
+	
+	protected $fillable = [
+		'area',
+		'layer',
+		'number',
+		'status',
+		'end_time',
+		'device_id',
+		'begin_time',
+		'rent_price',
+		'resident_id',
+		'people_count',
+		'apartment_id',
+		'room_type_id',
+		'property_price',
+		'contract_template_short_id',
+		'contract_template_long_id',
+		'contract_template_reserve_id',
+	];
+	
+	protected $hidden = ['created_at', 'updated_at', 'deleted_at'];
+	
+	//房型展示
+	public function room_type()
+	{
+		
+		return $this->belongsTo(Roomtypemodel::class, 'room_type_id')
+			->select('id', 'name', 'room_number', 'hall_number', 'toilet_number');
+	}
+	
+	//房型展示
+	public function roomtype()
+	{
+		
+		return $this->belongsTo(Roomtypemodel::class, 'room_type_id');
+	}
+	
+	//房间住户信息
+	public function resident()
+	{
+		
+		return $this->belongsTo(Residentmodel::class, 'resident_id');
+	}
+	
+	public function residents()
+	{
+		
+		return $this->belongsTo(Residentmodel::class, 'resident_id')->select('id');
+	}
+	
+	//房间所属门店信息
+	public function store()
+	{
+		
+		return $this->belongsTo(Storemodel::class, 'store_id');
+	}
+	
+	public function store_s()
+	{
+		
+		return $this->belongsTo(Storemodel::class, 'store_id')->select('id', 'name');
+	}
+	
+	public function community()
+	{
+		return $this->belongsTo(Communitymodel::class, 'community_id');
+	}
+	
+	//房间所属楼栋信息
+	public function building()
+	{
+		
+		return $this->belongsTo(Buildingmodel::class, 'building_id');
+	}
+	
+	public function building_s()
+	{
+		
+		return $this->belongsTo(Buildingmodel::class, 'building_id')->select('id', 'name');
+	}
+	
+	//房间的长租合同模板
+	public function long_template()
+	{
+		return $this->belongsTo(Contracttemplatemodel::class, 'contract_template_long_id')
+			->where('rent_type', 'LONG')->select(['id', 'name']);
+	}
+	
+	//房间的短租合同模板
+	public function short_template()
+	{
+		return $this->belongsTo(Contracttemplatemodel::class, 'contract_template_short_id')
+			->where('rent_type', 'SHORT')->select(['id', 'name']);
+	}
+	
+	//房间的预定合同模板
+	public function reserve_template()
+	{
+		return $this->belongsTo(Contracttemplatemodel::class, 'contract_template_reserve_id')
+			->where('rent_type', 'RESERVE')->select(['id', 'name']);
+	}
+	
+	/**
+	 * 表计临时读数
+	 */
+	public function meterreadingtransfer()
+	{
+		return $this->hasMany(Meterreadingtransfermodel::class, 'room_id');
+	}
+	
+	public function orders()
+	{
+		return $this->hasMany(Ordermodel::class, 'room_id');
+	}
+	
+	public function order()
+	{
+		return $this->hasMany(Ordermodel::class, 'room_id')
 //            ->where('type','ROOM')
 			->whereIn('status', ['GENERATE', 'AUDITED', 'PENDING'])
 			->select('id', 'room_id', 'resident_id', 'type', 'status');
@@ -231,7 +254,7 @@ class Roomunionmodel extends Basemodel {
 		$filed = [
 			'boss_room_union.id as room_id', 'boss_room_union.number as room_number', 'boss_room_union.layer',
 			'boss_room_union.rent_price as room_price', 'boss_room_union.status',
-			'boss_resident.name as name', 'boss_order.status as order_status',
+			'boss_resident.name as name', 'boss_resident.id as resident_id', 'boss_order.status as order_status',
 			'boss_room_type.room_number as count_room', 'boss_room_type.toilet_number as count_toilet',
 		];
 		$rooms = Roomunionmodel::leftJoin('boss_room_type', 'boss_room_type.id', '=', 'boss_room_union.room_type_id')
@@ -251,7 +274,7 @@ class Roomunionmodel extends Basemodel {
 				if ($room->status == Roomunionmodel::STATE_RENT && $room->order_status == 'PENDING') {
 					$room->status = Roomunionmodel::STATE_ARREARS;
 				}
-				$room->room_type = $room->count_room.'室'.$room->count_toilet.'厅';
+				$room->room_type = $room->count_room . '室' . $room->count_toilet . '厅';
 				return $room;
 			})
 			->groupBy('layer');
@@ -273,10 +296,10 @@ class Roomunionmodel extends Basemodel {
 		}
 		$filed = [
 			'boss_room_union.id as room_id', 'boss_room_union.number as room_number',
-			'boss_room_union.house_id as house_id','boss_room_union.status',
+			'boss_room_union.house_id as house_id', 'boss_room_union.status',
 			'boss_room_union.rent_price as room_price',
-			'boss_resident.name as name', 'boss_order.status as order_status',
-			'boss_community.name as c_name','boss_house.building_name','boss_house.unit',
+			'boss_resident.name as name', 'boss_resident.id as resident_id', 'boss_order.status as order_status',
+			'boss_community.name as c_name', 'boss_house.building_name', 'boss_house.unit',
 			'boss_house.number as house_number', 'boss_room_union.feature',
 		];
 		$rooms = Roomunionmodel::leftJoin('boss_community', 'boss_community.id', '=', 'boss_room_union.community_id')
@@ -298,7 +321,7 @@ class Roomunionmodel extends Basemodel {
 					$room->status = Roomunionmodel::STATE_ARREARS;
 				}
 				$room->room_type = $this->feature($room->feature);
-				$room->address = $room->c_name.$room->building_name.'(栋)'.$room->unit.'(单元)'.$room->house_number;
+				$room->address   = $room->c_name . $room->building_name . '(栋)' . $room->unit . '(单元)' . $room->house_number;
 				return $room;
 			})
 			->groupBy('address');
@@ -313,7 +336,7 @@ class Roomunionmodel extends Basemodel {
 		$filed = [
 			'boss_room_union.id as room_id', 'boss_room_union.number as room_number', 'boss_room_union.layer',
 			'boss_room_union.rent_price as room_price', 'boss_room_union.status',
-			'boss_resident.name as name', 'boss_order.status as order_status',
+			'boss_resident.name as name', 'boss_resident.id as resident_id', 'boss_order.status as order_status',
 			'boss_room_type.room_number as count_room', 'boss_room_type.toilet_number as count_toilet',
 		];
 		$rooms = Roomunionmodel::leftJoin('boss_room_type', 'boss_room_type.id', '=', 'boss_room_union.room_type_id')
@@ -327,7 +350,7 @@ class Roomunionmodel extends Basemodel {
 			->orderBy('boss_room_union.number')
 			->where($where)
 			->where('boss_order.status', 'PENDING')
-			->where('boss_room_union.status','RENT')
+			->where('boss_room_union.status', 'RENT')
 			->where('boss_room_union.number', 'like', "%$number%")
 			->groupBy('boss_room_union.id')
 			->get()->map(function ($room) {
@@ -345,10 +368,10 @@ class Roomunionmodel extends Basemodel {
 	{
 		$filed = [
 			'boss_room_union.id as room_id', 'boss_room_union.number as room_number',
-			'boss_room_union.house_id as house_id','boss_room_union.status',
+			'boss_room_union.house_id as house_id', 'boss_room_union.status',
 			'boss_room_union.rent_price as room_price',
-			'boss_resident.name as name', 'boss_order.status as order_status',
-			'boss_community.name as c_name','boss_house.building_name','boss_house.unit',
+			'boss_resident.name as name', 'boss_resident.id as resident_id', 'boss_order.status as order_status',
+			'boss_community.name as c_name', 'boss_house.building_name', 'boss_house.unit',
 			'boss_house.number as house_number', 'boss_room_union.feature',
 		];
 		$rooms = Roomunionmodel::leftJoin('boss_community', 'boss_community.id', '=', 'boss_room_union.community_id')
@@ -363,13 +386,13 @@ class Roomunionmodel extends Basemodel {
 			->orderBy('boss_room_union.number')
 			->where($where)
 			->where('boss_order.status', 'PENDING')
-			->where('boss_room_union.status','RENT')
+			->where('boss_room_union.status', 'RENT')
 			->where('boss_room_union.number', 'like', "%$number%")
 			->groupBy('boss_room_union.id')
 			->get()->map(function ($room) {
-				$room->status = Roomunionmodel::STATE_ARREARS;
+				$room->status    = Roomunionmodel::STATE_ARREARS;
 				$room->room_type = $this->feature($room->feature);
-				$room->address = $room->c_name.$room->building_name.'(栋)'.$room->unit.'(单元)'.$room->house_number;
+				$room->address   = $room->c_name . $room->building_name . '(栋)' . $room->unit . '(单元)' . $room->house_number;
 				return $room;
 			})
 			->groupBy('address');
@@ -381,7 +404,7 @@ class Roomunionmodel extends Basemodel {
 	 */
 	public function feature($feature)
 	{
-		switch ($feature){
+		switch ($feature) {
 			case 'M' :
 				return '主卧';
 				break;
@@ -491,86 +514,89 @@ class Roomunionmodel extends Basemodel {
 		
 		return true;
 	}
-    /*
-    * 检查上传数组
-    * */
-    public function checkAndGetInputData($sheetArray, $store_id){
-        $error      = [];
-        $store = Storemodel::where('id', $store_id)->select(['name'])->first();
-        foreach ($sheetArray as $key => $item) {
-            $count = count($item);
-            for( $i=0; $i<$count; $i++){
-                if(empty($item[$i])){
-                    $error = '上传数据不能为空';
-                    return $error;
-                }
-            }
-            //门店名称
-            $store_name = $item[0];
-            if ($store_name != $store->name) {
-                $error[] = '请检查门店名称:' . $store_name . ',与您选择的:' . $store->name . '不相符';
-                return $error;
-            }
-            //房型
-            $room_type = trim($item[1]);
-            $room = Roomtypemodel::where('store_id', $store_id)->where('name', $room_type)->select(['id'])->first();
-            if (!$room) {
-                $error[] = '请检查房型：' . $item[1] . ',查无此房型';
-                return $error;
-            }
-            //租金
-            $rent = trim($item[3]);
-            $hot_water = trim($item[4]);
-            $cold_water = trim($item[5]);
-            $property = trim($item[6]);
-            $electricity = trim($item[7]);
-            $layer = trim($item[9]);
-            if (!is_numeric($rent) || !is_numeric($hot_water) || !is_numeric($cold_water) || !is_numeric($property) || !is_numeric($layer) || !is_numeric($electricity)) {
-                $error[] = '请检查租金：' . $rent . '热水费：' . $hot_water . '冷水费：' . $cold_water . '电费：' . $electricity . '所在层：' . $layer .
-                    '物业费：'.$property. '必须为数字';
-                return $error;
-            }
-        }
-        return $error;
-    }
-
-    /*
-     * 导入数据
-     * */
-    public function writeReading($sheetArray, $store_id){
-        $data = [];
-        $error = [];
-        foreach ($sheetArray as $key => $value){
-            $arr = Roomunionmodel::where('store_id', $store_id)->where('number', $value[2])->count();
-            if(0 == $arr) {
-                $data[$key]['company_id'] = 1;
-                $data[$key]['store_id'] = $store_id;
-                $room = Roomtypemodel::where('store_id', $store_id)->where('name', $value[1])->select(['id'])->first();
-                $data[$key]['room_type_id'] = $room->id;
-                $data[$key]['layer'] = $value[9];
-                $data[$key]['number'] = $value[2];
-                $data[$key]['rent_price'] = $value[3];
-                $data[$key]['property_price'] = $value[4];
-                $data[$key]['status'] = Roomunionmodel::STATE_BLANK;
-                $data[$key]['created_at'] = Carbon::now();
-                $data[$key]['begin_time'] = Carbon::now();
-                $data[$key]['end_time'] = Carbon::now();
-                $data[$key]['area'] = $value[8];
-                $data[$key]['cold_water_price'] = $value[5];
-                $data[$key]['hot_water_price'] = $value[6];
-                $data[$key]['electricity_price'] = $value[7];
-                $data[$key]['type'] = Roomunionmodel::TYPE_UNION;
-                try {
-                    Roomunionmodel::insert($data[$key]);
-                } catch (Exception $e) {
-                    log_message('error', $e->getMessage());
-                    throw  $e;
-                }
-            }else{
-                $error[] = '房间号：'.$value[2].'出现重复';
-            }
-        }
-        return $error;
-    }
-
+	
+	/*
+	* 检查上传数组
+	* */
+	public function checkAndGetInputData($sheetArray, $store_id)
+	{
+		$error = [];
+		$store = Storemodel::where('id', $store_id)->select(['name'])->first();
+		foreach ($sheetArray as $key => $item) {
+			$count = count($item);
+			for ($i = 0; $i < $count; $i++) {
+				if (empty($item[$i])) {
+					$error = '上传数据不能为空';
+					return $error;
+				}
+			}
+			//门店名称
+			$store_name = $item[0];
+			if ($store_name != $store->name) {
+				$error[] = '请检查门店名称:' . $store_name . ',与您选择的:' . $store->name . '不相符';
+				return $error;
+			}
+			//房型
+			$room_type = trim($item[1]);
+			$room      = Roomtypemodel::where('store_id', $store_id)->where('name', $room_type)->select(['id'])->first();
+			if (!$room) {
+				$error[] = '请检查房型：' . $item[1] . ',查无此房型';
+				return $error;
+			}
+			//租金
+			$rent        = trim($item[3]);
+			$hot_water   = trim($item[4]);
+			$cold_water  = trim($item[5]);
+			$property    = trim($item[6]);
+			$electricity = trim($item[7]);
+			$layer       = trim($item[9]);
+			if (!is_numeric($rent) || !is_numeric($hot_water) || !is_numeric($cold_water) || !is_numeric($property) || !is_numeric($layer) || !is_numeric($electricity)) {
+				$error[] = '请检查租金：' . $rent . '热水费：' . $hot_water . '冷水费：' . $cold_water . '电费：' . $electricity . '所在层：' . $layer .
+					'物业费：' . $property . '必须为数字';
+				return $error;
+			}
+		}
+		return $error;
+	}
+	
+	/*
+	 * 导入数据
+	 * */
+	public function writeReading($sheetArray, $store_id)
+	{
+		$data  = [];
+		$error = [];
+		foreach ($sheetArray as $key => $value) {
+			$arr = Roomunionmodel::where('store_id', $store_id)->where('number', $value[2])->count();
+			if (0 == $arr) {
+				$data[$key]['company_id']        = 1;
+				$data[$key]['store_id']          = $store_id;
+				$room                            = Roomtypemodel::where('store_id', $store_id)->where('name', $value[1])->select(['id'])->first();
+				$data[$key]['room_type_id']      = $room->id;
+				$data[$key]['layer']             = $value[9];
+				$data[$key]['number']            = $value[2];
+				$data[$key]['rent_price']        = $value[3];
+				$data[$key]['property_price']    = $value[4];
+				$data[$key]['status']            = Roomunionmodel::STATE_BLANK;
+				$data[$key]['created_at']        = Carbon::now();
+				$data[$key]['begin_time']        = Carbon::now();
+				$data[$key]['end_time']          = Carbon::now();
+				$data[$key]['area']              = $value[8];
+				$data[$key]['cold_water_price']  = $value[5];
+				$data[$key]['hot_water_price']   = $value[6];
+				$data[$key]['electricity_price'] = $value[7];
+				$data[$key]['type']              = Roomunionmodel::TYPE_UNION;
+				try {
+					Roomunionmodel::insert($data[$key]);
+				} catch (Exception $e) {
+					log_message('error', $e->getMessage());
+					throw  $e;
+				}
+			} else {
+				$error[] = '房间号：' . $value[2] . '出现重复';
+			}
+		}
+		return $error;
+	}
+	
 }
