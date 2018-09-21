@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
 /**
  * Author:      hfq<1326432154@qq.com>
  * Date:        2018/4/26
@@ -68,7 +68,7 @@ class Reserveorder extends MY_Controller {
             'require', 'info_source', 'employee_id', 'status', 'remark','store_id'];
         $store_ids = explode(',', $this->employee->store_ids);
         $reserve = Reserveordermodel::with('employee')->with('store')->where('store_id', $store_id)->where('store_id', $store_id)
-            ->whereIn('store_id', $store_ids)->where('created_at', '>', $data)->orderBy('id', 'desc')->get($filed);
+            ->whereIn('store_id', $store_ids)->where('created_at', '>=', $data)->orderBy('id', 'desc')->get($filed);
         if(!$reserve){
             $this->api_res(1007);
             return false;
@@ -89,33 +89,82 @@ class Reserveorder extends MY_Controller {
             $reserve_excel[]     = $res;
             $store               =  $order->store->name;
         }
-        print_r($res);die();
-        $objPHPExcel = new Spreadsheet();
-        $sheet       = $objPHPExcel->getActiveSheet();
-        $i           = 1;
-        $objPHPExcel->getActiveSheet()->setCellValue('A' . $i, '门店名称');
-        $objPHPExcel->getActiveSheet()->setCellValue('B' . $i, '预约日期');
-        $objPHPExcel->getActiveSheet()->setCellValue('C' . $i, '来访类型');
-        $objPHPExcel->getActiveSheet()->setCellValue('D' . $i, '姓名');
-        $objPHPExcel->getActiveSheet()->setCellValue('E' . $i, '手机号码');
-        $objPHPExcel->getActiveSheet()->setCellValue('F' . $i, '工作地点');
-        $objPHPExcel->getActiveSheet()->setCellValue('G' . $i, '需求');
-        $objPHPExcel->getActiveSheet()->setCellValue('H' . $i, '信息来源');
-        $objPHPExcel->getActiveSheet()->setCellValue('I' . $i, '接待人');
-        $objPHPExcel->getActiveSheet()->setCellValue('J' . $i, '状态');
-        $objPHPExcel->getActiveSheet()->setCellValue('K' . $i, '备注');
-        $sheet->fromArray($reserve_excel, null, 'A2');
-        $writer = new Xlsx($objPHPExcel);
+
+        $filename = date('Y-m-d-H:i:s') . '导出' . $data  . '_预约数据.Xlsx';
+        $row      = count($reserve_excel) + 3;
+        $phpexcel = new Spreadsheet();
+        $sheet    = $phpexcel->getActiveSheet();
+        $this->createPHPExcel($phpexcel, $filename); //创建excel
+        $this->setExcelTitle($phpexcel, $store, $data); //设置表头
+        $this->setExcelFirstRow($phpexcel); //设置各字段名称
+        $sheet->fromArray($reserve_excel, null, 'A4'); //想excel中写入数据
+        $this->setExcelColumnWidth($phpexcel); //设置Excel每列宽度
+        $this->setAlignCenter($phpexcel, $row); //设置记录值居中
+        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($phpexcel, 'Xlsx');
         header("Pragma: public");
         header("Expires: 0");
-        header("Cache-Control:must-revalidate, post-check=0, pre-check=0");
-        header("Content-Type:application/force-download");
-        header("Content-Type:application/vnd.ms-excel");
         header("Content-Type:application/octet-stream");
-        header("Content-Type:application/download");
-        header("Content-Disposition:attachment;filename=$store.$data.'.xlsx'");
         header("Content-Transfer-Encoding:binary");
+        header('Cache-Control: max-age=0');
+        header("Content-Disposition:attachment;filename=$filename");
         $writer->save('php://output');
+        exit;
+    }
 
+    private function createPHPExcel(Spreadsheet $phpexcel, $filename) {
+        $phpexcel->getProperties()
+            ->setCreator('梵响数据')
+            ->setLastModifiedBy('梵响数据')
+            ->setTitle($filename)
+            ->setSubject($filename)
+            ->setDescription($filename)
+            ->setKeywords($filename)
+            ->setCategory($filename);
+        $phpexcel->setActiveSheetIndex(0);
+        return $phpexcel;
+    }
+    private function setExcelTitle(Spreadsheet $phpexcel, $store, $data) {
+        $phpexcel->getActiveSheet()
+            ->mergeCells('A1:O2')
+            ->setCellValue('A1', "$store" . "$data" . '预约统计')
+            ->getStyle("A1:O2")
+            ->getAlignment()
+            ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER)
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $phpexcel->getActiveSheet()->getCell('A1')->getStyle()->getFont()->setSize(16);
+    }
+
+    private function setExcelColumnWidth(Spreadsheet $phpexcel) {
+        $phpexcel->getActiveSheet()->getColumnDimension('A')->setWidth(22);
+        $phpexcel->getActiveSheet()->getColumnDimension('B')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('C')->setWidth(12);
+        $phpexcel->getActiveSheet()->getColumnDimension('D')->setWidth(12);
+        $phpexcel->getActiveSheet()->getColumnDimension('E')->setWidth(12);
+        $phpexcel->getActiveSheet()->getColumnDimension('F')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('G')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('H')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('I')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('J')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('K')->setWidth(10);
+    }
+    private function setAlignCenter(Spreadsheet $phpexcel, $row) {
+        $phpexcel->getActiveSheet()
+            ->getStyle("A3:N{$row}")
+            ->getAlignment()
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+    }
+
+    private function setExcelFirstRow(Spreadsheet $phpexcel) {
+        $phpexcel->getActiveSheet()->setCellValue('A3' , '门店名称')
+        ->setCellValue('B3' , '预约日期')
+        ->setCellValue('C3' , '来访类型')
+        ->setCellValue('D3' , '姓名')
+        ->setCellValue('E3' , '手机号码')
+        ->setCellValue('F3' , '工作地点')
+        ->setCellValue('G3' , '需求')
+        ->setCellValue('H3' , '信息来源')
+        ->setCellValue('I3' , '接待人')
+        ->setCellValue('J3' , '状态')
+        ->setCellValue('K3' , '备注');
     }
 }

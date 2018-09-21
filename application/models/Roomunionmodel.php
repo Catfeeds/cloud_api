@@ -533,7 +533,7 @@ class Roomunionmodel extends Basemodel
 			//门店名称
 			$store_name = $item[0];
 			if ($store_name != $store->name) {
-				$error[] = '请检查门店名称:' . $store_name . ',与您选择的:' . $store->name . '不相符';
+				$error[] = '请检查门店名称:' . $store_name . ',与您选择的' . $store->name . '不相符';
 				return $error;
 			}
 			//房型
