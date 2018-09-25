@@ -424,19 +424,30 @@ class Order extends MY_Controller {
         $this->load->model('storemodel');
         $input                                          = $this->input->post();
         $where                                          = [];
+        $year                                           = [];
+        $month                                          = [];
         empty($input['store_id']) ?: $where['store_id'] = $input['store_id'];
-        empty($input['year']) ?: $where['year']         = $input['year'];
-        empty($input['month']) ?: $where['month']       = $input['month'];
-        $filed                                          = ['id', 'room_id', 'resident_id', 'money', 'paid', 'type', 'status', 'pay_date',
-            'remark', 'discount_money'];
-        $orders      = Ordermodel::with('roomunion')->with('resident')->where($where)->get($filed);
+        empty($input['startYear']) ?: $year['startYear']         = $input['startYear'];
+        empty($input['startMonth']) ?: $month['startMonth']         = $input['startMonth'];
+        empty($input['endYear']) ?: $year['endYear']       = $input['endYear'];
+        empty($input['endMonth']) ?: $month['endMonth']       = $input['endMonth'];
+        $strat = $year['startYear'].$month['startMonth'];
+        $end = $year['endYear'].$month['endMonth'];
+        $orders      = DB::select("select date_format(str_to_date(CONCAT(o.year,'/', o.month), ?), ?) as b , r.`number` as `rnumber`,
+         s.`name` as `sname` , o.`type`, o.`paid`, o.`money`, o.`status`, o.`pay_date`, o.`discount_money`, o.`remark`".
+        " from boss_order as o ".
+        " left join `boss_room_union` as r on o.`room_id` = r.`id`".
+        " left join `boss_resident` as s on o.`resident_id` = s.`id`".
+        " where (o.store_id = ?) having b >= ?".
+        " and b <= ? ",['%Y/%m','%Y%m' , $where['store_id'], $strat, $end]);
         $store       = Storemodel::where('id', $where['store_id'])->first();
         $store       = $store->name;
         $order_excel = [];
+
         foreach ($orders as $order) {
             $res             = [];
-            $res['number']   = $order->roomunion->number;
-            $res['name']     = isset($order->resident->name) ? $order->resident->name : '';
+            $res['number']   = $order->rnumber;
+            $res['name']     = isset($order->sname) ? $order->sname : '';
             $res['type']     = $order->type;
             $res['paid']     = $order->paid;
             $res['money']    = $order->money;
@@ -447,34 +458,78 @@ class Order extends MY_Controller {
             $order_excel[]   = $res;
 
         }
-        $objPHPExcel = new Spreadsheet();
-        $sheet       = $objPHPExcel->getActiveSheet();
-        $i           = 1;
-        $objPHPExcel->getActiveSheet()->setCellValue('A' . $i, '房间号');
-        $objPHPExcel->getActiveSheet()->setCellValue('B' . $i, '姓名');
-        $objPHPExcel->getActiveSheet()->setCellValue('C' . $i, '起始日');
-        $objPHPExcel->getActiveSheet()->setCellValue('D' . $i, '届满日');
-        $objPHPExcel->getActiveSheet()->setCellValue('E' . $i, '支付类型');
-        $objPHPExcel->getActiveSheet()->setCellValue('F' . $i, '支付金额');
-        $objPHPExcel->getActiveSheet()->setCellValue('G' . $i, '定价');
-        $objPHPExcel->getActiveSheet()->setCellValue('H' . $i, '支付状态');
-        $objPHPExcel->getActiveSheet()->setCellValue('I' . $i, '支付时间');
-        $objPHPExcel->getActiveSheet()->setCellValue('J' . $i, '优惠金额');
-        $objPHPExcel->getActiveSheet()->setCellValue('K' . $i, '备注');
-        $sheet->fromArray($order_excel, null, 'A2');
-        $writer = new Xlsx($objPHPExcel);
+        $filename = date('Y-m-d-H:i:s') . '导出' .$year['startYear']. '-' .$month['startMonth'] .'至'.$year['endYear']. '-' .$month['endMonth'] .'_账单数据.Xlsx';
+        $row      = count($order_excel) + 3;
+        $phpexcel = new Spreadsheet();
+        $sheet    = $phpexcel->getActiveSheet();
+        $this->createPHPExcel($phpexcel, $filename); //创建excel
+        $this->setExcelTitle($phpexcel, $store, $year, $month); //设置表头
+        $this->setExcelFirstRow($phpexcel); //设置各字段名称
+        $sheet->fromArray($order_excel, null, 'A4'); //想excel中写入数据
+        $this->setExcelColumnWidth($phpexcel); //设置Excel每列宽度
+        $this->setAlignCenter($phpexcel, $row); //设置记录值居中
+        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($phpexcel, 'Xlsx');
         header("Pragma: public");
         header("Expires: 0");
-        header("Cache-Control:must-revalidate, post-check=0, pre-check=0");
-        header("Content-Type:application/force-download");
-        header("Content-Type:application/vnd.ms-excel");
         header("Content-Type:application/octet-stream");
-        header("Content-Type:application/download");
-        header("Content-Disposition:attachment;filename=$store" . $where['year'] . '年' . $where['month'] . '月' . ".'.xlsx'");
         header("Content-Transfer-Encoding:binary");
+        header('Cache-Control: max-age=0');
+        header("Content-Disposition:attachment;filename=$filename");
         $writer->save('php://output');
+        exit;
+    }
+    private function createPHPExcel(Spreadsheet $phpexcel, $filename) {
+        $phpexcel->getProperties()
+            ->setCreator('梵响数据')
+            ->setLastModifiedBy('梵响数据')
+            ->setTitle($filename)
+            ->setSubject($filename)
+            ->setDescription($filename)
+            ->setKeywords($filename)
+            ->setCategory($filename);
+        $phpexcel->setActiveSheetIndex(0);
+        return $phpexcel;
+    }
+    private function setExcelTitle(Spreadsheet $phpexcel, $store, $year, $month) {
+        $phpexcel->getActiveSheet()
+            ->mergeCells('A1:O2')
+            ->setCellValue('A1', "$store" . $year['startYear']. '-' .$month['startMonth'] .'至'.$year['endYear']. '-' .$month['endMonth'] . '账单统计')
+            ->getStyle("A1:O2")
+            ->getAlignment()
+            ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER)
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $phpexcel->getActiveSheet()->getCell('A1')->getStyle()->getFont()->setSize(16);
     }
 
+    private function setExcelColumnWidth(Spreadsheet $phpexcel) {
+        $phpexcel->getActiveSheet()->getColumnDimension('A')->setWidth(12);
+        $phpexcel->getActiveSheet()->getColumnDimension('B')->setWidth(12);
+        $phpexcel->getActiveSheet()->getColumnDimension('C')->setWidth(12);
+        $phpexcel->getActiveSheet()->getColumnDimension('D')->setWidth(12);
+        $phpexcel->getActiveSheet()->getColumnDimension('E')->setWidth(12);
+        $phpexcel->getActiveSheet()->getColumnDimension('F')->setWidth(12);
+        $phpexcel->getActiveSheet()->getColumnDimension('G')->setWidth(20);
+        $phpexcel->getActiveSheet()->getColumnDimension('H')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('I')->setWidth(22);
+    }
+    private function setAlignCenter(Spreadsheet $phpexcel, $row) {
+        $phpexcel->getActiveSheet()
+            ->getStyle("A3:N{$row}")
+            ->getAlignment()
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+    }
+
+    private function setExcelFirstRow(Spreadsheet $phpexcel) {
+        $phpexcel->getActiveSheet()->setCellValue('A3' , '房间号')
+        ->setCellValue('B3' , '姓名')
+        ->setCellValue('C3' , '订单类型')
+        ->setCellValue('D3' , '实付金额')
+        ->setCellValue('E3' , '支付金额')
+        ->setCellValue('F3' , '支付状态')
+        ->setCellValue('G3' , '支付时间')
+        ->setCellValue('H3' , '优惠金额')
+        ->setCellValue('I3' , '备注');
+    }
     /**
      * 确认账单（审核通过）
      * 考虑到有支付周期大于1的账单，需要一起推送当前月和之后月份的账单

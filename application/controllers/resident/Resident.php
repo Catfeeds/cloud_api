@@ -172,30 +172,77 @@ class Resident extends MY_Controller {
            $store              =  $order->room->store_name;
        }
 
-       $objPHPExcel = new Spreadsheet();
-       $sheet       = $objPHPExcel->getActiveSheet();
-       $i           = 1;
-       $objPHPExcel->getActiveSheet()->setCellValue('A' . $i, '姓名');
-       $objPHPExcel->getActiveSheet()->setCellValue('B' . $i, '联系方式');
-       $objPHPExcel->getActiveSheet()->setCellValue('C' . $i, '证件号码');
-       $objPHPExcel->getActiveSheet()->setCellValue('D' . $i, '房屋地址');
-       $objPHPExcel->getActiveSheet()->setCellValue('E' . $i, '创建时间');
-       $objPHPExcel->getActiveSheet()->setCellValue('F' . $i, '状态');
-       $objPHPExcel->getActiveSheet()->setCellValue('G' . $i, '紧急联系人');
-       $objPHPExcel->getActiveSheet()->setCellValue('H' . $i, '紧急联系方式');
-       $sheet->fromArray($resident_excel, null, 'A2');
-       $writer = new Xlsx($objPHPExcel);
+       $filename = date('Y-m-d-H:i:s') . '导出' . $data  . '_住户数据.Xlsx';
+       $row      = count($resident_excel) + 3;
+       $phpexcel = new Spreadsheet();
+       $sheet    = $phpexcel->getActiveSheet();
+       $this->createPHPExcel($phpexcel, $filename); //创建excel
+       $this->setExcelTitle($phpexcel, $store, $data); //设置表头
+       $this->setExcelFirstRow($phpexcel); //设置各字段名称
+       $sheet->fromArray($resident_excel, null, 'A4'); //想excel中写入数据
+       $this->setExcelColumnWidth($phpexcel); //设置Excel每列宽度
+       $this->setAlignCenter($phpexcel, $row); //设置记录值居中
+       $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($phpexcel, 'Xlsx');
        header("Pragma: public");
        header("Expires: 0");
-       header("Cache-Control:must-revalidate, post-check=0, pre-check=0");
-       header("Content-Type:application/force-download");
-       header("Content-Type:application/vnd.ms-excel");
        header("Content-Type:application/octet-stream");
-       header("Content-Type:application/download");
-       header("Content-Disposition:attachment;filename=$store.$data.'.xlsx'");
        header("Content-Transfer-Encoding:binary");
+       header('Cache-Control: max-age=0');
+       header("Content-Disposition:attachment;filename=$filename");
        $writer->save('php://output');
+       exit;
    }
+
+    private function createPHPExcel(Spreadsheet $phpexcel, $filename) {
+        $phpexcel->getProperties()
+            ->setCreator('梵响数据')
+            ->setLastModifiedBy('梵响数据')
+            ->setTitle($filename)
+            ->setSubject($filename)
+            ->setDescription($filename)
+            ->setKeywords($filename)
+            ->setCategory($filename);
+        $phpexcel->setActiveSheetIndex(0);
+        return $phpexcel;
+    }
+    private function setExcelTitle(Spreadsheet $phpexcel, $store, $data) {
+        $phpexcel->getActiveSheet()
+            ->mergeCells('A1:O2')
+            ->setCellValue('A1', "$store" . "$data" . '住户统计')
+            ->getStyle("A1:O2")
+            ->getAlignment()
+            ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER)
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $phpexcel->getActiveSheet()->getCell('A1')->getStyle()->getFont()->setSize(16);
+    }
+
+    private function setExcelColumnWidth(Spreadsheet $phpexcel) {
+        $phpexcel->getActiveSheet()->getColumnDimension('A')->setWidth(12);
+        $phpexcel->getActiveSheet()->getColumnDimension('B')->setWidth(15);
+        $phpexcel->getActiveSheet()->getColumnDimension('C')->setWidth(15);
+        $phpexcel->getActiveSheet()->getColumnDimension('D')->setWidth(25);
+        $phpexcel->getActiveSheet()->getColumnDimension('E')->setWidth(12);
+        $phpexcel->getActiveSheet()->getColumnDimension('F')->setWidth(12);
+        $phpexcel->getActiveSheet()->getColumnDimension('G')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('H')->setWidth(10);
+    }
+    private function setAlignCenter(Spreadsheet $phpexcel, $row) {
+        $phpexcel->getActiveSheet()
+            ->getStyle("A3:N{$row}")
+            ->getAlignment()
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+    }
+
+    private function setExcelFirstRow(Spreadsheet $phpexcel) {
+        $phpexcel->getActiveSheet()->setCellValue('A3' , '姓名')
+       ->setCellValue('B3' , '联系方式')
+       ->setCellValue('C3' , '证件号码')
+       ->setCellValue('D3' , '房屋地址')
+       ->setCellValue('E3' , '创建时间')
+       ->setCellValue('F3' , '状态')
+       ->setCellValue('G3' , '紧急联系人')
+       ->setCellValue('H3' , '紧急联系方式');
+    }
     /**
      * 住户账单信息
      */

@@ -356,35 +356,80 @@ class Roomunion extends MY_Controller {
         * 获取集中式房源导入模版
         * */
     public function getUnionTemplate(){
-        $data = Array();
-        $objPHPExcel = new Spreadsheet();
-        $sheet       = $objPHPExcel->getActiveSheet();
-        $i           = 1;
-        $objPHPExcel->getActiveSheet()->setCellValue('A' . $i, '门店名称');
-        $objPHPExcel->getActiveSheet()->setCellValue('B' . $i, '房型');
-        $objPHPExcel->getActiveSheet()->setCellValue('C' . $i, '房间号');
-        $objPHPExcel->getActiveSheet()->setCellValue('D' . $i, '租金');
-        $objPHPExcel->getActiveSheet()->setCellValue('E' . $i, '物业费');
-        $objPHPExcel->getActiveSheet()->setCellValue('F' . $i, '热水单价');
-        $objPHPExcel->getActiveSheet()->setCellValue('G' . $i, '冷水单价');
-        $objPHPExcel->getActiveSheet()->setCellValue('H' . $i, '用电单价');
-        $objPHPExcel->getActiveSheet()->setCellValue('I' . $i, '面积');
-        $objPHPExcel->getActiveSheet()->setCellValue('J' . $i, '所在层');
-        $sheet->fromArray($data, null, 'A2');
-        $writer = new Xlsx($objPHPExcel);
+        $data_excel = ['橘子公寓高新店', '一室一厅', '101', '1988', '200', '0', '6', '1', '40', '8'];
+        $store = '橘子公寓高新店';
+        $filename = date('Y-m-d-H:i:s') . '导出' . $store  . '_房间导入.Xlsx';
+        $row      = count($data_excel) + 3;
+        $phpexcel = new Spreadsheet();
+        $sheet    = $phpexcel->getActiveSheet();
+        $this->createPHPExcel($phpexcel, $filename); //创建excel
+        $this->setExcelTitle($phpexcel, $store); //设置表头
+        $this->setExcelFirstRow($phpexcel); //设置各字段名称
+        $sheet->fromArray($data_excel, null, 'A4'); //想excel中写入数据
+        $this->setExcelColumnWidth($phpexcel); //设置Excel每列宽度
+        $this->setAlignCenter($phpexcel, $row); //设置记录值居中
+        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($phpexcel, 'Xlsx');
         header("Pragma: public");
         header("Expires: 0");
-        header("Cache-Control:must-revalidate, post-check=0, pre-check=0");
-        header("Content-Type:application/force-download");
-        header("Content-Type:application/vnd.ms-excel");
         header("Content-Type:application/octet-stream");
-        header("Content-Type:application/download");
-        header("Content-Disposition:attachment;filename='集中式房间模版.xlsx'");
         header("Content-Transfer-Encoding:binary");
+        header('Cache-Control: max-age=0');
+        header("Content-Disposition:attachment;filename=$filename");
         $writer->save('php://output');
-
+        exit;
+    }
+    private function createPHPExcel(Spreadsheet $phpexcel, $filename) {
+        $phpexcel->getProperties()
+            ->setCreator('梵响数据')
+            ->setLastModifiedBy('梵响数据')
+            ->setTitle($filename)
+            ->setSubject($filename)
+            ->setDescription($filename)
+            ->setKeywords($filename)
+            ->setCategory($filename);
+        $phpexcel->setActiveSheetIndex(0);
+        return $phpexcel;
+    }
+    private function setExcelTitle(Spreadsheet $phpexcel, $store) {
+        $phpexcel->getActiveSheet()
+            ->mergeCells('A1:O2')
+            ->setCellValue('A1', "$store" . '房间导入')
+            ->getStyle("A1:O2")
+            ->getAlignment()
+            ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER)
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $phpexcel->getActiveSheet()->getCell('A1')->getStyle()->getFont()->setSize(16);
     }
 
+    private function setExcelColumnWidth(Spreadsheet $phpexcel) {
+        $phpexcel->getActiveSheet()->getColumnDimension('A')->setWidth(20);
+        $phpexcel->getActiveSheet()->getColumnDimension('B')->setWidth(12);
+        $phpexcel->getActiveSheet()->getColumnDimension('C')->setWidth(12);
+        $phpexcel->getActiveSheet()->getColumnDimension('D')->setWidth(12);
+        $phpexcel->getActiveSheet()->getColumnDimension('E')->setWidth(12);
+        $phpexcel->getActiveSheet()->getColumnDimension('F')->setWidth(12);
+        $phpexcel->getActiveSheet()->getColumnDimension('G')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('H')->setWidth(10);
+    }
+    private function setAlignCenter(Spreadsheet $phpexcel, $row) {
+        $phpexcel->getActiveSheet()
+            ->getStyle("A3:N{$row}")
+            ->getAlignment()
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+    }
+
+    private function setExcelFirstRow(Spreadsheet $phpexcel) {
+        $phpexcel->getActiveSheet()->setCellValue('A3' , '门店名称')
+        ->setCellValue('B3' , '房型')
+        ->setCellValue('C3' , '房间号')
+        ->setCellValue('D3' , '租金')
+        ->setCellValue('E3' , '物业费')
+        ->setCellValue('F3' , '热水单价')
+        ->setCellValue('G3' , '冷水单价')
+        ->setCellValue('H3' , '用电单价')
+        ->setCellValue('I3' , '面积')
+        ->setCellValue('J3' , '所在层');
+    }
     /*
      * 批量导入房间数据
      * */
