@@ -266,6 +266,11 @@ class Utility extends MY_Controller {
                 }elseif ($record->status == Meterreadingtransfermodel::NORMAL){
                     $record = $this->lastReading($record);
                     return json_decode($record);
+                }elseif ($record->status == Meterreadingtransfermodel::REFUND){
+	                $record = $this->lastReading($record);
+	                return json_decode($record);
+                }else{
+	                return '';
                 }
             })->toArray();
         $this->api_res(0,['list'=>$record,'count'=>$count]);
