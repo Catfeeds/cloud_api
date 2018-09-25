@@ -331,6 +331,12 @@ class Utility extends MY_Controller {
                 $record->last_image     = '';
             }
         }
+        if (!empty($record->this_time)){
+	        $record->this_time = date('Y-m-d',strtotime($record->this_time));
+        }
+        if (!empty($record->last_time)){
+	        $record->last_time = date('Y-m-d',strtotime($record->last_time));
+        }
         return $record;
     }
 
