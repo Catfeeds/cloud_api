@@ -44,7 +44,8 @@ class Home extends MY_Controller {
 
         //办理入住未完成
         $data['tipsnum']['noorder'] = Residentmodel::where(['store_id' => $store_id])
-            ->whereIn('status', ['NOT_PAY'])
+            ->whereHas('current_room')
+            ->whereIn('status', ['NOT_PAY', 'PRE_RESERVE'])
             ->count();
         //合同签约
         $data['tipsnum']['contract'] = Contractmodel::where('status', 'GENERATED')->count();
