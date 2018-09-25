@@ -244,7 +244,7 @@ class Checkout extends MY_Controller {
                 'this_reading'  => floatval($post['coldwater_reading']),
                 'image'         => empty($post['coldwater_image'])?'':$this->splitAliossUrl($post['coldwater_image']),
                 'this_time'     => date('Y-m-d H:i:s'),
-                'status'        => Meterreadingtransfermodel::NORMAL,
+                'status'        => Meterreadingtransfermodel::REFUND,
             ];
             $coldwater->fill($arr_coldwater);
             if ($coldwater->save() && isset($last_coldwater->this_reading)) {
@@ -269,7 +269,7 @@ class Checkout extends MY_Controller {
                 'this_reading'  => floatval($post['electric_reading']),
                 'image'         => empty($post['electric_image'])?'':$this->splitAliossUrl($post['electric_image']),
                 'this_time'     => date('Y-m-d H:i:s'),
-                'status'        => Meterreadingtransfermodel::NORMAL,
+                'status'        => Meterreadingtransfermodel::REFUND,
             ];
             $electric->fill($arr_electric);
             if($electric->save()&&isset($last_electric->this_reading)){
@@ -294,7 +294,7 @@ class Checkout extends MY_Controller {
                 'this_reading'  => floatval($post['hotwater_reading']),
                 'image'         => $post['hotwater_image'],
                 'this_time'     => date('Y-m-d H:i:s'),
-                'status'        => Meterreadingtransfermodel::NORMAL,
+                'status'        => Meterreadingtransfermodel::REFUND,
             ];
             $hotwater->fill($arr_hotwater);
             if($hotwater->save()&&isset($last_hotwater->this_reading)){
