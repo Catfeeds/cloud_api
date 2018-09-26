@@ -41,7 +41,6 @@ class AuthHook {
             'company/company/boundwechat',
 
             'events/auth',
-//            'utility/meter/readingtemplate',
         ];
 
         $directory = $this->CI->router->fetch_directory();
@@ -59,7 +58,6 @@ class AuthHook {
             }
         }catch (Exception $e) {
             log_message('error',$e->getMessage());
-            // var_dump($e);exit;
             header('HTTP/1.1 401 Forbidden'); 
             header("Content-Type:application/json;charset=UTF-8");
             echo json_encode(array('rescode' => 1001, 'resmsg' => 'token无效', 'data' => []));
@@ -84,11 +82,7 @@ class AuthHook {
 	        throw new UnexpectedValueException('apiKey not found');
         }
         $apihash = hash('sha256',"$tks[0].$tks[1].$model->apisecret");
-        // var_dump($apihash);exit;
         if($tks[2] == $apihash){
-            // if(!defined('X_API_TOKEN')){
-            //     define('X_API_TOKEN' , $xapitoken);
-            // }
             $this->CI->x_api_token = $tks[0];
         }else{
             throw new Exception('x-api-toekn 认证失败');

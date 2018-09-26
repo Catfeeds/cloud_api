@@ -29,7 +29,7 @@ class Hook_test extends TestCase
 		$apikey='111111111';
         $apisecret='nf239fh293hf8h23f';
         $timestamp=time();
-        $hash=$apihash = hash('sha256',"$apikey.$timestamp.$apisecret");
+        $hash=hash('sha256',"$apikey.$timestamp.$apisecret");
 		$x_api_token = "$apikey.$timestamp.$hash";
 		
 		$this->request->setHeader('x-api-token', $x_api_token);
