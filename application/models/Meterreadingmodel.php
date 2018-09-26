@@ -26,12 +26,14 @@ class Meterreadingmodel extends Basemodel {
     const TYPE_WATER_H  = 'HOT_WATER_METER'; //冷水表
     const TYPE_WATER_C  = 'COLD_WATER_METER'; //热水表
     const TYPE_ELECTRIC = 'ELECTRIC_METER'; //电表
+    const TYPE_GAS      = 'GAS_METER'; //燃气
 
     public static function typeName($type) {
         $types = [
             self::TYPE_WATER_C  => '冷水费',
             self::TYPE_WATER_H  => '热水费',
             self::TYPE_ELECTRIC => '电费',
+            self::TYPE_GAS      => '燃气',
         ];
 
         if (!isset($types[$type])) {
@@ -49,6 +51,7 @@ class Meterreadingmodel extends Basemodel {
             self::TYPE_WATER_C  => '立',
             self::TYPE_WATER_H  => '立',
             self::TYPE_ELECTRIC => '度',
+            self::TYPE_GAS      => '立',
         ];
 
         if (!isset($units[$type])) {
