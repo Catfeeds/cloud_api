@@ -30,8 +30,12 @@ class Meter extends MY_Controller
 	public function normalDeviceReading()
 	{
 		//转换excel读数为数组
-		$url       = $this->input->post('url');
-		$f_open    = fopen($url, 'r');
+		$input = $this->input->post(null, true);
+		if (empty($input['url'])) {
+			$this->api_res(1002);
+			return;
+		}
+		$f_open    = fopen($input['url'], 'r');
 		$file_name = APPPATH . 'cache/test.xlsx';
 		file_put_contents($file_name, $f_open);
 		$inputFileType = \PhpOffice\PhpSpreadsheet\IOFactory::identify($file_name);
@@ -40,36 +44,24 @@ class Meter extends MY_Controller
 		$excel      = $reader->load($file_name);
 		$sheetArray = $excel->getActiveSheet()->toArray();
 		array_shift($sheetArray);
-		var_dump($sheetArray);
 		$transfer = new Meterreadingtransfermodel();
 		$data     = $transfer->checkInputData($sheetArray);
-		if (!empty($data['error'])) {
-			$this->api_res(10052, ['error' => $data['error']]);
-			return;
-		}
 		$this->api_res(0, $data);
 	}
 	
-	/*public function saveReading()
+	public function saveReading()
 	{
 		$this->load->model('meterreadingmodel');
 		$this->load->model('storemodel');
 		$this->load->model('roomunionmodel');
 		$this->load->model('smartdevicemodel');
-		$type     = $this->input->post('type');
-		$store_id = $this->input->post('store_id');
-		//检查表计类型
-		$type     = $this->checkAndGetReadingType($type);
 		$transfer = new Meterreadingtransfermodel();
+		$data = $this->input->post('data');
+		$data = json_decode($data);
 		//存储导入数据
-		$res = $transfer->writeReading($data, $store_id, $type);
-		if (!empty($res)) {
-			$this->api_res(10051, ['error' => $res]);
-		} else {
-			$this->api_res(0);
-		}
-	}*/
-	
+		$res = $transfer->updateReading($data);
+		$this->api_res(0);
+	}
 	/**
 	 * 检查表计读数类型
 	 */
@@ -95,7 +87,7 @@ class Meter extends MY_Controller
 	private function uploadOssSheet()
 	{
 		
-		return ;
+		return;
 	}
 	
 	/*******************************************************************************************/
@@ -334,7 +326,11 @@ class Meter extends MY_Controller
 		$this->load->model('roomunionmodel');
 		$this->load->model('residentmodel');
 		$this->load->model('storemodel');
-		$post                                              = $this->input->post(null, true);
+		$post = $this->input->post(null, true);
+		if (!isset($post['store_id']) || !isset($post['type'])) {
+			$this->api_res(1002);
+			return;
+		}
 		$where                                             = [];
 		$where['boss_meter_reading_transfer.store_id']     = $post['store_id'];
 		$where['boss_meter_reading_transfer.type']         = $post['type'];
