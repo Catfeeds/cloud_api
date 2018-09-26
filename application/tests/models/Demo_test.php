@@ -12,7 +12,7 @@ class Demo_test extends TestCase
     public function test_get_category_name()
     {
         $count = Companymodel::count();
-        $this->assertGreaterThan(0,$count);
+        $this->assertGreaterThan(0, $count);
     }
 
     public function test_get_category_name2()
