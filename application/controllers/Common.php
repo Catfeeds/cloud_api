@@ -20,8 +20,15 @@ class Common extends MY_Controller {
         $config = [
             'allowed_types' => 'gif|jpg|png|jpeg',
             'max_size'      => 4 * 1024,
-            // 'watermark'     => '中文内容测试.',
         ];
+        parse_str($_SERVER["QUERY_STRING"], $query);
+        if (!empty($query) && !empty($query["watermark"])) {
+            switch ($query["watermark"]) {
+                case 'idcard':
+                    $config['watermark'] = "仅供合同签署使用\n金地火花草莓社区"
+                    break;
+            }
+        }
         $this->load->library('alioss', $config);
         if (!$this->alioss->do_upload('image')) {
             $this->api_res(1004, array('error' => $this->alioss->display_errors('', '')));
