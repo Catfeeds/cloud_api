@@ -295,7 +295,7 @@ class Pricecontrol extends MY_Controller
                 $store = $order->store_s->name;
             }
 
-            $filename = date('Y-m-d-H:i:s') . '导出调价数据.Xlsx';
+            $filename = date('Y-m-d-H:i:s') . '导出调价数据.xlsx';
             $row      = count($room_excel) + 3;
             $phpexcel = new Spreadsheet();
             $sheet    = $phpexcel->getActiveSheet();
@@ -305,7 +305,7 @@ class Pricecontrol extends MY_Controller
             $sheet->fromArray($room_excel, null, 'A4'); //想excel中写入数据
             $this->setExcelColumnWidth($phpexcel); //设置Excel每列宽度
             $this->setAlignCenter($phpexcel, $row); //设置记录值居中
-            $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($phpexcel, 'Xlsx');
+            $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($phpexcel, 'xlsx');
             header("Pragma: public");
             header("Expires: 0");
             header("Content-Type:application/octet-stream");
@@ -356,7 +356,7 @@ class Pricecontrol extends MY_Controller
     }
 
     private function setExcelFirstRow(Spreadsheet $phpexcel) {
-        $phpexcel->getActiveSheet()->setCellValue('A3' , '房屋地址')
+        $phpexcel->getActiveSheet()->setCellValue('A3' , '门店名称')
             ->setCellValue('B3' , '房间号')
             ->setCellValue('C3' , '房型')
             ->setCellValue('D3' , '住宿服务费')
@@ -365,6 +365,172 @@ class Pricecontrol extends MY_Controller
             ->setCellValue('G3' , '冷水单价')
             ->setCellValue('H3' , '电费单价');
     }
+   /*
+    * 调价导入模版
+    * */
+    public function priceTemplate(){
+        $this->load->model('storemodel');
+        $this->load->model('buildingmodel');
+        $this->load->model('roomtypemodel');
+        $filed     = ['id', 'store_id', 'building_id', 'number', 'room_type_id', 'rent_price', 'property_price', 'updated_at', 'cold_water_price', 'electricity_price', 'hot_water_price'];
+        $store_id      = $this->input->post('store_id');
+        if(!$store_id){
+            $this->api_res(1002);
+            return false;
+        }
+        $store_ids = explode(',', $this->employee->store_ids);
+        $price = Roomunionmodel::orderBy('number')->with('store_s')->with('building_s')->with('room_type')
+            ->where('store_id', $store_id)->whereIn('store_id',$store_ids)->orderBy('updated_at')->get($filed)
+            ->map(function ($s) {
+                $s->updated = date('Y-m-d', strtotime($s->updated_at->toDateTimeString()));
+                return $s;
+            });
+        if(!$price){
+            $this->api_res(1007);
+            return false;
+        }
+        foreach ($price as $order) {
+            $res                        = [];
+            $res['address']             = $order->store_s->name;
+            $res['number']              = $order->number;
+            $res['type']                = empty($order->room_type->name) ? '' : $order->room_type->name;
+            $res['rent_price']          = empty($order->rent_price) ? '0.00' : $order->rent_price;
+            $res['now_rent']            = '';
+            $res['property_price']      = empty($order->property_price) ? '0.00' : $order->property_price;
+            $res['now_property']        = '';
+            $res['hot_water_price']     = empty($order->hot_water_price) ? '0.00' : $order->hot_water_price;
+            $res['now_hot_water']       = '';
+            $res['cold_water_price']    = empty($order->cold_water_price) ? '0.00' : $order->cold_water_price;
+            $res['now_cold_water']      = '';
+            $res['electricity_price']   = empty($order->electricity_price) ? '0.00' : $order->electricity_price;
+            $res['now_electricity']     = '';
+            $room_excel[]   = $res;
+            $store = $order->store_s->name;
+        }
+
+        $filename = date('Y-m-d-H:i:s') . $store.'调价模版.xlsx';
+        $row      = count($room_excel) + 3;
+        $phpexcel = new Spreadsheet();
+        $sheet    = $phpexcel->getActiveSheet();
+        $this->createPHPExcel($phpexcel, $filename); //创建excel
+        $this->setExcelTitleTemplate($phpexcel, $store); //设置表头
+        $this->setExcelFirstRowTemplate($phpexcel); //设置各字段名称
+        $sheet->fromArray($room_excel, null, 'A4'); //想excel中写入数据
+        $this->setExcelColumnWidthTemplate($phpexcel); //设置Excel每列宽度
+        $this->setAlignCenterTemplate($phpexcel, $row); //设置记录值居中
+        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($phpexcel, 'xlsx');
+        header("Pragma: public");
+        header("Expires: 0");
+        header("Content-Type:application/octet-stream");
+        header("Content-Transfer-Encoding:binary");
+        header('Cache-Control: max-age=0');
+        header("Content-Disposition:attachment;filename=$filename");
+        $writer->save('php://output');
+        exit;
+    }
+    private function setAlignCenterTemplate(Spreadsheet $phpexcel, $row) {
+        $phpexcel->getActiveSheet()
+            ->getStyle("A3:L{$row}")
+            ->getAlignment()
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+    }
+    private function setExcelColumnWidthTemplate(Spreadsheet $phpexcel) {
+        $phpexcel->getActiveSheet()->getColumnDimension('A')->setWidth(12);
+        $phpexcel->getActiveSheet()->getColumnDimension('B')->setWidth(15);
+        $phpexcel->getActiveSheet()->getColumnDimension('C')->setWidth(15);
+        $phpexcel->getActiveSheet()->getColumnDimension('D')->setWidth(20);
+        $phpexcel->getActiveSheet()->getColumnDimension('E')->setWidth(20);
+        $phpexcel->getActiveSheet()->getColumnDimension('F')->setWidth(20);
+        $phpexcel->getActiveSheet()->getColumnDimension('G')->setWidth(20);
+        $phpexcel->getActiveSheet()->getColumnDimension('H')->setWidth(15);
+        $phpexcel->getActiveSheet()->getColumnDimension('I')->setWidth(15);
+        $phpexcel->getActiveSheet()->getColumnDimension('J')->setWidth(15);
+        $phpexcel->getActiveSheet()->getColumnDimension('K')->setWidth(15);
+        $phpexcel->getActiveSheet()->getColumnDimension('L')->setWidth(15);
+        $phpexcel->getActiveSheet()->getColumnDimension('M')->setWidth(15);
+    }
+    private function setExcelFirstRowTemplate(Spreadsheet $phpexcel) {
+        $phpexcel->getActiveSheet()->setCellValue('A3' , '门店名称')
+            ->setCellValue('B3' , '房间号')
+            ->setCellValue('C3' , '房型')
+            ->setCellValue('D3' , '住宿服务费(原价)')
+            ->setCellValue('E3' , '住宿服务费(现价)')
+            ->setCellValue('F3' , '物业服务费(原价)')
+            ->setCellValue('G3' , '物业服务费(现价)')
+            ->setCellValue('H3' , '热水单价(原价)')
+            ->setCellValue('I3' , '热水单价(现价)')
+            ->setCellValue('J3' , '冷水单价(原价)')
+            ->setCellValue('K3' , '冷水单价(现价)')
+            ->setCellValue('L3' , '电费单价(原价)')
+            ->setCellValue('M3' , '电费单价(现价)');
+    }
+    private function setExcelTitleTemplate(Spreadsheet $phpexcel, $store) {
+        $phpexcel->getActiveSheet()
+            ->mergeCells('A1:M2')
+            ->setCellValue('A1', "$store" . '调价模版')
+            ->getStyle("A1:M2")
+            ->getAlignment()
+            ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER)
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $phpexcel->getActiveSheet()->getCell('A1')->getStyle()->getFont()->setSize(16);
+    }
+
+    /*
+     * 调价导入
+     * */
+    public function importPrice(){
+        $this->load->model('storemodel');
+        $this->load->model('roomunionmodel');
+        $this->load->model('roomtypemodel');
+        $this->load->model('buildingmodel');
+        $this->load->model('pricecontrolrecordmodel');
+        $store_id = $this->input->post('store_id', true);
+        if(!$store_id){
+            $this->api_res(1002);
+            return false;
+        }
+        $sheetArray = $this->uploadOssSheet();
+        $roomunion = new Roomunionmodel();
+        $data    = $roomunion->priceInputData($sheetArray, $store_id);
+        if(!empty($data)){
+            $this->api_res(10052,['error'=>$data]);
+            return;
+        }
+        $res        = $roomunion->writePrice($sheetArray, $store_id);
+        if (!empty($res)){
+            $this->api_res(10051,['error'=>$res]);
+        }else{
+            $this->api_res(0);
+        }
+    }
+
+    /**
+     * 转换表读数为数组
+     * @return array
+     */
+    private function uploadOssSheet(){
+        $url       = $this->input->post('url');
+        $this->load->helper('string');
+        if(!$url){
+            $this->api_res(1002);
+            return false;
+        }
+        $str = random_string('alnum', 10);
+        $f_open    = fopen($url, 'r');
+        $file_name = APPPATH . 'cache/priceTest'.$str.'.xlsx';
+        file_put_contents($file_name, $f_open);
+        $inputFileType = \PhpOffice\PhpSpreadsheet\IOFactory::identify($file_name);
+        $reader        = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($inputFileType);
+        $reader->setReadDataOnly(true);
+        $excel = $reader->load($file_name);
+        $sheet = $excel->getActiveSheet()->toArray();
+        array_shift($sheet);
+        array_shift($sheet);
+        array_shift($sheet);
+        unlink($file_name);
+        return $sheet;
+    }
+
     /**
      * 执行调价
      */
