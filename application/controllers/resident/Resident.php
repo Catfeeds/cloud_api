@@ -143,7 +143,7 @@ class Resident extends MY_Controller {
            $this->api_res(1002);
            return false;
        }
-       $filed     = ['id', 'name', 'customer_id', 'phone', 'room_id', 'card_number', 'created_at', 'status', 'name_two', 'phone_two'];
+       $filed     = ['id', 'name', 'customer_id', 'phone', 'room_id', 'card_number', 'created_at', 'status', 'name_two', 'phone_two', 'card_type', 'alternative', 'alter_phone'];
        $store_ids = explode(',', $this->employee->store_ids);
        $resident = Residentmodel::with('room')->with('customer_s')->whereIn('store_id', $store_ids)
            ->where('created_at','>', $data)
@@ -158,20 +158,22 @@ class Resident extends MY_Controller {
            $this->api_res(1007);
            return false;
        }
+       $result = new Residentmodel();
        foreach ($resident as $order) {
            $res                = [];
            $res['name']        = $order->name;
            $res['phone']       = $order->phone;
+           $res['card_type']   = $result->is_cardType($order->card_type);
            $res['card_number'] = $order->card_number;
            $res['store_name']  = $order->room->store_name;
+           $res['number']      = $order->room->number;
            $res['created_at']  = $order->created_at;
-           $res['status']      = $order->status;
-           $res['name_two']    = empty($order->name_two) ? '' : $order->name_two;
-           $res['phone_two']   = empty($order->phone_two) ? '' : $order->phone_two;
+           $res['status']      = $result->is_status($order->status);
+           $res['name_two']    = empty($order->alternative) ? '' : $order->alternative;
+           $res['phone_two']   = empty($order->alter_phone) ? '' : $order->alter_phone;
            $resident_excel[]   = $res;
            $store              =  $order->room->store_name;
        }
-
        $filename = date('Y-m-d-H:i:s') . '导出' . $data  . '_住户数据.Xlsx';
        $row      = count($resident_excel) + 3;
        $phpexcel = new Spreadsheet();
@@ -221,10 +223,12 @@ class Resident extends MY_Controller {
         $phpexcel->getActiveSheet()->getColumnDimension('B')->setWidth(15);
         $phpexcel->getActiveSheet()->getColumnDimension('C')->setWidth(15);
         $phpexcel->getActiveSheet()->getColumnDimension('D')->setWidth(25);
-        $phpexcel->getActiveSheet()->getColumnDimension('E')->setWidth(12);
+        $phpexcel->getActiveSheet()->getColumnDimension('E')->setWidth(30);
         $phpexcel->getActiveSheet()->getColumnDimension('F')->setWidth(12);
-        $phpexcel->getActiveSheet()->getColumnDimension('G')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('G')->setWidth(25);
         $phpexcel->getActiveSheet()->getColumnDimension('H')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('I')->setWidth(15);
+        $phpexcel->getActiveSheet()->getColumnDimension('J')->setWidth(15);
     }
     private function setAlignCenter(Spreadsheet $phpexcel, $row) {
         $phpexcel->getActiveSheet()
@@ -236,12 +240,14 @@ class Resident extends MY_Controller {
     private function setExcelFirstRow(Spreadsheet $phpexcel) {
         $phpexcel->getActiveSheet()->setCellValue('A3' , '姓名')
        ->setCellValue('B3' , '联系方式')
-       ->setCellValue('C3' , '证件号码')
-       ->setCellValue('D3' , '房屋地址')
-       ->setCellValue('E3' , '创建时间')
-       ->setCellValue('F3' , '状态')
-       ->setCellValue('G3' , '紧急联系人')
-       ->setCellValue('H3' , '紧急联系方式');
+       ->setCellValue('C3' , '证件类型')
+       ->setCellValue('D3' , '证件号码')
+       ->setCellValue('E3' , '门店名称')
+       ->setCellValue('F3' , '房间号')
+       ->setCellValue('G3' , '创建时间')
+       ->setCellValue('H3' , '状态')
+       ->setCellValue('I3' , '紧急联系人')
+       ->setCellValue('J3' , '紧急联系方式');
     }
     /**
      * 住户账单信息

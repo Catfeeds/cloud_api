@@ -35,7 +35,7 @@ class AuthHook {
             'mini/contract/archive',
 
             'ping/index',
-            
+
             'company/company/sendcode',
             'company/company/register',
             'company/company/boundwechat',

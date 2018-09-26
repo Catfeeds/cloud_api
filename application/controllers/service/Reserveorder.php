@@ -73,18 +73,19 @@ class Reserveorder extends MY_Controller {
             $this->api_res(1007);
             return false;
         }
+        $status = new Reserveordermodel();
         foreach ($reserve as $order) {
             $res                 = [];
             $res['store_name']   = $order->store->name;
             $res['time']         = $order->time;
-            $res['visit_by']     = $order->visis_by;
+            $res['visit_by']     = $status->is_visit_by($order->visit_by);
             $res['name']         = $order->name;
             $res['phone']        = $order->phone;
             $res['work_address'] = empty($order->work_address) ? '' : $order->work_address;
             $res['require']      = empty($order->require) ? '' : $order->require;
             $res['info_source']  = empty($order->info_source) ? '' : $order->info_source;
             $res['employee']     = empty($order->employee->name) ? '' : $order->employee->name;
-            $res['status']       = empty($order->status) ? '' : $order->status;
+            $res['status']       = $status->is_reserve($order->status);
             $res['remark']       = empty($order->remark) ? '' : $order->remark;
             $reserve_excel[]     = $res;
             $store               =  $order->store->name;
@@ -135,9 +136,9 @@ class Reserveorder extends MY_Controller {
     }
 
     private function setExcelColumnWidth(Spreadsheet $phpexcel) {
-        $phpexcel->getActiveSheet()->getColumnDimension('A')->setWidth(22);
-        $phpexcel->getActiveSheet()->getColumnDimension('B')->setWidth(10);
-        $phpexcel->getActiveSheet()->getColumnDimension('C')->setWidth(12);
+        $phpexcel->getActiveSheet()->getColumnDimension('A')->setWidth(30);
+        $phpexcel->getActiveSheet()->getColumnDimension('B')->setWidth(22);
+        $phpexcel->getActiveSheet()->getColumnDimension('C')->setWidth(15);
         $phpexcel->getActiveSheet()->getColumnDimension('D')->setWidth(12);
         $phpexcel->getActiveSheet()->getColumnDimension('E')->setWidth(12);
         $phpexcel->getActiveSheet()->getColumnDimension('F')->setWidth(10);

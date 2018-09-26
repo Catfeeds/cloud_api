@@ -34,4 +34,31 @@ class Reserveordermodel extends Basemodel {
     {
         return $this->belongsTo(Taskflowmodel::class,'taskflow_id');
     }
+
+    /*
+     * 判断状态
+     * */
+    public function is_reserve($status){
+        switch($status){
+            case 'BEGIN'        : $res = '开始';break;
+            case 'WAIT'         : $res = '等待';break;
+            case 'INVALID'      : $res = '失效';break;
+            case 'END'          : $res = '结束';break;
+            default             : $res ='';
+        }
+        return $res;
+    }
+    /*
+     * 判断来访类型
+     * */
+    public function is_visit_by($status){
+        switch($status){
+            case 'PHONE'        : $res = '电话咨询';break;
+            case 'VISIT'        : $res = '现场看房';break;
+            case 'WEB'          : $res = '官网看房';break;
+            case 'WECHAT'       : $res = '订房系统预约';break;
+            default             : $res ='';
+        }
+        return $res;
+    }
 }

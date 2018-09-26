@@ -443,15 +443,15 @@ class Order extends MY_Controller {
         $store       = Storemodel::where('id', $where['store_id'])->first();
         $store       = $store->name;
         $order_excel = [];
-
+        $result = new Ordermodel();
         foreach ($orders as $order) {
             $res             = [];
             $res['number']   = $order->rnumber;
             $res['name']     = isset($order->sname) ? $order->sname : '';
-            $res['type']     = $order->type;
+            $res['type']     = $result->is_type($order->type);
             $res['paid']     = $order->paid;
             $res['money']    = $order->money;
-            $res['status']   = $order->status;
+            $res['status']   = $result->is_status($order->status);
             $res['pay_date'] = $order->pay_date;
             $res['discount'] = $order->discount_money;
             $res['remark']   = $order->remark;
@@ -465,7 +465,7 @@ class Order extends MY_Controller {
         $this->createPHPExcel($phpexcel, $filename); //创建excel
         $this->setExcelTitle($phpexcel, $store, $year, $month); //设置表头
         $this->setExcelFirstRow($phpexcel); //设置各字段名称
-        $sheet->fromArray($order_excel, null, 'A4'); //想excel中写入数据
+        $sheet->fromArray($order_excel, null, 'A4'); //想excel中写入数据*/
         $this->setExcelColumnWidth($phpexcel); //设置Excel每列宽度
         $this->setAlignCenter($phpexcel, $row); //设置记录值居中
         $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($phpexcel, 'Xlsx');
@@ -507,7 +507,7 @@ class Order extends MY_Controller {
         $phpexcel->getActiveSheet()->getColumnDimension('C')->setWidth(12);
         $phpexcel->getActiveSheet()->getColumnDimension('D')->setWidth(12);
         $phpexcel->getActiveSheet()->getColumnDimension('E')->setWidth(12);
-        $phpexcel->getActiveSheet()->getColumnDimension('F')->setWidth(12);
+        $phpexcel->getActiveSheet()->getColumnDimension('F')->setWidth(35);
         $phpexcel->getActiveSheet()->getColumnDimension('G')->setWidth(20);
         $phpexcel->getActiveSheet()->getColumnDimension('H')->setWidth(10);
         $phpexcel->getActiveSheet()->getColumnDimension('I')->setWidth(22);
