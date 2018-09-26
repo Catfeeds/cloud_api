@@ -80,6 +80,9 @@ class AuthHook {
         }
         $this->CI->load->model('apimodel');
         $model = Apimodel::where('apikey',$tks[0])->first();
+        if(empty($model)){
+	        throw new UnexpectedValueException('apiKey not found');
+        }
         $apihash = hash('sha256',"$tks[0].$tks[1].$model->apisecret");
         // var_dump($apihash);exit;
         if($tks[2] == $apihash){

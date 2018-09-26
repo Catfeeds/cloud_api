@@ -90,39 +90,50 @@ class Meterreadingtransfermodel extends Basemodel
 	
 	/**
 	 * 检测上传读数的正确性，并返回错误信息
+	 * 0 ID 1 number 2 name 3 reading 4 weight
 	 */
 	public function checkInputData($sheetArray)
 	{
-		$data  = [];
-		$error = [];
-		$this_time = date('Y-m-d',time());
+		$data = [];
 		foreach ($sheetArray as $key => $item) {
+			$error = '';
 			//ID
 			$id = $item[0];
+			//检查房间号
+			$number = trim($item[1]);
 			//检查表读数
 			$read = trim($item[3]);
 			if (!is_numeric($read) || 0 > $read || 1e8 < $read) {
-				$error[] = '请检查房间：' . $item[1] . '的表读数';
+				$error .= '-读数有误-';
 				log_message('debug', '请检查房间：' . $item[1] . '的表读数');
-				continue;
 			}
 			//检查权重
 			$weight = isset($item[4]) ? (int)$item[4] : 100;
 			if (!$weight) {
 				$weight = 100;
 			} elseif (100 < $weight || 0 > $weight) {
+				$error .= '-均摊比例有误-';
 				log_message('debug', '请检查房间：' . $item[1] . '的均摊比例');
-				$error[] = '请检查房间：' . $item[1] . '的均摊比例';
-				continue;
 			}
-			$data[] = ['id' => $id, 'this_reading' => $read, 'weight' => $weight, 'this_time' => $this_time];
+			$data[] = ['id' => $id, 'number' => $number, 'this_reading' => $read, 'weight' => $weight, 'error' => $error];
 		}
-		if (empty($error)) {
-			return $data;
-		} else {
-			$data = ['error' => $error];
-			return $data;
+		return $data;
+	}
+	
+	/**
+	 * 批量更新读数
+	 */
+	public function updateReading($data = [])
+	{
+		$this_time = date('Y-m-d', time());
+		foreach ($data as $k => $v) {
+			$transfer               = Meterreadingtransfermodel::where('id',$v['id'])->first();
+			$transfer->this_reading = $v['this_reading'];
+			$transfer->weight       = $v['weight'];
+			$transfer->this_time    = $this_time;
+			$transfer->save();
 		}
+		return true;
 	}
 	
 	/**
@@ -140,7 +151,6 @@ class Meterreadingtransfermodel extends Basemodel
 		$arr = Roomunionmodel::where('store_id', $store_id)/*->whereIn('number',$number)*/
 		->orderBy('number')
 			->get(['id', 'number', 'resident_id', 'building_id'])->groupBy('number')->toArray();
-//        var_dump($arr);die();
 		//重组插入数据库所需数组
 		foreach ($data as $key => $value) {
 			$number   = $value['number'];
