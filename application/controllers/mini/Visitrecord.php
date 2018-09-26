@@ -27,6 +27,7 @@ class Visitrecord extends MY_Controller {
         $reserve->fill($post);
         $reserve->employee_id = $this->current_id;
         $reserve->store_id    = $this->employee->store_id;
+        $reserve->status    = 'END';
         if ($reserve->save()) {
             $this->api_res(0);
         } else {
