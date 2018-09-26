@@ -88,6 +88,8 @@ class Ordermodel extends Basemodel {
         'status',
         'paid',
         'pay_status',
+        'transfer_id_s',
+        'transfer_id_e',
     ];
 
     protected $casts = ['data' => 'array'];

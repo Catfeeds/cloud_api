@@ -1,8 +1,6 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
-
-use PhpOffice\PhpSpreadsheet\Shared\Date;
-
+use Illuminate\Database\Capsule\Manager as DB;
 /**
  * Author:      zjh<401967974@qq.com>
  * Date:        2018/6/4 0004
@@ -15,6 +13,8 @@ use PhpOffice\PhpSpreadsheet\Shared\Date;
  */
 class Meterreadingtransfermodel extends Basemodel
 {
+	private $CI;
+	
 	protected $table = 'boss_meter_reading_transfer';
 	
 	protected $dates = [];
@@ -127,13 +127,21 @@ class Meterreadingtransfermodel extends Basemodel
 	{
 		$this_time = date('Y-m-d', time());
 		foreach ($data as $k => $v) {
-			$transfer               = Meterreadingtransfermodel::where('id',$v['id'])->first();
+			$transfer               = Meterreadingtransfermodel::where('id',$v['id'])
+				->whereIn('order_status',['NOREADING','NOORDER','NORESIDENT'])
+				->first();
 			if (empty($transfer)){
 				continue;
+			}
+			if ($transfer->resident_id == 0){
+				$transfer->order_status = '';
+			}else{
+				$transfer->order_status = '';
 			}
 			$transfer->this_reading = $v['this_reading'];
 			$transfer->weight       = $v['weight'];
 			$transfer->this_time    = $this_time;
+			
 			$transfer->save();
 		}
 		return true;
@@ -219,6 +227,7 @@ class Meterreadingtransfermodel extends Basemodel
 		$res   = Meterreadingtransfermodel::leftJoin('boss_room_union', 'boss_room_union.id', '=', 'boss_meter_reading_transfer.room_id')
 			->leftJoin('boss_resident', 'boss_resident.id', '=', 'boss_meter_reading_transfer.resident_id')
 			->select($filed)
+			->orderBy('boss_room_union.number')
 			->where($where)
 			->get()
 			->map(function ($s) {
@@ -233,7 +242,81 @@ class Meterreadingtransfermodel extends Basemodel
 		return $res;
 	}
 	
-	
+	/**
+	 * @param $this_reading => 本次读数及本次读数相关信息
+	 * @param $last_reading => 上次读数及本次读数相关信息
+	 * @param $price => 价格(数组)包括冷热水电气
+	 */
+	public function utility($this_reading, $last_reading,$price)
+	{
+		switch ($this_reading->type) {
+			case self::TYPE_ELECTRIC:
+				$type  = Ordermodel::PAYTYPE_ELECTRIC;
+				$price = $price['electricity_price'];
+				break;
+			case self::TYPE_WATER_H:
+				$type  = Ordermodel::PAYTYPE_WATER_HOT;
+				$price = $price['hot_water_price'];
+				break;
+			case self::TYPE_WATER_C:
+				$type  = Ordermodel::PAYTYPE_WATER;
+				$price = $price['cold_water_price'];
+				break;
+			default:
+				throw new Exception('未识别的账单类型！');
+				break;
+		}
+//		var_dump($price);die();
+		if (!isset($last_reading->this_reading)) {
+			return false;
+		}
+		$money = ($this_reading->this_reading - $last_reading->this_reading) * $price;
+		if (0.01 > $money) {
+			return false;
+		}
+		
+		//分进角，比如 1.01 元，计为 1.1 元
+		$money = ceil($money * $this_reading->weight / 10) / 10;
+		$this->CI = &get_instance();
+		$this->CI->load->helper('string');
+		$order = new Ordermodel();
+		$resident = Residentmodel::where('id',$this_reading->resident_id)->first(['id','customer_id','uxid']);
+		$arr   = [
+			'number'        => date('YmdHis') . random_string('numeric', 10),
+			'type'          => $type,
+			'year'          => $this_reading->year,
+			'month'         => $this_reading->month,
+			'money'         => $money,
+			'paid'          => $money,
+			'store_id'      => $this_reading->store_id,
+			'resident_id'   => $this_reading->resident_id,
+			'room_id'       => $this_reading->room_id,
+			'employee_id'   => $this->CI->employee->id,
+			'customer_id'   => $resident->customer_id,
+			'uxid'          => $resident->uxid,
+			'status'        => Ordermodel::STATE_GENERATED,
+			'deal'          => Ordermodel::DEAL_UNDONE,
+			'pay_status'    => Ordermodel::PAYSTATE_RENEWALS,
+			'transfer_id_s' => $last_reading->id,
+			'transfer_id_e' => $this_reading->id,
+		];
+		try {
+			DB::beginTransaction();
+			$order->fill($arr);
+			$order->save();
+			$transfer_last = Meterreadingtransfermodel::where('id',$last_reading->id)->first();
+			$transfer_last->order_status = 'HASORDER';
+			$transfer_last->save();
+			$transfer_this = Meterreadingtransfermodel::where('id',$this_reading->id)->first();
+			$transfer_this->order_status = 'HASORDER';
+			$transfer_this->save();
+			DB::commit();
+			return true;
+		} catch (Exception $e) {
+			DB::rollBack();
+			return false;
+		}
+	}
 }
 
 
