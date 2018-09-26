@@ -51,17 +51,14 @@ class Meter extends MY_Controller
 	
 	public function saveReading()
 	{
-		$this->load->model('meterreadingmodel');
-		$this->load->model('storemodel');
-		$this->load->model('roomunionmodel');
-		$this->load->model('smartdevicemodel');
 		$transfer = new Meterreadingtransfermodel();
-		$data = $this->input->post('data');
-		$data = json_decode($data);
+		$data     = $this->input->post('data');
+		$data     = json_decode($data,true);
 		//存储导入数据
 		$res = $transfer->updateReading($data);
 		$this->api_res(0);
 	}
+	
 	/**
 	 * 检查表计读数类型
 	 */
@@ -77,24 +74,13 @@ class Meter extends MY_Controller
 		return $type;
 	}
 	
-	/**
-	 * 转换表读数为数组
-	 * excel数据数组格式：
-	 * 序号 房间号 本次读数 楼栋ID 权重
-	 *  0    1      2      3    4
-	 * @return array
-	 */
-	private function uploadOssSheet()
-	{
-		
-		return;
-	}
-	
 	/*******************************************************************************************/
 	/***********************************生成水电账单逻辑*******************************************/
 	/*******************************************************************************************/
 	
-	//水电账单生成
+	/**
+	 *  生成水电账单
+	 */
 	public function utility()
 	{
 		$this->load->model('residentmodel');
@@ -128,6 +114,7 @@ class Meter extends MY_Controller
 		$filed        = ['id', 'store_id', 'room_id', 'resident_id', 'type', 'year', 'month', 'this_reading', 'this_time', 'weight', 'status', 'order_id', 'confirmed'];
 		foreach ($resident_ids as $k => $v) {
 			$resident_id = $resident_ids[$k]['resident_id'];
+//			var_dump($resident_id);die();
 			if ($resident_id == 0) {
 				continue;
 			}
@@ -137,6 +124,7 @@ class Meter extends MY_Controller
 				->where('type', $type)->where('resident_id', $resident_id);
 			//本月月末水电读数
 			$this_reading = $sql->where('status', Meterreadingtransfermodel::NORMAL)->first($filed);
+			var_dump($this_reading);die();
 			//上月月末水电读数
 			$last_reading = $sql_last->where('status', Meterreadingtransfermodel::NORMAL)->first($filed);
 			//换表初始读数
@@ -156,7 +144,7 @@ class Meter extends MY_Controller
 			 * 3.中途入住(上月月底无读数，本月两次读数)
 			 * 4.其它(暂未考虑)
 			 */
-			if (empty($this_reading)) {
+			/*if (empty($this_reading)) {
 				$number = DB::select("select `number` from boss_room_union WHERE `resident_id` = '$resident_id'");
 				$number = $number[0]->number;
 				log_message('debug', '房间' . "$number" . '的读数未上传');
@@ -202,14 +190,14 @@ class Meter extends MY_Controller
 						log_message('error', '房间' . "$number" . '的账单生成失败');
 					}
 				}
-			}
+			}*/
 		}
 		$total = '成功生成' . $sum . '条账单';
 		$this->api_res(0, ['error' => $error, 'correct' => $total]);
 	}
 	
 	/**
-	 * 生成水电订单
+	 * 生成水电账单
 	 */
 	private function addUtilityOrder($this_reading, $last_reading, $year, $month)
 	{

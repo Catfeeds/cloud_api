@@ -128,6 +128,9 @@ class Meterreadingtransfermodel extends Basemodel
 		$this_time = date('Y-m-d', time());
 		foreach ($data as $k => $v) {
 			$transfer               = Meterreadingtransfermodel::where('id',$v['id'])->first();
+			if (empty($transfer)){
+				continue;
+			}
 			$transfer->this_reading = $v['this_reading'];
 			$transfer->weight       = $v['weight'];
 			$transfer->this_time    = $this_time;
