@@ -41,6 +41,7 @@ class AuthHook {
             'company/company/boundwechat',
 
             'events/auth',
+//            'utility/meter/readingtemplate',
         ];
 
         $directory = $this->CI->router->fetch_directory();
