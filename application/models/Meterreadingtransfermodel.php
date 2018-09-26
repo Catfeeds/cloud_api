@@ -97,7 +97,7 @@ class Meterreadingtransfermodel extends Basemodel
 		$error = [];
 		$this_time = date('Y-m-d',time());
 		foreach ($sheetArray as $key => $item) {
-			//房间号
+			//ID
 			$id = $item[0];
 			//检查表读数
 			$read = trim($item[3]);
@@ -210,7 +210,7 @@ class Meterreadingtransfermodel extends Basemodel
 			->get()
 			->map(function ($s) {
 				if ($s->name == null) {
-					$s->name = '--空置';
+					$s->name = '---空置---';
 				}
 				$s->this_reading = '';
 				$s->weight       = 100;

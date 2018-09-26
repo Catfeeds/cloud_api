@@ -23,23 +23,44 @@ class Meter extends MY_Controller
 	/**********************************************************************************/
 	/***********************************水电逻辑重构*************************************/
 	/**********************************************************************************/
-	//导入表读数
+	
+	/**
+	 * 获取导入读数,并验证读数的正确性
+	 */
 	public function normalDeviceReading()
+	{
+		//转换excel读数为数组
+		$url       = $this->input->post('url');
+		$f_open    = fopen($url, 'r');
+		$file_name = APPPATH . 'cache/test.xlsx';
+		file_put_contents($file_name, $f_open);
+		$inputFileType = \PhpOffice\PhpSpreadsheet\IOFactory::identify($file_name);
+		$reader        = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($inputFileType);
+		$reader->setReadDataOnly(true);
+		$excel      = $reader->load($file_name);
+		$sheetArray = $excel->getActiveSheet()->toArray();
+		array_shift($sheetArray);
+		var_dump($sheetArray);
+		$transfer = new Meterreadingtransfermodel();
+		$data     = $transfer->checkInputData($sheetArray);
+		if (!empty($data['error'])) {
+			$this->api_res(10052, ['error' => $data['error']]);
+			return;
+		}
+		$this->api_res(0, $data);
+	}
+	
+	/*public function saveReading()
 	{
 		$this->load->model('meterreadingmodel');
 		$this->load->model('storemodel');
 		$this->load->model('roomunionmodel');
 		$this->load->model('smartdevicemodel');
-		$type       = $this->input->post('type');
-		$store_id   = $this->input->post('store_id');
-		$type       = $this->checkAndGetReadingType($type);                 //检查表计类型
-		$sheetArray = $this->uploadOssSheet();                              //转换excel读数为数组
-		$transfer   = new Meterreadingtransfermodel();
-		$data       = $transfer->checkAndGetInputData($sheetArray);
-		if (!empty($data['error'])) {
-			$this->api_res(10052, ['error' => $data['error']]);
-			return;
-		}
+		$type     = $this->input->post('type');
+		$store_id = $this->input->post('store_id');
+		//检查表计类型
+		$type     = $this->checkAndGetReadingType($type);
+		$transfer = new Meterreadingtransfermodel();
 		//存储导入数据
 		$res = $transfer->writeReading($data, $store_id, $type);
 		if (!empty($res)) {
@@ -47,7 +68,7 @@ class Meter extends MY_Controller
 		} else {
 			$this->api_res(0);
 		}
-	}
+	}*/
 	
 	/**
 	 * 检查表计读数类型
@@ -73,17 +94,8 @@ class Meter extends MY_Controller
 	 */
 	private function uploadOssSheet()
 	{
-		$url       = $this->input->post('url');
-		$f_open    = fopen($url, 'r');
-		$file_name = APPPATH . 'cache/test.xlsx';
-		file_put_contents($file_name, $f_open);
-		$inputFileType = \PhpOffice\PhpSpreadsheet\IOFactory::identify($file_name);
-		$reader        = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($inputFileType);
-		$reader->setReadDataOnly(true);
-		$excel = $reader->load($file_name);
-		$sheet = $excel->getActiveSheet()->toArray();
-		array_shift($sheet);
-		return $sheet;
+		
+		return ;
 	}
 	
 	/*******************************************************************************************/
@@ -227,7 +239,7 @@ class Meter extends MY_Controller
 				break;
 		}
 		
-		if(!isset($last_reading->this_reading)){
+		if (!isset($last_reading->this_reading)) {
 			return null;
 		}
 		
@@ -330,24 +342,23 @@ class Meter extends MY_Controller
 		$where['boss_meter_reading_transfer.status']       = 'NORMAL';
 		$transfer                                          = new Meterreadingtransfermodel();
 		$res                                               = $transfer->readingDetails($where);
-		$objPHPExcel = new Spreadsheet();
-		$sheet       = $objPHPExcel->getActiveSheet();
-		$i           = 1;
-		$objPHPExcel->getActiveSheet()->setCellValue('A' . $i, 'ID');
+		$objPHPExcel                                       = new Spreadsheet();
+		$sheet                                             = $objPHPExcel->getActiveSheet();
+		$i                                                 = 1;
+		$objPHPExcel->getActiveSheet()->setCellValue('A' . $i, 'ID(注:不可更改)');
 		$objPHPExcel->getActiveSheet()->setCellValue('B' . $i, '房间号');
 		$objPHPExcel->getActiveSheet()->setCellValue('C' . $i, '租户姓名');
 		$objPHPExcel->getActiveSheet()->setCellValue('D' . $i, '读数(推荐带两位小数)');
-		$objPHPExcel->getActiveSheet()->setCellValue('E' . $i, '权重');
+		$objPHPExcel->getActiveSheet()->setCellValue('E' . $i, '权重(取值范围:0~100)');
 		$sheet->fromArray($res, null, 'A2');
 		$writer = new Xlsx($objPHPExcel);
-		@header("Pragma: public");
-		@header("Expires: 0");
-		@header("Cache-Control:must-revalidate, post-check=0, pre-check=0");
-		@header("Content-Type:application/force-download");
-		@header("Content-Type:application/vnd.ms-excel");
-		@header("Content-Type:application/octet-stream");
-		@header("Content-Type:application/download");
-		@header("Content-Transfer-Encoding:binary");
+		header("Pragma: public");
+		header("Expires: 0");
+		header("Content-Type:application/octet-stream");
+		header("Content-Transfer-Encoding:binary");
+		header('Cache-Control: max-age=0');
+		header("Content-Disposition:attachment;filename=a.Xlsx");
 		$writer->save('php://output');
+		exit;
 	}
 }
