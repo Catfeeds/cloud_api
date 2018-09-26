@@ -632,7 +632,7 @@ CREATE TABLE `boss_meter_reading_transfer` (
   `resident_id` int(10) NOT NULL DEFAULT '0' COMMENT '租户ID',
   `year` int(8) NOT NULL DEFAULT '2018' COMMENT '年份',
   `month` int(4) NOT NULL DEFAULT '0' COMMENT '月份',
-  `type` enum('COLD_WATER_METER','HOT_WATER_METER','ELECTRIC_METER') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'COLD_WATER_METER' COMMENT '表计类型：冷水表，热水表，电表',
+  `type` enum('COLD_WATER_METER','HOT_WATER_METER','ELECTRIC_METER','GAS_METER') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'COLD_WATER_METER' COMMENT '表计类型：冷水表，热水表，电表, 燃气',
   `last_reading` float(10,2) NOT NULL DEFAULT '0.00' COMMENT '上一次的读数',
   `last_time` datetime NOT NULL DEFAULT '2017-01-01 00:00:00' COMMENT '上次抄表时间',
   `this_reading` float(10,2) NOT NULL DEFAULT '0.00' COMMENT '最新读数',
