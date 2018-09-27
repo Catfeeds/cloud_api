@@ -118,12 +118,12 @@ class Meter extends MY_Controller
 			if ($resident_id == 0) {
 				continue;
 			}
-			$condition_this = [$year, $month, $type, $resident_id, "NORMAL", "NOORDER", $store_id,];
-			$condition_last = [$year_last, $month_last, $type, $resident_id, "NORMAL", "NOORDER", $store_id,];
-			$condition_new  = [$year, $month, $type, $resident_id, "NORMAL", "CHANGE_NEW", $store_id,];
-			$condition_rent = [$year, $month, $type, $resident_id, "NORMAL", "NEW_RENT", $store_id,];
+			$condition_this = [$year, $month, $type, $resident_id, "NORMAL", $store_id,];
+			$condition_last = [$year_last, $month_last, $type, $resident_id, "NORMAL", $store_id,];
+			$condition_new  = [$year, $month, $type, $resident_id, "CHANGE_NEW", $store_id,];
+			$condition_rent = [$year, $month, $type, $resident_id, "NEW_RENT", $store_id,];
 			//sql
-			$sql = "select t_reading.* ".
+			$sql = "select t_reading.* " .
 				"from boss_meter_reading_transfer as t_reading " .
 				"LEFT JOIN boss_room_union as t_room ON t_reading.room_id = t_room.id " .
 				"LEFT JOIN boss_store as t_store ON t_reading.store_id = t_store.id " .
@@ -132,11 +132,12 @@ class Meter extends MY_Controller
 				"and t_reading.type = ? " .
 				"and t_reading.resident_id = ? " .
 				"and t_reading.status = ? " .
-				"and t_reading.order_status = ? " .
 				"and t_store.id = ? " .
 				"and t_reading.deleted_at is null";
+			//账单状态
+			$order_status = "and t_reading.order_status = 'NOORDER' ";
 			//本次读数
-			$this_reading = DB::select($sql, $condition_this);
+			$this_reading = DB::select($sql . $order_status, $condition_this);
 			//上月月底读数
 			$last_reading = DB::select($sql, $condition_last);
 			//换表初始读数
