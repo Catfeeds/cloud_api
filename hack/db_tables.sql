@@ -1907,12 +1907,17 @@ CREATE TABLE `risk_record` (
 ) ENGINE=InnoDB AUTO_INCREMENT=946 DEFAULT CHARSET=utf8;
 
 
-
-
-
-
-
-
-
-
+CREATE TABLE `boss_attract_prize` (
+`id`  int UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '吸粉活动奖品' ,
+`activity_id`  int UNSIGNED NOT NULL COMMENT '活动id' ,
+`count`  int UNSIGNED NOT NULL COMMENT '奖品总数' ,
+`sented`  int NOT NULL COMMENT '已发放' ,
+`limit`  int UNSIGNED NOT NULL COMMENT '达到多少标准发放' ,
+`single`  int UNSIGNED NOT NULL COMMENT '单次发放数量' ,
+`coupontype_id`  int NOT NULL COMMENT '发放的优惠券id' ,
+`created_at`  datetime NOT NULL DEFAULT '0000-00-00 00:00:00' ,
+`updated_at`  datetime NOT NULL DEFAULT '0000-00-00 00:00:00' ,
+`deleted_at`  datetime NULL ,
+PRIMARY KEY (`id`)
+);
 
