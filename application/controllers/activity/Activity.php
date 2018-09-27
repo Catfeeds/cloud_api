@@ -1,6 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 use Carbon\Carbon;
+use Illuminate\Database\Capsule\Manager as DB;
 /**
  * Author:      hfq<1326432154@qq.com>
  * Date:        2018/5/31
@@ -60,8 +61,8 @@ class Activity extends MY_Controller
         $filed = ['id', 'name', 'start_time', 'end_time', 'description', 'coupon_info', 'type',
             'limit', 'employee_id', 'qrcode_url', 'activity_type', 'prize_id', 'share_img', 'share_title', 'share_des'];
 
-        $where_id = empty($post['id']) ? [] :['id'=>$post['id']];
-        $where_type = empty($post['type']) ? [] :['activity_type'=>$post['type']];
+        $where_id = empty($post['id']) ? [] : ['id' => $post['id']];
+        $where_type = empty($post['type']) ? [] : ['activity_type' => $post['type']];
         $activity = Activitymodel::where('activity_type', '!=', 'NORMAL')
             ->where('activity_type', '!=', '')
             ->where('coupon_info', 'like', "%$ac_name%")
@@ -90,27 +91,30 @@ class Activity extends MY_Controller
             ->count();
         $count = ceil($count / PAGINATE);
         if (!$activity) {
-            $this->api_res(0, []);
+            $this->api_res(0, ['count' => 0, 'list' => []]);
             return false;
         }
-        $lo_data =[];
-        $no_date =[];
-        if(isset($activity['LOWER'])){
-            $lo_data  =  $this->ac_up($activity['LOWER']);
+        $lo_data = [];
+        $no_date = [];
+        if (isset($activity['LOWER'])) {
+            $lo_data = $this->ac_up($activity['LOWER']);
         }
-        if(isset($activity['NORMAL'])){
-         $no_date =  $this->ac_up($activity['NORMAL']);
+        if (isset($activity['NORMAL'])) {
+            $no_date = $this->ac_up($activity['NORMAL']);
         }
-        $data_limit = array_merge($no_date,$lo_data);
-        $data = array_slice($data_limit,$offset,PAGINATE);
+        $data_limit = array_merge($no_date, $lo_data);
+        $data = array_slice($data_limit, $offset, PAGINATE);
         $this->api_res(0, ['count' => $count, 'list' => $data]);
     }
+
+
     /*
      * 数据处理
      * */
-    private function ac_up($activity){
+    private function ac_up($activity)
+    {
         foreach ($activity as $key => $coupon) {
-            $prize = Activityprizemodel::where('id', $coupon['prize_id'])->select(['prize','count','grant'])->first();
+            $prize = Activityprizemodel::where('id', $coupon['prize_id'])->select(['prize', 'count', 'grant'])->first();
             $p = unserialize($prize->prize);
             $count = unserialize($prize->count);
             $grant = unserialize($prize->grant);
@@ -119,21 +123,21 @@ class Activity extends MY_Controller
             foreach ($couponarr as $value) {
                 $str .= $value['name'] . '/';
             }
-            if($coupon['activity_type'] == 'OLDBELTNEW' || $coupon['activity_type'] == 'CHECKIN'){
+            if ($coupon['activity_type'] == 'OLDBELTNEW' || $coupon['activity_type'] == 'CHECKIN') {
                 $participate = Couponmodel::where('activity_id', $coupon['id'])->groupBy('resident_id')->count();
-                $lucky_draw = Couponmodel::where('activity_id',$coupon['id'])->count();
-            }ELSE{
-            $participate = Drawmodel::where('activity_id', $coupon['id'])->count();
-            $lucky_draw = Drawmodel::where(['activity_id' => $coupon['id'], 'is_draw' => '1'])->count();
+                $lucky_draw = Couponmodel::where('activity_id', $coupon['id'])->count();
+            } ELSE {
+                $participate = Drawmodel::where('activity_id', $coupon['id'])->count();
+                $lucky_draw = Drawmodel::where(['activity_id' => $coupon['id'], 'is_draw' => '1'])->count();
             }
             $employee_name = Employeemodel::where('id', $coupon['employee_id'])->first(['name']);
-            $store_id = Storeactivitymodel::where('activity_id',$coupon['id'])->with('store')->get(['store_id'])->toarray();
+            $store_id = Storeactivitymodel::where('activity_id', $coupon['id'])->with('store')->get(['store_id'])->toarray();
             $store_str = '';
             foreach ($store_id as $value) {
                 $store_str .= $value['store']['name'] . '/';
             }
 
-            $coupon_count = Couponmodel::where('activity_id',$coupon['id'])->count();
+            $coupon_count = Couponmodel::where('activity_id', $coupon['id'])->count();
             $data[$key]['id'] = $coupon['id'];
             $data[$key]['description'] = $coupon['description'];
             $data[$key]['user'] = $employee_name->name;
@@ -158,26 +162,29 @@ class Activity extends MY_Controller
             } elseif (time() < strtotime($coupon['start_time'])) {
                 $data[$key]['status'] = 'Notbeginning';
             } elseif (time() > strtotime($coupon['end_time'])) {
-                Activitymodel::where('id',$coupon['id'])->update(['type'=>'LOWER']);
+                Activitymodel::where('id', $coupon['id'])->update(['type' => 'LOWER']);
                 $data[$key]['status'] = 'End';
             } elseif (time() < strtotime($coupon['end_time']) && time() > strtotime($coupon['start_time'])) {
                 $data[$key]['status'] = 'Normal';
             }
-            $data[$key]['store_name'] =$store_str;
+            $data[$key]['store_name'] = $store_str;
         }
         return $data;
     }
+
     /*
      * 根据城市获取门店
      * */
-    public function getStore(){
-        $post = $this->input->post(null,true);
+    public function getStore()
+    {
+        $post = $this->input->post(null, true);
         $this->load->model('storemodel');
-        $city_name = empty($post['city'])? '' : $post['city'];
-        $city = explode(',',$city_name);
-        $store = Storemodel::wherein('city',$city)->get(['id','name'])->toArray();
-        $this->api_res(0,$store);
+        $city_name = empty($post['city']) ? '' : $post['city'];
+        $city = explode(',', $city_name);
+        $store = Storemodel::wherein('city', $city)->get(['id', 'name'])->toArray();
+        $this->api_res(0, $store);
     }
+
     /*
      * 新增活动
      * 大转盘的活动
@@ -277,7 +284,7 @@ class Activity extends MY_Controller
         $activity['prize_id'] = $prize_id;
         $activity['share_img'] = $this->splitAliossUrl($post['images']);
         $activity['share_des'] = $post['share_des'];
-            $activity['share_title'] = $post['share_title'];
+        $activity['share_title'] = $post['share_title'];
         $activity['activity_type'] = 'SCRATCH';
         $insertId = Activitymodel::insertGetId($activity);
         $store_id = explode(',', $post['store_id']);
@@ -302,11 +309,11 @@ class Activity extends MY_Controller
         $this->load->model('activityprizemodel');
         $store_ids = Storeactivitymodel::where(function ($query) {
             $query->orWhereHas('activity', function ($query) {
-                $query->where('activity_type', 'CHECKIN')->where('type','!=','LOWER')->where('end_time', '>=',Carbon::now());
+                $query->where('activity_type', 'CHECKIN')->where('type', '!=', 'LOWER')->where('end_time', '>=', Carbon::now());
             });
         })->get(['store_id'])->toArray();
         $store_id = explode(',', $post['store_id']);
-        if( 0 != count($store_ids)) {
+        if (0 != count($store_ids)) {
             $stores = [];
             foreach ($store_ids as $value) {
                 $stores[] = $value['store_id'];
@@ -363,11 +370,11 @@ class Activity extends MY_Controller
         $this->load->model('activityprizemodel');
         $store_ids = Storeactivitymodel::where(function ($query) {
             $query->orWhereHas('activity', function ($query) {
-                $query->where('activity_type', 'OLDBELTNEW')->where('type','!=','LOWER')->where('end_time','>=',Carbon::now());
-       });
+                $query->where('activity_type', 'OLDBELTNEW')->where('type', '!=', 'LOWER')->where('end_time', '>=', Carbon::now());
+            });
         })->get(['store_id'])->toArray();
         $store_id = explode(',', $post['store_id']);
-        if( 0 != count($store_ids)) {
+        if (0 != count($store_ids)) {
             $stores = [];
             foreach ($store_ids as $value) {
                 $stores[] = $value['store_id'];
@@ -643,5 +650,166 @@ class Activity extends MY_Controller
         return $config;
     }
 
+    /**
+     * 添加吸粉活动
+     */
+    public function addAttractActivity()
+    {
+        $input = $this->input->post(null, true);
+        $field  = ['name','image','start_time','end_time','rule','description','prizes[]'];
+        if (!$this->validationText($this->validateAttractConfig())) {
+            $this->api_res(0, ['error' => $this->form_first_error($field)]);
+            return;
+        }
+
+
+        $this->load->model('activitymodel');
+        $this->load->model('attractprizemodel');
+
+        //判断有没有存在的吸粉活动，如果有则不能新增
+        if (Activitymodel::where([
+            'type'=>Activitymodel::STATE_NORMAL,
+            'status'=>Activitymodel::STATE_NORMAL,
+            'activity_type'=> Activitymodel::TYPE_ATTRACT,
+            ])->exists()) {
+            $this->api_res(11109);
+            return;
+        }
+
+        $image_url  = $input['image'];
+        $image_path = $this->downloadAttractImage($image_url);
+        //把图片下载到本地获取$image_path
+
+        try{
+            DB::BeginTransaction();
+            $activity   = new Activitymodel();
+            $activity->name = $input['name'];
+            $activity->type = Activitymodel::STATE_NORMAL;
+            $activity->status   = Activitymodel::STATE_NORMAL;
+            $activity->rule = $input['rule'];
+            $activity->description  = $input['description'];
+            $activity->start_time   = $input['start_time'];
+            $activity->end_time     = $input['end_time'];
+            $activity->activity_type    = Activitymodel::TYPE_ATTRACT;
+            $activity->employee_id  = empty($this->employee->id)?1:$this->employee->id;
+            $activity->data = ['image_url'=>$image_url,'image_path'=>$image_path];
+            $activity->save();
+
+            $limit_array = [];
+            $prizes = [];
+            foreach ($input['prizes'] as $prize) {
+                $limit_array[]  = $prize['limit'];
+                $prizes[]   = [
+                    'activity_id'   => $activity->id,
+                    'count'         => $prize['count'],
+                    'sented'        => 0,
+                    'limit'         => $prize['limit'],
+                    'single'        => $prize['single'],
+                    'coupontype_id' => $prize['coupontype_id'],
+                ];
+            }
+            Attractprizemodel::insert($prizes);
+            $activity->data = array_merge($activity->data,['limit'=>$limit_array]);
+            $activity->save();
+
+            DB::commit();
+        }catch (Exception $e){
+            DB::rollBack();
+            throw $e;
+        }
+
+    }
+
+    /**
+     * 新增吸粉活动的规则
+     */
+    public function validateAttractConfig()
+    {
+        return array(
+            array(
+                'field' => 'name',
+                'label' => '活动名称',
+                'rules' => 'required|trim',
+                'error' => array(
+                    'required'  => '请填写%s',
+                )
+            ),
+            array(
+                'field' => 'image',
+                'label' => '图片地址',
+                'rules' => 'required|trim',
+                'error' => array(
+                    'required'  => '请上传%s',
+                )
+            ),
+            array(
+                'field' => 'start_time',
+                'label' => '活动开始时间',
+                'rules' => 'required|trim',
+                'error' => array(
+                    'required'  => '请选择%s',
+                )
+            ),
+            array(
+                'field' => 'end_time',
+                'label' => '活动结束时间',
+                'rules' => 'required|trim',
+                'error' => array(
+                    'required'  => '请选择%s',
+                )
+            ),
+            array(
+                'field' => 'rule',
+                'label' => '活动规则',
+                'rules' => 'required|trim',
+                'error' => array(
+                    'required'  => '请填写%s',
+                )
+            ),
+            array(
+                'field' => 'description',
+                'label' => '活动描述',
+                'rules' => 'required|trim',
+                'error' => array(
+                    'required'  => '请填写%s',
+                )
+            ),
+            array(
+                'field' => 'prizes[]',
+                'label' => '奖品配置',
+                'rules' => 'required|trim',
+                'error' => array(
+                    'required'  => '请设置%s',
+                )
+            ),
+        );
+    }
+
+
+    /**
+     * @param $url
+     * @return string
+     * @throws Exception
+     * 把吸粉活动对应的图片下载到本地
+     */
+    private function downloadAttractImage($url){
+        $path   = FCPATH.'attract/'.date('Y-m-d',time()).'/';
+        $pathinfo   = pathinfo($url);
+        $filename   = $pathinfo['filename'].rand(10,99).'.'.$pathinfo['extension'];
+        $fullpath   = $path.$filename;
+        if (!is_dir(FCPATH.'attract/')) {
+            if (!mkdir(FCPATH.'attract/',0777)) {
+                throw new Exception('无法创建目录, 请稍后重试');
+            }
+        }
+        if (!is_dir($path)) {
+            if (!mkdir($path, 0777)) {
+                throw new Exception('无法创建目录, 请稍后重试');
+            }
+        }
+        $file   = file_get_contents($url);
+        file_put_contents($fullpath,$file,0777);
+        return $fullpath;
+    }
 
 }
