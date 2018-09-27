@@ -1,6 +1,6 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
-
+use Illuminate\Database\Capsule\Manager as DB;
 use Carbon\Carbon;
 
 /**
@@ -525,7 +525,7 @@ class Roomunionmodel extends Basemodel
 		foreach ($sheetArray as $key => $item) {
 			$count = count($item);
 			for ($i = 0; $i < $count; $i++) {
-				if (empty($item[$i])) {
+				if (is_null($item[$i])) {
 					$error = '上传数据不能为空';
 					return $error;
 				}
@@ -569,7 +569,7 @@ class Roomunionmodel extends Basemodel
 		foreach ($sheetArray as $key => $value) {
 			$arr = Roomunionmodel::where('store_id', $store_id)->where('number', $value[2])->count();
 			if (0 == $arr) {
-				$data[$key]['company_id']        = 1;
+				$data[$key]['company_id']        = $this->company->id;
 				$data[$key]['store_id']          = $store_id;
 				$room                            = Roomtypemodel::where('store_id', $store_id)->where('name', $value[1])->select(['id'])->first();
 				$data[$key]['room_type_id']      = $room->id;
@@ -598,5 +598,107 @@ class Roomunionmodel extends Basemodel
 		}
 		return $error;
 	}
-	
+
+
+    /*
+     * 检查上传数组
+     * */
+    public function priceInputData($sheetArray, $store_id)
+    {
+        $error = [];
+        $store = Storemodel::where('id', $store_id)->select(['name'])->first();
+        if(!is_array($sheetArray)) {
+             return $error[] = "格式出错";
+        }
+        foreach ($sheetArray as $key => $item) {
+            $count = count($item);
+            for ($i = 0; $i < $count; $i++) {
+                if (is_null($item[$i])) {
+                    $error = '上传数据不能为空';
+                    return $error;
+                }
+            }
+            //门店名称
+            $store_name = $item[0];
+            if ($store_name != $store->name) {
+                $error[] = '请检查门店名称:' . $store_name . ',与您选择的' . $store->name . '不相符';
+                return $error;
+            }
+            //房型
+            $type = trim($item[2]);
+            $room_type = Roomtypemodel::where('store_id', $store_id)->where('name', $type)->select(['id'])->first();
+            if (!$room_type) {
+                $error[] = '请检查房型：' . $item[2] . ',查无此房型';
+                return $error;
+            }
+            //房间号
+            $number = trim($item[1]);
+            $room_number = Roomunionmodel::where('store_id', $store_id)
+                ->where('number', $number)->select(['id'])->first();
+
+            if (!$room_number) {
+                $error[] = '请检查房间号：' . $item[1];
+                return $error;
+            }
+            //租金
+            $rent = trim($item[4]);
+            $hot_water = trim($item[6]);
+            $cold_water = trim($item[8]);
+            $property = trim($item[10]);
+            $electricity = trim($item[12]);
+            if (!is_numeric($rent) || !is_numeric($hot_water) || !is_numeric($cold_water) || !is_numeric($property) || !is_numeric($electricity)) {
+                $error[] = '请检查租金：' . $rent . '热水费：' . $hot_water . '冷水费：' . $cold_water . '电费：' . $electricity .
+                    '物业费：' . $property . '必须为数字';
+                return $error;
+            }
+        }
+
+        return $error;
+    }
+
+    /*
+     * 导入数据
+     * */
+    public function writePrice($sheetArray, $store_id){
+        $error = [];
+        if(is_array($sheetArray)) {
+            foreach ($sheetArray as $key => $value) {
+                $arr = Roomunionmodel::where('store_id', $store_id)->where('number', $value[1])->select(['id'])->first();
+                if (!$arr) {
+                    $error[] = "请检查房间号:" . $value[1] . "查无此房间号";
+                    continue;
+                }
+                if($value[3] == $value[4] && $value[5] == $value[6] && $value[7] == $value[8] && $value[9] == $value[10] && $value[11] == $value[12]){
+                    continue;
+                }
+                try {
+                    DB::beginTransaction();
+                    $arr->update(['rent_price' => $value[4], 'property_price' => $value[6], 'cold_water_price' => $value[10],
+                        'hot_water_price' => $value[8], 'electricity_price' => $value[12]]);
+                    $record = [
+                        'roomunion_id'           => $arr->id,
+                        'employee_id'            => $this->current_id,
+                        'rent_price'             => $value[3],
+                        'now_rent_price'         => $value[4],
+                        'property_price'         => $value[5],
+                        'now_property_price'     => $value[6],
+                        'cold_water_price'       => $value[9],
+                        'now_cold_water_price'   => $value[10],
+                        'hot_water_price'        => $value[7],
+                        'now_hot_water_price'    => $value[8],
+                        'electricity_price'      => $value[11],
+                        'now_electricity_price'  => $value[12],
+                        'reason'              => '批量调价',
+                    ];
+                    Pricecontrolrecordmodel::insert($record);
+                    DB::commit();
+                } catch (Exception $e) {
+                    DB::rollBack();
+                    log_message('error', $e->getMessage());
+                    throw  $e;
+                }
+            }
+        }
+        return $error;
+    }
 }

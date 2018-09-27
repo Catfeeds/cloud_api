@@ -356,25 +356,31 @@ class Roomunion extends MY_Controller {
         * 获取集中式房源导入模版
         * */
     public function getUnionTemplate(){
-        $data_excel = ['橘子公寓高新店', '一室一厅', '101', '1988', '200', '0', '6', '1', '40', '8'];
-        $store = '橘子公寓高新店';
-        $filename = date('Y-m-d-H:i:s') . '导出' . $store  . '_房间导入.Xlsx';
-        $row      = count($data_excel) + 3;
-        $phpexcel = new Spreadsheet();
-        $sheet    = $phpexcel->getActiveSheet();
-        $this->createPHPExcel($phpexcel, $filename); //创建excel
-        $this->setExcelTitle($phpexcel, $store); //设置表头
-        $this->setExcelFirstRow($phpexcel); //设置各字段名称
-        $sheet->fromArray($data_excel, null, 'A4'); //想excel中写入数据
-        $this->setExcelColumnWidth($phpexcel); //设置Excel每列宽度
-        $this->setAlignCenter($phpexcel, $row); //设置记录值居中
-        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($phpexcel, 'Xlsx');
+        $data = Array();
+        $objPHPExcel = new Spreadsheet();
+        $sheet       = $objPHPExcel->getActiveSheet();
+        $i           = 1;
+        $objPHPExcel->getActiveSheet()->setCellValue('A' . $i, '门店名称');
+        $objPHPExcel->getActiveSheet()->setCellValue('B' . $i, '房型');
+        $objPHPExcel->getActiveSheet()->setCellValue('C' . $i, '房间号');
+        $objPHPExcel->getActiveSheet()->setCellValue('D' . $i, '租金');
+        $objPHPExcel->getActiveSheet()->setCellValue('E' . $i, '物业费');
+        $objPHPExcel->getActiveSheet()->setCellValue('F' . $i, '热水单价');
+        $objPHPExcel->getActiveSheet()->setCellValue('G' . $i, '冷水单价');
+        $objPHPExcel->getActiveSheet()->setCellValue('H' . $i, '用电单价');
+        $objPHPExcel->getActiveSheet()->setCellValue('I' . $i, '面积');
+        $objPHPExcel->getActiveSheet()->setCellValue('J' . $i, '所在层');
+        $sheet->fromArray($data, null, 'A2');
+        $writer = new Xlsx($objPHPExcel);
         header("Pragma: public");
         header("Expires: 0");
+        header("Cache-Control:must-revalidate, post-check=0, pre-check=0");
+        header("Content-Type:application/force-download");
+        header("Content-Type:application/vnd.ms-excel");
         header("Content-Type:application/octet-stream");
+        header("Content-Type:application/download");
+        header("Content-Disposition:attachment;filename='集中式房间模版.xlsx'");
         header("Content-Transfer-Encoding:binary");
-        header('Cache-Control: max-age=0');
-        header("Content-Disposition:attachment;filename=$filename");
         $writer->save('php://output');
         exit;
     }

@@ -930,6 +930,33 @@ CREATE TABLE `boss_provides` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `boss_price_control_record`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `boss_price_control_record` (
+  `id` int(8) NOT NULL,
+  `roomunion_id` int(8) NOT NULL,
+  `employee_id` int(8) NOT NULL,
+  `rent_price` varchar(255) DEFAULT NULL,
+  `now_rent_price` varchar(255) DEFAULT NULL,
+  `property_price` varchar(255) DEFAULT NULL,
+  `now_property_price` varchar(255) DEFAULT NULL,
+  `cold_water_price` varchar(255) DEFAULT NULL,
+  `now_cold_water_price` varchar(255) DEFAULT NULL,
+  `hot_water_price` varchar(255) DEFAULT NULL,
+  `now_hot_water_price` varchar(255) DEFAULT NULL,
+  `electricity_price` varchar(255) DEFAULT NULL,
+  `reason` varchar(255) DEFAULT NULL,
+  `now_electricity_price` varchar(255) DEFAULT NULL,
+  `created_at` datetime DEFAULT '0000-00-00 00:00:00',
+  `deleted_at` datetime DEFAULT '0000-00-00 00:00:00',
+  `updated_at` datetime DEFAULT '0000-00-00 00:00:00'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `boss_reserve_order`
 --
 
