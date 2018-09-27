@@ -18,7 +18,8 @@
 		"overtrue/wechat": "~3.1",
 		"aliyuncs/oss-sdk-php": "~2.3",
 		"phpoffice/phpspreadsheet": "^1.2",
-		"mikehaertl/php-pdftk": "^0.4.4"
+		"mikehaertl/php-pdftk": "^0.4.4",
+		"intervention/image": "^2.4"
 	},
 	"suggest": {
 		"paragonie/random_compat": "Provides better randomness in PHP 5.x"
