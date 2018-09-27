@@ -166,8 +166,10 @@ class Meterreadingtransfermodel extends Basemodel
 		$this_time = date('Y-m-d', time());
 		foreach ($data as $key => $value) {
 			$where['room_id'] = $value[0];
-			$transfer         = Meterreadingtransfermodel::where($where)->first();
+			log_message('debug', 'writeReading查询条件'.json_encode($where));
+			$transfer = Meterreadingtransfermodel::where($where)->first();
 			if (empty($transfer)) {
+				log_message('debug', 'writeReading-transfer');
 				continue;
 			}
 			if ($transfer->resident_id == 0) {
@@ -177,7 +179,12 @@ class Meterreadingtransfermodel extends Basemodel
 			}
 			$transfer->this_reading = $value[1];
 			$transfer->this_time    = $this_time;
-			$transfer->save();
+			if($transfer->save()){
+				log_message('debug','writeReading 更新成功');
+				
+			}else{
+				log_message('error','writeReading 更新失败');
+			}
 		}
 	}
 	
