@@ -2,6 +2,7 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 use Carbon\Carbon;
 use Illuminate\Database\Capsule\Manager as DB;
+use EasyWeChat\Foundation\Application;
 /**
  * Author:      hfq<1326432154@qq.com>
  * Date:        2018/5/31
@@ -710,15 +711,31 @@ class Activity extends MY_Controller
             }
             Attractprizemodel::insert($prizes);
             $activity->data = array_merge($activity->data,['limit'=>$limit_array]);
+            $qrcode_url = $this->generateAttractQrcode($activity->id);
+            $activity->qrcode_url   = $qrcode_url;
             $activity->save();
-
             DB::commit();
         }catch (Exception $e){
             DB::rollBack();
             throw $e;
         }
-
+        $this->api_res(0,$qrcode_url);
     }
+
+    /**
+     * 生成吸粉活动二维码
+     */
+    private function generateAttractQrcode($activity_id)
+    {
+        $sceneId   = sprintf('1%03d%06d',$activity_id,0);
+        $this->load->helper('common');
+        $app    = new Application(getWechatCustomerConfig());
+        $qrcode = $app->qrcode;
+        $result = $qrcode->forever($sceneId);
+        $qrcodeUrl  = $qrcode->url($result->ticket);
+        return $qrcodeUrl;
+    }
+
 
     /**
      * 新增吸粉活动的规则
