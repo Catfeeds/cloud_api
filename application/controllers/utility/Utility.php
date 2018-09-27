@@ -227,7 +227,7 @@ class Utility extends MY_Controller
 			$where_public['store_id'] = intval($post['store_id']);
 		}
 		if (!empty($post['status'])) {
-			$where['status_order'] = trim($post['status']);
+			$where['sorder_status'] = trim($post['status']);
 		}
 		if (!empty($post['month'])) {
 			$where['month'] = intval($post['month']);
