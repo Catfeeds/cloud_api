@@ -165,14 +165,14 @@ class Meterreadingtransfermodel extends Basemodel
 		              'status'       => 'NORMAL'];
 		$this_time = date('Y-m-d', time());
 		foreach ($data as $key => $value) {
-			$where['room_id'] = $value['room_id'];
+			$where['room_id'] = $value[0];
 			$transfer         = Meterreadingtransfermodel::where($where)->first();
 			if ($transfer->resident_id == 0) {
 				$transfer->order_status = 'NORESIDENT';
 			} else {
 				$transfer->order_status = 'NOORDER';
 			}
-			$transfer->this_reading = $value['this_reading'];
+			$transfer->this_reading = $value[1];
 			$transfer->this_time    = $this_time;
 			$transfer->save();
 		}
