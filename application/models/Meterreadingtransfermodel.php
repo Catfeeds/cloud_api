@@ -167,6 +167,9 @@ class Meterreadingtransfermodel extends Basemodel
 		foreach ($data as $key => $value) {
 			$where['room_id'] = $value[0];
 			$transfer         = Meterreadingtransfermodel::where($where)->first();
+			if (empty($transfer)) {
+				continue;
+			}
 			if ($transfer->resident_id == 0) {
 				$transfer->order_status = 'NORESIDENT';
 			} else {
