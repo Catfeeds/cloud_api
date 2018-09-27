@@ -692,10 +692,11 @@ class Activity extends MY_Controller
             $activity->start_time   = $input['start_time'];
             $activity->end_time     = $input['end_time'];
             $activity->activity_type    = Activitymodel::TYPE_ATTRACT;
-            $activity->employee_id  = empty($this->employee->id)?1:$this->employee->id;
-            $activity->data = ['image_url'=>$image_url,'image_path'=>$image_path];
+            $activity->employee_id  = $this->employee->id;
+            $activity->data = [];
+            $activity->back_url = $this->splitAliossUrl($image_url);
+            $activity->back_path= $image_path;
             $activity->save();
-
             $limit_array = [];
             $prizes = [];
             foreach ($input['prizes'] as $prize) {
@@ -809,13 +810,14 @@ class Activity extends MY_Controller
      * @throws Exception
      * 把吸粉活动对应的图片下载到本地
      */
-    private function downloadAttractImage($url){
-        $path   = FCPATH.'attract/'.date('Y-m-d',time()).'/';
+    private function downloadAttractImage($url)
+    {
+        $path   = APPPATH.'/cache/attract/'.date('Y-m-d',time()).'/';
         $pathinfo   = pathinfo($url);
         $filename   = $pathinfo['filename'].rand(10,99).'.'.$pathinfo['extension'];
         $fullpath   = $path.$filename;
-        if (!is_dir(FCPATH.'attract/')) {
-            if (!mkdir(FCPATH.'attract/',0777)) {
+        if (!is_dir(APPPATH.'/cache/attract/')) {
+            if (!mkdir(APPPATH.'/cache/attract/',0777)) {
                 throw new Exception('无法创建目录, 请稍后重试');
             }
         }
