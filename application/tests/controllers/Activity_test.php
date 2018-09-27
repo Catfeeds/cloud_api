@@ -1,6 +1,6 @@
 <?php
 
-class ControllerDemo_test extends TestCase
+class Activity_test extends TestCase
 {
 
     public function setUp()
