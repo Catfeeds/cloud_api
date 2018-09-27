@@ -28,15 +28,10 @@ class Uploadreading extends MY_Controller
 		$month      = $this->input->post('month');
 		$year       = $this->input->post('year');
 		$sheetArray = $this->input->post('data');
-		$sheetArray = json_decode($sheetArray, true);
-		$this->debug('uploaddata--->',$sheetArray);
-		$type       = Meterreadingtransfermodel::TYPE_WATER_C;
-		$transfer   = new Meterreadingtransfermodel();
-		$data       = $transfer->checkAndGetInputData($sheetArray);
-		if (!empty($data['error'])) {
-			$this->api_res(10052, ['error' => $data['error']]);
-			return;
-		}
+		$data       = json_decode($sheetArray, true);
+		$this->debug('uploaddata--->', $sheetArray);
+		$type     = Meterreadingtransfermodel::TYPE_WATER_C;
+		$transfer = new Meterreadingtransfermodel();
 		//存储导入数据
 		$res = $transfer->writeReading($data, $store_id, $type, $year, $month);
 		if (!empty($res)) {
@@ -59,15 +54,10 @@ class Uploadreading extends MY_Controller
 		$month      = $this->input->post('month');
 		$year       = $this->input->post('year');
 		$sheetArray = $this->input->post('data');
-		$sheetArray = json_decode($sheetArray, true);
-		$this->debug('uploaddata--->',$sheetArray);
-		$type       = Meterreadingtransfermodel::TYPE_WATER_H;
-		$transfer   = new Meterreadingtransfermodel();
-		$data       = $transfer->checkAndGetInputData($sheetArray);
-		if (!empty($data['error'])) {
-			$this->api_res(10052, ['error' => $data['error']]);
-			return;
-		}
+		$data       = json_decode($sheetArray, true);
+		$this->debug('uploaddata--->', $sheetArray);
+		$type     = Meterreadingtransfermodel::TYPE_WATER_H;
+		$transfer = new Meterreadingtransfermodel();
 		//存储导入数据
 		$res = $transfer->writeReading($data, $store_id, $type, $year, $month);
 		if (!empty($res)) {
@@ -90,15 +80,10 @@ class Uploadreading extends MY_Controller
 		$month      = $this->input->post('month');
 		$year       = $this->input->post('year');
 		$sheetArray = $this->input->post('data');
-		$sheetArray = json_decode($sheetArray, true);
-		$this->debug('uploaddata--->',$sheetArray);
-		$type       = Meterreadingtransfermodel::TYPE_ELECTRIC;
-		$transfer   = new Meterreadingtransfermodel();
-		$data       = $transfer->checkAndGetInputData($sheetArray);
-		if (!empty($data['error'])) {
-			$this->api_res(10052, ['error' => $data['error']]);
-			return;
-		}
+		$data       = json_decode($sheetArray, true);
+		$this->debug('uploaddata--->', $sheetArray);
+		$type     = Meterreadingtransfermodel::TYPE_ELECTRIC;
+		$transfer = new Meterreadingtransfermodel();
 		//存储导入数据
 		$res = $transfer->writeReading($data, $store_id, $type, $year, $month);
 		if (!empty($res)) {
@@ -117,7 +102,7 @@ class Uploadreading extends MY_Controller
 		$this->load->model('smartdevicemodel');
 		$this->load->model('roomunionmodel');
 		$transfer = new Meterreadingtransfermodel();
-		$res = $transfer->fillReading();
+		$res      = $transfer->fillReading();
 		$this->api_res(0);
 	}
 }

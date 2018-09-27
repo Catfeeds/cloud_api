@@ -1,6 +1,8 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+
 use Illuminate\Database\Capsule\Manager as DB;
+
 /**
  * Author:      zjh<401967974@qq.com>
  * Date:        2018/6/4 0004
@@ -127,21 +129,20 @@ class Meterreadingtransfermodel extends Basemodel
 	{
 		$this_time = date('Y-m-d', time());
 		foreach ($data as $k => $v) {
-			$transfer               = Meterreadingtransfermodel::where('id',$v['id'])
-				->whereIn('order_status',['NOREADING','NOORDER','NORESIDENT'])
+			$transfer = Meterreadingtransfermodel::where('id', $v['id'])
+				->whereIn('order_status', ['NOREADING', 'NOORDER', 'NORESIDENT'])
 				->first();
-			if (empty($transfer)){
+			if (empty($transfer)) {
 				continue;
 			}
-			if ($transfer->resident_id == 0){
-				$transfer->order_status = '';
-			}else{
-				$transfer->order_status = '';
+			if ($transfer->resident_id == 0) {
+				$transfer->order_status = 'NORESIDENT';
+			} else {
+				$transfer->order_status = 'NOORDER';
 			}
 			$transfer->this_reading = $v['this_reading'];
 			$transfer->weight       = $v['weight'];
 			$transfer->this_time    = $this_time;
-			
 			$transfer->save();
 		}
 		return true;
@@ -152,45 +153,29 @@ class Meterreadingtransfermodel extends Basemodel
 	 */
 	public function writeReading($data = [], $store_id, $type, $year, $month)
 	{
-		$error = [];
-		//获取所有房间号(number)
-		$number = [];
-		foreach ($data as $key => $value) {
-			$number[] = $data[$key]['number'];
-		}
-		//根据房间号获取住户id(resident_id)，房间id(room_id)
-		$arr = Roomunionmodel::where('store_id', $store_id)/*->whereIn('number',$number)*/
-		->orderBy('number')
-			->get(['id', 'number', 'resident_id', 'building_id'])->groupBy('number')->toArray();
 		//重组插入数据库所需数组
-		foreach ($data as $key => $value) {
-			$number   = $value['number'];
-			$transfer = new Meterreadingtransfermodel();
-			if (isset($arr[$value['number']])) {
-				$data[$key]['resident_id']   = $arr[$value['number']][0]['resident_id'];
-				$data[$key]['room_id']       = $arr[$value['number']][0]['id'];
-				$data[$key]['building_id']   = $arr[$value['number']][0]['building_id'];
-				$data[$key]['month']         = $month;
-				$data[$key]['year']          = $year;
-				$data[$key]['type']          = $type;
-				$data[$key]['store_id']      = $store_id;
-				$serial_number               = Smartdevicemodel::where('type', $type)->where('room_id', $arr[$value['number']][0]['id'])->first();
-				$data[$key]['serial_number'] = isset($serial_number->serial_number) ? $serial_number->serial_number : "";
-				$data[$key]                  = array_except($data[$key], ['number', 'error']);
-				$transfer->fill($data[$key]);
-				try {
-					$transfer->save();
-				} catch (Exception $e) {
-					log_message("error", '房间' . $number . '读数导入失败');
-					$error[] = '房间' . $number . '读数已存在';
-				}
-			} else {
-				log_message("error", '房间' . $number . '不存在');
-				$error[] = '房间' . $number . '不存在';
-				continue;
-			}
+		if (empty($data)) {
+			return false;
 		}
-		return $error;
+		$where     = ['store_id'     => $store_id,
+		              'type'         => $type,
+		              'year'         => $year,
+		              'month'        => $month,
+		              'order_status' => 'NOREADING',
+		              'status'       => 'NORMAL'];
+		$this_time = date('Y-m-d', time());
+		foreach ($data as $key => $value) {
+			$where['room_id'] = $value['room_id'];
+			$transfer         = Meterreadingtransfermodel::where($where)->first();
+			if ($transfer->resident_id == 0) {
+				$transfer->order_status = 'NORESIDENT';
+			} else {
+				$transfer->order_status = 'NOORDER';
+			}
+			$transfer->this_reading = $value['this_reading'];
+			$transfer->this_time    = $this_time;
+			$transfer->save();
+		}
 	}
 	
 	/**
@@ -247,7 +232,7 @@ class Meterreadingtransfermodel extends Basemodel
 	 * @param $last_reading => 上次读数及本次读数相关信息
 	 * @param $price => 价格(数组)包括冷热水电气
 	 */
-	public function utility($this_reading, $last_reading,$price)
+	public function utility($this_reading, $last_reading, $price)
 	{
 		switch ($this_reading->type) {
 			case self::TYPE_ELECTRIC:
@@ -276,12 +261,12 @@ class Meterreadingtransfermodel extends Basemodel
 		}
 		
 		//分进角，比如 1.01 元，计为 1.1 元
-		$money = ceil($money * $this_reading->weight / 10) / 10;
+		$money    = ceil($money * $this_reading->weight / 10) / 10;
 		$this->CI = &get_instance();
 		$this->CI->load->helper('string');
-		$order = new Ordermodel();
-		$resident = Residentmodel::where('id',$this_reading->resident_id)->first(['id','customer_id','uxid']);
-		$arr   = [
+		$order    = new Ordermodel();
+		$resident = Residentmodel::where('id', $this_reading->resident_id)->first(['id', 'customer_id', 'uxid']);
+		$arr      = [
 			'number'        => date('YmdHis') . random_string('numeric', 10),
 			'type'          => $type,
 			'year'          => $this_reading->year,
@@ -304,10 +289,10 @@ class Meterreadingtransfermodel extends Basemodel
 			DB::beginTransaction();
 			$order->fill($arr);
 			$order->save();
-			$transfer_last = Meterreadingtransfermodel::where('id',$last_reading->id)->first();
+			$transfer_last               = Meterreadingtransfermodel::where('id', $last_reading->id)->first();
 			$transfer_last->order_status = 'HASORDER';
 			$transfer_last->save();
-			$transfer_this = Meterreadingtransfermodel::where('id',$this_reading->id)->first();
+			$transfer_this               = Meterreadingtransfermodel::where('id', $this_reading->id)->first();
 			$transfer_this->order_status = 'HASORDER';
 			$transfer_this->save();
 			DB::commit();
