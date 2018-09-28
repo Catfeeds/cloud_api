@@ -61,7 +61,7 @@ class Employeemodel extends Basemodel {
         }
 
         $store_ids = explode(',', $employee->store_ids);
-        $storems   = Storemodel::whereIn('id', $store_ids)->where($where)->get(['id', 'name', 'province', 'city', 'district']);
+        $storems   = Storemodel::whereIn('id', $store_ids)->where($where)->get(['id', 'name', 'province', 'city', 'district', 'rent_type']);
         return $storems;
     }
 
