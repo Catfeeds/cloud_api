@@ -28,7 +28,6 @@ class AuthHook {
             'account/login/login',
             'bill/order/push',
             'bill/order/notify',
-
             'mini/contract/notify',
             'mini/contract/autosignnotify',
             'mini/contract/autosign',
