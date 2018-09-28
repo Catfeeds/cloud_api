@@ -241,7 +241,6 @@ class Utility extends MY_Controller
 		}
 		$number = empty($post['number']) ? '' : $post['number'];
 		$count  = ceil(Meterreadingtransfermodel::whereIn('store_id', $store_ids)->where($where)->where($where_public)
-				->whereIn('boss_meter_reading_transfer.order_status',['NOORDER','NORESIDENT','HASORDER'])
 				->where(function ($query) use ($number) {
 					$query->WhereHas('room_s', function ($query) use ($number) {
 						$query->where('number', 'like', "$number%");
