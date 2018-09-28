@@ -15,7 +15,7 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this employee notice shall be included in
+ * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -144,6 +144,8 @@ class CI_Session_memcached_driver extends CI_Session_driver implements SessionHa
 			log_message('error', 'Session: Memcached server pool is empty.');
 			return $this->_fail();
 		}
+
+		$this->php5_validate_id();
 
 		return $this->_success;
 	}
@@ -288,6 +290,23 @@ class CI_Session_memcached_driver extends CI_Session_driver implements SessionHa
 	{
 		// Not necessary, Memcached takes care of that.
 		return $this->_success;
+	}
+
+	// --------------------------------------------------------------------
+
+	/**
+	 * Validate ID
+	 *
+	 * Checks whether a session ID record exists server-side,
+	 * to enforce session.use_strict_mode.
+	 *
+	 * @param	string	$id
+	 * @return	bool
+	 */
+	public function validateId($id)
+	{
+		$this->_memcached-get($this->_key_prefix.$id);
+		return ($this->_memcached->getResultCode() === Memcached::RES_SUCCESS);
 	}
 
 	// ------------------------------------------------------------------------
