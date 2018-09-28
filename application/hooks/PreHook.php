@@ -12,14 +12,20 @@ class PreHook {
 
     public function proc() {
         //跨域访问
-        header("Access-Control-Allow-Origin: * ");
-        header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Token");
-        header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
+        if(!headers_sent()){
+            header("Access-Control-Allow-Origin: * ");
+            header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Token");
+            header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
+            header('Server: nginx');
+            header('X-Powered-By: PHP7');
+        }
+        
+        
 
         //允许所有的options请求
         $my_request = empty($_SERVER["REQUEST_METHOD"]) ? '' : $_SERVER['REQUEST_METHOD'];
         if (strtolower($my_request) == 'options') {
-            header('HTTP/1.1 200 OK');
+            headers_sent() or header('HTTP/1.1 200 OK');
             exit;
         }
 
@@ -67,7 +73,7 @@ class PreHook {
     private function check($str, $v) {
         foreach ($v as $key => $value) {
             if (preg_match("/" . $value . "/is", $str) == 1 || preg_match("/" . $value . "/is", urlencode($str)) == 1) {
-                header('HTTP/1.1 403 Forbidden');
+                headers_sent() or header('HTTP/1.1 403 Forbidden');
                 echo 'access denied';
                 exit();
             }

@@ -57,8 +57,8 @@ class AuthHook {
             }
         }catch (Exception $e) {
             log_message('error',$e->getMessage());
-            header('HTTP/1.1 401 Forbidden'); 
-            header("Content-Type:application/json;charset=UTF-8");
+            headers_sent() or header('HTTP/1.1 401 Forbidden'); 
+            headers_sent() or header("Content-Type:application/json;charset=UTF-8");
             echo json_encode(array('rescode' => 1001, 'resmsg' => 'token无效', 'data' => []));
             exit;
         }
@@ -123,8 +123,8 @@ class AuthHook {
         }
         //操作记录测试
         if (!$this->operationRecord($full_path)) {
-            header('HTTP/1.1 500 Forbidden'); 
-            header("Content-Type:application/json;charset=UTF-8");
+            headers_sent() or header('HTTP/1.1 500 Forbidden'); 
+            headers_sent() or header("Content-Type:application/json;charset=UTF-8");
             echo json_encode(array('rescode' => 1012, 'resmsg' => '操作log出错', 'data' => []));
             exit;
         }
@@ -165,7 +165,7 @@ class AuthHook {
         $this->CI->load->model('positionmodel');
         $employee = Employeemodel::with('position')->where('bxid', get_instance()->current_id)->first(['id', 'position_id']);
         if (!$employee || !$employee->position) {
-            header("Content-Type:application/json;charset=UTF-8");
+            headers_sent() or header("Content-Type:application/json;charset=UTF-8");
             echo json_encode(array('rescode' => 1009, 'resmsg' => '操作数据库出错', 'data' => []));
             exit;
         }

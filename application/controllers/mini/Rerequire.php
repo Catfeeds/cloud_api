@@ -347,15 +347,17 @@ class Rerequire extends MY_Controller {
         $sheet->fromArray($data, 'A1');
         $writer = new Xlsx($spreadsheet);
 
-        header("Pragma: public");
-        header("Expires: 0");
-        header("Cache-Control:must-revalidate, post-check=0, pre-check=0");
-        header("Content-Type:application/force-download");
-        header("Content-Type:application/vnd.ms-excel");
-        header("Content-Type:application/octet-stream");
-        header("Content-Type:application/download");
-        header('Content-Disposition:attachment;filename="store_id_' . $this->store_id . '.xls"');
-        header("Content-Transfer-Encoding:binary");
+        if(!headers_sent()){
+            header("Pragma: public");
+            header("Expires: 0");
+            header("Cache-Control:must-revalidate, post-check=0, pre-check=0");
+            header("Content-Type:application/force-download");
+            header("Content-Type:application/vnd.ms-excel");
+            header("Content-Type:application/octet-stream");
+            header("Content-Type:application/download");
+            header('Content-Disposition:attachment;filename="store_id_' . $this->store_id . '.xls"');
+            header("Content-Transfer-Encoding:binary");
+        }
         $writer->save('php://output');
     }
 }

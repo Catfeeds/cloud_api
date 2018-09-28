@@ -153,12 +153,14 @@ class Contract extends MY_Controller {
         $this->setSheet($phpexcel,$filename,$row);
         $sheet->fromArray($data, null, 'A2'); //想excel中写入数据
         $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($phpexcel, 'Xlsx');
-        header("Pragma: public");
-        header("Expires: 0");
-        header("Content-Type:application/octet-stream");
-        header("Content-Transfer-Encoding:binary");
-        header('Cache-Control: max-age=0');
-        header("Content-Disposition:attachment;filename=$filename");
+        if(!headers_sent()){
+            header("Pragma: public");
+            header("Expires: 0");
+            header("Content-Type:application/octet-stream");
+            header("Content-Transfer-Encoding:binary");
+            header('Cache-Control: max-age=0');
+            header("Content-Disposition:attachment;filename=$filename");
+        }
         $writer->save('php://output');
         exit;
     }
