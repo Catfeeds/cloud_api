@@ -236,7 +236,7 @@ class Coupon extends MY_Controller {
             array(
                 'field' => 'limit',
                 'label' => '使用范围',
-                'rules' => 'trim|required|in_list[ROOM,UTILITY,SERVICE,NONE]',
+                'rules' => 'trim|required|in_list[ROOM,UTILITY,MANAGEMENT,NONE]',
             ),
             array(
                 'field' => 'discount',

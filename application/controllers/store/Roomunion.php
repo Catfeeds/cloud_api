@@ -356,25 +356,31 @@ class Roomunion extends MY_Controller {
         * 获取集中式房源导入模版
         * */
     public function getUnionTemplate(){
-        $data_excel = ['橘子公寓高新店', '一室一厅', '101', '1988', '200', '0', '6', '1', '40', '8'];
-        $store = '橘子公寓高新店';
-        $filename = date('Y-m-d-H:i:s') . '导出' . $store  . '_房间导入.Xlsx';
-        $row      = count($data_excel) + 3;
-        $phpexcel = new Spreadsheet();
-        $sheet    = $phpexcel->getActiveSheet();
-        $this->createPHPExcel($phpexcel, $filename); //创建excel
-        $this->setExcelTitle($phpexcel, $store); //设置表头
-        $this->setExcelFirstRow($phpexcel); //设置各字段名称
-        $sheet->fromArray($data_excel, null, 'A4'); //想excel中写入数据
-        $this->setExcelColumnWidth($phpexcel); //设置Excel每列宽度
-        $this->setAlignCenter($phpexcel, $row); //设置记录值居中
-        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($phpexcel, 'Xlsx');
+        $data = Array();
+        $objPHPExcel = new Spreadsheet();
+        $sheet       = $objPHPExcel->getActiveSheet();
+        $i           = 1;
+        $objPHPExcel->getActiveSheet()->setCellValue('A' . $i, '门店名称');
+        $objPHPExcel->getActiveSheet()->setCellValue('B' . $i, '房型');
+        $objPHPExcel->getActiveSheet()->setCellValue('C' . $i, '房间号');
+        $objPHPExcel->getActiveSheet()->setCellValue('D' . $i, '租金');
+        $objPHPExcel->getActiveSheet()->setCellValue('E' . $i, '物业费');
+        $objPHPExcel->getActiveSheet()->setCellValue('F' . $i, '热水单价');
+        $objPHPExcel->getActiveSheet()->setCellValue('G' . $i, '冷水单价');
+        $objPHPExcel->getActiveSheet()->setCellValue('H' . $i, '用电单价');
+        $objPHPExcel->getActiveSheet()->setCellValue('I' . $i, '面积');
+        $objPHPExcel->getActiveSheet()->setCellValue('J' . $i, '所在层');
+        $sheet->fromArray($data, null, 'A2');
+        $writer = new Xlsx($objPHPExcel);
         header("Pragma: public");
         header("Expires: 0");
+        header("Cache-Control:must-revalidate, post-check=0, pre-check=0");
+        header("Content-Type:application/force-download");
+        header("Content-Type:application/vnd.ms-excel");
         header("Content-Type:application/octet-stream");
+        header("Content-Type:application/download");
+        header("Content-Disposition:attachment;filename='集中式房间模版.xlsx'");
         header("Content-Transfer-Encoding:binary");
-        header('Cache-Control: max-age=0');
-        header("Content-Disposition:attachment;filename=$filename");
         $writer->save('php://output');
         exit;
     }
@@ -463,9 +469,11 @@ class Roomunion extends MY_Controller {
      * @return array
      */
     private function uploadOssSheet() {
+        $this->load->helper('string');
         $url       = $this->input->post('url');
         $f_open    = fopen($url, 'r');
-        $file_name = APPPATH . 'cache/test.xlsx';
+        $str = random_string('alnum', 16);
+        $file_name = APPPATH . 'cache/roomTest'.$str.'.xlsx';
         file_put_contents($file_name, $f_open);
         $inputFileType = \PhpOffice\PhpSpreadsheet\IOFactory::identify($file_name);
         $reader        = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($inputFileType);
@@ -475,7 +483,77 @@ class Roomunion extends MY_Controller {
         array_shift($sheet);
         return $sheet;
     }
+    /*
+     * 批量导入分布式房源
+     * */
+    public function importRoomDot(){
+        $this->load->model('storemodel');
+        $this->load->model('roomunionmodel');
+        $this->load->model('roomtypemodel');
+        $this->load->model('buildingmodel');
+        $this->load->model('housemodel');
+        $this->load->model('communitymodel');
+        $store_id = $this->input->post('store_id', true);
+        if(!$store_id){
+            $this->api_res(1002);
+            return false;
+        }
+        $sheetArray = $this->uploadOssSheet();
+        $roomunion = new Roomunionmodel();
+        $data    = $roomunion->checkAndGetDotData($sheetArray, $store_id);
+        if(!empty($data)){
+            $this->api_res(10052,['error'=>$data]);
+            return;
+        }
+        $res        = $roomunion->writeDot($sheetArray, $store_id);
+        if (!empty($res)){
+            $this->api_res(10051,['error'=>$res]);
+        }else{
+            $this->api_res(0);
+        }
+    }
 
+    /*
+     * 批量导入分布式模版
+     * */
+      public function getDotTemplate(){
+          $data = Array();
+          $objPHPExcel = new Spreadsheet();
+          $sheet       = $objPHPExcel->getActiveSheet();
+          $i           = 1;
+          $objPHPExcel->getActiveSheet()->setCellValue('A' . $i, '门店名称');
+          $objPHPExcel->getActiveSheet()->setCellValue('B' . $i, '小区名称');
+          $objPHPExcel->getActiveSheet()->setCellValue('C' . $i, '楼栋');
+          $objPHPExcel->getActiveSheet()->setCellValue('D' . $i, '单元');
+          $objPHPExcel->getActiveSheet()->setCellValue('E' . $i, '房屋号');
+          $objPHPExcel->getActiveSheet()->setCellValue('F' . $i, '所在层');
+          $objPHPExcel->getActiveSheet()->setCellValue('G' . $i, '房屋总面积');
+          $objPHPExcel->getActiveSheet()->setCellValue('H' . $i, '几室');
+          $objPHPExcel->getActiveSheet()->setCellValue('I' . $i, '几厅');
+          $objPHPExcel->getActiveSheet()->setCellValue('J' . $i, '几卫');
+          $objPHPExcel->getActiveSheet()->setCellValue('K' . $i, '朝向');
+          $objPHPExcel->getActiveSheet()->setCellValue('L' . $i, '房间号');
+          $objPHPExcel->getActiveSheet()->setCellValue('M' . $i, '房型');
+          $objPHPExcel->getActiveSheet()->setCellValue('N' . $i, '房间面积');
+          $objPHPExcel->getActiveSheet()->setCellValue('O' . $i, '租金');
+          $objPHPExcel->getActiveSheet()->setCellValue('P' . $i, '物业费');
+          $objPHPExcel->getActiveSheet()->setCellValue('Q' . $i, '热水单价');
+          $objPHPExcel->getActiveSheet()->setCellValue('R' . $i, '冷水单价');
+          $objPHPExcel->getActiveSheet()->setCellValue('S' . $i, '电费单价');
+          $sheet->fromArray($data, null, 'A2');
+          $writer = new Xlsx($objPHPExcel);
+          header("Pragma: public");
+          header("Expires: 0");
+          header("Cache-Control:must-revalidate, post-check=0, pre-check=0");
+          header("Content-Type:application/force-download");
+          header("Content-Type:application/vnd.ms-excel");
+          header("Content-Type:application/octet-stream");
+          header("Content-Type:application/download");
+          header("Content-Disposition:attachment;filename='分布式房间模版.xlsx'");
+          header("Content-Transfer-Encoding:binary");
+          $writer->save('php://output');
+          exit;
+      }
     /**
      * 批量删除集中式房间
      */

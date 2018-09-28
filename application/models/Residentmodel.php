@@ -350,5 +350,43 @@ class Residentmodel extends Basemodel {
 
         return $data;
     }
-
+     /*
+      * 判断身份证类型
+      * */
+     public function is_cardType($type){
+         switch($type){
+             case 'IDCARD' : $res = '身份证';break;
+             case 'OTHER'  : $res = '其它';break;
+             case '0'      : $res = '身份证';break;
+             case '1'      : $res = '护照';break;
+             case '2'      : $res = '军人身份证';break;
+             case '6'      : $res = '社会保障卡';break;
+             case 'A'      : $res = '武装警察身份证件';break;
+             case 'B'      : $res = '港澳通行证';break;
+             case 'C'      : $res = '台湾居民来往大陆通行证';break;
+             case 'E'      : $res = '户口簿';break;
+             case 'F'      : $res = '临时居民身份证';break;
+             case 'P'      : $res = '外国人永久居留证';break;
+             case 'BL'     : $res = '营业执照(BUSINESS_LICENSE)';break;
+             default       : $res ='';
+         }
+         return $res;
+     }
+     /*
+      * 判断住户状态
+      * */
+    public function is_status($status){
+        switch($status){
+        case 'RESERVE'        : $res = '预约';break;
+        case 'NORMAL'         : $res = '正常状态';break;
+        case 'NOT_PAY'        : $res = '未支付';break;
+        case 'NORMAL_REFUND'  : $res = '正常退房';break;
+        case 'UNDER_CONTRACT' : $res = '违约退房';break;
+        case 'RENEWAL'        : $res = '续租';break;
+        case 'CHANGE_ROOM'    : $res = '换房';break;
+        case 'INVALID'        : $res = '无效';break;
+            default           : $res ='';
+        }
+        return $res;
+    }
 }

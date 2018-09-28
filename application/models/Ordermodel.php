@@ -88,6 +88,8 @@ class Ordermodel extends Basemodel {
         'status',
         'paid',
         'pay_status',
+        'transfer_id_s',
+        'transfer_id_e',
     ];
 
     protected $casts = ['data' => 'array'];
@@ -521,6 +523,47 @@ class Ordermodel extends Basemodel {
             Ordermodel::PAYTYPE_ROOM         => 0,
             Ordermodel::PAYTYPE_MANAGEMENT   => 0,
         ];
+    }
+    /*
+     * 判断订单类型
+     * */
+    public function is_type($type){
+        switch($type){
+            case 'ROOM'          : $res = '租房';break;
+            case 'CLEAN'         : $res = '清洁服务费';break;
+            case 'DEIVCE'        : $res = '设备';break;
+            case 'UTILITY'       : $res = '水电费';break;
+            case 'REFUND'        : $res = '退房';break;
+            case 'MANAGEMENT'    : $res = '物业服务费';break;
+            case 'DEPOSIT_R'     : $res = '房租押金';break;
+            case 'DEPOSIT_O'     : $res = '其他押金';break;
+            case 'OTHER'         : $res = '其他收费';break;
+            case 'ELECTRICITY'   : $res = '电费';break;
+            case 'WATER'         : $res = '水费';break;
+            case 'HOT_WATER'     : $res = '热水水费';break;
+            case 'REPAIR'        : $res = '物品维修费';break;
+            case 'COMPENSATION'  : $res = '物品赔偿费';break;
+            case 'OVERDUE'       : $res = '滞纳金';break;
+            default              : $res ='';
+        }
+        return $res;
+    }
+    /*
+     * 判断支付状态
+     * */
+    public function is_status($status){
+        switch($status){
+            case 'GENERATE'   : $res = '后台生成账单的状态, 未发送给用户';break;
+            case 'AUDITED'    : $res = '后台生成账单的状态, 未发送给用户';break;
+            case 'PENDING'    : $res = '下单之后的默认状态,等待付款';break;
+            case 'CONFIRM'    : $res = '付完款 等待确认';break;
+            case 'COMPLATE'   : $res = '完成';break;
+            case 'REFUND'     : $res = '退单';break;
+            case 'EXPIRE'     : $res = '过期';break;
+            case 'CLOSE'      : $res = '关闭';break;
+            default           : $res ='';
+        }
+        return $res;
     }
 
 }

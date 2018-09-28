@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-use PhpOffice\PhpSpreadsheet\Shared\Date;
+use Illuminate\Database\Capsule\Manager as DB;
 
 /**
  * Author:      zjh<401967974@qq.com>
@@ -15,6 +15,8 @@ use PhpOffice\PhpSpreadsheet\Shared\Date;
  */
 class Meterreadingtransfermodel extends Basemodel
 {
+	private $CI;
+	
 	protected $table = 'boss_meter_reading_transfer';
 	
 	protected $dates = [];
@@ -90,39 +92,60 @@ class Meterreadingtransfermodel extends Basemodel
 	
 	/**
 	 * 检测上传读数的正确性，并返回错误信息
+	 * 0 ID 1 number 2 name 3 reading 4 weight
 	 */
 	public function checkInputData($sheetArray)
 	{
-		$data  = [];
-		$error = [];
-		$this_time = date('Y-m-d',time());
+		$data = [];
 		foreach ($sheetArray as $key => $item) {
+			$error = '';
 			//ID
 			$id = $item[0];
+			//检查房间号
+			$number = trim($item[1]);
 			//检查表读数
 			$read = trim($item[3]);
 			if (!is_numeric($read) || 0 > $read || 1e8 < $read) {
-				$error[] = '请检查房间：' . $item[1] . '的表读数';
+				$error .= '-读数有误-';
 				log_message('debug', '请检查房间：' . $item[1] . '的表读数');
-				continue;
 			}
 			//检查权重
 			$weight = isset($item[4]) ? (int)$item[4] : 100;
 			if (!$weight) {
 				$weight = 100;
 			} elseif (100 < $weight || 0 > $weight) {
+				$error .= '-均摊比例有误-';
 				log_message('debug', '请检查房间：' . $item[1] . '的均摊比例');
-				$error[] = '请检查房间：' . $item[1] . '的均摊比例';
+			}
+			$data[] = ['id' => $id, 'number' => $number, 'this_reading' => $read, 'weight' => $weight, 'error' => $error];
+		}
+		return $data;
+	}
+	
+	/**
+	 * 批量更新读数
+	 */
+	public function updateReading($data = [])
+	{
+		$this_time = date('Y-m-d', time());
+		foreach ($data as $k => $v) {
+			$transfer = Meterreadingtransfermodel::where('id', $v['id'])
+				->whereIn('order_status', ['NOREADING', 'NOORDER', 'NORESIDENT'])
+				->first();
+			if (empty($transfer)) {
 				continue;
 			}
-			$data[] = ['id' => $id, 'this_reading' => $read, 'weight' => $weight, 'this_time' => $this_time];
+			if ($transfer->resident_id == 0) {
+				$transfer->order_status = 'NORESIDENT';
+			} else {
+				$transfer->order_status = 'NOORDER';
+			}
+			$transfer->this_reading = $v['this_reading'];
+			$transfer->weight       = $v['weight'];
+			$transfer->this_time    = $this_time;
+			$transfer->save();
 		}
-		if (empty($error)) {
-			return $data;
-		} else {
-			$data = ['error' => $error];
-			return $data;
-		}
+		return true;
 	}
 	
 	/**
@@ -130,46 +153,39 @@ class Meterreadingtransfermodel extends Basemodel
 	 */
 	public function writeReading($data = [], $store_id, $type, $year, $month)
 	{
-		$error = [];
-		//获取所有房间号(number)
-		$number = [];
-		foreach ($data as $key => $value) {
-			$number[] = $data[$key]['number'];
-		}
-		//根据房间号获取住户id(resident_id)，房间id(room_id)
-		$arr = Roomunionmodel::where('store_id', $store_id)/*->whereIn('number',$number)*/
-		->orderBy('number')
-			->get(['id', 'number', 'resident_id', 'building_id'])->groupBy('number')->toArray();
-//        var_dump($arr);die();
 		//重组插入数据库所需数组
+		if (empty($data)) {
+			return false;
+		}
+		$where     = ['store_id'     => $store_id,
+		              'type'         => $type,
+		              'year'         => $year,
+		              'month'        => $month,
+		              'order_status' => 'NOREADING',
+		              'status'       => 'NORMAL'];
+		$this_time = date('Y-m-d', time());
 		foreach ($data as $key => $value) {
-			$number   = $value['number'];
-			$transfer = new Meterreadingtransfermodel();
-			if (isset($arr[$value['number']])) {
-				$data[$key]['resident_id']   = $arr[$value['number']][0]['resident_id'];
-				$data[$key]['room_id']       = $arr[$value['number']][0]['id'];
-				$data[$key]['building_id']   = $arr[$value['number']][0]['building_id'];
-				$data[$key]['month']         = $month;
-				$data[$key]['year']          = $year;
-				$data[$key]['type']          = $type;
-				$data[$key]['store_id']      = $store_id;
-				$serial_number               = Smartdevicemodel::where('type', $type)->where('room_id', $arr[$value['number']][0]['id'])->first();
-				$data[$key]['serial_number'] = isset($serial_number->serial_number) ? $serial_number->serial_number : "";
-				$data[$key]                  = array_except($data[$key], ['number', 'error']);
-				$transfer->fill($data[$key]);
-				try {
-					$transfer->save();
-				} catch (Exception $e) {
-					log_message("error", '房间' . $number . '读数导入失败');
-					$error[] = '房间' . $number . '读数已存在';
-				}
-			} else {
-				log_message("error", '房间' . $number . '不存在');
-				$error[] = '房间' . $number . '不存在';
+			$where['room_id'] = $value[0];
+			log_message('debug', 'writeReading查询条件'.json_encode($where));
+			$transfer = Meterreadingtransfermodel::where($where)->first();
+			if (empty($transfer)) {
+				log_message('debug', 'writeReading-transfer');
 				continue;
 			}
+			if ($transfer->resident_id == 0) {
+				$transfer->order_status = 'NORESIDENT';
+			} else {
+				$transfer->order_status = 'NOORDER';
+			}
+			$transfer->this_reading = $value[1];
+			$transfer->this_time    = $this_time;
+			if($transfer->save()){
+				log_message('debug','writeReading 更新成功');
+				
+			}else{
+				log_message('error','writeReading 更新失败');
+			}
 		}
-		return $error;
 	}
 	
 	/**
@@ -206,6 +222,7 @@ class Meterreadingtransfermodel extends Basemodel
 		$res   = Meterreadingtransfermodel::leftJoin('boss_room_union', 'boss_room_union.id', '=', 'boss_meter_reading_transfer.room_id')
 			->leftJoin('boss_resident', 'boss_resident.id', '=', 'boss_meter_reading_transfer.resident_id')
 			->select($filed)
+			->orderBy('boss_room_union.number')
 			->where($where)
 			->get()
 			->map(function ($s) {
@@ -220,7 +237,81 @@ class Meterreadingtransfermodel extends Basemodel
 		return $res;
 	}
 	
-	
+	/**
+	 * @param $this_reading => 本次读数及本次读数相关信息
+	 * @param $last_reading => 上次读数及本次读数相关信息
+	 * @param $price => 价格(数组)包括冷热水电气
+	 */
+	public function utility($this_reading, $last_reading, $price)
+	{
+		switch ($this_reading->type) {
+			case self::TYPE_ELECTRIC:
+				$type  = Ordermodel::PAYTYPE_ELECTRIC;
+				$price = $price['electricity_price'];
+				break;
+			case self::TYPE_WATER_H:
+				$type  = Ordermodel::PAYTYPE_WATER_HOT;
+				$price = $price['hot_water_price'];
+				break;
+			case self::TYPE_WATER_C:
+				$type  = Ordermodel::PAYTYPE_WATER;
+				$price = $price['cold_water_price'];
+				break;
+			default:
+				throw new Exception('未识别的账单类型！');
+				break;
+		}
+//		var_dump($price);die();
+		if (!isset($last_reading->this_reading)) {
+			return false;
+		}
+		$money = ($this_reading->this_reading - $last_reading->this_reading) * $price;
+		if (0.01 > $money) {
+			return false;
+		}
+		
+		//分进角，比如 1.01 元，计为 1.1 元
+		$money    = ceil($money * $this_reading->weight / 10) / 10;
+		$this->CI = &get_instance();
+		$this->CI->load->helper('string');
+		$order    = new Ordermodel();
+		$resident = Residentmodel::where('id', $this_reading->resident_id)->first(['id', 'customer_id', 'uxid']);
+		$arr      = [
+			'number'        => date('YmdHis') . random_string('numeric', 10),
+			'type'          => $type,
+			'year'          => $this_reading->year,
+			'month'         => $this_reading->month,
+			'money'         => $money,
+			'paid'          => $money,
+			'store_id'      => $this_reading->store_id,
+			'resident_id'   => $this_reading->resident_id,
+			'room_id'       => $this_reading->room_id,
+			'employee_id'   => $this->CI->employee->id,
+			'customer_id'   => $resident->customer_id,
+			'uxid'          => $resident->uxid,
+			'status'        => Ordermodel::STATE_GENERATED,
+			'deal'          => Ordermodel::DEAL_UNDONE,
+			'pay_status'    => Ordermodel::PAYSTATE_RENEWALS,
+			'transfer_id_s' => $last_reading->id,
+			'transfer_id_e' => $this_reading->id,
+		];
+		try {
+			DB::beginTransaction();
+			$order->fill($arr);
+			$order->save();
+			$transfer_last               = Meterreadingtransfermodel::where('id', $last_reading->id)->first();
+			$transfer_last->order_status = 'HASORDER';
+			$transfer_last->save();
+			$transfer_this               = Meterreadingtransfermodel::where('id', $this_reading->id)->first();
+			$transfer_this->order_status = 'HASORDER';
+			$transfer_this->save();
+			DB::commit();
+			return true;
+		} catch (Exception $e) {
+			DB::rollBack();
+			return false;
+		}
+	}
 }
 
 

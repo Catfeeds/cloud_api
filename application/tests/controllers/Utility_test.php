@@ -25,7 +25,7 @@ class Utility_test extends TestCase
 		$this->assertResponseCode(200);
 	}
 	
-	public function test_utility()
+	/*public function test_utility()
 	{
 		$output = $this->request('POST',
 			'utility/meter/utility',
@@ -37,5 +37,5 @@ class Utility_test extends TestCase
 		
 		$this->assertResponseCode(200);
 		
-	}
+	}*/
 }
