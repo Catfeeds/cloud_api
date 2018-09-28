@@ -421,7 +421,7 @@ class Pricecontrol extends MY_Controller
         $sheet->fromArray($room_excel, null, 'A4'); //想excel中写入数据
         $this->setExcelColumnWidthTemplate($phpexcel); //设置Excel每列宽度
         $this->setAlignCenterTemplate($phpexcel, $row); //设置记录值居中
-        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($phpexcel, 'xlsx');
+        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($phpexcel, 'Xlsx');
         if(!headers_sent()){
             header("Pragma: public");
             header("Expires: 0");
