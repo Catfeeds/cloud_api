@@ -374,7 +374,6 @@ class Pricecontrol extends MY_Controller
         $this->load->model('buildingmodel');
         $this->load->model('roomtypemodel');
         $filed     = ['id', 'store_id', 'building_id', 'number', 'room_type_id', 'rent_price', 'property_price', 'updated_at', 'cold_water_price', 'electricity_price', 'hot_water_price'];
-        $store_id      = $this->input->post('store_id');
         if(!$store_id){
             $this->api_res(1002);
             return false;
@@ -419,7 +418,7 @@ class Pricecontrol extends MY_Controller
         $sheet->fromArray($room_excel, null, 'A4'); //想excel中写入数据
         $this->setExcelColumnWidthTemplate($phpexcel); //设置Excel每列宽度
         $this->setAlignCenterTemplate($phpexcel, $row); //设置记录值居中
-        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($phpexcel, 'xlsx');
+        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($phpexcel, 'Xlsx');
         header("Pragma: public");
         header("Expires: 0");
         header("Content-Type:application/octet-stream");
