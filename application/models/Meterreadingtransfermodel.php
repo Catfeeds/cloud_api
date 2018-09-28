@@ -198,7 +198,29 @@ class Meterreadingtransfermodel extends Basemodel
 		];
 		$res   = Roomunionmodel::rightJoin('boss_smart_device', 'boss_room_union.id', '=', 'boss_smart_device.room_id')
 			->select($filed)
-			->whereIn('boss_smart_device.type', ['COLD_WATER_METER', 'HOR_WATER_METER', 'ELECTRIC_METER'])
+			->whereIn('boss_smart_device.type', ['COLD_WATER_METER', 'HOT_WATER_METER', 'ELECTRIC_METER'])
+			->orderBy('store_id')
+			->orderBy('type')
+			->orderBy('room_id')
+			->get()
+			->map(function ($s) {
+				$s->year  = date('Y', strtotime('+1 month'));
+				$s->month = date('m', strtotime('+1 month'));
+				return $s;
+			})
+			->toArray();
+		$res   = Meterreadingtransfermodel::insert($res);
+		return $res;
+	}
+	
+	public function fillHotWaterReading()
+	{
+		$filed = ['boss_room_union.store_id', 'boss_room_union.id as room_id', 'boss_room_union.resident_id',
+		          'boss_smart_device.serial_number', 'boss_smart_device.type',
+		];
+		$res   = Roomunionmodel::rightJoin('boss_smart_device', 'boss_room_union.id', '=', 'boss_smart_device.room_id')
+			->select($filed)
+			->whereIn('boss_smart_device.type', ['HOT_WATER_METER'])
 			->orderBy('store_id')
 			->orderBy('type')
 			->orderBy('room_id')
