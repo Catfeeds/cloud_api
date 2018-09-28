@@ -18,12 +18,12 @@ class PriceControl_test extends TestCase
         // reset_instance();
         $this->request->enableHooks();
     }
-    public function test_toexcel()
-    {
-        $data = ['store_id' => 1,
-                 'url'      => 'http://tfunx.oss-cn-shenzhen.aliyuncs.com/2018-09-27/5bac7104cc7b5.xlsx'];
-        $output = $this->request('POST', 'pricecontrol/pricecontrol/importprice', $data);
-        $this->assertEquals(99, get_instance()->current_id);
-        $this->assertResponseCode(200);
-    }
+    // public function test_toexcel()
+    // {
+    //     $data = ['store_id' => 1,
+    //              'url'      => 'http://tfunx.oss-cn-shenzhen.aliyuncs.com/2018-09-27/5bac7104cc7b5.xlsx'];
+    //     $output = $this->request('POST', 'pricecontrol/pricecontrol/importprice', $data);
+    //     $this->assertEquals(99, get_instance()->current_id);
+    //     $this->assertResponseCode(200);
+    // }
 }
