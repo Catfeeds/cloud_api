@@ -678,7 +678,7 @@ class Activity extends MY_Controller
         }
 
         $image_url  = $input['image'];
-        $image_path = $this->downloadAttractImage($image_url);
+//        $image_path = $this->downloadAttractImage($image_url);
         //把图片下载到本地获取$image_path
 
         try{
@@ -695,7 +695,7 @@ class Activity extends MY_Controller
             $activity->employee_id  = $this->employee->id;
             $activity->data = [];
             $activity->back_url = $this->splitAliossUrl($image_url);
-            $activity->back_path= $image_path;
+//            $activity->back_path= $image_path;
             $activity->save();
             $limit_array = [];
             $prizes = [];
