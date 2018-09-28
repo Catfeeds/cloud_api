@@ -252,7 +252,6 @@ class Utility extends MY_Controller
 		})
 			->with(['building', 'store', 'room_s'])
 			->where($where)
-			->whereIn('boss_meter_reading_transfer.order_status',['NOORDER','NORESIDENT','HASORDER'])
 			->where(function ($query) use ($number) {
 				$query->WhereHas('room_s', function ($query) use ($number) {
 					$query->where('number', 'like', "$number%");
