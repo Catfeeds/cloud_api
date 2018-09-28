@@ -20,6 +20,7 @@ class Common extends MY_Controller {
         $config = [
             'allowed_types' => 'gif|jpg|png|jpeg',
             'max_size'      => 4 * 1024,
+            // 'watermark'     => '中文内容测试.',
         ];
         $this->load->library('alioss', $config);
         if (!$this->alioss->do_upload('image')) {
