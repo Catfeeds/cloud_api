@@ -1921,3 +1921,33 @@ CREATE TABLE `boss_attract_prize` (
 PRIMARY KEY (`id`)
 );
 
+CREATE TABLE `boss_attract_record` (
+`id`  int UNSIGNED NOT NULL AUTO_INCREMENT ,
+`activity_id`  int NOT NULL ,
+`customer_id`  int UNSIGNED NOT NULL ,
+`friend_id`  int NOT NULL DEFAULT 0 COMMENT '扫哪个住户的码id' ,
+`remark`  varchar(255) NULL ,
+`is_valid`  int UNSIGNED NOT NULL DEFAULT 0 COMMENT '是否是有效的' ,
+`created_at`  datetime NOT NULL ,
+`updated_at`  datetime NOT NULL ,
+`deleted_at`  datetime NULL ,
+PRIMARY KEY (`id`)
+)
+ENGINE=InnoDB;
+
+CREATE TABLE `boss_attract_customer_prize` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `customer_id` int(10) unsigned NOT NULL,
+  `activity_id` int(10) unsigned NOT NULL,
+  `prize_id` int(10) unsigned NOT NULL,
+  `data` text,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  `deleted_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+
+
+
