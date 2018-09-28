@@ -260,12 +260,14 @@ class Meter extends MY_Controller
 		$objPHPExcel->getActiveSheet()->setCellValue('E' . $i, '权重(取值范围:0~100)');
 		$sheet->fromArray($res, null, 'A2');
 		$writer = new Xlsx($objPHPExcel);
-		header("Pragma: public");
-		header("Expires: 0");
-		header("Content-Type:application/octet-stream");
-		header("Content-Transfer-Encoding:binary");
-		header('Cache-Control: max-age=0');
-		header("Content-Disposition:attachment;filename=a.Xlsx");
+		if(!headers_sent()){
+			header("Pragma: public");
+			header("Expires: 0");
+			header("Content-Type:application/octet-stream");
+			header("Content-Transfer-Encoding:binary");
+			header('Cache-Control: max-age=0');
+			header("Content-Disposition:attachment;filename=a.Xlsx");
+		}
 		$writer->save('php://output');
 		exit;
 	}
@@ -302,12 +304,14 @@ class Meter extends MY_Controller
 		$this->setExcelColumnWidth($phpexcel); //设置Excel每列宽度
 		$this->setAlignCenter($phpexcel, $row); //设置记录值居中
 		$writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($phpexcel, 'Xlsx');
-		header("Pragma: public");
-		header("Expires: 0");
-		header("Content-Type:application/octet-stream");
-		header("Content-Transfer-Encoding:binary");
-		header('Cache-Control: max-age=0');
-		header("Content-Disposition:attachment;filename=$filename");
+		if(!headers_sent()){
+			header("Pragma: public");
+			header("Expires: 0");
+			header("Content-Type:application/octet-stream");
+			header("Content-Transfer-Encoding:binary");
+			header('Cache-Control: max-age=0');
+			header("Content-Disposition:attachment;filename=$filename");
+		}
 		$writer->save('php://output');
 		exit;
 	}

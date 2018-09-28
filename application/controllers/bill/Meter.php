@@ -383,16 +383,17 @@ class Meter extends MY_Controller {
         $sheet->fromArray($data, null, 'A1');
         $writer = new Xlsx($spreadsheet);
 
-        header("Pragma: public");
-        header("Expires: 0");
-        header("Cache-Control:must-revalidate, post-check=0, pre-check=0");
-        header("Content-Type:application/force-download");
-        header("Content-Type:application/vnd.ms-excel");
-        header("Content-Type:application/octet-stream");
-        header("Content-Type:application/download");
-        header('Content-Disposition:attachment;filename="meterReadingTemplate.xlsx"');
-        header("Content-Transfer-Encoding:binary");
-
+        if(!headers_sent()){
+            header("Pragma: public");
+            header("Expires: 0");
+            header("Cache-Control:must-revalidate, post-check=0, pre-check=0");
+            header("Content-Type:application/force-download");
+            header("Content-Type:application/vnd.ms-excel");
+            header("Content-Type:application/octet-stream");
+            header("Content-Type:application/download");
+            header('Content-Disposition:attachment;filename="meterReadingTemplate.xlsx"');
+            header("Content-Transfer-Encoding:binary");
+         }
 //        $file=file_get_contents('http://api.boss.strongberry.cn/水电读数导入模板.xlsx');
         //
         //        echo $file;
