@@ -372,15 +372,17 @@ class Roomunion extends MY_Controller {
         $objPHPExcel->getActiveSheet()->setCellValue('J' . $i, '所在层');
         $sheet->fromArray($data, null, 'A2');
         $writer = new Xlsx($objPHPExcel);
-        header("Pragma: public");
-        header("Expires: 0");
-        header("Cache-Control:must-revalidate, post-check=0, pre-check=0");
-        header("Content-Type:application/force-download");
-        header("Content-Type:application/vnd.ms-excel");
-        header("Content-Type:application/octet-stream");
-        header("Content-Type:application/download");
-        header("Content-Disposition:attachment;filename='集中式房间模版.xlsx'");
-        header("Content-Transfer-Encoding:binary");
+        if(!headers_sent()){
+            header("Pragma: public");
+            header("Expires: 0");
+            header("Cache-Control:must-revalidate, post-check=0, pre-check=0");
+            header("Content-Type:application/force-download");
+            header("Content-Type:application/vnd.ms-excel");
+            header("Content-Type:application/octet-stream");
+            header("Content-Type:application/download");
+            header("Content-Disposition:attachment;filename='集中式房间模版.xlsx'");
+            header("Content-Transfer-Encoding:binary");
+        }
         $writer->save('php://output');
         exit;
     }
@@ -542,15 +544,17 @@ class Roomunion extends MY_Controller {
           $objPHPExcel->getActiveSheet()->setCellValue('S' . $i, '电费单价');
           $sheet->fromArray($data, null, 'A2');
           $writer = new Xlsx($objPHPExcel);
-          header("Pragma: public");
-          header("Expires: 0");
-          header("Cache-Control:must-revalidate, post-check=0, pre-check=0");
-          header("Content-Type:application/force-download");
-          header("Content-Type:application/vnd.ms-excel");
-          header("Content-Type:application/octet-stream");
-          header("Content-Type:application/download");
-          header("Content-Disposition:attachment;filename='分布式房间模版.xlsx'");
-          header("Content-Transfer-Encoding:binary");
+          if(!headers_sent()){
+              header("Pragma: public");
+              header("Expires: 0");
+              header("Cache-Control:must-revalidate, post-check=0, pre-check=0");
+              header("Content-Type:application/force-download");
+              header("Content-Type:application/vnd.ms-excel");
+              header("Content-Type:application/octet-stream");
+              header("Content-Type:application/download");
+              header("Content-Disposition:attachment;filename='分布式房间模版.xlsx'");
+              header("Content-Transfer-Encoding:binary");
+          }
           $writer->save('php://output');
           exit;
       }
