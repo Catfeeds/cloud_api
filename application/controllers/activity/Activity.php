@@ -704,7 +704,7 @@ class Activity extends MY_Controller
                 $prizes[]   = [
                     'activity_id'   => $activity->id,
                     'count'         => $prize['count'],
-                    'sented'        => 0,
+                    'sent'        => 0,
                     'limit'         => $prize['limit'],
                     'single'        => $prize['single'],
                     'coupontype_id' => $prize['coupontype_id'],
