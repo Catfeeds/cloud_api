@@ -561,7 +561,7 @@ class Alioss {
 					$font->file(APPPATH.'/font/SimHei.ttf');
 					$font->size($img->width()/8);
 					// $font->color('#fdf6e3');
-					$font->color(array(255, 255, 255, 0.5));
+					$font->color(array(255, 255, 255, 0.6));
 					$font->align('center');
 					$font->valign('middle');
 					$font->angle(45);

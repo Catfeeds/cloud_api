@@ -25,7 +25,7 @@ class Common extends MY_Controller {
         if (!empty($query) && !empty($query["watermark"])) {
             switch ($query["watermark"]) {
                 case 'idcard':
-                    $config['watermark'] = "仅供合同签署使用\n金地火花草莓社区"
+                    $config['watermark'] = "仅供合同签署使用\n金地火花草莓社区";
                     break;
             }
         }
