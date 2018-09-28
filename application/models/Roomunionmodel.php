@@ -661,7 +661,6 @@ class Roomunionmodel extends Basemodel
      * */
     public function writePrice($sheetArray, $store_id){
         $error = [];
-        if(is_array($sheetArray)) {
             foreach ($sheetArray as $key => $value) {
                 $arr = Roomunionmodel::where('store_id', $store_id)->where('number', $value[1])->select(['id'])->first();
                 if (!$arr) {
@@ -671,25 +670,31 @@ class Roomunionmodel extends Basemodel
                 if($value[3] == $value[4] && $value[5] == $value[6] && $value[7] == $value[8] && $value[9] == $value[10] && $value[11] == $value[12]){
                     continue;
                 }
+                $update[] = [
+                    'rent_price'        => $value[4],
+                    'property_price'    => $value[6],
+                    'cold_water_price'  => $value[10],
+                    'hot_water_price'   => $value[8],
+                    'electricity_price' => $value[12]];
+                $record[] = [
+                    'roomunion_id'           => $arr->id,
+                    'employee_id'            => get_instance()->current_id,
+                    'rent_price'             => $value[3],
+                    'now_rent_price'         => $value[4],
+                    'property_price'         => $value[5],
+                    'now_property_price'     => $value[6],
+                    'cold_water_price'       => $value[9],
+                    'now_cold_water_price'   => $value[10],
+                    'hot_water_price'        => $value[7],
+                    'now_hot_water_price'    => $value[8],
+                    'electricity_price'      => $value[11],
+                    'now_electricity_price'  => $value[12],
+                    'reason'              => '批量调价',
+                ];
+            }
                 try {
                     DB::beginTransaction();
-                    $arr->update(['rent_price' => $value[4], 'property_price' => $value[6], 'cold_water_price' => $value[10],
-                        'hot_water_price' => $value[8], 'electricity_price' => $value[12]]);
-                    $record = [
-                        'roomunion_id'           => $arr->id,
-                        'employee_id'            => $this->current_id,
-                        'rent_price'             => $value[3],
-                        'now_rent_price'         => $value[4],
-                        'property_price'         => $value[5],
-                        'now_property_price'     => $value[6],
-                        'cold_water_price'       => $value[9],
-                        'now_cold_water_price'   => $value[10],
-                        'hot_water_price'        => $value[7],
-                        'now_hot_water_price'    => $value[8],
-                        'electricity_price'      => $value[11],
-                        'now_electricity_price'  => $value[12],
-                        'reason'              => '批量调价',
-                    ];
+                    $arr->update($update);
                     Pricecontrolrecordmodel::insert($record);
                     DB::commit();
                 } catch (Exception $e) {
@@ -697,8 +702,6 @@ class Roomunionmodel extends Basemodel
                     log_message('error', $e->getMessage());
                     throw  $e;
                 }
-            }
-        }
         return $error;
     }
 }
