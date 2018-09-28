@@ -376,6 +376,7 @@ class Pricecontrol extends MY_Controller
         $this->load->model('buildingmodel');
         $this->load->model('roomtypemodel');
         $filed     = ['id', 'store_id', 'building_id', 'number', 'room_type_id', 'rent_price', 'property_price', 'updated_at', 'cold_water_price', 'electricity_price', 'hot_water_price'];
+        $store_id      = $this->input->post('store_id');
         if(!$store_id){
             $this->api_res(1002);
             return false;
