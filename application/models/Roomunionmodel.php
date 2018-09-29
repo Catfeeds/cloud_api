@@ -568,8 +568,11 @@ class Roomunionmodel extends Basemodel
         $error = [];
         foreach ($sheetArray as $key => $value) {
             $arr = Roomunionmodel::where('store_id', $store_id)->where('number', $value[2])->count();
-            if (0 == $arr) {
-                $data[$key]['company_id']        = $this->company_id;
+            if (0 != $arr) {
+                $error[] = '房间号：' . $value[2] . '出现重复';
+                continue;
+            }
+                $data[$key]['company_id']        = get_instance()->company_id;
                 $data[$key]['store_id']          = $store_id;
                 $room                            = Roomtypemodel::where('store_id', $store_id)->where('name', $value[1])->select(['id'])->first();
                 $data[$key]['room_type_id']      = $room->id;
@@ -586,15 +589,16 @@ class Roomunionmodel extends Basemodel
                 $data[$key]['hot_water_price']   = $value[6];
                 $data[$key]['electricity_price'] = $value[7];
                 $data[$key]['type']              = Roomunionmodel::TYPE_UNION;
-                try {
-                    Roomunionmodel::insert($data[$key]);
-                } catch (Exception $e) {
-                    log_message('error', $e->getMessage());
-                    throw  $e;
-                }
-            } else {
-                $error[] = '房间号：' . $value[2] . '出现重复';
-            }
+
+        }
+        if(empty($data)){
+            return $error;
+        }
+        try {
+            Roomunionmodel::insert($data);
+        } catch (Exception $e) {
+            log_message('error', $e->getMessage());
+            throw  $e;
         }
         return $error;
     }
@@ -626,19 +630,10 @@ class Roomunionmodel extends Basemodel
                 return $error;
             }
             //房型
-            $type = trim($item[2]);
+            $type = trim($item[12]);
             $room_type = Roomtypemodel::where('store_id', $store_id)->where('name', $type)->select(['id'])->first();
             if (!$room_type) {
-                $error[] = '请检查房型：' . $item[2] . ',查无此房型';
-                return $error;
-            }
-            //房间号
-            $number = trim($item[1]);
-            $room_number = Roomunionmodel::where('store_id', $store_id)
-                ->where('number', $number)->select(['id'])->first();
-
-            if (!$room_number) {
-                $error[] = '请检查房间号：' . $item[1];
+                $error[] = '请检查房型：' . $item[12] . ',查无此房型';
                 return $error;
             }
             //租金
@@ -666,12 +661,11 @@ class Roomunionmodel extends Basemodel
      * */
     public function writeDot($sheetArray, $store_id)
     {
-        $data = [];
         $error = [];
         foreach ($sheetArray as $key => $value) {
-            $arr = Roomunionmodel::where('store_id', $store_id)->where('number', $value[2])->count();
+            $arr = Roomunionmodel::where('store_id', $store_id)->where('number', $value[11])->count();
             if (0 != $arr) {
-                $error[] = '房间号：' . $value[2] . '出现重复';
+                $error[] = '房间号：' . $value[11] . '出现重复';
                 continue;
             }
             $community_name = $value[1];
@@ -689,10 +683,12 @@ class Roomunionmodel extends Basemodel
             $house = Housemodel::where('number', $house_number)->select(['id'])->first();
             if(!$house){
                 //先创建house,再创建room
-                $this->createHouse($value, $store_id, $community->id, $room->id);
+                $room_arr = $this->createHouse($value, $store_id, $community->id, $room->id);
+                Roomunionmodel::insert($room_arr);
             }else{
                 //只创建room
-                $this->createHouse($value, $store_id, $community->id, $room->id, $house->id);
+                $room_arr = $this->createHouse($value, $store_id, $community->id, $room->id, $house->id);
+                Roomunionmodel::insert($room_arr);
             }
         }
         return $error;
@@ -716,31 +712,31 @@ class Roomunionmodel extends Basemodel
                 ];
                 $house_id = Housemodel::insertGetId($house_arr);
             }
-            $room_arr = [
-                'company_id'       =>  $this->company_id,
-                'store_id'          =>  $store_id,
-                'room_type_id'      =>  $room_type_id,
-                'layer'             =>  $data[5],
-                'number'            =>  $data[11],
-                'rent_price'        =>  $data[14],
-                'property_price'    =>  $data[15],
-                'status'            =>  Roomunionmodel::STATE_BLANK,
-                'type'              =>  Roomunionmodel::TYPE_DOT,
-                'house_id'          =>  $house_id,
-                'community_id'      =>  $community_id,
-                'created_at'        =>  Carbon::now(),
-                'begin_time'        =>  Carbon::now(),
-                'end_time'          =>  Carbon::now(),
-                'area'              =>  $data[13],
-                'cold_water_price'  =>  $data[17],
-                'hot_water_price'   =>  $data[16],
-                'electricity_price' =>  $data[18],
-            ];
-            Roomunionmodel::insert($room_arr);
         } catch (Exception $e) {
             log_message('error', $e->getMessage());
             throw  $e;
         }
+        $room_arr[] = [
+            'company_id'       =>  get_instance()->company_id,
+            'store_id'          =>  $store_id,
+            'room_type_id'      =>  $room_type_id,
+            'layer'             =>  $data[5],
+            'number'            =>  $data[11],
+            'rent_price'        =>  $data[14],
+            'property_price'    =>  $data[15],
+            'status'            =>  Roomunionmodel::STATE_BLANK,
+            'type'              =>  Roomunionmodel::TYPE_DOT,
+            'house_id'          =>  $house_id,
+            'community_id'      =>  $community_id,
+            'created_at'        =>  Carbon::now(),
+            'begin_time'        =>  Carbon::now(),
+            'end_time'          =>  Carbon::now(),
+            'area'              =>  $data[13],
+            'cold_water_price'  =>  $data[17],
+            'hot_water_price'   =>  $data[16],
+            'electricity_price' =>  $data[18],
+        ];
+        return $room_arr;
     }
     /*
          * 检查上传数组
@@ -756,7 +752,7 @@ class Roomunionmodel extends Basemodel
             $count = count($item);
             for ($i = 0; $i < $count; $i++) {
                 if (is_null($item[$i])) {
-                    $error = '上传数据不能为空';
+                    $error[] = '上传数据不能为空';
                     return $error;
                 }
             }
@@ -812,10 +808,10 @@ class Roomunionmodel extends Basemodel
                 if($value[3] == $value[4] && $value[5] == $value[6] && $value[7] == $value[8] && $value[9] == $value[10] && $value[11] == $value[12]){
                     continue;
                 }
-                $update[] = [
+                $update = [
                     'rent_price'        => $value[4],
-                    'property_price'    => $value[6],
                     'cold_water_price'  => $value[10],
+                    'property_price'    => $value[6],
                     'hot_water_price'   => $value[8],
                     'electricity_price' => $value[12]];
                 $record[] = [
@@ -833,10 +829,13 @@ class Roomunionmodel extends Basemodel
                     'now_electricity_price'  => $value[12],
                     'reason'              => '批量调价',
                 ];
+                Roomunionmodel::where('store_id', $store_id)->where('number', $value[1])->update($update);
+            }
+            if(empty($record)){
+                return $error;
             }
                 try {
                     DB::beginTransaction();
-                    $arr->update($update);
                     Pricecontrolrecordmodel::insert($record);
                     DB::commit();
                 } catch (Exception $e) {
