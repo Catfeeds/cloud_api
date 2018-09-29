@@ -49,9 +49,11 @@ class Sms
             ],
         ])->getBody()->getContents();
 
+        log_message('debug', "send sms: ".json_encode($request));
         $result = json_decode($request, true);
 
         if (isset($result['code']) && $result['code'] != 0) {
+        	log_message('error','send sms failed, '.json_encode($result));
             $this->error = $result['msg'];
             return false;
         }
