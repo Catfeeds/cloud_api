@@ -2,8 +2,6 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 include_once(APPPATH . '/libraries/wxBizMsgCrypt.php');
 
-use Illuminate\Database\Capsule\Manager as DB;
-
 /**
  * Author:      hfq<1326432154@qq.com>
  * Date:        2018/8/29
@@ -87,6 +85,7 @@ class Events extends MY_Controller
 			return false;
 		} else {
 			log_message('debug', '获取authorizer_access_token成功');
+			$this->debug('授权方authorizer_access_token为-->', $res);
 			$this->m_redis->saveAuthorAccessToken($res['authorization_info']['authorizer_access_token']);
 			$this->load->model('companywxinfomodel');
 			$company_id = $this->company_id;
@@ -95,37 +94,38 @@ class Events extends MY_Controller
 				$company             = new Companywxinfomodel();
 				$company->company_id = $company_id;
 			}
-			$company->authorizer_appid        = $res['authorization_info']['authorizer_appid'];
-			$company->authorizer_access_token = $res['authorization_info']['authorizer_refresh_token'];
-			$url                              = 'https://api.weixin.qq.com/cgi-bin/component/api_get_authorizer_info?component_access_token=' . "$access_token";
-			$data                             = [
+			$company->authorizer_appid         = $res['authorization_info']['authorizer_appid'];
+			$company->authorizer_refresh_token = $res['authorization_info']['authorizer_refresh_token'];
+			$url                               = 'https://api.weixin.qq.com/cgi-bin/component/api_get_authorizer_info?component_access_token=' . "$access_token";
+			$data                              = [
 				'component_appid'  => $this->appid,
 				'authorizer_appid' => $res['authorization_info']['authorizer_appid'],
 			];
-			$this->debug('POST参数为-->', $data);
-			$res = $this->httpCurl($url, 'post', 'json', json_encode($data, true));
+			$res                               = $this->httpCurl($url, 'post', 'json', json_encode($data, true));
 			if (array_key_exists('errcode', $res)) {
 				log_message('error', '获取授权方信息失败--> ' . $res['errmsg']);
 				return false;
 			} else {
 				log_message('debug', '--获取授权方信息成功--');
-				$company->nick_name         = $res['authorizer_info']->nick_name;
-				$company->head_img          = $res['authorizer_info']->head_img;
-				$company->service_type_info = $res['authorizer_info']->service_type_info;
-				$company->verify_type_info  = $res['authorizer_info']->verify_type_info;
-				$company->user_name         = $res['authorizer_info']->user_name;
-				$company->principal_name    = $res['authorizer_info']->principal_name;
-				$company->alias             = $res['authorizer_info']->alias;
-				$company->qrcode_url        = $res['authorizer_info']->qrcode_url;
-				$company->open_store        = $res['authorizer_info']->business_info->open_store;
-				$company->open_scan         = $res['authorizer_info']->business_info->open_scan;
-				$company->open_pay          = $res['authorizer_info']->business_info->open_pay;
-				$company->open_card         = $res['authorizer_info']->business_info->open_card;
-				$company->open_shake        = $res['authorizer_info']->business_info->open_shake;
-				$company->func_info         = json_encode($res['authorization_info']->func_info, true);
-				if ($company->save()){
-					$this->api_res(0, ['info' => $res['authorizer_info']]);
-				}else{
+				$this->debug('授权方信息为-->', $res);
+				$company->nick_name         = $res['authorizer_info']['nick_name'];
+				$company->head_img          = $res['authorizer_info']['head_img'];
+				$company->service_type_info = (string)$res['authorizer_info']['service_type_info']['id'];
+				$company->verify_type_info  = (string)$res['authorizer_info']['verify_type_info']['id'];
+				$company->user_name         = $res['authorizer_info']['user_name'];
+				$company->principal_name    = $res['authorizer_info']['principal_name'];
+				$company->alias             = $res['authorizer_info']['alias'];
+				$company->qrcode_url        = $res['authorizer_info']['qrcode_url'];
+				$company->open_store        = (string)$res['authorizer_info']['business_info']['open_store'];
+				$company->open_scan         = (string)$res['authorizer_info']['business_info']['open_scan'];
+				$company->open_pay          = (string)$res['authorizer_info']['business_info']['open_pay'];
+				$company->open_card         = (string)$res['authorizer_info']['business_info']['open_card'];
+				$company->open_shake        = (string)$res['authorizer_info']['business_info']['open_shake'];
+				$company->func_info         = json_encode($res['authorization_info']['func_info'], true);
+				$company->status            = 'authorized';
+				if ($company->save()) {
+					$this->api_res(0);
+				} else {
 					$this->api_res(1009);
 					log_message('error', '获取授权方信息失败');
 				}
@@ -330,14 +330,16 @@ class Events extends MY_Controller
 					break;
 				}
 				case 'unauthorized': {
+					$author_appid = $xml->getElementsByTagName('AuthorizerAppid')->item(0)->nodeValue;
+					$this->load->model('companywxinfomodel');
+					Companywxinfomodel::where('authorizer_appid', $author_appid)
+						->update(['status' => 'unauthorized']);
 					break;
 				}
 				case 'updateauthorized': {
 					break;
 				}
-				
 			}
-			
 			echo 'success';
 		} else {
 			log_message('error', '解密失败-->' . $errCode);
