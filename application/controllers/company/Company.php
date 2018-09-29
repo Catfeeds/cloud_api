@@ -169,7 +169,7 @@ class Company extends MY_Controller
 	{
 		$this->load->model('companymodel');
 		$company_id = $this->company_id;
-		$company    = Companymodel::where('id',$company_id)->get()
+		$company    = Companymodel::where('id', $company_id)->get()
 			->map(function ($company) {
 				$company->license_image = $this->fullAliossUrl($company->license_image);
 				$company->idcard_front  = $this->fullAliossUrl($company->idcard_front);
@@ -181,14 +181,18 @@ class Company extends MY_Controller
 	}
 	
 	/**
-	 * 返回公司认证信息
+	 * 返回公司公众号信息
 	 */
 	public function companyWXInfo()
 	{
 		$this->load->model('companywxinfomodel');
 		$company_id = $this->company_id;
-		$company    = Companywxinfomodel::Find($company_id)->toArray();
-		$this->api_res(0, $company);
+		$company    = Companywxinfomodel::Find($company_id);
+		if (empty($company)) {
+			$this->api_res(0);
+		}else{
+			$this->api_res(0,$company->toArray());
+		}
 	}
 	
 	/**

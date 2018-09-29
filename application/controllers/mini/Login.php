@@ -20,12 +20,14 @@ class Login extends MY_Controller {
 
     public function getToken() {
         $post = $this->input->post(NULL, true);
-        if ($post['code']) {
+	    log_message('debug',json_encode($post));
+	    if ($post['code']) {
             $sessionKeyData = $this->app->sns->getSessionKey($post['code']);
             $token          = $this->handleLoginStatus($sessionKeyData);
             $this->api_res(0, ['token' => $token, '$sessionKeyData' => $sessionKeyData]);
         } else {
-            $this->api_res(10002);
+	    	log_message('error','mini-getToken-获取token失败');
+		    $this->api_res(10002);
             return;
         }
     }
@@ -37,7 +39,6 @@ class Login extends MY_Controller {
             return;
         }
         $wechat = Employeemodel::where('unionid', $sessionKeyData->unionid)->first();
-
         if (empty($wechat) OR $wechat->status == 'DISABLE') {
             $this->api_res(10002);
             return;
