@@ -174,6 +174,17 @@ class Company extends MY_Controller
 	}
 	
 	/**
+	 * 返回公司认证信息
+	 */
+	public function companyWXInfo()
+	{
+		$this->load->model('companywxinfomodel');
+		$company_id = $this->company_id;
+		$company    = Companymodel::Find($company_id)->toArray();
+		$this->api_res(0, $company);
+	}
+	
+	/**
 	 * 注册信息验证
 	 */
 	public function validation()
