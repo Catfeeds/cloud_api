@@ -169,7 +169,14 @@ class Company extends MY_Controller
 	{
 		$this->load->model('companymodel');
 		$company_id = $this->company_id;
-		$company    = Companymodel::Find($company_id)->toArray();
+		$company    = Companymodel::where('id',$company_id)->get()
+			->map(function ($company) {
+				$company->license_image = $this->fullAliossUrl($company->license_image);
+				$company->idcard_front  = $this->fullAliossUrl($company->idcard_front);
+				$company->idcard_back   = $this->fullAliossUrl($company->idcard_back);
+				return $company;
+			})
+			->toArray();
 		$this->api_res(0, $company);
 	}
 	
@@ -180,7 +187,7 @@ class Company extends MY_Controller
 	{
 		$this->load->model('companywxinfomodel');
 		$company_id = $this->company_id;
-		$company    = Companymodel::Find($company_id)->toArray();
+		$company    = Companywxinfomodel::Find($company_id)->toArray();
 		$this->api_res(0, $company);
 	}
 	
