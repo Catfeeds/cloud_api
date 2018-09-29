@@ -37,13 +37,17 @@ class Order extends MY_Controller {
             case Ordermodel::STATE_CONFIRM:
                 $this->load->model('storepaymodel');
                 $store_pay_ids  = $orders->groupBy('store_pay_id')->keys();
-                $store_pays = Storepaymodel::whereIn('id',$store_pay_ids)->sum('money');
+                $store_pays = Storepaymodel::whereIn('id',$store_pay_ids)->sum('pre_money');
                 $premoney=number_format($store_pays,2,'.','');
                 break;
             case Ordermodel::STATE_PENDING:
                 $this->load->model('premoneymodel');
                 $premoneyobj   = Premoneymodel::where('customer_id',$resident->customer_id)->first();
-                $premoney   = $premoneyobj->money;
+                if(empty($premoneyobj->money)){
+                    $premoney=0;
+                }else{
+                    $premoney   = $premoneyobj->money;
+                }
                 break;
             default:
                 $premoney   = 0;
