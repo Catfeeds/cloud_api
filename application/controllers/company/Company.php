@@ -1,5 +1,6 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+
 /**
  * Author:      hfq<1326432154@qq.com>
  * Date:        2018/8/15
@@ -59,7 +60,7 @@ class Company extends MY_Controller
 		$phone = $post['phone'];
 		$this->load->library('sms');
 		$code = str_pad(rand(1, 9999), 4, 0, STR_PAD_LEFT);
-		$str  = "【梵响数据】您的验证码是" . $code . "。如非本人操作，请忽略本短信";
+		$str  = str_ireplace('#code#', $code, config_item('yunpian_signature'));
 		$this->m_redis->storeSmsCode($phone, $code);
 		$this->sms->send($str, $phone);
 		$this->api_res(0);
@@ -169,7 +170,7 @@ class Company extends MY_Controller
 		$this->load->model('companymodel');
 		$company_id = $this->company_id;
 		$company    = Companymodel::Find($company_id)->toArray();
-		$this->api_res(0,$company);
+		$this->api_res(0, $company);
 	}
 	
 	/**

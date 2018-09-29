@@ -127,7 +127,7 @@ class Login extends MY_Controller {
             }
             $this->load->library('sms');
             $code = str_pad(rand(1, 9999), 4, 0, STR_PAD_LEFT);
-            $str  = SMSTEXT . $code;
+            $str  =  str_ireplace('#code#',$code,config_item('yunpian_signature'));
             $this->m_redis->storeSmsCode($phone, $code);
             $this->sms->send($str, $phone);
             $this->api_res(0);
