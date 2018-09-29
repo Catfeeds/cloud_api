@@ -54,8 +54,8 @@ class Sms
 
         if (isset($result['code']) && $result['code'] != 0) {
         	log_message('error','send sms failed, '.json_encode($result));
-            $this->error = $result['msg'];
-            return false;
+        	$this->error = $result['msg'];
+        	return false;
         }
 
         return true;
