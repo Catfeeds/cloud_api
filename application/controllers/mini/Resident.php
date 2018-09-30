@@ -142,6 +142,7 @@ class Resident extends MY_Controller {
             //把房间状态改成占用
             $b = $this->occupiedByResident($room, $resident);
             //$b=$this->handleCheckInCommonEvent($resident, $room);
+	        $this->waterAndElectric($post, $resident);
 
             if ($a && $b) {
                 DB::commit();
@@ -167,7 +168,6 @@ class Resident extends MY_Controller {
                     $res = $activity->sendOldbeltNew($resident->id, $time, $post['old_phone']);
                 }
             }
-            $this->waterAndElectric($post, $resident);
             $this->api_res(0, ['resident_id' => $resident->id, 'res' => $res]);
         } catch (Exception $e) {
             DB::rollBack();
@@ -1572,6 +1572,7 @@ class Resident extends MY_Controller {
                 'image'         => empty($post['coldwater_image']) ? '' : $this->splitAliossUrl($post['coldwater_image']),
                 'this_time'     => date('Y-m-d H:i:s'),
                 'status'        => Meterreadingtransfermodel::NEW_RENT,
+                'order_status'  =>'NOORDER',
             ];
             $coldwater->fill($arr_coldwater);
             $coldwater->save();
@@ -1592,6 +1593,7 @@ class Resident extends MY_Controller {
                 'image'         => empty($post['electric_image']) ? '' : $this->splitAliossUrl($post['electric_image']),
                 'this_time'     => date('Y-m-d H:i:s'),
                 'status'        => Meterreadingtransfermodel::NEW_RENT,
+                'order_status'  =>'NOORDER',
             ];
             $electric->fill($arr_electric);
             $electric->save();
@@ -1612,6 +1614,7 @@ class Resident extends MY_Controller {
                 'image'         => empty($post['hotwater_image']) ? '' : $this->splitAliossUrl($post['hotwater_image']),
                 'this_time'     => date('Y-m-d H:i:s'),
                 'status'        => Meterreadingtransfermodel::NEW_RENT,
+                'order_status'  =>'NOORDER',
             ];
             $hotwater->fill($arr_hotwater);
             $hotwater->save();

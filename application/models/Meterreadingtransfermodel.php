@@ -39,6 +39,7 @@ class Meterreadingtransfermodel extends Basemodel
 		'confirmed',
 		'created_at',
 		'updated_at',
+		'order_status',
 	];
 	
 	protected $casts = [
@@ -166,7 +167,7 @@ class Meterreadingtransfermodel extends Basemodel
 		$this_time = date('Y-m-d', time());
 		foreach ($data as $key => $value) {
 			$where['room_id'] = $value[0];
-			log_message('debug', 'writeReading查询条件'.json_encode($where));
+			log_message('debug', 'writeReading查询条件' . json_encode($where));
 			$transfer = Meterreadingtransfermodel::where($where)->first();
 			if (empty($transfer)) {
 				log_message('debug', 'writeReading-transfer');
@@ -179,11 +180,11 @@ class Meterreadingtransfermodel extends Basemodel
 			}
 			$transfer->this_reading = $value[1];
 			$transfer->this_time    = $this_time;
-			if($transfer->save()){
-				log_message('debug','writeReading 更新成功');
+			if ($transfer->save()) {
+				log_message('debug', 'writeReading 更新成功');
 				
-			}else{
-				log_message('error','writeReading 更新失败');
+			} else {
+				log_message('error', 'writeReading 更新失败');
 			}
 		}
 	}
