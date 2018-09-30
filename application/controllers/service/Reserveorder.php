@@ -29,7 +29,7 @@ class Reserveorder extends MY_Controller {
 
         if (!empty($post['store_id'])) {$where['store_id'] = intval($post['store_id']);}
         if (!empty($post['visit_type'])) {$where['visit_by'] = trim($post['visit_type']);}
-        $store_ids = explode(',', $this->employee->store_ids);
+        $store_ids = $this->employee_store->store_ids;
         if (empty($where)) {
             $count = ceil(Reserveordermodel::whereIn('store_id', $store_ids)->count() / PAGINATE);
             if ($page > $count || $page < 1) {
@@ -66,7 +66,7 @@ class Reserveorder extends MY_Controller {
 
         $filed  = ['id', 'time', 'name', 'phone', 'visit_by', 'work_address',
             'require', 'info_source', 'employee_id', 'status', 'remark','store_id'];
-        $store_ids = explode(',', $this->employee->store_ids);
+        $store_ids = $this->employee_store->store_ids;
         $reserve = Reserveordermodel::with('employee')->with('store')->where('store_id', $store_id)->where('store_id', $store_id)
             ->whereIn('store_id', $store_ids)->where('created_at', '>=', $data)->orderBy('id', 'desc')->get($filed);
         if(!$reserve){

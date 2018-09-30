@@ -37,7 +37,7 @@ class Pricecontrol extends MY_Controller
             'community_id','house_id',
             'electricity_price','cold_water_price','hot_water_price'];
         $where     = [];
-        $store_ids = explode(',', $this->employee->store_ids);
+        $store_ids = $this->employee_store->store_ids;
         if (!empty($post['store_id'])) {$where['store_id'] = intval($post['store_id']);};
         if (!empty($post['building_id'])) {$where['building_id'] = intval($post['building_id']);};
         if (!empty($post['number'])) {$where['number'] = trim($post['number']);};
@@ -271,7 +271,7 @@ class Pricecontrol extends MY_Controller
             $this->api_res(1002);
             return false;
         }
-        $store_ids = explode(',', $this->employee->store_ids);
+        $store_ids = $this->employee_store->store_ids;
         $price = Roomunionmodel::orderBy('number')->with('store_s')->with('building_s')->with('room_type')
               ->where('store_id', $store_id)->whereIn('store_id',$store_ids)->orderBy('updated_at')->get($filed)
             ->map(function ($s) {
@@ -381,7 +381,7 @@ class Pricecontrol extends MY_Controller
             $this->api_res(1002);
             return false;
         }
-        $store_ids = explode(',', $this->employee->store_ids);
+        $store_ids = $this->employee_store->store_ids;
         $price = Roomunionmodel::orderBy('number')->with('store_s')->with('building_s')->with('room_type')
             ->where('store_id', $store_id)->whereIn('store_id',$store_ids)->orderBy('updated_at')->get($filed)
             ->map(function ($s) {

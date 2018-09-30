@@ -25,7 +25,7 @@ class Contract extends MY_Controller {
         $page      = isset($post['page']) ? intval($post['page']) : 1;
         $offset    = PAGINATE * ($page - 1);
         $where     = [];
-        $store_ids = explode(',', $this->employee->store_ids);
+        $store_ids = $this->employee_store->store_ids;
         $filed     = ['id', 'contract_id', 'resident_id', 'room_id', 'type', 'created_at',
             'status', 'employee_id', 'store_id'];
 
