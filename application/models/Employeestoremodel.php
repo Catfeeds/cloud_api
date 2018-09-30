@@ -7,7 +7,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Time: 16:35
  */
 class Employeestoremodel extends Basemodel {
-    protected $table = 'boss_resemployee_store';
+    protected $table = 'boss_res_employee_store';
 
     /*
      *获取权限
@@ -26,6 +26,7 @@ class Employeestoremodel extends Basemodel {
    */
     public function insertEmployeeStore($store_ids, $employee_id, $position_id){
         $store_arr = explode(',', $store_ids);
+        Employeestoremodel::whereNotin('store_id', $store_arr)->where('employee_id', $employee_id)->delete();
         foreach ($store_arr as $value){
             $employee_store_select = Employeestoremodel::where('store_id', $value)->where('employee_id', $employee_id)->select(['position_id'])->first();
             if($employee_store_select){
