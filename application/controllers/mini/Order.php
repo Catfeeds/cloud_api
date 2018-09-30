@@ -306,10 +306,10 @@ class Order extends MY_Controller {
      * 其余订单的更新还需要补充
      *
      */
-    private function completeOrders($orders, $payWay = null, $resident,$type='CONFIRM') {
+    private function completeOrders($orders, $payWay = null, $resident,$type='PAY') {
 
-        //现场支付
-        if($type=='PAY'){
+        //微信确认收款
+        if($type=='CONFIRM'){
             $status = Ordermodel::STATE_COMPLETED;
             $deal   = Ordermodel::DEAL_DONE;
             $groups = $orders->groupBy('store_pay_id');
@@ -341,7 +341,7 @@ class Order extends MY_Controller {
             }
             return $orders;
         }else{
-            //确认收款
+            //现场支付
             $status = Ordermodel::STATE_COMPLETED;
             $deal   = Ordermodel::DEAL_DONE;
 
