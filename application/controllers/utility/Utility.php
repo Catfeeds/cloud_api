@@ -33,7 +33,7 @@ class Utility extends MY_Controller
 		$page      = !empty($post['page']) ? intval($post['page']) : 1;
 		$offset    = PAGINATE * ($page - 1);
 		$where     = [];
-		$store_ids = explode(',', $this->employee->store_ids);
+		$store_ids = $this->employee_store->store_ids;
 		if (!empty($post['building_id'])) {
 			$where['building_id'] = intval($post['building_id']);
 		};
@@ -215,7 +215,7 @@ class Utility extends MY_Controller
 		$where         = [];
 		$where_special = [];
 		$where_public  = [];
-		$store_ids     = explode(',', $this->employee->store_ids);
+		$store_ids     = $this->employee_store->store_ids;
 		if (!empty($post['building_id'])) {
 			$where_special['boss_meter_reading_transfer.building_id'] = intval($post['building_id']);
 		};

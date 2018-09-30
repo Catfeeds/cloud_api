@@ -35,7 +35,7 @@ class Store extends MY_Controller
         empty($post['type']) ?: $where['rent_type'] = $post['type'];
         empty($post['status']) ?: $where['status'] = $post['status'];
 
-        $store_ids = explode(',', $this->employee->store_ids);
+        $store_ids = $this->employee_store->store_ids;
         $offset = PAGINATE * ($page - 1);
         $field = ['id', 'name', 'city', 'rent_type', 'address', 'contact_user', 'counsel_phone', 'status', 'created_at'];
         $count = ceil(Storemodel::where($where)->whereIn('id', $store_ids)->count() / PAGINATE);
@@ -124,7 +124,7 @@ class Store extends MY_Controller
         $city = $this->input->post('city', true);
         $where = ['company_id' => $this->company_id];
         empty($city) ?: $where['city'] = $city;
-        $store_ids['id'] = explode(',', $this->employee->store_ids);
+        $store_ids['id'] = $this->employee_store->store_ids;
 
         if (empty($store_ids) || !isset($store_ids)) {
             $this->api_res(1018);

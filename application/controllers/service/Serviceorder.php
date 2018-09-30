@@ -28,7 +28,7 @@ class Serviceorder extends MY_Controller {
         if (!empty($post['service_id'])) {$where['service_id'] = intval($post['service_id']);}
         if (!empty($post['begin_time'])) {$bt = $post['begin_time'];} else { $bt = date('Y-m-d H:i:s', 0);};
         if (!empty($post['end_time'])) {$et = $post['end_time'];} else { $et = date('Y-m-d H:i:s', time());};
-        $store_ids = explode(',', $this->employee->store_ids);
+        $store_ids = $this->employee_store->store_ids;
         $count     = ceil(Serviceordermodel::where($where)->whereIn('store_id', $store_ids)
                 ->whereBetween('created_at', [$bt, $et])->count() / PAGINATE);
         if ($page > $count || $page < 1) {

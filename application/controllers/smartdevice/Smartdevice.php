@@ -29,7 +29,7 @@ class Smartdevice extends MY_Controller
 		$page      = empty($post['page']) ? 1 : intval($post['page']);
 		$offset    = PAGINATE * ($page - 1);
 		$where     = [];
-		$store_ids = explode(',', $this->employee->store_ids);
+		$store_ids = $this->employee_store->store_ids;
 		
 		if (!empty($post['store_id'])) {
 			$where['store_id'] = intval($post['store_id']);

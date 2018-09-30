@@ -261,6 +261,7 @@ class Employee extends MY_Controller {
      * 编辑员工信息
      */
     public function updateEmp() {
+        $this->load->model('employeestoremodel');
         $post   = $this->input->post(null, true);
         $config = $this->validationSubmitEmp();
         array_pull($config, '2');
@@ -317,6 +318,9 @@ class Employee extends MY_Controller {
         $store_id      = $store_ids_arr[0];
         $position_id   = $position->id;
         $status        = $post['status'];
+
+        $employee_store = new Employeestoremodel();
+        $employee_store->insertEmployeeStore($store_ids, $id, $position_id);
 
         $employee = Employeemodel::find($id);
         if (!$employee) {

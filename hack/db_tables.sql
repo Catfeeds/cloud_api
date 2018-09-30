@@ -930,6 +930,24 @@ CREATE TABLE `boss_provides` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `boss_employee_store`
+--
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `boss_resemployee_store` (
+  `id` int(8) unsigned zerofill NOT NULL AUTO_INCREMENT,
+  `employee_id` int(8) NOT NULL,
+  `position_id` int(8) DEFAULT NULL,
+  `store_id` int(8) NOT NULL,
+  `created_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uqx_employee_store` (`employee_id`,`store_id`,`deleted_at`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `boss_price_control_record`
 --
 

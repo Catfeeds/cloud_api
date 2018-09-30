@@ -171,7 +171,7 @@ class Roomunion extends MY_Controller {
         $page      = isset($post['page']) ? intval(strip_tags(trim($post['page']))) : 1;
         $offset    = PAGINATE * ($page - 1);
         $where     = [];
-        $store_ids = explode(',', $this->employee->store_ids);
+        $store_ids = $this->employee_store->store_ids;
         (isset($post['store_id']) && !empty($post['store_id'])) ? $where['boss_room_union.store_id'] = intval(strip_tags(trim($post['store_id']))) : null;
         (isset($post['community_id']) && !empty($post['community_id'])) ? $where['boss_room_union.community_id'] = intval(strip_tags(trim($post['community_id']))) : null;
         $search = isset($post['search']) ? $post['search'] : '';

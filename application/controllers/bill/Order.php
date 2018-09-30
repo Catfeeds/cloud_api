@@ -23,7 +23,7 @@ class Order extends MY_Controller {
     public function listOrder() {
         $input                                          = $this->input->post(null, true);
         $where                                          = [];
-        $store_ids                                      = explode(',', $this->employee->store_ids);
+        $store_ids                                      = $this->employee_store->store_ids;
         empty($input['store_id']) ?: $where['store_id'] = $input['store_id'];
         empty($input['type']) ?: $where['type']         = $input['type'];
         empty($input['year']) ?: $where['year']         = $input['year'];

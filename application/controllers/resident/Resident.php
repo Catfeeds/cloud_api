@@ -26,7 +26,7 @@ class Resident extends MY_Controller {
         $offset    = PAGINATE * ($page - 1);
         $filed     = ['id', 'name', 'customer_id', 'phone', 'room_id', 'card_number', 'created_at', 'status'];
         $where     = [];
-        $store_ids = explode(',', $this->employee->store_ids);
+        $store_ids = $this->employee_store->store_ids;
         if (!empty($post['store_id'])) {$where['store_id'] = intval($post['store_id']);};
         if (!empty($post['name'])) {$search = trim($post['name']);} else { $search = '';};
         $count = $count = ceil(Residentmodel::whereIn('store_id', $store_ids)
@@ -144,7 +144,7 @@ class Resident extends MY_Controller {
            return false;
        }
        $filed     = ['id', 'name', 'customer_id', 'phone', 'room_id', 'card_number', 'created_at', 'status', 'name_two', 'phone_two', 'card_type', 'alternative', 'alter_phone'];
-       $store_ids = explode(',', $this->employee->store_ids);
+       $store_ids = $this->employee_store->store_ids;
        $resident = Residentmodel::with('room')->with('customer_s')->whereIn('store_id', $store_ids)
            ->where('created_at','>', $data)
            ->where('store_id', $store_id)

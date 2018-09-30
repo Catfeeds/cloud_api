@@ -27,7 +27,7 @@ class Roomtype extends MY_Controller
         $field = ['id', 'store_id', 'name', 'feature', 'display'];
         $this->load->model('storemodel');
         $where = empty($post['store_id']) ? [] : ['store_id' => $post['store_id']];
-        $store_ids = explode(',', $this->employee->store_ids);
+        $store_ids = $this->employee_store->store_ids;
         if (isset($post['city']) && !empty($post['city'])) {
             $store_ids = Storemodel::where('city', $post['city'])->get(['id'])->map(function ($s) {
                 return $s['id'];

@@ -16,7 +16,7 @@ class AuthHook {
         $this->CI = &get_instance(); //获取CI对象
     }
 
-    
+
 
     /**
      * 是否验证token
@@ -47,7 +47,7 @@ class AuthHook {
         $method    = $this->CI->router->fetch_method();
         $full_path = strtolower($directory . $class . '/' . $method);
         try {
-           
+
             if(strtolower($directory) == 'innserservice/'){
                 //内部服务API认证
                 $this->apiAuth();
@@ -57,7 +57,7 @@ class AuthHook {
             }
         }catch (Exception $e) {
             log_message('error',$e->getMessage());
-            headers_sent() or header('HTTP/1.1 401 Forbidden'); 
+            headers_sent() or header('HTTP/1.1 401 Forbidden');
             headers_sent() or header("Content-Type:application/json;charset=UTF-8");
             echo json_encode(array('rescode' => 1001, 'resmsg' => 'token无效', 'data' => []));
             exit;
@@ -78,7 +78,7 @@ class AuthHook {
         $this->CI->load->model('apimodel');
         $model = Apimodel::where('apikey',$tks[0])->first();
         if(empty($model)){
-	        throw new UnexpectedValueException('apiKey not found');
+            throw new UnexpectedValueException('apiKey not found');
         }
         $apihash = hash('sha256',"$tks[0].$tks[1].$model->apisecret");
         if($tks[2] == $apihash){
@@ -119,25 +119,30 @@ class AuthHook {
         } else {
             $this->CI->position = 'EMPLOYEE';
             $this->CI->load->model('employeemodel');
+            $this->CI->load->model('employeestoremodel');
+
             $this->CI->employee = Employeemodel::where('bxid', get_instance()->current_id)->first();
+
+            $employee_store = new Employeestoremodel();
+            $this->CI->employee_store = $employee_store->getStoreIds();
         }
         //操作记录测试
         if (!$this->operationRecord($full_path)) {
-            headers_sent() or header('HTTP/1.1 500 Forbidden'); 
+            headers_sent() or header('HTTP/1.1 500 Forbidden');
             headers_sent() or header("Content-Type:application/json;charset=UTF-8");
             echo json_encode(array('rescode' => 1012, 'resmsg' => '操作log出错', 'data' => []));
             exit;
         }
     }
 
-     //SaaS权限验证
+    //SaaS权限验证
     private function saas(){
-       
+
         $company_id = get_instance()->company_id;
 
         if(!empty($company_id)){
             // if(!$this->CI->load->is_loaded('companymodel')){
-                $this->CI->load->model('companymodel');
+            $this->CI->load->model('companymodel');
             // }
             $model = Companymodel::where('id',$company_id)->first();
 
