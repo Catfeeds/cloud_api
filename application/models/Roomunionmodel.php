@@ -30,6 +30,12 @@ class Roomunionmodel extends Basemodel
      * */
     const TYPE_UNION = 'UNION';
     const TYPE_DOT = 'DOT';
+    /*
+     * DOT分布式房间房型
+     * */
+    const ROOM_TYPE_L = 'L';//主卧
+    const ROOM_TYPE_S = 'S';//次卧
+    const ROOM_TYPE_MT = 'MT';//主卧独卫
 
     protected $table = 'boss_room_union';
 
@@ -420,6 +426,49 @@ class Roomunionmodel extends Basemodel
         }
     }
 
+    public function feature_type($feature_name)
+    {
+        switch ($feature_name) {
+            case '主卧' :
+                return 'M';
+                break;
+            case '次卧' :
+                return 'S';
+                break;
+            case '独卫主卧' :
+                return 'MT';
+                break;
+            default :
+                return '';
+                break;
+        }
+    }
+    public function toward_type($toward_name)
+    {
+        switch ($toward_name) {
+            case '东' :
+                return 'E';
+                break;
+            case '西' :
+                return 'W';
+                break;
+            case '南' :
+                return 'S';
+                break;
+            case '北' :
+                    return 'N';
+                break;
+            case '东西' :
+                return 'EW';
+                break;
+            case '南北' :
+                return 'SN';
+                break;
+            default :
+                return '';
+                break;
+        }
+    }
     /**
      * 查询
      */
@@ -582,6 +631,7 @@ class Roomunionmodel extends Basemodel
                 $data[$key]['property_price']    = $value[4];
                 $data[$key]['status']            = Roomunionmodel::STATE_BLANK;
                 $data[$key]['created_at']        = Carbon::now();
+                $data[$key]['updated_at']        = Carbon::now();
                 $data[$key]['begin_time']        = Carbon::now();
                 $data[$key]['end_time']          = Carbon::now();
                 $data[$key]['area']              = $value[8];
@@ -631,9 +681,16 @@ class Roomunionmodel extends Basemodel
             }
             //房型
             $type = trim($item[12]);
-            $room_type = Roomtypemodel::where('store_id', $store_id)->where('name', $type)->select(['id'])->first();
-            if (!$room_type) {
+            $dot_type_arr = ['主卧','次卧','主卧独卫'];
+            if (!in_array($type, $dot_type_arr)) {
                 $error[] = '请检查房型：' . $item[12] . ',查无此房型';
+                return $error;
+            }
+            //朝向
+            $toward = trim($item[10]);
+            $dot_toward_arr = ['东', '西', '南', '北', '东西', '南北'];
+            if (!in_array($toward , $dot_toward_arr)) {
+                $error[] = '朝向请按照东, 西, 南, 北, 东西, 南北格式填写';
                 return $error;
             }
             //租金
@@ -674,31 +731,27 @@ class Roomunionmodel extends Basemodel
                 $error[] = '未找到该小区：'. $value[1] ;
                 continue;
             }
-            $room = Roomtypemodel::where('store_id', $store_id)->where('name', $value[12])->select(['id'])->first();
-            if(!$room){
-                $error[] = '未找到该房型：'. $value[12] ;
-                continue;
-            }
+
             $house_number = $value[4];
             $house = Housemodel::where('number', $house_number)->select(['id'])->first();
             if(!$house){
                 //先创建house,再创建room
-                $room_arr = $this->createHouse($value, $store_id, $community->id, $room->id);
+                $room_arr = $this->createHouse($value, $store_id, $community->id);
                 Roomunionmodel::insert($room_arr);
             }else{
                 //只创建room
-                $room_arr = $this->createHouse($value, $store_id, $community->id, $room->id, $house->id);
+                $room_arr = $this->createHouse($value, $store_id, $community->id, $house->id);
                 Roomunionmodel::insert($room_arr);
             }
         }
         return $error;
     }
-    private function createHouse($data, $store_id, $community_id, $room_type_id, $house_id = null){
+    private function createHouse($data, $store_id, $community_id, $house_id = null){
         try {
             if($house_id == null) {
                 $house_arr = [
                     'store_id'      => $store_id,
-                    'community_id'     => $community_id,
+                    'community_id'  => $community_id,
                     'building_name' => $data[2],
                     'unit'          => $data[3],
                     'number'        => $data[4],
@@ -717,9 +770,10 @@ class Roomunionmodel extends Basemodel
             throw  $e;
         }
         $room_arr[] = [
-            'company_id'       =>  get_instance()->company_id,
+            'company_id'        =>  get_instance()->company_id,
             'store_id'          =>  $store_id,
-            'room_type_id'      =>  $room_type_id,
+            'feature'           =>  $this->feature_type(trim($data[12])),
+            'toward'            =>  $this->feature_type(trim($data[10])),
             'layer'             =>  $data[5],
             'number'            =>  $data[11],
             'rent_price'        =>  $data[14],
@@ -729,6 +783,7 @@ class Roomunionmodel extends Basemodel
             'house_id'          =>  $house_id,
             'community_id'      =>  $community_id,
             'created_at'        =>  Carbon::now(),
+            'updated_at'        =>  Carbon::now(),
             'begin_time'        =>  Carbon::now(),
             'end_time'          =>  Carbon::now(),
             'area'              =>  $data[13],
