@@ -403,6 +403,10 @@ class Utility extends MY_Controller
 		//修改表读数
 		$id                    = $post['id'];
 		$reading               = Meterreadingtransfermodel::find($id);
+		if ($reading->order_status == 'HASORDER'){
+			$this->api_res(10053);
+			return;
+		}
 		$original_record       = $reading->this_reading;
 		$this_reading          = floatval($post['this_reading']);
 		$reading->this_reading = $this_reading;
