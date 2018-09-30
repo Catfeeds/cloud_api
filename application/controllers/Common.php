@@ -1,5 +1,6 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+use OSS\OssClient;
 /**
  * Author:      zjh<401967974@qq.com>
  * Date:        2018/4/27 0027
