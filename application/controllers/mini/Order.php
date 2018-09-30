@@ -32,7 +32,7 @@ class Order extends MY_Controller {
         }
         $room = $resident->room;
         $orders = $resident->orders()->where('status', $status)->get();
-        $totalMoney = number_format($orders->sum('money'), 2);
+        $totalMoney = number_format($orders->sum('money'), 2,'.','');
         switch($input['status']){
             case Ordermodel::STATE_CONFIRM:
                 $this->load->model('storepaymodel');
