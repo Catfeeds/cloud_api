@@ -39,10 +39,12 @@ class Login extends MY_Controller {
             return;
         }
         $wechat = Employeemodel::where('unionid', $sessionKeyData->unionid)->first();
-        if (empty($wechat) OR $wechat->status == 'DISABLE') {
+        if (empty($wechat) || $wechat->status == 'DISABLE') {
             $this->api_res(10002);
             return;
         }
+	    $wechat = $wechat->toArray();
+        log_message('debug','获取员工信息'.json_encode($wechat));
         $wechat->mini_openid = $sessionKeyData->openid;
         $wechat->session_key = $sessionKeyData->session_key;
         $wechat->save();
