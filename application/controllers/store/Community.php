@@ -107,11 +107,16 @@ class Community extends MY_Controller
 			$this->api_res(1005);
 			return;
 		}
-		if (!$community = Communitymodel::find($community_id)) {
+		$community = Communitymodel::where('id',$community_id)->first();
+		if (!$community ) {
 			$this->api_res(1007);
 			return;
 		}
-		$community->sale = "N";
+		if ($community->sale == 'N'){
+			$community->sale = "Y";
+		}else{
+			$community->sale = "N";
+		}
 		if ($community->save()) {
 			$this->api_res(0);
 		} else {
