@@ -164,7 +164,7 @@ class Order extends MY_Controller {
             $where['room_id'] = $room->id;
         }
 
-        $data = $this->ordermodel->ordersOfRooms($where, $page, $per_page);
+        $data = $this->ordermodel->ordersOfRooms($input['status'],$where, $page, $per_page);
 
         $this->api_res(0, ['data' => $data]);
     }
@@ -248,7 +248,7 @@ class Order extends MY_Controller {
             $this->load->model('utilitymodel');
 
             //更新订单订单到完成的状态
-            $orders = $this->completeOrders($orders, null, $resident);
+            $orders = $this->completeOrders($orders, null, $resident,'CONFIRM');
 
             //销券
             $this->load->model('couponmodel');
@@ -304,10 +304,12 @@ class Order extends MY_Controller {
      * 确认订单以及现场支付时的订单状态的更新
      * 目前的情况下, 如果订单中包含某些特定类型(水电, 物品等费用)订单, 需要同时处理掉
      * 其余订单的更新还需要补充
+     *
      */
-    private function completeOrders($orders, $payWay = null, $resident,$true=false) {
+    private function completeOrders($orders, $payWay = null, $resident,$type='CONFIRM') {
 
-        if($true){
+        //现场支付
+        if($type=='PAY'){
             $status = Ordermodel::STATE_COMPLETED;
             $deal   = Ordermodel::DEAL_DONE;
             $groups = $orders->groupBy('store_pay_id');
@@ -339,6 +341,7 @@ class Order extends MY_Controller {
             }
             return $orders;
         }else{
+            //确认收款
             $status = Ordermodel::STATE_COMPLETED;
             $deal   = Ordermodel::DEAL_DONE;
 
@@ -620,7 +623,7 @@ class Order extends MY_Controller {
             //将优惠券与订单绑定, 同时更新优惠券的状态
             $this->couponmodel->bindOrdersAndCalcDiscount($resident, $orders, $coupons, true);
             //更新订单状态
-            $orders = $this->completeOrders($orders, $payWay, $resident,true);
+            $orders = $this->completeOrders($orders, $payWay, $resident,'PAY');
             //房间, 住户, 优惠券以及其他订单表的状态
             $this->updateRoomAndResident($orders, $resident, $resident->roomunion);
 
