@@ -934,11 +934,11 @@ CREATE TABLE `boss_provides` (
 --
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `boss_resemployee_store` (
-  `id` int(8) unsigned zerofill NOT NULL AUTO_INCREMENT,
-  `employee_id` int(8) NOT NULL,
-  `position_id` int(8) DEFAULT NULL,
-  `store_id` int(8) NOT NULL,
+CREATE TABLE `boss_res_employee_store` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `employee_id` int(10) NOT NULL,
+  `position_id` int(10) DEFAULT NULL,
+  `store_id` int(10) NOT NULL,
   `created_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   `deleted_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
