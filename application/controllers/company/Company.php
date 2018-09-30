@@ -177,7 +177,7 @@ class Company extends MY_Controller
 				return $company;
 			})
 			->toArray();
-		$this->api_res(0, $company);
+		$this->api_res(0, $company[0]);
 	}
 	
 	/**

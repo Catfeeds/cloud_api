@@ -43,12 +43,11 @@ class Login extends MY_Controller {
             $this->api_res(10002);
             return;
         }
-	    $wechat = $wechat->toArray();
-        log_message('debug','获取员工信息'.json_encode($wechat));
+        log_message('debug','获取员工信息'.json_encode($wechat->toArray()));
         $wechat->mini_openid = $sessionKeyData->openid;
         $wechat->session_key = $sessionKeyData->session_key;
         $wechat->save();
-        return $this->m_jwt->generateJwtToken($wechat['bxid'], $wechat['company_id']);
+        return $this->m_jwt->generateJwtToken($wechat->bxid, $wechat->company_id);
     }
 
     public function authority() {
