@@ -339,9 +339,13 @@ class Ordermodel extends Basemodel {
     /**
      * 检索订单, 不包括已生成和已审核的订单
      **/
-    public function ordersOfRooms(array $where, $page = 1, $perPage = PAGINATE) {
+    public function ordersOfRooms($status,array $where, $page = 1, $perPage = PAGINATE) {
         $query = Ordermodel::where($where);
-
+        if($status=='PENDING'){
+            $field='money';
+        }else{
+            $field='paid';
+        }
 //        var_dump($query->get()->toArray());exit;
 
         $orders = $query
@@ -362,7 +366,7 @@ class Ordermodel extends Basemodel {
         $pagination['total_pages'] = (int) ceil($pagination['total'] / $pagination['per_page']);
 
         $orders = $orders->forPage($page, $perPage)
-            ->map(function ($items) {
+            ->map(function ($items) use ($field) {
                 $order = $items->first();
 //                log_message('error','RESIDENT_ID'.$order->resident_id);
                 if($order->resident){
@@ -374,7 +378,7 @@ class Ordermodel extends Basemodel {
                     ],
                     'orders'   => [
                         'status'     => $order->status,
-                        'amount'     => number_format($items->sum('paid'), 2),
+                        'amount'     => number_format($items->sum($field), 2),
                         'months'     => $items->pluck('month')->unique()->values(),
                         'updated_at' => $order->updated_at->format('Y-m-d'),
                     ],
