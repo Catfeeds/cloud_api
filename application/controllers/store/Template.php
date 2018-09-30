@@ -21,13 +21,14 @@ class Template extends MY_Controller {
         $this->load->model('roomtypemodel');
         $page   = intval(isset($post['page']) ? $post['page'] : 1);
         $offset = PAGINATE * ($page - 1);
+        $store_ids = $this->employee_store->store_ids;
         $field  = ['id', 'name', 'url', 'rent_type','store_id','room_type_id'];
-        $count  = ceil(Contracttemplatemodel::count() / PAGINATE);
+        $count  = ceil(Contracttemplatemodel::whereIn('store_id', $store_ids)->count() / PAGINATE);
         if ($page > $count) {
             $this->api_res(0, ['count' => $count, 'list' => []]);
             return;
         }
-        $templates = Contracttemplatemodel::offset($offset)->limit(PAGINATE)->orderBy('id', 'desc')
+        $templates = Contracttemplatemodel::whereIn('store_id', $store_ids)->offset($offset)->limit(PAGINATE)->orderBy('id', 'desc')
             ->with('store')->with('room')->get($field)
             ->map(function ($result) {
                 $result->url = $this->fullAliossUrl($result->url);
