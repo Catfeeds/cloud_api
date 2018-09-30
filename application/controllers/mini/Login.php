@@ -1,6 +1,6 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
-
+include_once(APPPATH . '/libraries/wxBizMsgCrypt.php');
 use EasyWeChat\Foundation\Application;
 
 /**
@@ -24,7 +24,6 @@ class Login extends MY_Controller
 	
 	public function getToken()
 	{
-		$this->load->library("wxbizdatacrypt");
 		$this->load->library('M_jwt');
 		$post = $this->input->post(NULL, true);
 		log_message('debug', json_encode($post));
