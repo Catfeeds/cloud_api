@@ -34,7 +34,7 @@ class Login extends MY_Controller
 				$this->debug('debug','===未授权====');
 				$encryptedData = $post['encryptedData'];
 				$iv            = $post['iv'];
-				$pc            = new WXBizDataCrypt(config_item('miniAppid'), $sessionKeyData->sessionKey);
+				$pc            = new WXBizDataCrypt(config_item('miniAppid'), $sessionKeyData->session_key);
 				$data          = '';
 				$errCode       = $pc->decryptData($encryptedData, $iv, $data);
 				$data          = json_decode($data, true);
