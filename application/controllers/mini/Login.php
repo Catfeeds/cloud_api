@@ -1,6 +1,6 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
-include_once(APPPATH . '/libraries/wxBizMsgCrypt.php');
+include_once(APPPATH . '/libraries/wxBizDataCrypt.php');
 use EasyWeChat\Foundation\Application;
 
 /**
