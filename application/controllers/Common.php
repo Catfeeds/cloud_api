@@ -101,4 +101,24 @@ class Common extends MY_Controller {
         }
         $this->api_res(0, ['district' => $district]);
     }
+
+    /**
+     * base64位图片上传到alioss
+     */
+    public function baseImageUpload(){
+        $base_64    = $this->input->post('base');
+        $base_arr   = explode(',',$base_64);
+        $base_image = base64_decode(end($base_arr));
+        $content    = $base_image;
+        $this->config->load('alioss', TRUE);
+        $accessKeyId = $this->config->item('alioss')['accessKeyId'];
+        $accessKeySecret = $this->config->item('alioss')['accessKeySecret'];
+        $endpoint = $this->config->item('alioss')['endpoint'];
+        $bucket = $this->config->item('alioss')['bucket'];
+        $ossClient = new OssClient($accessKeyId, $accessKeySecret,$endpoint, false);
+        $object = date('Y-m-d',time()).'/'.uniqid().'.png';
+        $options = array();
+        $ossClient->putObject($bucket, $object, $content, $options);
+        $this->api_res(0,config_item('cdn_path').'/'.$object);
+    }
 }
