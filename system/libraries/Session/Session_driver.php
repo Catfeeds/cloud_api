@@ -15,7 +15,7 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this employee notice shall be included in
+ * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -107,6 +107,23 @@ abstract class CI_Session_driver implements SessionHandlerInterface {
 		{
 			$this->_success = 0;
 			$this->_failure = -1;
+		}
+	}
+
+	// ------------------------------------------------------------------------
+
+	/**
+	 * PHP 5.x validate ID
+	 *
+	 * Enforces session.use_strict_mode on PHP 5.x (7+ does it by itself)
+	 *
+	 * @return	void
+	 */
+	public function php5_validate_id()
+	{
+		if (PHP_VERSION_ID < 70000 && isset($_COOKIE[$this->_config['cookie_name']]) && ! $this->validateId($_COOKIE[$this->_config['cookie_name']]))
+		{
+			unset($_COOKIE[$this->_config['cookie_name']]);
 		}
 	}
 

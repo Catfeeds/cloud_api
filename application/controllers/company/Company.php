@@ -60,7 +60,7 @@ class Company extends MY_Controller
 		$phone = $post['phone'];
 		$this->load->library('sms');
 		$code = str_pad(rand(1, 9999), 4, 0, STR_PAD_LEFT);
-		$str  = SMSTEXT . $code;
+		$str  = str_ireplace('#code#', $code, config_item('yunpian_signature'));
 		$this->m_redis->storeSmsCode($phone, $code);
 		$this->sms->send($str, $phone);
 		$this->api_res(0);
@@ -169,8 +169,30 @@ class Company extends MY_Controller
 	{
 		$this->load->model('companymodel');
 		$company_id = $this->company_id;
-		$company    = Companymodel::Find($company_id)->toArray();
-		$this->api_res(0,$company);
+		$company    = Companymodel::where('id', $company_id)->get()
+			->map(function ($company) {
+				$company->license_image = $this->fullAliossUrl($company->license_image);
+				$company->idcard_front  = $this->fullAliossUrl($company->idcard_front);
+				$company->idcard_back   = $this->fullAliossUrl($company->idcard_back);
+				return $company;
+			})
+			->toArray();
+		$this->api_res(0, $company[0]);
+	}
+	
+	/**
+	 * 返回公司公众号信息
+	 */
+	public function companyWXInfo()
+	{
+		$this->load->model('companywxinfomodel');
+		$company_id = $this->company_id;
+		$company    = Companywxinfomodel::Find($company_id);
+		if (empty($company)) {
+			$this->api_res(0);
+		}else{
+			$this->api_res(0,$company->toArray());
+		}
 	}
 	
 	/**

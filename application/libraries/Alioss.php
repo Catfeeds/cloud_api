@@ -4,6 +4,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 use OSS\OssClient;
 use OSS\Core\OssException;
+use Intervention\Image\ImageManagerStatic as Image;
 /**
  * Author:      weijinlong
  * Date:        2018/4/17
@@ -12,6 +13,7 @@ use OSS\Core\OssException;
  */
 class Alioss {
 
+	public $watermark= NULL;
 	/**
 	 * Maximum file size
 	 *
@@ -548,11 +550,30 @@ class Alioss {
 		try{
 			$ossClient = new OssClient($accessKeyId, $accessKeySecret,$endpoint, false);
 			
-			// var_dump(uniqid());exit;
 			
 			if (is_null($ossClient)) exit(1);
+
 			$object = date('Y-m-d',time()).'/'.uniqid().$this->file_ext; 
-			$content = file_get_contents($this->file_temp);
+			if(!empty($this->watermark)){
+				$img = Image::make($this->file_temp);
+				$img->text($this->watermark, $img->width()/2, $img->height()/2, function($font) use($img){
+            
+					$font->file(APPPATH.'/font/SimHei.ttf');
+					$font->size($img->width()/8);
+					// $font->color('#fdf6e3');
+					$font->color(array(255, 255, 255, 0.6));
+					$font->align('center');
+					$font->valign('middle');
+					$font->angle(45);
+					
+				});
+				$content = file_get_contents($img->encode('data-url'));
+				
+			}else{
+				$content = file_get_contents($this->file_temp);
+				
+			}
+			
 			$options = array();
 			
 			$ossClient->putObject($bucket, $object, $content, $options);

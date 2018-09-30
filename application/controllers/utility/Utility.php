@@ -184,15 +184,17 @@ class Utility extends MY_Controller
 		$objPHPExcel->getActiveSheet()->setCellValue('I' . $i, '更新時間');
 		$sheet->fromArray($newUtility, null, 'A2');
 		$writer = new Xlsx($objPHPExcel);
-		header("Pragma: public");
-		header("Expires: 0");
-		header("Cache-Control:must-revalidate, post-check=0, pre-check=0");
-		header("Content-Type:application/force-download");
-		header("Content-Type:application/vnd.ms-excel");
-		header("Content-Type:application/octet-stream");
-		header("Content-Type:application/download");
-		header('Content-Disposition:attachment;filename="meterReadingTemplate.xlsx"');
-		header("Content-Transfer-Encoding:binary");
+		if(!headers_sent()){
+			header("Pragma: public");
+			header("Expires: 0");
+			header("Cache-Control:must-revalidate, post-check=0, pre-check=0");
+			header("Content-Type:application/force-download");
+			header("Content-Type:application/vnd.ms-excel");
+			header("Content-Type:application/octet-stream");
+			header("Content-Type:application/download");
+			header('Content-Disposition:attachment;filename="meterReadingTemplate.xlsx"');
+			header("Content-Transfer-Encoding:binary");
+		}
 		$writer->save('php://output');
 	}
 	/******************************************************************/
@@ -241,7 +243,6 @@ class Utility extends MY_Controller
 		}
 		$number = empty($post['number']) ? '' : $post['number'];
 		$count  = ceil(Meterreadingtransfermodel::whereIn('store_id', $store_ids)->where($where)->where($where_public)
-				->whereIn('boss_meter_reading_transfer.order_status',['NOORDER','NORESIDENT','HASORDER'])
 				->where(function ($query) use ($number) {
 					$query->WhereHas('room_s', function ($query) use ($number) {
 						$query->where('number', 'like', "$number%");
@@ -253,7 +254,6 @@ class Utility extends MY_Controller
 		})
 			->with(['building', 'store', 'room_s'])
 			->where($where)
-			->whereIn('boss_meter_reading_transfer.order_status',['NOORDER','NORESIDENT','HASORDER'])
 			->where(function ($query) use ($number) {
 				$query->WhereHas('room_s', function ($query) use ($number) {
 					$query->where('number', 'like', "$number%");

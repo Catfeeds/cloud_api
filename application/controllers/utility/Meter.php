@@ -133,7 +133,7 @@ class Meter extends MY_Controller
 				"and t_reading.resident_id = ? " .
 				"and t_reading.status = ? " .
 				"and t_store.id = ? " .
-				"and t_reading.deleted_at is null";
+				"and t_reading.deleted_at is null ";
 			//账单状态
 			$order_status = "and t_reading.order_status = 'NOORDER' ";
 			//本次读数
@@ -232,7 +232,7 @@ class Meter extends MY_Controller
 	/**
 	 * 根据门店，设备类型返回excel模板
 	 */
-	public function readingTemplate()
+	public function readingTemplateL()
 	{
 		$this->load->model('meterreadingtransfermodel');
 		$this->load->model('roomunionmodel');
@@ -260,13 +260,105 @@ class Meter extends MY_Controller
 		$objPHPExcel->getActiveSheet()->setCellValue('E' . $i, '权重(取值范围:0~100)');
 		$sheet->fromArray($res, null, 'A2');
 		$writer = new Xlsx($objPHPExcel);
-		header("Pragma: public");
-		header("Expires: 0");
-		header("Content-Type:application/octet-stream");
-		header("Content-Transfer-Encoding:binary");
-		header('Cache-Control: max-age=0');
-		header("Content-Disposition:attachment;filename=a.Xlsx");
+		if(!headers_sent()){
+			header("Pragma: public");
+			header("Expires: 0");
+			header("Content-Type:application/octet-stream");
+			header("Content-Transfer-Encoding:binary");
+			header('Cache-Control: max-age=0');
+			header("Content-Disposition:attachment;filename=a.Xlsx");
+		}
 		$writer->save('php://output');
 		exit;
+	}
+	
+	/**
+	 * 导出excel模板,高配版
+	 */
+	public function readingTemplate()
+	{
+		$this->load->model('meterreadingtransfermodel');
+		$this->load->model('roomunionmodel');
+		$this->load->model('residentmodel');
+		$this->load->model('storemodel');
+		$post = $this->input->post(null, true);
+		if (!isset($post['store_id']) || !isset($post['type'])) {
+			$this->api_res(1002);
+			return;
+		}
+		$where                                             = [];
+		$where['boss_meter_reading_transfer.store_id']     = $post['store_id'];
+		$where['boss_meter_reading_transfer.type']         = $post['type'];
+		$where['boss_meter_reading_transfer.order_status'] = 'NOREADING';
+		$where['boss_meter_reading_transfer.status']       = 'NORMAL';
+		//
+		$transfer = new Meterreadingtransfermodel();
+		$res      = $transfer->readingDetails($where);
+		$row      = count($res) + 1;
+		$filename = date('Y-m-d-H:i:s') . '导出' . '水电读数模板.Xlsx';
+		$phpexcel = new Spreadsheet();
+		$sheet    = $phpexcel->getActiveSheet();
+		$this->createPHPExcel($phpexcel, $filename); //创建excel
+		$this->setExcelFirstRow($phpexcel); //设置各字段名称
+		$sheet->fromArray($res, null, 'A2'); //想excel中写入数据
+		$this->setExcelColumnWidth($phpexcel); //设置Excel每列宽度
+		$this->setAlignCenter($phpexcel, $row); //设置记录值居中
+		$writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($phpexcel, 'Xlsx');
+		if(!headers_sent()){
+			header("Pragma: public");
+			header("Expires: 0");
+			header("Content-Type:application/octet-stream");
+			header("Content-Transfer-Encoding:binary");
+			header('Cache-Control: max-age=0');
+			header("Content-Disposition:attachment;filename=$filename");
+		}
+		$writer->save('php://output');
+		exit;
+	}
+	
+	private function createPHPExcel(Spreadsheet $phpexcel, $filename)
+	{
+		$phpexcel->getProperties()
+			->setCreator('梵响数据')
+			->setLastModifiedBy('梵响数据')
+			->setTitle($filename)
+			->setSubject($filename)
+			->setDescription($filename)
+			->setKeywords($filename)
+			->setCategory($filename);
+		$phpexcel->setActiveSheetIndex(0);
+		return $phpexcel;
+	}
+	
+	private function setAlignCenter(Spreadsheet $phpexcel, $row)
+	{
+		$phpexcel->getActiveSheet()
+			->getStyle("A1:E{$row}")
+			->getAlignment()
+			->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+		// 为了使任何表保护，需设置为真
+		$phpexcel->getActiveSheet()->getProtection()->setSheet(true);
+		// 将A,B两列保护 加密密码是 PHPExcel
+		$phpexcel->getActiveSheet()->protectCells("A1:A{$row}", 'PHPExcel');
+		//去掉保护
+		$phpexcel->getActiveSheet()->getStyle("B1:E{$row}")->getProtection()->setLocked(\PhpOffice\PhpSpreadsheet\Style\Protection::PROTECTION_UNPROTECTED);
+	}
+	
+	private function setExcelFirstRow(Spreadsheet $phpexcel)
+	{
+		$phpexcel->getActiveSheet()->setCellValue('A1', 'ID(注:不可更改)');
+		$phpexcel->getActiveSheet()->setCellValue('B1', '房间号');
+		$phpexcel->getActiveSheet()->setCellValue('C1', '租户姓名');
+		$phpexcel->getActiveSheet()->setCellValue('D1', '读数(推荐带两位小数)');
+		$phpexcel->getActiveSheet()->setCellValue('E1', '权重(范围:0~100)');
+	}
+	
+	private function setExcelColumnWidth(Spreadsheet $phpexcel)
+	{
+		$phpexcel->getActiveSheet()->getColumnDimension('A')->setWidth(20);
+		$phpexcel->getActiveSheet()->getColumnDimension('B')->setWidth(20);
+		$phpexcel->getActiveSheet()->getColumnDimension('C')->setWidth(28);
+		$phpexcel->getActiveSheet()->getColumnDimension('D')->setWidth(20);
+		$phpexcel->getActiveSheet()->getColumnDimension('E')->setWidth(20);
 	}
 }

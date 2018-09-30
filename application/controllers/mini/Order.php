@@ -25,7 +25,6 @@ class Order extends MY_Controller {
         $this->load->model('roomunionmodel');
         $this->load->model('ordermodel');
         $this->load->model('residentmodel');
-
         $resident = Residentmodel::where('store_id', $this->employee->store_id)->find($resident_id);
         if (empty($resident)) {
             $this->api_res(1007);
@@ -33,14 +32,30 @@ class Order extends MY_Controller {
         }
         $room = $resident->room;
         $orders = $resident->orders()->where('status', $status)->get();
-        $totalMoney = number_format($orders->sum('money'), 2);
+        $totalMoney = number_format($orders->sum('money'), 2,'.','');
+        switch($input['status']){
+            case Ordermodel::STATE_CONFIRM:
+                $this->load->model('storepaymodel');
+                $store_pay_ids  = $orders->groupBy('store_pay_id')->keys();
+                $store_pays = Storepaymodel::whereIn('id',$store_pay_ids)->sum('pre_money');
+                $premoney=number_format($store_pays,2,'.','');
+                break;
+            case Ordermodel::STATE_PENDING:
+                $this->load->model('premoneymodel');
+                $premoneyobj   = Premoneymodel::where('customer_id',$resident->customer_id)->first();
+                if(empty($premoneyobj->money)){
+                    $premoney=0;
+                }else{
+                    $premoney   = $premoneyobj->money;
+                }
+                break;
+            default:
+                $premoney   = 0;
+                break;
+        }
 
-        $this->api_res(0, ['totalMoney' => $totalMoney, 'orders' => $orders->toArray(), 'resident' => $resident->toArray(), 'room' => $room->toArray()]);
+        $this->api_res(0, ['totalMoney' => $totalMoney, 'orders' => $orders->toArray(), 'resident' => $resident->toArray(), 'room' => $room->toArray(),'premoney'=>$premoney]);
     }
-
-    /**
-     * 微信缴费订单确认页面
-     */
 
     /**
      * [根据所选的订单获取能使用的优惠券]
@@ -149,7 +164,7 @@ class Order extends MY_Controller {
             $where['room_id'] = $room->id;
         }
 
-        $data = $this->ordermodel->ordersOfRooms($where, $page, $per_page);
+        $data = $this->ordermodel->ordersOfRooms($input['status'],$where, $page, $per_page);
 
         $this->api_res(0, ['data' => $data]);
     }
@@ -233,7 +248,7 @@ class Order extends MY_Controller {
             $this->load->model('utilitymodel');
 
             //更新订单订单到完成的状态
-            $orders = $this->completeOrders($orders, null, $resident);
+            $orders = $this->completeOrders($orders, null, $resident,'CONFIRM');
 
             //销券
             $this->load->model('couponmodel');
@@ -289,39 +304,89 @@ class Order extends MY_Controller {
      * 确认订单以及现场支付时的订单状态的更新
      * 目前的情况下, 如果订单中包含某些特定类型(水电, 物品等费用)订单, 需要同时处理掉
      * 其余订单的更新还需要补充
+     *
      */
-    private function completeOrders($orders, $payWay = null, $resident) {
+    private function completeOrders($orders, $payWay = null, $resident,$type='CONFIRM') {
 
-        $status = Ordermodel::STATE_COMPLETED;
-        $deal   = Ordermodel::DEAL_DONE;
+        //现场支付
+        if($type=='PAY'){
+            $status = Ordermodel::STATE_COMPLETED;
+            $deal   = Ordermodel::DEAL_DONE;
+            $groups = $orders->groupBy('store_pay_id');
 
-        $this->createBill($orders, $payWay);
+            $pay_date = date('Y-m-d H:i:s', time());
 
-        $groups = $orders->groupBy('store_pay_id');
+            foreach ($groups as $key => $orders) {
+                $this->load->model('storepaymodel');
+                $store_pay  = Storepaymodel::find($key);
+                $premoney   = $store_pay->pre_money;
+                $this->createBill($orders, $payWay,$premoney);
+                //更新订单状态
+                foreach ($orders as $order) {
 
-        $pay_date = date('Y-m-d H:i:s', time());
+                    //如果是水电或者物品租赁账单, 需要更新相应记录
+                    $this->ordermodel->updateDeviceAndUtility(
+                        $order,
+                        Ordermodel::STATE_COMPLETED,
+                        Ordermodel::DEAL_DONE
+                    );
 
-        foreach ($groups as $key => $orders) {
+                    $order->pay_type = $payWay ? $payWay : $order->pay_type;
+                    $order->pay_date = $pay_date;
+                    $order->status   = $status;
+                    $order->deal     = $deal;
+                    $order->save();
+                }
 
-            //更新订单状态
-            foreach ($orders as $order) {
-
-                //如果是水电或者物品租赁账单, 需要更新相应记录
-                $this->ordermodel->updateDeviceAndUtility(
-                    $order,
-                    Ordermodel::STATE_COMPLETED,
-                    Ordermodel::DEAL_DONE
-                );
-
-                $order->pay_type = $payWay ? $payWay : $order->pay_type;
-                $order->pay_date = $pay_date;
-                $order->status   = $status;
-                $order->deal     = $deal;
-                $order->save();
             }
+            return $orders;
+        }else{
+            //确认收款
+            $status = Ordermodel::STATE_COMPLETED;
+            $deal   = Ordermodel::DEAL_DONE;
 
+            $amount = $orders->sum('money');
+            $this->load->model('premoneymodel');
+            $preobj = Premoneymodel::where('customer_id',$resident->customer_id)->first();
+            if(empty($preobj->money)){
+                $this->createBill($orders, $payWay);
+            }else{
+                $premoney  = $preobj->money;
+                if($amount>=$premoney){
+                    $pre_money  = $premoney;
+                }else{
+                    $pre_money   = $amount;
+                }
+                $preobj->money  = $preobj->money-$pre_money;
+                $preobj->save();
+                $this->createBill($orders, $payWay,$pre_money);
+            }
+            $groups = $orders->groupBy('store_pay_id');
+
+            $pay_date = date('Y-m-d H:i:s', time());
+
+            foreach ($groups as $key => $orders) {
+
+                //更新订单状态
+                foreach ($orders as $order) {
+
+                    //如果是水电或者物品租赁账单, 需要更新相应记录
+                    $this->ordermodel->updateDeviceAndUtility(
+                        $order,
+                        Ordermodel::STATE_COMPLETED,
+                        Ordermodel::DEAL_DONE
+                    );
+
+                    $order->pay_type = $payWay ? $payWay : $order->pay_type;
+                    $order->pay_date = $pay_date;
+                    $order->status   = $status;
+                    $order->deal     = $deal;
+                    $order->save();
+                }
+
+            }
+            return $orders;
         }
-        return $orders;
     }
     /**
      * [判断合同是否存在, 检查能否进行接下来的操作]
@@ -558,7 +623,7 @@ class Order extends MY_Controller {
             //将优惠券与订单绑定, 同时更新优惠券的状态
             $this->couponmodel->bindOrdersAndCalcDiscount($resident, $orders, $coupons, true);
             //更新订单状态
-            $orders = $this->completeOrders($orders, $payWay, $resident);
+            $orders = $this->completeOrders($orders, $payWay, $resident,'PAY');
             //房间, 住户, 优惠券以及其他订单表的状态
             $this->updateRoomAndResident($orders, $resident, $resident->roomunion);
 
@@ -615,7 +680,7 @@ class Order extends MY_Controller {
      *
      */
 
-    private function createBill($orders, $payWay = null) {
+    private function createBill($orders, $payWay = null,$pre_money=null) {
         $this->load->model('billmodel');
         $bill       = new Billmodel();
         $bill->id   = '';
@@ -632,7 +697,6 @@ class Order extends MY_Controller {
         $bill->uxid        = $orders[0]->uxid;
         $bill->room_id     = $orders[0]->room_id;
         $orderIds          = array();
-
         $change_resident = false;
         foreach ($orders as $order) {
 
@@ -664,6 +728,11 @@ class Order extends MY_Controller {
         //如果是微信支付
         $bill->out_trade_no = '';
         $bill->store_pay_id = '';
+
+        //预存金
+        if(!empty($pre_money)){
+            $bill->pre_money   = $pre_money;
+        }
 
         $res = $bill->save();
         if (isset($res)) {

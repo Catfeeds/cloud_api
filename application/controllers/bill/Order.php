@@ -239,7 +239,7 @@ class Order extends MY_Controller {
             array(
                 'field' => 'month',
                 'label' => '账单周期--月',
-                'rules' => 'required|trim|integer|greater_than[1]|less_than[12]',
+                'rules' => 'required|trim|integer|greater_than_equal_to[1]|less_than_equal_to[12]',
             ),
             array(
                 'field' => 'type',
@@ -469,12 +469,14 @@ class Order extends MY_Controller {
         $this->setExcelColumnWidth($phpexcel); //设置Excel每列宽度
         $this->setAlignCenter($phpexcel, $row); //设置记录值居中
         $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($phpexcel, 'Xlsx');
-        header("Pragma: public");
-        header("Expires: 0");
-        header("Content-Type:application/octet-stream");
-        header("Content-Transfer-Encoding:binary");
-        header('Cache-Control: max-age=0');
-        header("Content-Disposition:attachment;filename=$filename");
+        if(!headers_sent()){
+            header("Pragma: public");
+            header("Expires: 0");
+            header("Content-Type:application/octet-stream");
+            header("Content-Transfer-Encoding:binary");
+            header('Cache-Control: max-age=0');
+            header("Content-Disposition:attachment;filename=$filename");
+        }
         $writer->save('php://output');
         exit;
     }
