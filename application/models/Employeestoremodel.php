@@ -13,6 +13,17 @@ class Employeestoremodel extends Basemodel {
      *获取权限
      */
     public function getStoreIds(){
+        $position = Employeemodel::wherehas('position',function($query){
+            $query->where('company_id', '0');
+        })->where('id', get_instance()->current_id)->select()->first();
+        if($position){
+            $this->store_ids = Storemodel::where('company_id', get_instance()->company_id)->get(['id'])
+                               ->map(function($query){
+                               $query = $query->toArray();
+                               return $query['id'];
+                              });
+            return $this;
+        }
         $employee_store = Employeestoremodel::where('employee_id', get_instance()->current_id)->get(['store_id'])
             ->map(function($query){
                 $query = $query->toArray();
