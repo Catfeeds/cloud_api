@@ -704,7 +704,7 @@ class Activity extends MY_Controller
                 $prizes[]   = [
                     'activity_id'   => $activity->id,
                     'count'         => $prize['count'],
-                    'sent'        => 0,
+                    'sent'          => 0,
                     'limit'         => $prize['limit'],
                     'single'        => $prize['single'],
                     'coupontype_id' => $prize['coupontype_id'],
@@ -715,12 +715,45 @@ class Activity extends MY_Controller
             $qrcode_url = $this->generateAttractQrcode($activity->id);
             $activity->qrcode_url   = $qrcode_url;
             $activity->save();
+            /**
+             * 处理兼容问题
+             */
+            $this->handleAttractCompatibility($activity,$input['prizes']);
+
+
             DB::commit();
         }catch (Exception $e){
             DB::rollBack();
             throw $e;
         }
         $this->api_res(0,$qrcode_url);
+    }
+
+    /**
+     * 处理吸粉活动兼容性问题
+     */
+    private function handleAttractCompatibility($activity,$prizes)
+    {
+        //@1:处理参与门店
+        $this->load->model('storemodel');
+        $this->load->model('storeactivitymodel');
+        $store_ids  = Storemodel::pluck('id')->toArray();
+        $store_activity_arr = [];
+        foreach ($store_ids as $store_id) {
+            $store_activity_arr[]   = [
+                'store_id'      => $store_id,
+                'activity_id'   => $activity->id,
+            ];
+        }
+        Storeactivitymodel::insert($store_activity_arr);
+        //@2:处理奖品
+        $this->load->model('activityprizemodel');
+        $prize['prize'] = serialize(['one' => $prizes[0]['coupontype_id'], 'two' => $prizes[1]['coupontype_id'], 'three' => $prizes[2]['coupontype_id']]);
+        $prize['count'] = serialize(['one' => $prizes[0]['count'], 'two' => $prizes[1]['count'], 'three' => $prizes[2]['count']]);
+        $prize['grant'] = serialize(['one' => $prizes[0]['single'], 'two' => $prizes[1]['single'], 'three' => $prizes[2]['single']]);
+        $prize_id   = Activityprizemodel::insertGetId($prize);
+        $activity->prize_id = $prize_id;
+        $activity->save();
     }
 
     /**
