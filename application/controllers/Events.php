@@ -162,7 +162,7 @@ class Events extends MY_Controller
 		} else {
 			log_message('debug', '--获取授权方成功--');
 			$this->m_redis->saveAuthorAccessToken($res['authorizer_access_token']);
-			return true;
+			return $res['authorizer_access_token'];
 		}
 	}
 	
@@ -467,9 +467,9 @@ class Events extends MY_Controller
 		if ($this->m_redis->getAuthorAccessToken()) {
 			$access_token = $this->m_redis->getAuthorAccessToken();
 		} else {
-			$this->getAuthToken($company_id);
-			$access_token = $this->m_redis->getAuthorAccessToken();
+			$access_token = $this->getAuthToken($company_id);
 		}
+		log_message('debug','授权方access_token-->'.$access_token);
 		$url     = "https://api.weixin.qq.com/cgi-bin/menu/create?access_token=$access_token";
 		$buttons = [
 			[
