@@ -121,6 +121,8 @@ class AuthHook {
             $this->CI->position = 'EMPLOYEE';
             $this->CI->load->model('employeemodel');
             $this->CI->load->model('employeestoremodel');
+            $this->CI->load->model('positionmodel');
+            $this->CI->load->model('storemodel');
 
             $this->CI->employee = Employeemodel::where('bxid', get_instance()->current_id)->first();
 
