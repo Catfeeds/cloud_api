@@ -136,16 +136,18 @@ class Events extends MY_Controller
 	/**
 	 * 功能：通过授权方的刷新令牌获取令牌
 	 */
-	public function getAuthToken()
+	public function getAuthToken($company_id = '')
 	{
+		if (empty($company_id)) {
+			$company_id = $this->company_id;
+		}
 		if ($this->m_redis->getAccessToken()) {
 			$access_token = $this->m_redis->getAccessToken();
 		} else {
 			$access_token = $this->getAccessToken();
 		}
 		$this->load->model('companywxinfomodel');
-		$company    = $this->company_id;
-		$authorizer = Companywxinfomodel::where('company_id', $company)->first(['authorizer_refresh_token', 'authorizer_appid']);
+		$authorizer = Companywxinfomodel::where('company_id', $company_id)->first(['authorizer_refresh_token', 'authorizer_appid']);
 		$url        = 'https:// api.weixin.qq.com /cgi-bin/component/api_authorizer_token?component_access_token=' . "$access_token";
 		$data       = [
 			'component_appid'          => $this->appid,
@@ -448,5 +450,100 @@ class Events extends MY_Controller
 		}
 		echo $result;
 		$this->debug("$i++" . '输出结果为-->', $result);
+	}
+	
+	/**
+	 * 生成菜单
+	 */
+	public function menu()
+	{
+		$company_id = $this->input->post('company_id');
+		if (empty($company_id) || !isset($company_id)) {
+			$this->api_res(1002);
+			return;
+		}else{
+			$company_id = intval($company_id);
+		}
+		if ($this->m_redis->getAuthorAccessToken()) {
+			$access_token = $this->m_redis->getAuthorAccessToken();
+		} else {
+			$this->getAuthToken($company_id);
+			$access_token = $this->m_redis->getAuthorAccessToken();
+		}
+		$url     = "https://api.weixin.qq.com/cgi-bin/menu/create?access_token=$access_token";
+		$buttons = [
+			[
+				'name'       => '关于草莓',
+				'sub_button' => [
+					[
+						'name' => '草莓作品',
+						'type' => 'click',
+						'key'  => 'STRAWBERRY_WORKS',
+					],
+					[
+						'name' => '草莓故事',
+						'type' => 'click',
+						'key'  => 'STRAWBERRY_STORIES',
+					],
+					[
+						'name' => '草莓活动',
+						'type' => 'click',
+						'key'  => 'RECENT_ACTIVITIES',
+					],
+					[
+						'name' => '草莓品味',
+						'type' => 'click',
+						'key'  => 'STRAWBERRY_SAVOUR',
+					],
+				],
+			],
+			[
+				'name'       => '预约看房',
+				'sub_button' => [
+					[
+						'name' => '找房源',
+						'type' => 'view',
+						'url'  => config_item('wechat_url') . '#/index',
+					],
+					[
+						'name' => '礼品登记',
+						'type' => 'view',
+						'url'  => 'http://cn.mikecrm.com/nrX0JyY',
+					],
+					[
+						'name' => '合作联系',
+						'type' => 'click',
+						'key'  => 'COOPERATE_AND_CONTACT',
+					],
+				],
+			],
+			[
+				'name'       => '我是草莓',
+				'sub_button' => [
+					[
+						'name' => '个人中心',
+						'type' => 'view',
+						'url'  => config_item('wechat_url') . '#/userIndex',
+					],
+					[
+						'name' => '生活服务',
+						'type' => 'view',
+						'url'  => config_item('wechat_url') . '#/service',
+					],
+					[
+						'name' => '金地商城',
+						'type' => 'view',
+						'url'  => config_item('wechat_url') . '#/shopping',
+					],
+					[
+						'name' => '投诉信箱',
+						'type' => 'click',
+						'key'  => 'EMAIL_FOR_COMPLAINT',
+					],
+				],
+			],
+		];
+		$result  = $this->httpCurl($url, "POST", 'json', $buttons);
+		var_dump($result);
 	}
 }
