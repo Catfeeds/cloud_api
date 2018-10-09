@@ -476,79 +476,28 @@ class Events extends MY_Controller
 			"button" =>
 				[
 					[
-						'name'       => '关于草莓',
-						'sub_button' => [
-							[
-								'name' => '草莓作品',
-								'type' => 'click',
-								'key'  => 'STRAWBERRY_WORKS',
-							],
-							[
-								'name' => '草莓故事',
-								'type' => 'click',
-								'key'  => 'STRAWBERRY_STORIES',
-							],
-							[
-								'name' => '草莓活动',
-								'type' => 'click',
-								'key'  => 'RECENT_ACTIVITIES',
-							],
-							[
-								'name' => '草莓品味',
-								'type' => 'click',
-								'key'  => 'STRAWBERRY_SAVOUR',
-							],
-						],
+						'name' => '全部房源',
+						'type' => 'view',
+						'url'  => config_item('wechat_url') . '#/index/$APPID$',
 					],
 					[
-						'name'       => '预约看房',
-						'sub_button' => [
-							[
-								'name' => '找房源',
-								'type' => 'view',
-								'url'  => config_item('wechat_url') . '#/index',
-							],
-							[
-								'name' => '礼品登记',
-								'type' => 'view',
-								'url'  => 'http://cn.mikecrm.com/nrX0JyY',
-							],
-							[
-								'name' => '合作联系',
-								'type' => 'click',
-								'key'  => 'COOPERATE_AND_CONTACT',
-							],
-						],
+						'name' => '公寓服务',
+						'type' => 'view',
+						'url'  => config_item('wechat_url') . '#/service/$APPID$',
 					],
 					[
-						'name'       => '我是草莓',
-						'sub_button' => [
-							[
-								'name' => '个人中心',
-								'type' => 'view',
-								'url'  => config_item('wechat_url') . '#/userIndex',
-							],
-							[
-								'name' => '生活服务',
-								'type' => 'view',
-								'url'  => config_item('wechat_url') . '#/service',
-							],
-							[
-								'name' => '金地商城',
-								'type' => 'view',
-								'url'  => config_item('wechat_url') . '#/shopping',
-							],
-							[
-								'name' => '投诉信箱',
-								'type' => 'click',
-								'key'  => 'EMAIL_FOR_COMPLAINT',
-							],
-						],
+						
+						'name' => '个人中心',
+						'type' => 'view',
+						'url'  => config_item('wechat_url') . '#/userIndex/$APPID$',
 					],
 				],
 		];
-//		log_message('debug',json_encode($buttons, JSON_UNESCAPED_UNICODE));
 		$res = $this->httpCurl($url, 'post', 'json', json_encode($buttons, JSON_UNESCAPED_UNICODE));
 		var_dump($res);
 	}
+	
+	/**
+	 * 代公众号
+	 */
 }
