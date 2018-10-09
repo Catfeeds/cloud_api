@@ -66,7 +66,7 @@ class Activity extends MY_Controller
         $where_type = empty($post['type']) ? [] : ['activity_type' => $post['type']];
         $activity = Activitymodel::where('activity_type', '!=', 'NORMAL')
             ->where('activity_type', '!=', '')
-            ->where('coupon_info', 'like', "%$ac_name%")
+            ->where('name', 'like', "%$ac_name%")
             ->where($where_type)
             ->where($where_id)
             ->orderBy('start_time')
@@ -80,7 +80,7 @@ class Activity extends MY_Controller
             ->toArray();
         $count = Activitymodel::where('activity_type', '!=', 'NORMAL')
             ->where('activity_type', '!=', '')
-            ->where('coupon_info', 'like', "%$ac_name%")
+            ->where('name', 'like', "%$ac_name%")
             ->where($where_type)
             ->where($where_id)
             ->orderBy('start_time')
@@ -142,7 +142,7 @@ class Activity extends MY_Controller
             $data[$key]['id'] = $coupon['id'];
             $data[$key]['description'] = $coupon['description'];
             $data[$key]['user'] = $employee_name->name;
-            $data[$key]['name'] = $coupon['coupon_info'];
+            $data[$key]['name'] = $coupon['name'];
             $data[$key]['start_time'] = date("Y-m-d H:i", strtotime($coupon['start_time']));
             $data[$key]['end_time'] = date("Y-m-d H:i", strtotime($coupon['end_time']));
             $data[$key]['prize'] = $str;
@@ -217,7 +217,7 @@ class Activity extends MY_Controller
             'com' => $post['customer'],
             'limit' => $post['limit'],
         ];
-        $activity['coupon_info'] = $post['name'];
+        $activity['name'] = $post['name'];
         $activity['start_time'] = $post['start_time'];
         $activity['end_time'] = $post['end_time'];
         $activity['name'] = $post['slogan'];
@@ -276,7 +276,7 @@ class Activity extends MY_Controller
             'com' => $post['customer'],
             'limit' => $post['limit'],
         ];
-        $activity['coupon_info'] = $post['name'];
+        $activity['name'] = $post['name'];
         $activity['start_time'] = $post['start_time'];
         $activity['end_time'] = $post['end_time'];
         $activity['description'] = $post['description'];
@@ -342,7 +342,7 @@ class Activity extends MY_Controller
         $prize['grant'] = serialize(['one' => $post['one_grant'], 'two' => $post['two_grant'], 'three' => $post['three_grant']]);
         $prize_id = Activityprizemodel::insertGetId($prize);
         $activity['description'] = $post['description'];
-        $activity['coupon_info'] = $post['name'];
+        $activity['name'] = $post['name'];
         $activity['start_time'] = $post['start_time'];
         $activity['end_time'] = $post['end_time'];
         $activity['employee_id'] = $this->current_id;
@@ -396,7 +396,7 @@ class Activity extends MY_Controller
         $prize['count'] = serialize(['one' => $post['one_count'], 'two' => $post['two_count'], 'three' => $post['three_count']]);
         $prize['grant'] = serialize(['one' => $post['one_grant'], 'two' => $post['two_grant'], 'three' => $post['three_grant']]);
         $prize_id = Activityprizemodel::insertGetId($prize);
-        $activity['coupon_info'] = $post['name'];
+        $activity['name'] = $post['name'];
         $activity['description'] = $post['description'];
         $activity['start_time'] = $post['start_time'];
         $activity['end_time'] = $post['end_time'];
