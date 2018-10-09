@@ -239,6 +239,7 @@ class Roomunionmodel extends Basemodel
             ->select('boss_room_union.id')
             ->where($where)
             ->where('boss_order.status', 'PENDING')
+            ->whereNull('boss_order.deleted_at')
             ->groupBy('boss_room_union.id')
             ->get()->count();
         return $count;
@@ -268,7 +269,8 @@ class Roomunionmodel extends Basemodel
             ->leftJoin('boss_order', function ($jion) {
                 $jion->on('boss_order.room_id', '=', 'boss_room_union.id')
                     ->on('boss_room_union.resident_id', '=', 'boss_order.resident_id')
-                    ->where('boss_order.status', '=', 'PENDING');
+                    ->where('boss_order.status', '=', 'PENDING')
+                    ->whereNull('boss_order.deleted_at');
             })
             ->select($filed)
             ->orderBy('boss_room_union.number')
@@ -314,7 +316,8 @@ class Roomunionmodel extends Basemodel
             ->leftJoin('boss_order', function ($jion) {
                 $jion->on('boss_order.room_id', '=', 'boss_room_union.id')
                     ->on('boss_room_union.resident_id', '=', 'boss_order.resident_id')
-                    ->where('boss_order.status', '=', 'PENDING');
+                    ->where('boss_order.status', '=', 'PENDING')
+                    ->whereNull('boss_order.deleted_at');
             })
             ->select($filed)
             ->orderBy('boss_room_union.number')
@@ -350,7 +353,8 @@ class Roomunionmodel extends Basemodel
             ->leftJoin('boss_order', function ($jion) {
                 $jion->on('boss_order.room_id', '=', 'boss_room_union.id')
                     ->on('boss_order.resident_id', '=', 'boss_room_union.resident_id')
-                    ->where('boss_order.status', '=', 'PENDING');
+                    ->where('boss_order.status', '=', 'PENDING')
+                    ->whereNull('boss_order.deleted_at');
             })
             ->select($filed)
             ->orderBy('boss_room_union.number')
@@ -386,7 +390,8 @@ class Roomunionmodel extends Basemodel
             ->leftJoin('boss_order', function ($jion) {
                 $jion->on('boss_order.room_id', '=', 'boss_room_union.id')
                     ->on('boss_room_union.resident_id', '=', 'boss_order.resident_id')
-                    ->where('boss_order.status', '=', 'PENDING');
+                    ->where('boss_order.status', '=', 'PENDING')
+                    ->whereNull('boss_order.deleted_at');
             })
             ->select($filed)
             ->orderBy('boss_room_union.number')
