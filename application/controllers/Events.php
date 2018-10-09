@@ -148,7 +148,7 @@ class Events extends MY_Controller
 		}
 		$this->load->model('companywxinfomodel');
 		$authorizer = Companywxinfomodel::where('company_id', $company_id)->first(['authorizer_refresh_token', 'authorizer_appid']);
-		$url        = 'https:// api.weixin.qq.com /cgi-bin/component/api_authorizer_token?component_access_token=' . "$access_token";
+		$url        = 'https://api.weixin.qq.com/cgi-bin/component/api_authorizer_token?component_access_token=' . "$access_token";
 		$data       = [
 			'component_appid'          => $this->appid,
 			'authorizer_appid'         => $authorizer->authorizer_appid,
@@ -156,6 +156,7 @@ class Events extends MY_Controller
 		];
 		$this->debug('POST参数为-->', $data);
 		$res = $this->httpCurl($url, 'post', 'json', json_encode($data, true));
+		$this->debug('返回授权方信息-->' . $res);
 		if (array_key_exists('errcode', $res)) {
 			log_message('error', '获取授权方令牌失败--> ' . $res['errmsg']);
 			return false;
@@ -461,7 +462,7 @@ class Events extends MY_Controller
 		if (empty($company_id) || !isset($company_id)) {
 			$this->api_res(1002);
 			return;
-		}else{
+		} else {
 			$company_id = intval($company_id);
 		}
 		if ($this->m_redis->getAuthorAccessToken()) {
@@ -469,81 +470,85 @@ class Events extends MY_Controller
 		} else {
 			$access_token = $this->getAuthToken($company_id);
 		}
-		log_message('debug','授权方access_token-->'.$access_token);
+		log_message('debug', '授权方access_token-->' . $access_token);
 		$url     = "https://api.weixin.qq.com/cgi-bin/menu/create?access_token=$access_token";
 		$buttons = [
-			[
-				'name'       => '关于草莓',
-				'sub_button' => [
+			"button" =>
+				[
 					[
-						'name' => '草莓作品',
-						'type' => 'click',
-						'key'  => 'STRAWBERRY_WORKS',
+						'name'       => '关于草莓',
+						'sub_button' => [
+							[
+								'name' => '草莓作品',
+								'type' => 'click',
+								'key'  => 'STRAWBERRY_WORKS',
+							],
+							[
+								'name' => '草莓故事',
+								'type' => 'click',
+								'key'  => 'STRAWBERRY_STORIES',
+							],
+							[
+								'name' => '草莓活动',
+								'type' => 'click',
+								'key'  => 'RECENT_ACTIVITIES',
+							],
+							[
+								'name' => '草莓品味',
+								'type' => 'click',
+								'key'  => 'STRAWBERRY_SAVOUR',
+							],
+						],
 					],
 					[
-						'name' => '草莓故事',
-						'type' => 'click',
-						'key'  => 'STRAWBERRY_STORIES',
+						'name'       => '预约看房',
+						'sub_button' => [
+							[
+								'name' => '找房源',
+								'type' => 'view',
+								'url'  => config_item('wechat_url') . '#/index',
+							],
+							[
+								'name' => '礼品登记',
+								'type' => 'view',
+								'url'  => 'http://cn.mikecrm.com/nrX0JyY',
+							],
+							[
+								'name' => '合作联系',
+								'type' => 'click',
+								'key'  => 'COOPERATE_AND_CONTACT',
+							],
+						],
 					],
 					[
-						'name' => '草莓活动',
-						'type' => 'click',
-						'key'  => 'RECENT_ACTIVITIES',
-					],
-					[
-						'name' => '草莓品味',
-						'type' => 'click',
-						'key'  => 'STRAWBERRY_SAVOUR',
+						'name'       => '我是草莓',
+						'sub_button' => [
+							[
+								'name' => '个人中心',
+								'type' => 'view',
+								'url'  => config_item('wechat_url') . '#/userIndex',
+							],
+							[
+								'name' => '生活服务',
+								'type' => 'view',
+								'url'  => config_item('wechat_url') . '#/service',
+							],
+							[
+								'name' => '金地商城',
+								'type' => 'view',
+								'url'  => config_item('wechat_url') . '#/shopping',
+							],
+							[
+								'name' => '投诉信箱',
+								'type' => 'click',
+								'key'  => 'EMAIL_FOR_COMPLAINT',
+							],
+						],
 					],
 				],
-			],
-			[
-				'name'       => '预约看房',
-				'sub_button' => [
-					[
-						'name' => '找房源',
-						'type' => 'view',
-						'url'  => config_item('wechat_url') . '#/index',
-					],
-					[
-						'name' => '礼品登记',
-						'type' => 'view',
-						'url'  => 'http://cn.mikecrm.com/nrX0JyY',
-					],
-					[
-						'name' => '合作联系',
-						'type' => 'click',
-						'key'  => 'COOPERATE_AND_CONTACT',
-					],
-				],
-			],
-			[
-				'name'       => '我是草莓',
-				'sub_button' => [
-					[
-						'name' => '个人中心',
-						'type' => 'view',
-						'url'  => config_item('wechat_url') . '#/userIndex',
-					],
-					[
-						'name' => '生活服务',
-						'type' => 'view',
-						'url'  => config_item('wechat_url') . '#/service',
-					],
-					[
-						'name' => '金地商城',
-						'type' => 'view',
-						'url'  => config_item('wechat_url') . '#/shopping',
-					],
-					[
-						'name' => '投诉信箱',
-						'type' => 'click',
-						'key'  => 'EMAIL_FOR_COMPLAINT',
-					],
-				],
-			],
 		];
-		$result  = $this->httpCurl($url, "POST", 'json', $buttons);
-		var_dump($result);
+//		log_message('debug',json_encode($buttons, JSON_UNESCAPED_UNICODE));
+		$res = $this->httpCurl($url, 'post', 'json', json_encode($buttons, JSON_UNESCAPED_UNICODE));
+		var_dump($res);
 	}
 }
