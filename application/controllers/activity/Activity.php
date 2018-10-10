@@ -60,7 +60,8 @@ class Activity extends MY_Controller
         $store_id = explode(',', $store_id);
         $offset = ($page - 1) * PAGINATE;
         $filed = ['id', 'name', 'start_time', 'end_time', 'description', 'coupon_info', 'type',
-            'limit', 'employee_id', 'qrcode_url', 'activity_type', 'prize_id', 'share_img', 'share_title', 'share_des'];
+            'limit', 'employee_id', 'qrcode_url', 'activity_type', 'prize_id', 'share_img',
+            'share_title', 'share_des','qrcode_url'];
 
         $where_id = empty($post['id']) ? [] : ['id' => $post['id']];
         $where_type = empty($post['type']) ? [] : ['activity_type' => $post['type']];
