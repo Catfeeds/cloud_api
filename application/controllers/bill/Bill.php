@@ -204,7 +204,9 @@ class Bill extends MY_Controller {
             $res['REFUND_money']      = 0;
             $res['other_money']       = 0;
             $res['premoney']          = $bill[$key]['pre_money'];
-            $res['type']              = $bill[$key]['type'];
+            if($bill[$key]['type']=='OUTPUT'){
+                $res['money']='-'.$res['money'];
+            }
 //            $res['remark']            = $bill[$key]['remark'];
             if (!empty($bill[$key]['order'])) {
                 $order              = $bill[$key]['order'];
@@ -231,11 +233,7 @@ class Bill extends MY_Controller {
                     }
                 }
             }
-            if($res['type']=='INPUT'){
-                $res['type']='收入';
-            }else{
-                $res['type']='支出';
-            }
+
             $bill_array[] = $res;
         }
         return $bill_array;
@@ -327,8 +325,8 @@ class Bill extends MY_Controller {
             ->setCellValue('L3', '电费')
             ->setCellValue('M3', '退租')
             ->setCellValue('N3', '其它费用')
-            ->setCellValue('O3', '预存金使用')
-            ->setCellValue('P3', '流水类型');
+            ->setCellValue('O3', '预存金使用');
+//            ->setCellValue('P3', '流水类型');
     }
 
     private function setExcelColumnWidth(Spreadsheet $phpexcel) {
@@ -347,7 +345,7 @@ class Bill extends MY_Controller {
         $phpexcel->getActiveSheet()->getColumnDimension('M')->setWidth(10);
         $phpexcel->getActiveSheet()->getColumnDimension('N')->setWidth(10);
         $phpexcel->getActiveSheet()->getColumnDimension('O')->setWidth(10);
-        $phpexcel->getActiveSheet()->getColumnDimension('P')->setWidth(10);
+//        $phpexcel->getActiveSheet()->getColumnDimension('P')->setWidth(10);
     }
 
     private function getBillPayType($payType) {
