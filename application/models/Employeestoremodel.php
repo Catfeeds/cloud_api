@@ -44,7 +44,8 @@ class Employeestoremodel extends Basemodel {
                 if($employee_store_select->position_id == $position_id) {
                     continue;
                 }
-                Employeestoremodel::where('store_id', $value)->where('employee_id', $employee_id)->update(['position_id', $position_id]);
+                Employeestoremodel::where('store_id', $value)->where('employee_id' , $employee_id)
+                    ->update(['position_id' => $position_id]);
                 continue;
             }
             $data[] = [
