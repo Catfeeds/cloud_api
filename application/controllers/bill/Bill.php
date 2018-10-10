@@ -100,8 +100,8 @@ class Bill extends MY_Controller {
             $couponInfo = null;
         }
         $discount   = array_merge($orders->where('coupon','!=',null)->toArray(),[]);
-
-        $this->api_res(0,['sumMoney'=>$sumMoney,'sumPaid'=>$sumPaid,'sumDiscount'=>$sumDiscount,'resident'=>$resident,'discount'=>$discount,'orders'=>$orders,'couponInfo'=>$couponInfo]);
+        $premoney   = $bill->premoney;
+        $this->api_res(0,['sumMoney'=>$sumMoney,'sumPaid'=>$sumPaid,'sumDiscount'=>$sumDiscount,'resident'=>$resident,'discount'=>$discount,'orders'=>$orders,'couponInfo'=>$couponInfo,'premoney'=>$premoney]);
 
         /*
          * ROOM
