@@ -100,7 +100,7 @@ class Bill extends MY_Controller {
             $couponInfo = null;
         }
         $discount   = array_merge($orders->where('coupon','!=',null)->toArray(),[]);
-        $premoney   = $bill->premoney;
+        $premoney   = $bill->pre_money;
         $this->api_res(0,['sumMoney'=>$sumMoney,'sumPaid'=>$sumPaid,'sumDiscount'=>$sumDiscount,'resident'=>$resident,'discount'=>$discount,'orders'=>$orders,'couponInfo'=>$couponInfo,'premoney'=>$premoney]);
 
         /*
@@ -180,7 +180,7 @@ class Bill extends MY_Controller {
      */
     public function billArray($store_id, $begin, $end) {
         $filed = ['id', 'store_id', 'employee_id', 'resident_id', 'room_id', 'money', 'type', 'pay_type',
-            'pay_date', 'status', 'sequence_number', 'remark','premoney','created_at'];
+            'pay_date', 'status', 'sequence_number', 'remark','pre_money','created_at'];
         $bill = Billmodel::with(['roomunion_s', 'store_s', 'resident_s', 'employee_s', 'order'])
             ->where('store_id', $store_id)
             ->whereBetween('pay_date', [$begin, $end])->orderBy('pay_date', 'DESC')
@@ -203,7 +203,7 @@ class Bill extends MY_Controller {
             $res['ELECTRICITY_money'] = 0;
             $res['REFUND_money']      = 0;
             $res['other_money']       = 0;
-            $res['premoney']          = $bill[$key]['premoney'];
+            $res['premoney']          = $bill[$key]['pre_money'];
             $res['created_at']        = $bill[$key]['created_at'];
 //            $res['remark']            = $bill[$key]['remark'];
             if (!empty($bill[$key]['order'])) {
