@@ -100,8 +100,8 @@ class Bill extends MY_Controller {
             $couponInfo = null;
         }
         $discount   = array_merge($orders->where('coupon','!=',null)->toArray(),[]);
-
-        $this->api_res(0,['sumMoney'=>$sumMoney,'sumPaid'=>$sumPaid,'sumDiscount'=>$sumDiscount,'resident'=>$resident,'discount'=>$discount,'orders'=>$orders,'couponInfo'=>$couponInfo]);
+        $premoney   = $bill->premoney;
+        $this->api_res(0,['sumMoney'=>$sumMoney,'sumPaid'=>$sumPaid,'sumDiscount'=>$sumDiscount,'resident'=>$resident,'discount'=>$discount,'orders'=>$orders,'couponInfo'=>$couponInfo,'premoney'=>$premoney]);
 
         /*
          * ROOM
@@ -180,7 +180,7 @@ class Bill extends MY_Controller {
      */
     public function billArray($store_id, $begin, $end) {
         $filed = ['id', 'store_id', 'employee_id', 'resident_id', 'room_id', 'money', 'type', 'pay_type',
-            'pay_date', 'status', 'sequence_number', 'remark'];
+            'pay_date', 'status', 'sequence_number', 'remark','premoney','created_at'];
         $bill = Billmodel::with(['roomunion_s', 'store_s', 'resident_s', 'employee_s', 'order'])
             ->where('store_id', $store_id)
             ->whereBetween('pay_date', [$begin, $end])->orderBy('pay_date', 'DESC')
@@ -203,7 +203,9 @@ class Bill extends MY_Controller {
             $res['ELECTRICITY_money'] = 0;
             $res['REFUND_money']      = 0;
             $res['other_money']       = 0;
-            $res['remark']            = $bill[$key]['remark'];
+            $res['premoney']          = $bill[$key]['premoney'];
+            $res['created_at']        = $bill[$key]['created_at'];
+//            $res['remark']            = $bill[$key]['remark'];
             if (!empty($bill[$key]['order'])) {
                 $order              = $bill[$key]['order'];
                 $res['other_money'] = 0;
@@ -320,7 +322,8 @@ class Bill extends MY_Controller {
             ->setCellValue('L3', '电费')
             ->setCellValue('M3', '退租')
             ->setCellValue('N3', '其它费用')
-            ->setCellValue('O3', '备注');
+            ->setCellValue('O3', '预存金使用')
+            ->setCellValue('P3', '流水生成时间');
     }
 
     private function setExcelColumnWidth(Spreadsheet $phpexcel) {
@@ -338,7 +341,8 @@ class Bill extends MY_Controller {
         $phpexcel->getActiveSheet()->getColumnDimension('L')->setWidth(10);
         $phpexcel->getActiveSheet()->getColumnDimension('M')->setWidth(10);
         $phpexcel->getActiveSheet()->getColumnDimension('N')->setWidth(10);
-        $phpexcel->getActiveSheet()->getColumnDimension('O')->setWidth(20);
+        $phpexcel->getActiveSheet()->getColumnDimension('O')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('P')->setWidth(20);
     }
 
     private function getBillPayType($payType) {
