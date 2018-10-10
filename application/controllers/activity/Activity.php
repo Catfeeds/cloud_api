@@ -61,7 +61,7 @@ class Activity extends MY_Controller
         $offset = ($page - 1) * PAGINATE;
         $filed = ['id', 'name', 'start_time', 'end_time', 'description', 'coupon_info', 'type',
             'limit', 'employee_id', 'qrcode_url', 'activity_type', 'prize_id', 'share_img',
-            'share_title', 'share_des','qrcode_url'];
+            'share_title', 'share_des'];
 
         $where_id = empty($post['id']) ? [] : ['id' => $post['id']];
         $where_type = empty($post['type']) ? [] : ['activity_type' => $post['type']];
@@ -153,6 +153,7 @@ class Activity extends MY_Controller
             $data[$key]['customer'] = $limit['com'];
             $data[$key]['coupon_count'] = $coupon_count;
             $data[$key]['type'] = $coupon['activity_type'];
+            $data[$key]['qrcode_url'] = $coupon['qrcode_url'];
             $data[$key]['limit'] = $limit['limit'];
             $data[$key]['participate'] = $participate;
             $data[$key]['lucky_draw'] = $lucky_draw;
