@@ -40,7 +40,7 @@ class Login extends MY_Controller
 				$data          = json_decode($data, true);
 				$this->debug('消息解密-->',$data);
 				if ($errCode == 0) {
-					$unionid = $data['unionid'];
+					$unionid = $data['unionId'];
 				} else {
 					$this->api_res('10103', $errCode);
 					return false;
@@ -53,7 +53,7 @@ class Login extends MY_Controller
 				->first();
 			$this->debug('员工信息-->', $wechat);
 			if (empty($wechat)) {
-				$this->api_res(10002);
+				$this->api_res(10104);
 				return false;
 			}
 			log_message('debug', '获取员工信息' . json_encode($wechat->toArray()));
@@ -64,7 +64,7 @@ class Login extends MY_Controller
 			$this->api_res(0, ['token' => $token]);
 		} else {
 			log_message('error', 'mini-getToken-获取token失败');
-			$this->api_res(10101);
+			$this->api_res(10002);
 		}
 	}
 	

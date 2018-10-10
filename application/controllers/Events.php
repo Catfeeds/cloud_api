@@ -465,9 +465,9 @@ class Events extends MY_Controller
 			return;
 		} else {
 			$company_id = intval($company_id);
-			$wxinfo = Companywxinfomodel::where('company_id',$company_id)->where('status','authorized')->first();
+			$wxinfo     = Companywxinfomodel::where('company_id', $company_id)->where('status', 'authorized')->first();
 		}
-		if (!isset($wxinfo)||empty($wxinfo)){
+		if (!isset($wxinfo) || empty($wxinfo)) {
 			$this->api_res(11301);
 			return false;
 		}
@@ -484,26 +484,23 @@ class Events extends MY_Controller
 					[
 						'name' => '全部房源',
 						'type' => 'view',
-						'url'  => config_item('wechat_url') . '#/index?appid='.$wxinfo['authorizer_appid'],
+						'url'  => config_item('wechat_url') . '#/index/appid=' . $wxinfo['authorizer_appid'],
 					],
 					[
 						'name' => '公寓服务',
 						'type' => 'view',
-						'url'  => config_item('wechat_url') . '#/service?appid='.$wxinfo['authorizer_appid'],
+						'url'  => config_item('wechat_url') . '#/service/appid=' . $wxinfo['authorizer_appid'],
 					],
 					[
 						
 						'name' => '个人中心',
 						'type' => 'view',
-						'url'  => config_item('wechat_url') . '#/userIndex?appid='.$wxinfo['authorizer_appid'],
+						'url'  => config_item('wechat_url') . '#/userIndex/appid=' . $wxinfo['authorizer_appid'],
 					],
 				],
 		];
+//		$this->debug('按钮信息-->', json_encode($buttons, JSON_UNESCAPED_UNICODE));
 		$res = $this->httpCurl($url, 'post', 'json', json_encode($buttons, JSON_UNESCAPED_UNICODE));
 		var_dump($res);
 	}
-	
-	/**
-	 * 代公众号
-	 */
 }
