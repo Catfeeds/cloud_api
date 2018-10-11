@@ -32,9 +32,13 @@ class Activitymodel extends Basemodel {
      */
     const STATE_NORMAL  = 'NORMAL';
 
+    public function prize(){
+        return $this->hasOne(Activityprizemodel::class, 'id', 'prize_id');
+    }
 
-
-
+    public function store(){
+        return $this->hasmany(Storeactivitymodel::class, 'activity_id');
+    }
     /**
      * 获取该活动相关的优惠券类型
      */
@@ -50,6 +54,7 @@ class Activitymodel extends Basemodel {
         return $this->hasMany(Couponmodel::class, 'activity_id');
     }
 
+
     /**
      * 所有活动的类型
      */
@@ -59,9 +64,6 @@ class Activitymodel extends Basemodel {
             Activitymodel::TYPE_NORMAL,
             Activitymodel::TYPE_DISCOUNT,
         ];
-    }
-    public function store() {
-        return $this->belongsTo(Storeactivitymodel::class, 'id', 'activity_id');
     }
 
     public function sendCheckIn($resident_id,$time) {
