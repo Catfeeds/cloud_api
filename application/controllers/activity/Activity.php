@@ -61,7 +61,7 @@ class Activity extends MY_Controller
         $offset = ($page - 1) * PAGINATE;
         $filed = ['id', 'name', 'start_time', 'end_time', 'description', 'coupon_info', 'type',
             'limit', 'employee_id', 'qrcode_url', 'activity_type', 'prize_id', 'share_img',
-            'share_title', 'share_des'];
+            'share_title', 'share_des','rule','back_url'];
 
         $where_id = empty($post['id']) ? [] : ['id' => $post['id']];
         $where_type = empty($post['type']) ? [] : ['activity_type' => $post['type']];
@@ -77,6 +77,14 @@ class Activity extends MY_Controller
                 });
             })
             ->get($filed)
+            ->map(function($activity_each){
+                if($activity_each->back_url){
+                    $activity_each->back_url    = $this->fullAliossUrl($activity_each);
+                    return $activity_each;
+                }else{
+                    return $activity_each;
+                }
+            })
             ->groupBy('type')
             ->toArray();
         $count = Activitymodel::where('activity_type', '!=', 'NORMAL')
@@ -120,6 +128,12 @@ class Activity extends MY_Controller
             $p = unserialize($prize->prize);
             $count = unserialize($prize->count);
             $grant = unserialize($prize->grant);
+            if($prize->limit){
+                $prize_limit = unserialize($prize->limit);
+            }else{
+                $prize_limit    = '';
+            }
+
             $couponarr = Coupontypemodel::whereIn('id', $p)->get(['name'])->toArray();
             $str = '';
             foreach ($couponarr as $value) {
@@ -149,6 +163,7 @@ class Activity extends MY_Controller
             $data[$key]['prize'] = $str;
             $data[$key]['count'] = $count;
             $data[$key]['grant'] = $grant;
+            $data[$key]['prize_limit'] = $prize_limit;
             $limit = unserialize($coupon['limit']);
             $data[$key]['customer'] = $limit['com'];
             $data[$key]['coupon_count'] = $coupon_count;
@@ -753,6 +768,7 @@ class Activity extends MY_Controller
         $prize['prize'] = serialize(['one' => $prizes[0]['coupontype_id'], 'two' => $prizes[1]['coupontype_id'], 'three' => $prizes[2]['coupontype_id']]);
         $prize['count'] = serialize(['one' => $prizes[0]['count'], 'two' => $prizes[1]['count'], 'three' => $prizes[2]['count']]);
         $prize['grant'] = serialize(['one' => $prizes[0]['single'], 'two' => $prizes[1]['single'], 'three' => $prizes[2]['single']]);
+        $prize['limit'] = serialize(['one' => $prizes[0]['limit'], 'two' => $prizes[1]['limit'], 'three' => $prizes[2]['limit']]);
         $prize_id   = Activityprizemodel::insertGetId($prize);
         $activity->prize_id = $prize_id;
         $activity->save();
