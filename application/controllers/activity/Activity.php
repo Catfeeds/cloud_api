@@ -128,7 +128,8 @@ class Activity extends MY_Controller
             $p = unserialize($prize->prize);
             $count = unserialize($prize->count);
             $grant = unserialize($prize->grant);
-            if($prize->limit){
+            log_message('debug','PRIZELIMIT'.$prize->limit);
+            if(!empty($prize->limit)){
                 $prize_limit = unserialize($prize->limit);
             }else{
                 $prize_limit    = '';
