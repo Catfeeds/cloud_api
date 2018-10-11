@@ -79,7 +79,7 @@ class Activity extends MY_Controller
             ->get($filed)
             ->map(function($activity_each){
                 if($activity_each->back_url){
-                    $activity_each->back_url    = $this->fullAliossUrl($activity_each);
+                    $activity_each->back_url    = $this->fullAliossUrl($activity_each->back_url);
                     return $activity_each;
                 }else{
                     return $activity_each;
@@ -128,12 +128,12 @@ class Activity extends MY_Controller
             $p = unserialize($prize->prize);
             $count = unserialize($prize->count);
             $grant = unserialize($prize->grant);
-            if($prize->limit){
+            log_message('debug','PRIZELIMIT'.$prize->limit);
+            if(!empty($prize->limit)){
                 $prize_limit = unserialize($prize->limit);
             }else{
                 $prize_limit    = '';
             }
-
             $couponarr = Coupontypemodel::whereIn('id', $p)->get(['name'])->toArray();
             $str = '';
             foreach ($couponarr as $value) {
