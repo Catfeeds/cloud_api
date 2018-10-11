@@ -137,7 +137,7 @@ class Activity extends MY_Controller
             $couponarr = Coupontypemodel::whereIn('id', $p)->get(['name'])->toArray();
             $str = '';
             foreach ($couponarr as $value) {
-                $str .= $value['name'] . '/';
+                $str = $value['name'] . '/'.$str;
             }
             if ($coupon['activity_type'] == 'OLDBELTNEW' || $coupon['activity_type'] == 'CHECKIN') {
                 $participate = Couponmodel::where('activity_id', $coupon['id'])->groupBy('resident_id')->count();
@@ -224,7 +224,6 @@ class Activity extends MY_Controller
             return false;
         }
         $arr = [$post['one_prize'], $post['two_prize'], $post['three_prize']];
-
         if (count($arr) != count(array_unique($arr))) {
             $this->api_res(11101);
             return false;
@@ -236,10 +235,10 @@ class Activity extends MY_Controller
             'com' => $post['customer'],
             'limit' => $post['limit'],
         ];
-        $activity['name'] = $post['name'];
+        $activity['coupon_info'] = $post['slogan'];
         $activity['start_time'] = $post['start_time'];
         $activity['end_time'] = $post['end_time'];
-        $activity['name'] = $post['slogan'];
+        $activity['name'] = $post['name'];
         $activity['description'] = $post['description'];
         $activity['limit'] = serialize($limit);
         $activity['employee_id'] = $this->current_id;
@@ -327,6 +326,10 @@ class Activity extends MY_Controller
         $post = $this->input->post(null, true);
         $this->load->model('storeactivitymodel');
         $this->load->model('activityprizemodel');
+        if($post['one_count'] <= $post['one_grant'] || $post['one_count'] <= $post['one_grant'] || $post['one_count'] <= $post['one_grant']){
+            $this->api_res(11110);
+            return false;
+        }
         $store_ids = Storeactivitymodel::where(function ($query) {
             $query->orWhereHas('activity', function ($query) {
                 $query->where('activity_type', 'CHECKIN')->where('type', '!=', 'LOWER')->where('end_time', '>=', Carbon::now());
@@ -356,6 +359,7 @@ class Activity extends MY_Controller
             $this->api_res(11101);
             return false;
         }
+
         $prize['prize'] = serialize(['one' => $post['one_prize'], 'two' => $post['two_prize'], 'three' => $post['three_prize']]);
         $prize['count'] = serialize(['one' => $post['one_count'], 'two' => $post['two_count'], 'three' => $post['three_count']]);
         $prize['grant'] = serialize(['one' => $post['one_grant'], 'two' => $post['two_grant'], 'three' => $post['three_grant']]);
@@ -388,6 +392,10 @@ class Activity extends MY_Controller
         $post = $this->input->post(null, true);
         $this->load->model('storeactivitymodel');
         $this->load->model('activityprizemodel');
+        if($post['one_count'] <= $post['one_grant'] || $post['one_count'] <= $post['one_grant'] || $post['one_count'] <= $post['one_grant']){
+            $this->api_res(11110);
+            return false;
+        }
         $store_ids = Storeactivitymodel::where(function ($query) {
             $query->orWhereHas('activity', function ($query) {
                 $query->where('activity_type', 'OLDBELTNEW')->where('type', '!=', 'LOWER')->where('end_time', '>=', Carbon::now());
@@ -558,18 +566,18 @@ class Activity extends MY_Controller
             array(
                 'field' => 'one_count',
                 'label' => '奖品1num',
-                'rules' => 'trim|required',
+                'rules' => 'trim|required|greater_than_equal_to[0]',
             ),
             array(
                 'field' => 'two_count',
                 'label' => '奖品2num',
-                'rules' => 'trim|required',
+                'rules' => 'trim|required|greater_than_equal_to[0]',
 
             ),
             array(
                 'field' => 'three_count',
                 'label' => '奖品3num',
-                'rules' => 'trim|required',
+                'rules' => 'trim|required|greater_than_equal_to[0]',
             ),
             array(
                 'field' => 'images',
@@ -623,32 +631,32 @@ class Activity extends MY_Controller
             array(
                 'field' => 'one_count',
                 'label' => '三月奖品数量',
-                'rules' => 'trim|required|max_length[255]',
+                'rules' => 'trim|required|max_length[255]|greater_than_equal_to[0]',
             ),
             array(
                 'field' => 'two_count',
                 'label' => '半年奖品数量',
-                'rules' => 'trim|required',
+                'rules' => 'trim|required|greater_than_equal_to[0]',
             ),
             array(
                 'field' => 'three_count',
                 'label' => '一年奖品数量',
-                'rules' => 'trim|required',
+                'rules' => 'trim|required|greater_than_equal_to[0]',
             ),
             array(
                 'field' => 'one_grant',
                 'label' => '三月奖品发放',
-                'rules' => 'trim|required|max_length[255]',
+                'rules' => 'trim|required|max_length[255]|greater_than_equal_to[0]',
             ),
             array(
                 'field' => 'two_grant',
                 'label' => '半年奖品发放',
-                'rules' => 'trim|required',
+                'rules' => 'trim|required|greater_than_equal_to[0]',
             ),
             array(
                 'field' => 'three_grant',
                 'label' => '一年奖品发放',
-                'rules' => 'trim|required',
+                'rules' => 'trim|required|greater_than_equal_to[0]',
             ),
             array(
 
@@ -884,4 +892,23 @@ class Activity extends MY_Controller
         return $fullpath;
     }
 
+    /*
+ * 活动统计
+ * */
+    public function activityCount(){
+        $post = $this->input->post(null, true);
+        $this->load->model('activityprizemodel');
+        $this->load->model('storeactivitymodel');
+        $where['activity_type'] = empty($post['activity_type'])? 'TRNTABLE' :$post['activity_type'];
+        $store_id = explode(',', $post['store_id']);
+        $activity_prize  = Activitymodel::with('prize')->where($where)->get()
+            ->map(function($query)use($store_id){
+                $query = $query->toArray();
+                $store = Storeactivitymodel::where('activity_id', $query['id'])->whereIn('store_id', $store_id)->get();
+                if($store){
+                    return $query;
+                }
+            });
+        print_r($activity_prize);die();
+    }
 }
