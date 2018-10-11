@@ -79,7 +79,7 @@ class Activity extends MY_Controller
             ->get($filed)
             ->map(function($activity_each){
                 if($activity_each->back_url){
-                    $activity_each->back_url    = $this->fullAliossUrl($activity_each);
+                    $activity_each->back_url    = $this->fullAliossUrl($activity_each->back_url);
                     return $activity_each;
                 }else{
                     return $activity_each;
@@ -133,7 +133,6 @@ class Activity extends MY_Controller
             }else{
                 $prize_limit    = '';
             }
-
             $couponarr = Coupontypemodel::whereIn('id', $p)->get(['name'])->toArray();
             $str = '';
             foreach ($couponarr as $value) {
