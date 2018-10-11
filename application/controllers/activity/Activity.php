@@ -166,6 +166,8 @@ class Activity extends MY_Controller
             $data[$key]['prize_limit'] = $prize_limit;
             $limit = unserialize($coupon['limit']);
             $data[$key]['customer'] = $limit['com'];
+            $data[$key]['rule'] = $coupon['rule'];
+            $data[$key]['back_url'] = $coupon['back_url'];
             $data[$key]['coupon_count'] = $coupon_count;
             $data[$key]['type'] = $coupon['activity_type'];
             $data[$key]['qrcode_url'] = $coupon['qrcode_url'];
