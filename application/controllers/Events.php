@@ -17,6 +17,7 @@ class Events extends MY_Controller
 	protected $ticket;
 	protected $re_url;
 	protected $re_auth_url;
+	protected $i;
 	
 	public function __construct()
 	{
@@ -28,6 +29,7 @@ class Events extends MY_Controller
 		$this->aesKey      = config_item('wx_cloud_key');//消息加解密Key
 		$this->re_url      = config_item('wx_info_url');//消息事件接收回调地址
 		$this->re_auth_url = config_item('wx_auth_url');//授权回调地址
+		$this->i           = 0;
 	}
 	
 	/*********************************************************
@@ -327,6 +329,12 @@ class Events extends MY_Controller
 					$this->ticket = $array_e->item(0)->nodeValue;
 //					log_message('debug', '解密得到的ticket为-->' . $this->ticket);
 					$this->m_redis->saveComponentVerifyTicket($this->ticket);
+					$this->i += 1;
+					if ($this->i >= 10) {
+						$this->getAccessToken();
+						log_message('debug', 'ticket计数为-->' . $this->i . '<--');
+						$this->i = 0;
+					}
 					break;
 				}
 				case 'authorized': {
