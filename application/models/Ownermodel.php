@@ -17,6 +17,22 @@ class Ownermodel extends Basemodel {
 
     protected $hidden = ['created_at', 'updated_at'];
 
+    protected $fillable = [
+        'house_id',
+        'name',                     //姓名
+        'phone',                    //电话
+        'card_number',              //身份证
+        'account',                  //持卡人
+        'bank_card_number',         //卡号
+        'own_account',              //是否自持（0，1）
+        'bank_name',                //开户行
+        'minimum_rent',             //保底租金
+        'start_date',               //交付日期
+        'end_date',                 //托管日期
+        'contract_years',           //合同时长
+        'rent_increase_rate',       //递增比例 [1,5,5,5,5]
+        'no_rent_days',             //免租期限(日)
+    ];
     /**
      * 业主的房间
      */
