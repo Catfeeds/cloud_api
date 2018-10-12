@@ -26,6 +26,8 @@ class Serviceorder extends MY_Controller {
 
         if (!empty($post['store_id'])) {$where['store_id'] = intval($post['store_id']);}
         if (!empty($post['service_id'])) {$where['service_id'] = intval($post['service_id']);}
+        if (!empty($post['deal'])) {$where['deal'] = $post['deal'];}
+        if (!empty($post['type'])) {$where['type'] = $post['type'];}
         if (!empty($post['begin_time'])) {$bt = $post['begin_time'];} else { $bt = date('Y-m-d H:i:s', 0);};
         if (!empty($post['end_time'])) {$et = $post['end_time'];} else { $et = date('Y-m-d H:i:s', time());};
         $store_ids = $this->employee_store->store_ids;
