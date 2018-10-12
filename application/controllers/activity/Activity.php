@@ -134,11 +134,11 @@ class Activity extends MY_Controller
             }else{
                 $prize_limit    = '';
             }
-            $couponarr = Coupontypemodel::whereIn('id', $p)->get(['name'])->toArray();
-            $str = '';
-            foreach ($couponarr as $value) {
-                $str = $value['name'] . '/'.$str;
-            }
+            $coupon_one = Coupontypemodel::where('id', $p['one'])->select(['name'])->first();
+            $coupon_two = Coupontypemodel::where('id', $p['two'])->select(['name'])->first();
+            $coupon_three = Coupontypemodel::where('id', $p['three'])->select(['name'])->first();
+            $str = $coupon_one->name.'/'.$coupon_two->name.'/'.$coupon_three->name;
+
             if ($coupon['activity_type'] == 'OLDBELTNEW' || $coupon['activity_type'] == 'CHECKIN') {
                 $participate = Couponmodel::where('activity_id', $coupon['id'])->groupBy('resident_id')->count();
                 $lucky_draw = Couponmodel::where('activity_id', $coupon['id'])->count();
@@ -326,7 +326,7 @@ class Activity extends MY_Controller
         $post = $this->input->post(null, true);
         $this->load->model('storeactivitymodel');
         $this->load->model('activityprizemodel');
-        if($post['one_count'] <= $post['one_grant'] || $post['one_count'] <= $post['one_grant'] || $post['one_count'] <= $post['one_grant']){
+        if($post['one_count'] < $post['one_grant'] || $post['one_count'] < $post['one_grant'] || $post['one_count'] < $post['one_grant']){
             $this->api_res(11110);
             return false;
         }
@@ -392,7 +392,7 @@ class Activity extends MY_Controller
         $post = $this->input->post(null, true);
         $this->load->model('storeactivitymodel');
         $this->load->model('activityprizemodel');
-        if($post['one_count'] <= $post['one_grant'] || $post['one_count'] <= $post['one_grant'] || $post['one_count'] <= $post['one_grant']){
+        if($post['one_count'] < $post['one_grant'] || $post['one_count'] < $post['one_grant'] || $post['one_count'] < $post['one_grant']){
             $this->api_res(11110);
             return false;
         }
@@ -504,8 +504,7 @@ class Activity extends MY_Controller
 
     public function validation()
     {
-        $this->load->library('form_validation');
-        $config = array(
+        return array(
             array(
                 'field' => 'type',
                 'label' => '活动类型',
@@ -566,18 +565,27 @@ class Activity extends MY_Controller
             array(
                 'field' => 'one_count',
                 'label' => '奖品1num',
-                'rules' => 'trim|required|greater_than_equal_to[0]',
+                'rules' => 'trim|required|greater_than[0]',
+                'errors' => array(
+                    'greater_than'  => '奖品数量不能小于等于0',
+                )
             ),
             array(
                 'field' => 'two_count',
                 'label' => '奖品2num',
-                'rules' => 'trim|required|greater_than_equal_to[0]',
+                'rules' => 'trim|required|greater_than[0]',
+                'errors' => array(
+                    'greater_than'  => '奖品数量不能小于等于0',
+                )
 
             ),
             array(
                 'field' => 'three_count',
                 'label' => '奖品3num',
-                'rules' => 'trim|required|greater_than_equal_to[0]',
+                'rules' => 'trim|required|greater_than[0]',
+                'errors' => array(
+                    'greater_than'  => '奖品数量不能小于等于0',
+                )
             ),
             array(
                 'field' => 'images',
@@ -601,13 +609,11 @@ class Activity extends MY_Controller
             ),
 
         );
-        return $config;
     }
 
     public function ValidationCheckin()
     {
-        $this->load->library('form_validation');
-        $config = array(
+        return array(
             array(
                 'field' => 'name',
                 'label' => '活动名称',
@@ -631,32 +637,41 @@ class Activity extends MY_Controller
             array(
                 'field' => 'one_count',
                 'label' => '三月奖品数量',
-                'rules' => 'trim|required|max_length[255]|greater_than_equal_to[0]',
+                'rules' => 'trim|required|max_length[255]|greater_than[0]',
+                'errors' => array(
+                    'greater_than'  => '奖品数量不能小于等于0',
+                )
             ),
             array(
                 'field' => 'two_count',
                 'label' => '半年奖品数量',
-                'rules' => 'trim|required|greater_than_equal_to[0]',
+                'rules' => 'trim|required|greater_than[0]',
+                'errors' => array(
+                    'greater_than'  => '奖品数量不能小于等于0',
+                )
             ),
             array(
                 'field' => 'three_count',
                 'label' => '一年奖品数量',
-                'rules' => 'trim|required|greater_than_equal_to[0]',
+                'rules' => 'trim|required|greater_than[0]',
+                'errors' => array(
+                    'greater_than'  => '奖品数量不能小于等于0',
+                )
             ),
             array(
                 'field' => 'one_grant',
                 'label' => '三月奖品发放',
-                'rules' => 'trim|required|max_length[255]|greater_than_equal_to[0]',
+                'rules' => 'trim|required|max_length[255]|greater_than[0]',
             ),
             array(
                 'field' => 'two_grant',
                 'label' => '半年奖品发放',
-                'rules' => 'trim|required|greater_than_equal_to[0]',
+                'rules' => 'trim|required|greater_than[0]',
             ),
             array(
                 'field' => 'three_grant',
                 'label' => '一年奖品发放',
-                'rules' => 'trim|required|greater_than_equal_to[0]',
+                'rules' => 'trim|required|greater_than[0]',
             ),
             array(
 
@@ -675,7 +690,6 @@ class Activity extends MY_Controller
                 'rules' => 'trim|required',
             ),
         );
-        return $config;
     }
 
     /**
@@ -775,10 +789,10 @@ class Activity extends MY_Controller
         Storeactivitymodel::insert($store_activity_arr);
         //@2:处理奖品
         $this->load->model('activityprizemodel');
-        $prize['prize'] = serialize(['one' => $prizes[0]['coupontype_id'], 'two' => $prizes[1]['coupontype_id'], 'three' => $prizes[2]['coupontype_id']]);
-        $prize['count'] = serialize(['one' => $prizes[0]['count'], 'two' => $prizes[1]['count'], 'three' => $prizes[2]['count']]);
-        $prize['grant'] = serialize(['one' => $prizes[0]['single'], 'two' => $prizes[1]['single'], 'three' => $prizes[2]['single']]);
-        $prize['limit'] = serialize(['one' => $prizes[0]['limit'], 'two' => $prizes[1]['limit'], 'three' => $prizes[2]['limit']]);
+        $prize['prize'] = serialize(['one' => $prizes[2]['coupontype_id'], 'two' => $prizes[1]['coupontype_id'], 'three' => $prizes[0]['coupontype_id']]);
+        $prize['count'] = serialize(['one' => $prizes[2]['count'], 'two' => $prizes[1]['count'], 'three' => $prizes[0]['count']]);
+        $prize['grant'] = serialize(['one' => $prizes[2]['single'], 'two' => $prizes[1]['single'], 'three' => $prizes[0]['single']]);
+        $prize['limit'] = serialize(['one' => $prizes[2]['limit'], 'two' => $prizes[1]['limit'], 'three' => $prizes[0]['limit']]);
         $prize_id   = Activityprizemodel::insertGetId($prize);
         $activity->prize_id = $prize_id;
         $activity->save();
@@ -899,16 +913,116 @@ class Activity extends MY_Controller
         $post = $this->input->post(null, true);
         $this->load->model('activityprizemodel');
         $this->load->model('storeactivitymodel');
-        $where['activity_type'] = empty($post['activity_type'])? 'TRNTABLE' :$post['activity_type'];
-        $store_id = explode(',', $post['store_id']);
-        $activity_prize  = Activitymodel::with('prize')->where($where)->get()
-            ->map(function($query)use($store_id){
+        $this->load->model('drawmodel');
+        $this->load->model('residentmodel');
+        $this->load->model('couponmodel');
+        if(empty($post['id'])){
+            $this->api_res(1002);
+            return;
+        }
+        $activity_prize  = Activitymodel::with('prize')
+                     ->with('store_id')->where('id', $post['id'])->first()->toArray();
+
+        $store_id = empty($post['store_id'])? '':$post['store_id'];
+        $prize = [];
+        $prize['id'] = unserialize($activity_prize['prize']['prize']);
+        $prize['surplus'] = unserialize($activity_prize['prize']['count']);
+        $prize['receive'] = ['one' => 0, 'two' => 0, 'three' => 0];
+        $prize['used'] = ['one' => 0, 'two' => 0, 'three' => 0];
+        $draw = [];
+        if(!empty($post['store_id'])) {
+            Couponmodel::wherehas('resident', function ($query) use ($store_id) {
+                $query->where('store_id', $store_id);
+            })->where('activity_id', $post['id'])->get()->map(function ($query) use (&$prize) {
                 $query = $query->toArray();
-                $store = Storeactivitymodel::where('activity_id', $query['id'])->whereIn('store_id', $store_id)->get();
-                if($store){
-                    return $query;
+                foreach ($prize['id'] as $key => $value) {
+                    if ($value == $query['coupon_type_id']) {
+                        $prize['receive'][$key]++;
+                    }
                 }
             });
-        print_r($activity_prize);die();
+
+            Couponmodel::wherehas('resident', function ($query) use ($store_id) {
+                $query->where('store_id', $store_id);
+            })->where(['activity_id' => $post['id'], 'status' => Couponmodel::STATUS_USED])->get()->map(function ($query) use (&$prize) {
+                $query = $query->toArray();
+                foreach ($prize['id'] as $key => $value) {
+                    if ($value == $query['coupon_type_id']) {
+                        $prize['used'][$key]++;
+                    }
+                }
+            });
+
+           $draw['luck_draw'] = Drawmodel::wherehas('resident', function($query) use($store_id){
+               $query->where('store_id', $store_id);
+           })->where(['activity_id' => $post['id']])->count();
+
+           $draw['lottery'] =  Drawmodel::wherehas('resident', function($query) use($store_id){
+               $query->where('store_id', $store_id);
+           })->where(['activity_id' => $post['id'], 'is_draw' => '1'])->count();
+
+           $draw['luck_draw_yesterday'] = Drawmodel::wherehas('resident', function($query) use($store_id){
+                $query->where('store_id', $store_id);
+           })->where(['activity_id' => $post['id']])->whereBetween('created_at', [Carbon::yesterday(), Carbon::today()])->count();
+
+           $draw['luck_draw_today'] = Drawmodel::wherehas('resident', function($query) use($store_id){
+                $query->where('store_id', $store_id);
+           })->where(['activity_id' => $post['id']])->where('created_at', '>=', Carbon::today())->count();
+
+            $draw['luck_draw_seven'] = Drawmodel::wherehas('resident', function($query) use($store_id){
+                $query->where('store_id', $store_id);
+            })->where(['activity_id' => $post['id']])->where('created_at', '>=', Carbon::today())->count();
+
+            $draw['luck_draw_twenty'] = Drawmodel::wherehas('resident', function($query) use($store_id){
+                $query->where('store_id', $store_id);
+            })->where(['activity_id' => $post['id']])->where('created_at', '>=', Carbon::today())->count();
+
+           $draw['lottery_today'] =  Drawmodel::wherehas('resident', function($query) use($store_id){
+                $query->where('store_id', $store_id);
+           })->where(['activity_id' => $post['id'], 'is_draw' => '1'])->where('created_at', '>=', Carbon::today())->count();
+
+           $draw['lottery_yesterday'] =  Drawmodel::wherehas('resident', function($query) use($store_id){
+                $query->where('store_id', $store_id);
+           })->where(['activity_id' => $post['id'], 'is_draw' => '1'])->whereBetween('created_at', [Carbon::yesterday(), Carbon::today()])->count();
+
+           $draw['lottery_seven'] =  Drawmodel::wherehas('resident', function($query) use($store_id){
+                $query->where('store_id', $store_id);
+           })->where(['activity_id' => $post['id'], 'is_draw' => '1'])->where('created_at', '>=', Carbon::today())->count();
+
+           $draw['lottery_twenty'] =  Drawmodel::wherehas('resident', function($query) use($store_id){
+                $query->where('store_id', $store_id);
+           })->where(['activity_id' => $post['id'], 'is_draw' => '1'])->whereBetween('created_at', [Carbon::yesterday(), Carbon::today()])->count();
+        }else{
+            Couponmodel::where('activity_id', $post['id'])->get()->map(function ($query) use (&$prize) {
+                $query = $query->toArray();
+                foreach ($prize['id'] as $key => $value) {
+                    if ($value == $query['coupon_type_id']) {
+                        $prize['receive'][$key]++;
+                    }
+                }
+            });
+
+            Couponmodel::where(['activity_id' => $post['id'], 'status' => Couponmodel::STATUS_USED])->get()->map(function ($query) use (&$prize) {
+                $query = $query->toArray();
+                foreach ($prize['id'] as $key => $value) {
+                    if ($value == $query['coupon_type_id']) {
+                        $prize['used'][$key]++;
+                    }
+                }
+            });
+            $draw['luck_draw'] = Drawmodel::where(['activity_id' => $post['id']])->count();
+            $draw['luck_draw_today'] = Drawmodel::where(['activity_id' => $post['id']])->where('created_at', '>=', Carbon::today())->count();
+            $draw['luck_draw_yesterday'] = Drawmodel::where(['activity_id' => $post['id']])->whereBetween('created_at', [Carbon::yesterday(), Carbon::today()])->count();
+            $draw['luck_draw_seven'] = Drawmodel::where(['activity_id' => $post['id']])->where('created_at', '>=', Carbon::today())->count();
+            $draw['luck_draw_twenty'] = Drawmodel::where(['activity_id' => $post['id']])->whereBetween('created_at', [Carbon::yesterday(), Carbon::today()])->count();
+
+            $draw['lottery'] =  Drawmodel::where(['activity_id' => $post['id'], 'is_draw' => '1'])->count();
+            $draw['lottery_today'] =  Drawmodel::where(['activity_id' => $post['id'], 'is_draw' => '1'])->where('created_at', '>=', Carbon::today())->count();
+            $draw['lottery_yesterday'] =  Drawmodel::where(['activity_id' => $post['id'], 'is_draw' => '1'])->whereBetween('created_at', [Carbon::yesterday(), Carbon::today()])->count();
+            $draw['luck_draw_seven'] = Drawmodel::where(['activity_id' => $post['id']])->where('created_at', '>=', Carbon::today())->count();
+            $draw['luck_draw_twenty'] = Drawmodel::where(['activity_id' => $post['id']])->whereBetween('created_at', [Carbon::yesterday(), Carbon::today()])->count();
+        }
+
+        $this->api_res(0, [$activity_prize, $prize, $draw]);
     }
 }

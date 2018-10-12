@@ -39,6 +39,10 @@ class Activitymodel extends Basemodel {
     public function store(){
         return $this->hasmany(Storeactivitymodel::class, 'activity_id');
     }
+
+    public function store_id(){
+        return $this->hasmany(Storeactivitymodel::class, 'activity_id')->select(['store_id', 'activity_id']);
+    }
     /**
      * 获取该活动相关的优惠券类型
      */
