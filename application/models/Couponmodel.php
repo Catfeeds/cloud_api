@@ -283,6 +283,10 @@ class Couponmodel extends Basemodel {
 
         return $discount;
     }
+
+    public function resident(){
+        return $this->belongsTo(Residentmodel::class, 'resident_id');
+    }
   //优惠券绑定住户
     public function bindCoupon($resident_id)
     {

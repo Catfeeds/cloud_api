@@ -8,4 +8,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  */
 class Drawmodel extends Basemodel {
     protected $table = 'boss_draw';
+
+    public function resident(){
+        return $this->belongsTo(Residentmodel::class, 'customer_id', 'customer_id');
+    }
 }
