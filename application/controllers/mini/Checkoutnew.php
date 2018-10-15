@@ -46,7 +46,7 @@ class Checkoutnew extends MY_Controller
         $resident_id   = $resident->id;
         $refund_time   = date('Y-m-d',time());
         $reason        = '';
-        $this->api_res(0,[compact($room_id,$resident_id,$name,$phone,$deposit_rent,$deposit_other,$begin_time,$end_time,$refund_time,$reason)]);
+        $this->api_res(0,compact('room_id','resident_id','name','phone','deposit_rent','deposit_other','begin_time','end_time','refund_time','reason'));
     }
 
     /**
@@ -108,8 +108,7 @@ class Checkoutnew extends MY_Controller
             'room_id','resident_id',
             'type','refund_time_e','reason_e','remark_e',
             'coldwater_reading','hotwater_reading','electric_reading',
-            'coldwater_image','hotwater_image','electric_image','check_images'
-
+            'coldwater_image','hotwater_image','electric_image','check_images',
         ];
 
 
