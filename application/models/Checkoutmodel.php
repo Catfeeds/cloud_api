@@ -38,6 +38,7 @@ class Checkoutmodel extends Basemodel {
 
     const TYPE_NORMAL   = 'NORMAL_REFUND';
     const TYPE_ABNORMAL = 'UNDER_CONTRACT';
+    const TYPE_NOLIABILITY = 'NO_LIABILITY';
 
     /**
      * 退房记录所属房间
