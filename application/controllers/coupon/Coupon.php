@@ -268,14 +268,14 @@ class Coupon extends MY_Controller {
         $search = empty($post['search'])?'':$post['search'];
         if(empty($post['store_id']) && empty($post['search'])){
 
-            $coupon = Couponmodel::with('employee')->with(['resident' => function ($query) {
+            $coupon = Couponmodel::with('coupon_type')->with('employee')->with(['resident' => function ($query) {
                 $query->with('store_name');
                 $query->with('roomunion_number');
             }])->offset($offset)->limit(PAGINATE)->get();
             $count_number = Couponmodel::get()->count();
             $count = ceil($count_number / PAGINATE);
         }elseif(empty($post['store_id']) && !empty($post['search'])) {
-            $coupon = Couponmodel::with('employee')->with(['resident' => function ($query) {
+            $coupon = Couponmodel::with('coupon_type')->with('employee')->with(['resident' => function ($query) {
                 $query->with('store_name');
                 $query->with('roomunion_number');}])
                 ->where(function($query)use($search){
@@ -301,7 +301,7 @@ class Coupon extends MY_Controller {
             })->get()->count();
             $count = ceil($count_number / PAGINATE);
         }else{
-            $coupon = Couponmodel::with('employee')->with(['resident' => function ($query){
+            $coupon = Couponmodel::with('coupon_type')->with('employee')->with(['resident' => function ($query){
                 $query->with('store_name');
                 $query->with('roomunion_number');
             }])->where(function($query)use($search){
