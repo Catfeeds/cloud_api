@@ -732,7 +732,7 @@ CREATE TABLE `boss_order` (
   `money` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '支付金额',
   `paid` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '实付金额',
   `pay_type` enum('JSAPI','BANK','ALIPAY','DEPOSIT') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'BANK' COMMENT '支付方式,微信支付,刷卡,支付宝,押金抵扣',
-  `type` enum('ROOM','DEIVCE','UTILITY','REFUND','DEPOSIT_R','DEPOSIT_O','MANAGEMENT','OTHER','RESERVE','CLEAN','WATER','ELECTRICITY','COMPENSATION','REPAIR','HOT_WATER','OVERDUE') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'ROOM' COMMENT '订单类型 房间 设备  水电费 退房 预订 清洁费 水费 电费 赔偿费 维修费 热水水费 滞纳金',
+  `type` enum('ROOM','DEIVCE','UTILITY','REFUND','DEPOSIT_R','DEPOSIT_O','MANAGEMENT','OTHER','RESERVE','CLEAN','WATER','ELECTRICITY','COMPENSATION','REPAIR','HOT_WATER','OVERDUE','GAS') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'ROOM' COMMENT '订单类型 房间 设备  水电费 退房 预订 清洁费 水费 电费 赔偿费 维修费 热水水费 滞纳金',
   `year` int(11) NOT NULL DEFAULT '0' COMMENT '年份',
   `month` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT '几个月',
   `other_id` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '水电费或者设备的id',
@@ -1200,9 +1200,10 @@ CREATE TABLE `boss_room_union` (
   `end_time` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '租房截止',
   `arrears` varchar(255) DEFAULT NULL COMMENT '欠费信息',
   `area` decimal(10,2) DEFAULT NULL COMMENT '房间面积',
-  `cold_water_price` decimal(10,2) DEFAULT NULL COMMENT '展示的冷水价格',
-  `hot_water_price` decimal(10,2) DEFAULT NULL COMMENT '展示的热水价格',
-  `electricity_price` decimal(10,2) DEFAULT NULL COMMENT '展示的电费',
+  `cold_water_price` decimal(10,2) DEFAULT 0 COMMENT '展示的冷水价格',
+  `hot_water_price` decimal(10,2) DEFAULT 0 COMMENT '展示的热水价格',
+  `electricity_price` decimal(10,2) DEFAULT 0 COMMENT '展示的电费',
+  `gas_price` decimal(10,2) DEFAULT 0 COMMENT '燃气费',
   `device_id` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2722 DEFAULT CHARSET=utf8;
