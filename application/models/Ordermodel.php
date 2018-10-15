@@ -46,7 +46,7 @@ class Ordermodel extends Basemodel {
     const PAYTYPE_DEPOSIT_O  = 'DEPOSIT_O'; // 其他押金
     const PAYTYPE_OTHER      = 'OTHER'; // 其他收费
     const PAYTYPE_ELECTRIC   = 'ELECTRICITY'; // 电费
-    //const PAYTYPE_ELECTRICITY   = 'ELECTRICITY';    // 电费
+    const PAYTYPE_GAS          = 'GAS';    // 燃气费
     const PAYTYPE_WATER        = 'WATER'; // 水费
     const PAYTYPE_WATER_HOT    = 'HOT_WATER'; // 热水水费
     const PAYTYPE_REPAIR       = 'REPAIR'; // 物品维修费

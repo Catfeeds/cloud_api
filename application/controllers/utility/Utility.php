@@ -519,15 +519,19 @@ class Utility extends MY_Controller
 		switch ($transfer->type) {
 			case Meterreadingtransfermodel::TYPE_ELECTRIC:
 				$type  = Ordermodel::PAYTYPE_ELECTRIC;
-				$price = $transfer->store->electricity_price;
+				$price = $transfer->roomunion->electricity_price;
 				break;
 			case Meterreadingtransfermodel::TYPE_WATER_H:
 				$type  = Ordermodel::PAYTYPE_WATER_HOT;
-				$price = $transfer->store->hot_water_price;
+				$price = $transfer->roomunion->hot_water_price;
 				break;
 			case Meterreadingtransfermodel::TYPE_WATER_C:
 				$type  = Ordermodel::PAYTYPE_WATER;
-				$price = $transfer->store->water_price;
+				$price = $transfer->roomunion->water_price;
+				break;
+			case Meterreadingtransfermodel::TYPE_GAS:
+				$type  = Ordermodel::PAYTYPE_GAS;
+				$price = $transfer->roomunion->gas_price;
 				break;
 			default:
 				throw new Exception('未识别的账单类型！');
