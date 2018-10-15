@@ -61,7 +61,7 @@ class MY_Controller extends CI_Controller {
      *  $res        curl 是否把返回的json数据转换成数组
      *  $arr        curl post传递的数据
      */
-    public function httpCurl($url, $method = 'get', $res = '', $arr = '') {
+    public function httpCurl($url, $method = 'get', $res = '', $arr = '',$contentType='application/x-www-form-urlencoded;charset=UTF-8') {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -70,7 +70,7 @@ class MY_Controller extends CI_Controller {
             'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36');
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_REFERER, 0);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array("content-type: application/x-www-form-urlencoded;charset=UTF-8"));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array("content-type: $contentType"));
         if ($method == 'post') {
             curl_setopt($ch, CURLOPT_POST, true); // 开启post提交
             curl_setopt($ch, CURLOPT_POSTFIELDS, $arr); //post 数据  http_build_query($data)

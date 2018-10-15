@@ -256,6 +256,8 @@ class Taskflowmodel extends Basemodel
             case self::TYPE_CHECKOUT:
             case self::TYPE_CHECKOUT_NO_LIABILITY:
             case self::TYPE_CHECKOUT_UNDER_CONTRACT:
+            case self::TYPE_CHECKOUT_UNDER_CONTRACT_LESS:
+            case self::TYPE_GIVE_UP:
                 $this->sendCheckoutMsg(json_decode($msg), $employees);
                 break;
             case self::TYPE_PRICE:

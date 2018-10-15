@@ -91,11 +91,13 @@ class Checkoutnew extends MY_Controller
         $spend_sum      = $refundMoney['spend_sum'];
 
         $this->api_res(0,[
-            'charge_order'=>$charge_order,
-            'spend_order'=>$spend_order,
-            'refund_sum'=>number_format($refund_sum,2,'.',''),
-            'charge_sum'=>number_format($charge_sum,2,'.',''),
-            'spend_sum'=>number_format($spend_sum,2,'.','')]);
+            'charge_order'  =>$charge_order,
+            'spend_order'   =>$spend_order,
+            'refund_sum'    =>number_format($refund_sum,2,'.',''),
+            'charge_sum'    =>number_format($charge_sum,2,'.',''),
+            'spend_sum'     =>number_format($spend_sum,2,'.',''),
+            'params'        => $input,
+            ]);
     }
 
     /**
@@ -111,6 +113,7 @@ class Checkoutnew extends MY_Controller
             'create_orders','give_up','account_info',
             'account','bank_name','bank_card_number','bank_card_front_img','bank_card_back_img',
             'card_front_img','card_back_img',
+            'signature_type','signature_images'
         ];
         //表单验证
         if (!$this->validationText($this->validateInitMoneyRequest())) {
@@ -156,6 +159,7 @@ class Checkoutnew extends MY_Controller
             $spend_sum += $item['money'];
         }
         $refund_sum = $spend_sum-$charge_sum;
+
         try {
             $this->load->model('checkoutrecordmodel');
             DB::beginTransaction();
@@ -586,7 +590,7 @@ class Checkoutnew extends MY_Controller
     }
 
     /**
-     * 生成退房单
+     * 生成退房记录
      */
     private function createCheckoutRecord($input)
     {
@@ -602,6 +606,23 @@ class Checkoutnew extends MY_Controller
         $record->remark_e   = $input['remark_e'];
         $record->give_up    = $input['give_up'];
         $record->handle_time= Carbon::now();
+        $record->signature_type  = $input['signature_type'];
+        if ($input['signature_type']=='NO') {
+            //
+        } elseif ($input['signature_type']=='UNDER'){
+            //上传图片，保存地址
+            $url    = 'http://api.i.funxdata.com/v1/strawberry/generate_pdf';
+            $target = '/'.date('Y-m-d',time()).'/'.uniqid().'.pdf';
+            $params = json_encode([
+                'images'    => $input['signature_images'],
+                'target'    => $target,
+                'env'       => config_item('bucket'),
+            ]);
+            $this->httpCurl($url,'post','',$params,'application/json');
+            $record->signature_url  = $target;
+        } else {
+            //线上签署
+        }
         if ($input['account_info']==1) {
             $record->bank       = $input['bank_name'];
             $record->account    = $input['account'];
@@ -633,8 +654,8 @@ class Checkoutnew extends MY_Controller
                     'uxid'      => $resident->uxid,
                     'employee_id'   => $this->employee->id,
                     'room_type_id'  => $room->room_type_id,
-                    'money'     => $resident->real_rent_money,
-                    'paid'      => $resident->real_rent_money,
+                    'money'     => $create_order['money'],
+                    'paid'      => $create_order['money'],
                     'type'      => $create_order['type'] ,
                     'year'      => $now->year,
                     'month'     => $now->month,
@@ -707,6 +728,17 @@ class Checkoutnew extends MY_Controller
                 'label' => '身份证反面照',
                 'rules' => 'trim',
             ),
+            array(
+                'field' => 'signature_type',
+                'label' => '签署类型',
+                'rules' => 'trim|required|in_list[NO,UNDER,ONLINE]',
+            ),
+            array(
+                'field' => 'signature_image[]',
+                'label' => '签署图片',
+                'rules' => 'trim',
+            ),
+
 
         );
     }
