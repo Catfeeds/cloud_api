@@ -35,7 +35,7 @@ class Pricecontrol extends MY_Controller
             'id', 'store_id', 'building_id', 'number', 'room_type_id',
             'rent_price', 'property_price', 'updated_at',
             'community_id','house_id',
-            'electricity_price','cold_water_price','hot_water_price'];
+            'electricity_price','cold_water_price','hot_water_price','gas_price'];
         $where     = [];
         $store_ids = $this->employee_store->store_ids;
         if (!empty($post['store_id'])) {$where['store_id'] = intval($post['store_id']);};
@@ -113,6 +113,7 @@ class Pricecontrol extends MY_Controller
         if (isset($post['hot_water_price'])) {$h_price = trim($post['hot_water_price']);}
         if (isset($post['water_price'])) {$c_price = trim($post['water_price']);}
         if (isset($post['electricity_price'])) {$e_price = trim($post['electricity_price']);}
+        if (isset($post['gas_price'])) {$g_price = trim($post['gas_price']);}
 
         if ($post['store_id']) {
             $store_id                 = intval($post['store_id']);
@@ -120,6 +121,7 @@ class Pricecontrol extends MY_Controller
             $price->hot_water_price   = $h_price;
             $price->water_price       = $c_price;
             $price->electricity_price = $e_price;
+            $price->electricity_price = $g_price;
             if ($price->save()) {
                 $this->api_res(0);
             } else {
@@ -208,6 +210,9 @@ class Pricecontrol extends MY_Controller
             case Pricecontrolmodel::TYPE_HOTWATER:
                 $data['ori_price']  = empty($room->hot_water_price)?0:$room->hot_water_price;
                 break;
+            case Pricecontrolmodel::TYPE_GAS:
+                $data['ori_price']  = empty($room->gas_price)?0:$room->gas_price;
+                break;
             default:
                 break;
         }
@@ -264,7 +269,7 @@ class Pricecontrol extends MY_Controller
         $this->load->model('storemodel');
         $this->load->model('buildingmodel');
         $this->load->model('roomtypemodel');
-        $filed     = ['id', 'store_id', 'building_id', 'number', 'room_type_id', 'rent_price', 'property_price', 'updated_at', 'cold_water_price', 'electricity_price', 'hot_water_price'];
+        $filed     = ['id', 'store_id', 'building_id', 'number', 'room_type_id', 'rent_price', 'property_price', 'updated_at', 'cold_water_price', 'electricity_price', 'hot_water_price','gas_price'];
         $store_id      = $this->input->post('store_id');
 
         if(!$store_id){
@@ -292,6 +297,7 @@ class Pricecontrol extends MY_Controller
                 $res['hot_water_price']     = empty($order->hot_water_price) ? '0.00' : $order->hot_water_price;
                 $res['cold_water_price']    = empty($order->cold_water_price) ? '0.00' : $order->cold_water_price;
                 $res['electricity_price']   = empty($order->electricity_price) ? '0.00' : $order->electricity_price;
+                $res['gas_price']           = empty($order->gas_price) ? '0.00' : $order->gas_price;
                 $room_excel[]   = $res;
                 $store = $order->store_s->name;
             }
@@ -350,6 +356,7 @@ class Pricecontrol extends MY_Controller
         $phpexcel->getActiveSheet()->getColumnDimension('F')->setWidth(12);
         $phpexcel->getActiveSheet()->getColumnDimension('G')->setWidth(10);
         $phpexcel->getActiveSheet()->getColumnDimension('H')->setWidth(10);
+        $phpexcel->getActiveSheet()->getColumnDimension('I')->setWidth(10);
     }
     private function setAlignCenter(Spreadsheet $phpexcel, $row) {
         $phpexcel->getActiveSheet()
@@ -366,7 +373,8 @@ class Pricecontrol extends MY_Controller
             ->setCellValue('E3' , '物业服务费')
             ->setCellValue('F3' , '热水单价')
             ->setCellValue('G3' , '冷水单价')
-            ->setCellValue('H3' , '电费单价');
+            ->setCellValue('H3' , '电费单价')
+            ->setCellValue('I3' , '燃气单价');
     }
    /*
     * 调价导入模版
@@ -375,7 +383,7 @@ class Pricecontrol extends MY_Controller
         $this->load->model('storemodel');
         $this->load->model('buildingmodel');
         $this->load->model('roomtypemodel');
-        $filed     = ['id', 'store_id', 'building_id', 'number', 'room_type_id', 'rent_price', 'property_price', 'updated_at', 'cold_water_price', 'electricity_price', 'hot_water_price'];
+        $filed     = ['id', 'store_id', 'building_id', 'number', 'room_type_id', 'rent_price', 'property_price', 'updated_at', 'cold_water_price', 'electricity_price', 'hot_water_price','gas_price'];
         $store_id      = $this->input->post('store_id');
         if(!$store_id){
             $this->api_res(1002);
@@ -407,6 +415,8 @@ class Pricecontrol extends MY_Controller
             $res['now_cold_water']      = '';
             $res['electricity_price']   = empty($order->electricity_price) ? '0.00' : $order->electricity_price;
             $res['now_electricity']     = '';
+            $res['gas_price']           = empty($order->gas_price) ? '0.00' : $order->gas_price;
+            $res['now_gas']             = '';
             $room_excel[]   = $res;
             $store = $order->store_s->name;
         }
@@ -453,6 +463,7 @@ class Pricecontrol extends MY_Controller
         $phpexcel->getActiveSheet()->getColumnDimension('K')->setWidth(15);
         $phpexcel->getActiveSheet()->getColumnDimension('L')->setWidth(15);
         $phpexcel->getActiveSheet()->getColumnDimension('M')->setWidth(15);
+        $phpexcel->getActiveSheet()->getColumnDimension('N')->setWidth(15);
     }
     private function setExcelFirstRowTemplate(Spreadsheet $phpexcel) {
         $phpexcel->getActiveSheet()->setCellValue('A3' , '门店名称')
@@ -467,7 +478,8 @@ class Pricecontrol extends MY_Controller
             ->setCellValue('J3' , '冷水单价(原价)')
             ->setCellValue('K3' , '冷水单价(现价)')
             ->setCellValue('L3' , '电费单价(原价)')
-            ->setCellValue('M3' , '电费单价(现价)');
+            ->setCellValue('M3' , '电费单价(现价)')
+            ->setCellValue('N3' , '燃气单价(现价)');
     }
     private function setExcelTitleTemplate(Spreadsheet $phpexcel, $store) {
         $phpexcel->getActiveSheet()
@@ -557,6 +569,9 @@ class Pricecontrol extends MY_Controller
             case Pricecontrolmodel::TYPE_HOTWATER;
                 $room->hot_water_price  = $new_price;
                 break;
+	        case Pricecontrolmodel::TYPE_GAS;
+		        $room->gas_price  = $new_price;
+		        break;
             default;
                 break;
         }
@@ -578,7 +593,7 @@ class Pricecontrol extends MY_Controller
             array(
                 'field' => 'type',
                 'label' => '调价范围（房租或者物业费）',
-                'rules' => 'trim|required|in_list[ROOM,MANAGEMENT,ELECTRICITY,WATER,HOTWATER]',
+                'rules' => 'trim|required|in_list[ROOM,MANAGEMENT,ELECTRICITY,WATER,HOTWATER,GASMETER]',
                 'errors'=> [
                     'required'  => '请选择%s',
                 ]
@@ -609,7 +624,7 @@ class Pricecontrol extends MY_Controller
     public function batchCreate()
     {
         $input  = $this->input->post(null,true);
-        $field  = ['store_id','community_id','electricity_price','cold_water_price','hot_water_price'];
+        $field  = ['store_id','community_id','electricity_price','cold_water_price','hot_water_price','gas_price'];
         if (!$this->validationText($this->validateBatchCreate())) {
             $this->api_res(1002,['error'=>$this->form_first_error($field)]);
             return;
@@ -629,10 +644,12 @@ class Pricecontrol extends MY_Controller
         $electricity_price  = $input['electricity_price'];
         $cold_water_price   = $input['cold_water_price'];
         $hot_water_price    = $input['hot_water_price'];
+        $gas_price          = $input['gas_price'];
         $update_arr = [
             'electricity_price' => $electricity_price,
             'cold_water_price'  => $cold_water_price,
-            'hot_water_price'   => $hot_water_price
+            'hot_water_price'   => $hot_water_price,
+            'gas_price'   => $gas_price
         ];
         $this->load->model('pricecontrolmodel');
         $rooms  = Roomunionmodel::where('store_id',$input['store_id'])->where($where)->get();
@@ -674,6 +691,18 @@ class Pricecontrol extends MY_Controller
                 'new_price'     => $hot_water_price,
                 'remark'        => $remark,
             ];
+	        $records[]  = [
+		        'company_id'    => $room->company_id,
+		        'store_id'      => $input['store_id'],
+		        'community_id'  => $community_id,
+		        'room_id'       => $room->id,
+		        'type'          => Pricecontrolmodel::TYPE_GAS,
+		        'status'        => Pricecontrolmodel::STATE_DONE,
+		        'employee_id'   => $this->employee->id,
+		        'ori_price'     => $room->gas_price,
+		        'new_price'     => $gas_price,
+		        'remark'        => $remark,
+	        ];
         }
         $this->load->model('pricecontrolmodel');
         try {
@@ -719,7 +748,11 @@ class Pricecontrol extends MY_Controller
                 'label' => '热水价格',
                 'rules' => 'trim|required',
             ],
+            [
+                'field' => 'gas_price',
+                'label' => '热水价格',
+                'rules' => 'trim|required',
+            ],
         ];
     }
-
 }
