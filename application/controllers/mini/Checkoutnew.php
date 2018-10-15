@@ -205,6 +205,7 @@ class Checkoutnew extends MY_Controller
             DB::rollBack();
             throw $e;
         }
+        $this->api_res(0);
     }
 
     /**
