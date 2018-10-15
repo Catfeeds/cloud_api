@@ -775,10 +775,10 @@ class Activity extends MY_Controller
         Storeactivitymodel::insert($store_activity_arr);
         //@2:处理奖品
         $this->load->model('activityprizemodel');
-        $prize['prize'] = serialize(['one' => $prizes[0]['coupontype_id'], 'two' => $prizes[1]['coupontype_id'], 'three' => $prizes[2]['coupontype_id']]);
-        $prize['count'] = serialize(['one' => $prizes[0]['count'], 'two' => $prizes[1]['count'], 'three' => $prizes[2]['count']]);
-        $prize['grant'] = serialize(['one' => $prizes[0]['single'], 'two' => $prizes[1]['single'], 'three' => $prizes[2]['single']]);
-        $prize['limit'] = serialize(['one' => $prizes[0]['limit'], 'two' => $prizes[1]['limit'], 'three' => $prizes[2]['limit']]);
+        $prize['prize'] = serialize(['one' => $prizes[2]['coupontype_id'], 'two' => $prizes[1]['coupontype_id'], 'three' => $prizes[0]['coupontype_id']]);
+        $prize['count'] = serialize(['one' => $prizes[2]['count'], 'two' => $prizes[1]['count'], 'three' => $prizes[0]['count']]);
+        $prize['grant'] = serialize(['one' => $prizes[2]['single'], 'two' => $prizes[1]['single'], 'three' => $prizes[0]['single']]);
+        $prize['limit'] = serialize(['one' => $prizes[2]['limit'], 'two' => $prizes[1]['limit'], 'three' => $prizes[0]['limit']]);
         $prize_id   = Activityprizemodel::insertGetId($prize);
         $activity->prize_id = $prize_id;
         $activity->save();
