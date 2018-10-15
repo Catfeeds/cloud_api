@@ -19,7 +19,9 @@ class Taskflowmodel extends Basemodel
 
     const TYPE_CHECKOUT = 'CHECKOUT';                   //正常退房任务流
     const TYPE_CHECKOUT_NO_LIABILITY = 'NO_LIABILITY';  //免责退房任务流
-    const TYPE_CHECKOUT_UNDER_CONTRACT = 'UNDER_CONTRACT';  //违约退房任务流
+    const TYPE_CHECKOUT_UNDER_CONTRACT = 'UNDER_CONTRACT';  //违约退房任务流(退款大于0)
+    const TYPE_CHECKOUT_UNDER_CONTRACT_LESS = 'UNDER_CONTRACT_LESS'; //违约退房任务流(退款小于0)
+    const TYPE_GIVE_UP  = 'GIVE_UP'; //放弃收益
     const TYPE_PRICE    = 'PRICE';
     const TYPE_RESERVE  = 'RESERVE';
     const TYPE_SERVICE  = 'SERVICE';

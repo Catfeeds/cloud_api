@@ -21,7 +21,7 @@ class Checkoutmodel extends Basemodel {
         'time',
     ];
 
-    protected $dates = ['time', 'created_at', 'updated_at'];
+    protected $dates = ['time', 'created_at', 'updated_at','handle_time'];
 
     protected $casts = [
         'data' => 'array',
