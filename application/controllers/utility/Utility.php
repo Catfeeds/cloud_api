@@ -527,7 +527,7 @@ class Utility extends MY_Controller
 				break;
 			case Meterreadingtransfermodel::TYPE_WATER_C:
 				$type  = Ordermodel::PAYTYPE_WATER;
-				$price = $transfer->roomunion->water_price;
+				$price = $transfer->roomunion->cold_water_price;
 				break;
 			case Meterreadingtransfermodel::TYPE_GAS:
 				$type  = Ordermodel::PAYTYPE_GAS;

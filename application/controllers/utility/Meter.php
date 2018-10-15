@@ -214,10 +214,10 @@ class Meter extends MY_Controller
 		$this->load->model('meterreadingtransfermodel');
 		$post    = $this->input->post(null, true);
 		$room_id = $post['room_id'];
-		$meter   = Roomunionmodel::where('id', $room_id)->first(['id', 'water_price', 'hot_water_price',
+		$meter   = Roomunionmodel::where('id', $room_id)->first(['id', 'cold_water_price', 'hot_water_price',
 		                                                         'electricity_price', 'gas_price'])->toArray();
 		$arr     = [];
-		if (floatval($meter['water_price']) > 0) {
+		if (floatval($meter['cold_water_price']) > 0) {
 			$arr[] = Meterreadingtransfermodel::TYPE_WATER_C;
 		}
 		if (floatval($meter['hot_water_price']) > 0) {
