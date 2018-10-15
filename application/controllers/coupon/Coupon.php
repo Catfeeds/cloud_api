@@ -253,5 +253,84 @@ class Coupon extends MY_Controller {
         $this->form_validation->set_rules($config)->set_error_delimiters('', '');
         return $this->form_validation->run();
     }
+    /*
+    * 优惠券发放统计
+    * */
+    public function couponStatistics(){
+        $this->load->model('couponmodel');
+        $this->load->model('residentmodel');
+        $this->load->model('roomunionmodel');
+        $post = $this->input->post(null, true);
+        $page   = isset($post['page']) ? intval($post['page']) : 1;
+        $offset = PAGINATE * ($page - 1);
+        $store_id = [];
+        if (!empty($post['store_id'])) {$store_id['store_id'] = $post['store_id'];}
+        $search = empty($post['search'])?'':$post['search'];
+        if(empty($post['store_id']) && empty($post['search'])){
 
+            $coupon = Couponmodel::with('employee')->with(['resident' => function ($query) {
+                $query->with('store_name');
+                $query->with('roomunion_number');
+            }])->offset($offset)->limit(PAGINATE)->get();
+            $count_number = Couponmodel::get()->count();
+            $count = ceil($count_number / PAGINATE);
+        }elseif(empty($post['store_id']) && !empty($post['search'])) {
+            $coupon = Couponmodel::with('employee')->with(['resident' => function ($query) {
+                $query->with('store_name');
+                $query->with('roomunion_number');}])
+                ->where(function($query)use($search){
+                    $query->orwherehas('employee', function($query)use($search){
+                        $query->where('name', 'like', "%$search%");
+                    });
+                    $query->orwherehas('resident' , function ($query)use($search){
+                        $query->wherehas('roomunion_number', function ($query)use($search){
+                            $query->where('number', 'like', "%$search%");
+                        });
+                    });
+                })
+                ->offset($offset)->limit(PAGINATE)->get();
+            $count_number = Couponmodel::where(function($query)use($search){
+                $query->orwherehas('employee', function($query)use($search){
+                    $query->where('name', 'like', "%$search%");
+                });
+                $query->orwherehas('resident' , function ($query)use($search){
+                    $query->wherehas('roomunion_number', function ($query)use($search){
+                        $query->where('number', 'like', "%$search%");
+                    });
+                });
+            })->get()->count();
+            $count = ceil($count_number / PAGINATE);
+        }else{
+            $coupon = Couponmodel::with('employee')->with(['resident' => function ($query){
+                $query->with('store_name');
+                $query->with('roomunion_number');
+            }])->where(function($query)use($search){
+                $query->orwherehas('employee', function($query)use($search){
+                   $query->where('name', 'like', "%$search%");
+                });
+                $query->orwherehas('resident' , function ($query)use($search){
+                    $query->wherehas('roomunion_number', function ($query)use($search){
+                        $query->where('number', 'like', "%$search%");
+                    });
+                });
+            })->wherehas('resident' , function ($query) use($store_id){
+                $query->where($store_id);
+            })->offset($offset)->limit(PAGINATE)->get();
+
+            $count_number = Couponmodel::wherehas('resident' , function ($query) use($store_id){
+                $query->where('store_id', $store_id);})->where(function($query)use($search){
+                $query->orwherehas('employee', function($query)use($search){
+                    $query->where('name', 'like', "%$search%");
+                });
+                $query->orwherehas('resident' , function ($query)use($search){
+                    $query->wherehas('roomunion_number', function ($query)use($search){
+                        $query->where('number', 'like', "%$search%");
+                    });
+                });
+            })->count();
+            $count = ceil($count_number/ PAGINATE);
+        }
+
+        $this->api_res(0,[ 'count' => $count, 'count_number'=>$count_number, 'page' => $page, 'list' => $coupon]);
+    }
 }

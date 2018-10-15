@@ -49,6 +49,7 @@ class Meterreadingtransfermodel extends Basemodel
 	const TYPE_WATER_H = 'HOT_WATER_METER'; //冷水表
 	const TYPE_WATER_C = 'COLD_WATER_METER'; //热水表
 	const TYPE_ELECTRIC = 'ELECTRIC_METER'; //电表
+	const TYPE_GAS = 'GAS_METER'; //电表
 	//状态
 	const NORMAL = 'NORMAL'; //正常状态（生成整月账单）
 	const OLD_METER = 'CHANGE_OLD'; //旧表
@@ -199,7 +200,7 @@ class Meterreadingtransfermodel extends Basemodel
 		];
 		$res   = Roomunionmodel::rightJoin('boss_smart_device', 'boss_room_union.id', '=', 'boss_smart_device.room_id')
 			->select($filed)
-			->whereIn('boss_smart_device.type', ['COLD_WATER_METER', 'HOT_WATER_METER', 'ELECTRIC_METER'])
+			->whereIn('boss_smart_device.type', [self::TYPE_GAS, self::TYPE_ELECTRIC, self::TYPE_WATER_C, self::TYPE_WATER_H])
 			->orderBy('store_id')
 			->orderBy('type')
 			->orderBy('room_id')
@@ -279,6 +280,10 @@ class Meterreadingtransfermodel extends Basemodel
 			case self::TYPE_WATER_C:
 				$type  = Ordermodel::PAYTYPE_WATER;
 				$price = $price['cold_water_price'];
+				break;
+			case self::TYPE_GAS:
+				$type  = Ordermodel::PAYTYPE_GAS;
+				$price = $price['gas_price'];
 				break;
 			default:
 				throw new Exception('未识别的账单类型！');

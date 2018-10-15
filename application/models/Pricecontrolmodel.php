@@ -13,6 +13,7 @@ class Pricecontrolmodel extends Basemodel
     const TYPE_ELECTRICITY= 'ELECTRICITY';//调价类型 电费
     const TYPE_WATER      = 'WATER';    //调价类型 水
     const TYPE_HOTWATER   = 'HOTWATER';//调价类型 热水
+    const TYPE_GAS        = 'GAS';      //调价类型 燃气
     const STATE_AUDIT     = 'AUDIT';    //调价状态 审核中
     const STATE_DONE      = 'DONE';    //调价状态 调价完成
     const STATE_CLOSED    = 'CLOSED';   //调价状态 调价关闭

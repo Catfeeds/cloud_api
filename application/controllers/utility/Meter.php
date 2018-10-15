@@ -110,7 +110,7 @@ class Meter extends MY_Controller
 		
 		$resident_ids = Roomunionmodel::where('store_id', $store_id)
 			->where('status', Roomunionmodel::STATE_RENT)
-			->get(['resident_id', 'number', 'cold_water_price', 'hot_water_price', 'electricity_price'])->toArray();
+			->get(['resident_id', 'number', 'cold_water_price', 'hot_water_price', 'electricity_price', 'gas_price'])->toArray();
 		$error        = [];
 		$sum          = 0;
 		foreach ($resident_ids as $k => $v) {
@@ -190,7 +190,7 @@ class Meter extends MY_Controller
 			[
 				'field' => 'type',
 				'label' => '费用类型',
-				'rules' => 'required|trim|in_list[HOT_WATER_METER,COLD_WATER_METER,ELECTRIC_METER]',
+				'rules' => 'required|trim|in_list[HOT_WATER_METER,COLD_WATER_METER,ELECTRIC_METER,GAS_METER]',
 			],
 			[
 				'field' => 'year',
@@ -206,18 +206,18 @@ class Meter extends MY_Controller
 	}
 	
 	/**
-	 * 判断门店有哪些表
+	 * 判断房间有哪些表
 	 */
 	public function meterOfStore()
 	{
-		$this->load->model('storemodel');
+		$this->load->model('roomunionmodel');
 		$this->load->model('meterreadingtransfermodel');
-		$post     = $this->input->post(null, true);
-		$store_id = $post['store_id'];
-		$meter    = Storemodel::where('id', $store_id)->first(['id', 'water_price', 'hot_water_price',
-		                                                       'electricity_price'])->toArray();
-		$arr      = [];
-		if (floatval($meter['water_price']) > 0) {
+		$post    = $this->input->post(null, true);
+		$room_id = $post['room_id'];
+		$meter   = Roomunionmodel::where('id', $room_id)->first(['id', 'cold_water_price', 'hot_water_price',
+		                                                         'electricity_price', 'gas_price'])->toArray();
+		$arr     = [];
+		if (floatval($meter['cold_water_price']) > 0) {
 			$arr[] = Meterreadingtransfermodel::TYPE_WATER_C;
 		}
 		if (floatval($meter['hot_water_price']) > 0) {
@@ -225,6 +225,9 @@ class Meter extends MY_Controller
 		}
 		if (floatval($meter['electricity_price']) > 0) {
 			$arr[] = Meterreadingtransfermodel::TYPE_ELECTRIC;
+		}
+		if (floatval($meter['gas_price']) > 0) {
+			$arr[] = Meterreadingtransfermodel::TYPE_GAS;
 		}
 		$this->api_res(0, ['meter' => $arr]);
 	}
@@ -260,7 +263,7 @@ class Meter extends MY_Controller
 		$objPHPExcel->getActiveSheet()->setCellValue('E' . $i, '权重(取值范围:0~100)');
 		$sheet->fromArray($res, null, 'A2');
 		$writer = new Xlsx($objPHPExcel);
-		if(!headers_sent()){
+		if (!headers_sent()) {
 			header("Pragma: public");
 			header("Expires: 0");
 			header("Content-Type:application/octet-stream");
@@ -304,7 +307,7 @@ class Meter extends MY_Controller
 		$this->setExcelColumnWidth($phpexcel); //设置Excel每列宽度
 		$this->setAlignCenter($phpexcel, $row); //设置记录值居中
 		$writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($phpexcel, 'Xlsx');
-		if(!headers_sent()){
+		if (!headers_sent()) {
 			header("Pragma: public");
 			header("Expires: 0");
 			header("Content-Type:application/octet-stream");

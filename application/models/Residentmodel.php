@@ -111,6 +111,9 @@ class Residentmodel extends Basemodel {
     public function store(){
         return $this->belongsTo(Storemodel::class,'store_id');
     }
+    public function store_name(){
+        return $this->belongsTo(Storemodel::class,'store_id')->select(['id', 'name']);
+    }
 
     /**
      * @当前房间在住的住户
@@ -127,7 +130,10 @@ class Residentmodel extends Basemodel {
 
         return $this->belongsTo(Roomunionmodel::class, 'room_id');
     }
+    public function roomunion_number() {
 
+        return $this->belongsTo(Roomunionmodel::class, 'room_id')->select(['id', 'number']);
+    }
     public function rent_roomunion() {
         return $this->hasMany(Roomunionmodel::class, 'resident_id');
     }

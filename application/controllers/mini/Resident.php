@@ -125,7 +125,7 @@ class Resident extends MY_Controller {
             $resident->water_price       = $store->water_price;
             $resident->hot_water_price   = $store->hot_water_price;
             $resident->electricity_price = $store->electricity_price;
-
+            $resident->special_term      = empty($post['special_term'])?"":$post['special_term'];
             // $resident->employee_id  = $this->employee->id;
             $resident->card_one   = $this->splitAliossUrl($data['card_one']);
             $resident->card_two   = $this->splitAliossUrl($data['card_two']);
