@@ -869,6 +869,8 @@ CREATE TABLE `boss_owner_house` (
   `people_count` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT '房间人数',
   `status` enum('BLANK','RENT','REPAIR') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'BLANK' COMMENT '房间状态:空 出租 维修',
   `address` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT '房间地址',
+  `layer_total` smallint(6) NOT NULL DEFAULT '0' COMMENT '总楼层',
+  `unit` smallint(6) NOT NULL DEFAULT '0' COMMENT '单元',
   `created_at` datetime NOT NULL DEFAULT '1970-01-01 00:00:00' COMMENT '创建时间',
   `updated_at` datetime NOT NULL DEFAULT '1970-01-01 00:00:00' COMMENT '更新时间',
   `deleted_at` datetime DEFAULT NULL,
