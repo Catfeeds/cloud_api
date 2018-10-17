@@ -310,7 +310,7 @@ class Couponmodel extends Basemodel {
 
         return true;
     }
-    
+
     public function employee(){
         return $this->belongsTo(Employeemodel::class, 'employee_id')->select(['id', 'name']);
     }
