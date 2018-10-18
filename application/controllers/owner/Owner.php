@@ -22,7 +22,7 @@ class Owner extends MY_Controller {
         $search       =  empty($post['search'])? '' : $post['search'];
         $offset       = $pre_page * ($current_page - 1);
         $filed        = ['id', 'house_id', 'name', 'phone', 'card_number', 'account', 'bank_card_number', 'own_account', 'bank_name', 'minimum_rent',
-            'start_date', 'end_date', 'contract_years', 'rent_increase_rate', 'no_rent_days',];
+            'start_date', 'end_date', 'contract_years', 'rent_increase_rate', 'no_rent_days', 'status', 'address'];
         empty($post['store_id']) ? $store_id = [] : $store_id['store_id'] = $post['store_id'];
         empty($post['owner_id']) ? $owner_id = [] : $owner_id['id'] = $post['owner_id'];
         $this->load->model('employeemodel');
