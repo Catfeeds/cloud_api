@@ -31,7 +31,7 @@ class Ownerhousemodel extends Basemodel {
     ];
 
     public function store(){
-        return $this->belongsTo(Storemodel::class,'store_id')->select(['name', 'id']);
+        return $this->belongsTo(Storemodel::class,'store_id')->select(['name', 'id', 'city']);
     }
 
     public function roomunion(){
