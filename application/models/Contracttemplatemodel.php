@@ -15,7 +15,7 @@ class Contracttemplatemodel extends Basemodel {
 
     public function store(){
         return $this->belongsTo(Storemodel::class, 'store_id')
-            ->select( 'id','name');
+            ->select( 'id','name', 'city');
     }
     public function room(){
         return $this->belongsTo(Roomtypemodel::class,'room_type_id')

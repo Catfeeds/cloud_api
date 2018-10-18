@@ -43,20 +43,21 @@ class Template extends MY_Controller {
      */
     public function addTemplate() {
         $this->load->library('fadada');
+        $this->load->model('storemodel');
         $field = ['name', 'type'];
         if (!$this->validationText($this->validateAdd())) {
             $this->api_res(1002, ['error' => $this->form_first_error($field)]);
             return;
         }
         $post         = $this->input->post(NULL, true);
-        $name         = isset($post['name']) ? $post['name'] : null;
+        $store_id         = isset($post['store_id']) ? $post['store_id'] : null;
         $rent_type    = isset($post['type']) ? $post['type'] : null;
-        $room_type_id = empty($post['room_type_id']) ? null : $post['room_type_id'];
+        $name    = isset($post['name']) ? $post['name'] : null;
         $file_url     = $post['file_url'];
         $url          = $this->splitAliossUrl($file_url);
-        $store_id     = $this->employee->store_id;
         $company_id   = $this->company_id;
-        if (Contracttemplatemodel::where(['name' => $name, 'store_id' => $store_id])->exists()) {
+        $contract     = Contracttemplatemodel::where(['store_id' => $store_id, 'rent_type' => $rent_type])->count();
+        if ($contract != 0) {
             $this->api_res(1008);
             return;
         }
@@ -133,7 +134,7 @@ class Template extends MY_Controller {
             $this->api_res(1005);
             return;
         }
-        $template        = Contracttemplatemodel::select(['name', 'url', 'rent_type'])->find($template_id);
+        $template        = Contracttemplatemodel::with('store')->select(['name', 'url', 'rent_type', 'store_id'])->find($template_id);
         $template['url'] = $this->fullAliossUrl($template['url']);
         if (!$template) {
             $this->api_res(1007);
@@ -161,6 +162,7 @@ class Template extends MY_Controller {
         $post      = $this->input->post(NULL, true);
         $name      = isset($post['name']) ? $post['name'] : null;
         $rent_type = isset($post['type']) ? $post['type'] : null;
+        $store_id  = isset($post['store_id']) ? $post['store_id'] : null;
         $file_url  = $post['file_url'];
         $url       = $this->splitAliossUrl($file_url);
 
@@ -171,6 +173,7 @@ class Template extends MY_Controller {
         }
         $template                    = Contracttemplatemodel::findOrFail($template_id);
         $template->name              = $name;
+        $template->store_id          = $store_id;
         $template->rent_type         = $rent_type;
         $template->url               = $url;
         $template->contract_tpl_path = $url;
