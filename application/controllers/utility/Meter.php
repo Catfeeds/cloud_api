@@ -206,9 +206,57 @@ class Meter extends MY_Controller
 	}
 	
 	/**
-	 * 判断房间有哪些表
+	 * 此接口3.7版本即将废弃
+	 * 判断门店或有哪些表
 	 */
 	public function meterOfStore()
+	{
+		$this->load->model('storemodel');
+		$this->load->model('roomunionmodel');
+		$this->load->model('meterreadingtransfermodel');
+		$post     = $this->input->post(null, true);
+		$store_id = $post['store_id'];
+		$room_id  = $post['room_id'];
+		if (!empty($post['store_id'])) {
+			$meter = Storemodel::where('id', $store_id)->first(['id', 'water_price', 'hot_water_price',
+			                                                    'electricity_price'])->toArray();
+			$arr   = [];
+			if (floatval($meter['water_price']) > 0) {
+				$arr[] = Meterreadingtransfermodel::TYPE_WATER_C;
+			}
+			if (floatval($meter['hot_water_price']) > 0) {
+				$arr[] = Meterreadingtransfermodel::TYPE_WATER_H;
+			}
+			if (floatval($meter['electricity_price']) > 0) {
+				$arr[] = Meterreadingtransfermodel::TYPE_ELECTRIC;
+			}
+		} elseif (!empty($post['room_id'])) {
+			$meter = Roomunionmodel::where('id', $room_id)->first(['id', 'cold_water_price', 'hot_water_price',
+			                                                       'electricity_price', 'gas_price'])->toArray();
+			$arr   = [];
+			if (floatval($meter['cold_water_price']) > 0) {
+				$arr[] = Meterreadingtransfermodel::TYPE_WATER_C;
+			}
+			if (floatval($meter['hot_water_price']) > 0) {
+				$arr[] = Meterreadingtransfermodel::TYPE_WATER_H;
+			}
+			if (floatval($meter['electricity_price']) > 0) {
+				$arr[] = Meterreadingtransfermodel::TYPE_ELECTRIC;
+			}
+			if (floatval($meter['gas_price']) > 0) {
+				$arr[] = Meterreadingtransfermodel::TYPE_GAS;
+			}
+		} else {
+			$this->api_res(1002);
+			return false;
+		}
+		$this->api_res(0, ['meter' => $arr]);
+	}
+	
+	/**
+	 * 判断房间有哪些表
+	 */
+	public function meterOfRoom()
 	{
 		$this->load->model('roomunionmodel');
 		$this->load->model('meterreadingtransfermodel');
