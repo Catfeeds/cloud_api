@@ -37,7 +37,17 @@ class Ownermodel extends Basemodel {
      * 业主的房间
      */
     public function house() {
-        return $this->belongsTo(Ownerhousemodel::class, 'house_id');
+        return $this->belongsTo(Ownerhousemodel::class, 'house_id')->select(['id',
+            'store_id',
+            'layer',                //当前层数
+            'area',                 //面积
+            'room_count',           //几室
+            'hall_count',           //几厅
+            'kitchen_count',        //几厨
+            'bathroom_count',       //几卫
+            'number',               //房间号
+            'unit',                 //单元
+            'layer_total']);           //总楼层]);
     }
 
     /**

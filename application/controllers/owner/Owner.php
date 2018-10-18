@@ -17,11 +17,12 @@ class Owner extends MY_Controller {
      */
     public function listOwners() {
         $post         = $this->input->post(null, true);
-        $field        = ['id', 'name', 'start_date', 'end_date', 'customer_id', 'house_id', 'phone', 'status', 'address'];
         $current_page = isset($post['page']) ? intval($post['page']) : 1; //当前页数
         $pre_page     = isset($post['pre_page']) ? intval($post['pre_page']) : 10; //当前页显示条数
         $search       =  empty($post['search'])? '' : $post['search'];
         $offset       = $pre_page * ($current_page - 1);
+        $filed        = ['id', 'house_id', 'name', 'phone', 'card_number', 'account', 'bank_card_number', 'own_account', 'bank_name', 'minimum_rent',
+            'start_date', 'end_date', 'contract_years', 'rent_increase_rate', 'no_rent_days',];
         empty($post['store_id']) ? $store_id = [] : $store_id['store_id'] = $post['store_id'];
         empty($post['owner_id']) ? $owner_id = [] : $owner_id['id'] = $post['owner_id'];
         $this->load->model('employeemodel');
@@ -54,9 +55,7 @@ class Owner extends MY_Controller {
         }
         $this->load->model('roomunionmodel');
         $this->load->model('customermodel');
-        $oweners = Ownermodel::with(['customer' => function ($query) {
-            $query->select('id', 'avatar');
-        }])->with(['house' => function ($query){
+        $oweners = Ownermodel::with(['house' => function ($query){
             $query->with('store');
         }])->where(function($query)use($search){
             $query->orwhere(function($query)use($search){
@@ -66,7 +65,7 @@ class Owner extends MY_Controller {
             $query->orwhere('name', 'like', "%$search%");
         })->where($owner_id)
         ->whereIn('house_id', $house_ids)->take($pre_page)
-        ->skip($offset)->orderBy('id', 'desc')->get($field)->toArray();
+        ->skip($offset)->orderBy('id', 'desc')->get($filed)->toArray();
         if (!$oweners) {
             $this->api_res(0);
             return;
@@ -126,6 +125,7 @@ class Owner extends MY_Controller {
         if(!empty($post['year'])){$where['year'] = $post['year'];}
         if(!empty($post['season'])){$where['season'] = $post['season'];}
         if(!empty($post['status'])){$where['status'] = $post['status'];}
+        $search       =  empty($post['search'])? '' : $post['search'];
         $current_page = isset($post['page']) ? intval($post['page']) : 1; //当前页数
         $pre_page = PAGINATE;
         $offset       = $pre_page * ($current_page - 1);
@@ -133,6 +133,19 @@ class Owner extends MY_Controller {
             $query->where($where);
         })->wherehas('house', function($query)use($store_id){
             $query->where($store_id);
+        })->where(function($query)use($search){
+            $query->orwhere(function($query)use($search){
+                $query->wherehas('house', function($query)use($search){
+                    $query->where('number', 'like', "%$search%");
+                });
+            });
+            $query->orwhere(function($query)use($search){
+                $query->wherehas('house', function($query)use($search){
+                    $query->wherehas('owner', function($query)use($search){
+                        $query->where('name', 'like', "%$search%");
+                    });
+                });
+            });
         })->count();
         $total_pages = ceil($total / $pre_page); //总页数
         if($total <= 0){
@@ -145,6 +158,19 @@ class Owner extends MY_Controller {
             $query->where($where);
         })->wherehas('house', function($query)use($store_id){
             $query->where($store_id);
+        })->where(function($query)use($search){
+            $query->orwhere(function($query)use($search){
+                $query->wherehas('house', function($query)use($search){
+                    $query->where('number', 'like', "%$search%");
+                });
+            });
+            $query->orwhere(function($query)use($search){
+                $query->wherehas('house', function($query)use($search){
+                    $query->wherehas('owner', function($query)use($search){
+                        $query->where('name', 'like', "%$search%");
+                    });
+                });
+            });
         })->where($id)->take($pre_page)->skip($offset)->get()->map(function($query){
             if(!empty($query->house->owner->bank_card_urls)){
                 $query->house->owner->bank_card_urls = $this->fullAliossUrl($query->house->owner->bank_card_urls);
@@ -188,6 +214,8 @@ class Owner extends MY_Controller {
         $field = ['store_id', 'layer', 'area', 'room_count', 'hall_count', 'kitchen_count', 'bathroom_count', 'number', 'unit', 'layer_total',
             'name', 'phone', 'card_number', 'account', 'bank_card_number', 'own_account', 'bank_name', 'minimum_rent', 'start_date', 'end_date',
             'contract_years', 'rent_increase_rate', 'no_rent_days',];
+        $post['rent_increase_rate'] = "[".implode(',', $post['rent_increase_rate'])."]";
+        $post['no_rent_days'] = "[".implode(',', $post['no_rent_days'])."]";
         if (!$this->validationText($config)) {
             $this->api_res(1002, ['error' => $this->form_first_error($field)]);
             return;
@@ -203,6 +231,7 @@ class Owner extends MY_Controller {
         }
         $house = new Ownerhousemodel();
         $owner = new Ownermodel();
+
         try{
             DB::beginTransaction();
             $house->fill($post);
@@ -215,7 +244,6 @@ class Owner extends MY_Controller {
             DB::rollback();
         }
         $this->api_res(0);
-
     }
     /*
      * 编辑小业主
@@ -227,7 +255,9 @@ class Owner extends MY_Controller {
         $config = $this->validationCodeEdit();
         $field = ['store_id', 'layer', 'area', 'room_count', 'hall_count', 'kitchen_count', 'bathroom_count', 'number', 'unit', 'layer_total',
             'name', 'phone', 'card_number', 'account', 'bank_card_number', 'own_account', 'bank_name', 'minimum_rent', 'start_date', 'end_date',
-            'contract_years', 'rent_increase_rate', 'no_rent_days',];
+            'contract_years', 'rent_increase_rate', 'no_rent_days'];
+        $post['rent_increase_rate'] = "[".implode(',', $post['rent_increase_rate'])."]";
+        $post['no_rent_days'] = "[".implode(',', $post['no_rent_days'])."]";
         if (!$this->validationText($config)) {
             $this->api_res(1002, ['error' => $this->form_first_error($field)]);
             return;
@@ -273,11 +303,6 @@ class Owner extends MY_Controller {
      */
     public function validationCodeEdit() {
         $config = array(
-            array(
-                'field' => 'owner_id',
-                'label' => '业主id',
-                'rules' => 'trim|required|numeric',
-            ),
             array(
                 'field' => 'name',
                 'label' => '姓名',
