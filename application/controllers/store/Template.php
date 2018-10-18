@@ -56,11 +56,7 @@ class Template extends MY_Controller {
         $file_url     = $post['file_url'];
         $url          = $this->splitAliossUrl($file_url);
         $company_id   = $this->company_id;
-        $contract     = Contracttemplatemodel::where(['store_id' => $store_id, 'rent_type' => $rent_type])->count();
-        if ($contract != 0) {
-            $this->api_res(1008);
-            return;
-        }
+
         $templateId = date('YmdHis') . mt_rand(10, 99);
         $res        = $this->fadada->uploadTemplate($file_url, $templateId);
         if (!$res) {
