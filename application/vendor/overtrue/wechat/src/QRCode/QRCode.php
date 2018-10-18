@@ -38,6 +38,7 @@ class QRCode extends AbstractAPI
 
     const API_CREATE = 'https://api.weixin.qq.com/cgi-bin/qrcode/create';
     const API_SHOW = 'https://mp.weixin.qq.com/cgi-bin/showqrcode';
+
     /**
      * Create forever.
      *
