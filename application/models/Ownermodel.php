@@ -31,6 +31,7 @@ class Ownermodel extends Basemodel {
         'end_date',                 //托管日期
         'contract_years',           //合同时长
         'rent_increase_rate',       //递增比例 [1,5,5,5,5]
+        'address',
         'no_rent_days',             //免租期限(日)
     ];
     /**
