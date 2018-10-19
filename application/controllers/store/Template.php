@@ -23,13 +23,13 @@ class Template extends MY_Controller {
         $offset = PAGINATE * ($page - 1);
         $store_ids = $this->employee_store->store_ids;
         $field  = ['id', 'name', 'url', 'rent_type','store_id','room_type_id'];
-        $count  = ceil(Contracttemplatemodel::whereIn('store_id', $store_ids)->count() / PAGINATE);
+        $count  = ceil(Contracttemplatemodel::whereIn('store_id', $store_ids)->where('room_type_id', '=', null)->count() / PAGINATE);
         if ($page > $count) {
             $this->api_res(0, ['count' => $count, 'list' => []]);
             return;
         }
         $templates = Contracttemplatemodel::whereIn('store_id', $store_ids)->offset($offset)->limit(PAGINATE)->orderBy('id', 'desc')
-            ->with('store')->with('room')->get($field)
+            ->with('store')->where('room_type_id', '=', null)->with('room')->get($field)
             ->map(function ($result) {
                 $result->url = $this->fullAliossUrl($result->url);
                 return $result;
