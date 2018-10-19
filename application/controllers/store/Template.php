@@ -111,13 +111,13 @@ class Template extends MY_Controller {
     public function searchTemplate() {
         $name  = $this->input->post('name', true);
         $page  = intval($this->input->post('page', true) ? $this->input->post('page', true) : 1);
-        $field = ['id', 'name'];
-        $count = ceil(Contracttemplatemodel::where('name', 'like', "%$name%")->count() / PAGINATE);
+        $field = ['id', 'name', 'url', 'rent_type','store_id'];
+        $count = ceil(Contracttemplatemodel::where('name', 'like', "%$name%")->where('room_type_id', '=', null)->count() / PAGINATE);
         if ($page > $count) {
             $this->api_res(0, ['count' => $count, 'list' => []]);
             return;
         }
-        $stores = Contracttemplatemodel::where('name', 'like', "%$name%")->limit(PAGINATE)->orderBy('id', 'desc')->get($field);
+        $stores = Contracttemplatemodel::where('name', 'like', "%$name%")->with('store')->where('room_type_id', '=', null)->limit(PAGINATE)->orderBy('id', 'desc')->get($field);
         $this->api_res(0, ['count' => $count, 'list' => $stores]);
     }
 
