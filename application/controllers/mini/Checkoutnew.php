@@ -201,7 +201,7 @@ class Checkoutnew extends MY_Controller
         $store          = Storemodel::findOrFail($record->store_id);
         $room           = Roomunionmodel::findOrFail($record->room_id);
         $resident       = Residentmodel::findOrFail($record->resident_id);
-        $checkImages    = $this->fullAliossUrl($record->check_images()->pluck('url')->toAttay(),true);
+        $checkImages    = $this->fullAliossUrl($record->check_images()->pluck('url')->toArray(),true);
         $orders         = $resident->orders;
         //
         $type           = $record->type;
