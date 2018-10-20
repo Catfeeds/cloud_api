@@ -295,7 +295,7 @@ class Checkoutnew extends MY_Controller
             ->count();
         $total_page = ceil($count/$pre_count);
         if ($total_page<$page) {
-            $this->api_res(0,['total_page'=>$total_page,'current_page'=>$page,'list'=>[]]);
+            $this->api_res(0,['total_page'=>$total_page,'count'=>$count,'current_page'=>$page,'list'=>[]]);
             return;
         }
         $records    = Checkoutmodel::with('resident','roomunion')
@@ -310,7 +310,7 @@ class Checkoutnew extends MY_Controller
                 return $record;
             })
         ;
-        $this->api_res(0,['total_page'=>$total_page,'current_page'=>$page,'list'=>$records]);
+        $this->api_res(0,['total_page'=>$total_page,'count'=>$count,'current_page'=>$page,'list'=>$records]);
     }
 
     /**
