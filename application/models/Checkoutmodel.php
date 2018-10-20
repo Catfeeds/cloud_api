@@ -30,11 +30,14 @@ class Checkoutmodel extends Basemodel {
     const STATUS_APPLIED            = 'APPLIED';    //用户申请退房
     const STATUS_CONFIRM            = 'CONFIRM';    //员工已确认处理但未完成验房
     const STATUS_CHECKED            = 'CHECKED';    //生成退房记录，未提交审核（已验房）
+    const STATUS_SIGNING            = 'SIGNING';    //签署中
     const STATUS_SIGNATURE          = 'SIGNATURE';  //已签字（用户签署）
     const STATUS_AUDIT              = 'AUDIT';      //待审核（审核中）
     const STATUS_UNPAID             = 'UNPAID';     //审核通过未付款
     const STATUS_CLOSED             = 'CLOSED';     //已关闭退房单
     const STATUS_COMPLETED          = 'COMPLETED';  //已完成
+    //'APPLIED','UNPAID','PENDING','BY_MANAGER','MANAGER_APPROVED','PRINCIPAL_APPROVED','COMPLETED','AUDIT'
+
 
     const STATUS_PENDING            ='PENDING';                 //检查一下准备废弃
     const STATUS_BY_MANAGER         ='BY_MANAGER';              //检查一下准备废弃

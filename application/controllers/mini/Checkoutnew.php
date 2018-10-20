@@ -58,8 +58,8 @@ class Checkoutnew extends MY_Controller
         $field  = [
             'room_id','resident_id',
             'type','refund_time_e','reason_e','remark_e',
-            'coldwater_reading','hotwater_reading','electric_reading',
-            'coldwater_image','hotwater_image','electric_image','check_images'
+            'utility',
+            'check_images'
         ];
         if (!$this->validationText($this->validateInitMoneyRequest())){
             $this->api_res(1002,['error'=>$this->form_first_error($field)]);
@@ -83,7 +83,7 @@ class Checkoutnew extends MY_Controller
            return;
        }
         $handle_time    = Carbon::now();
-        $refundMoney    = $this->calcInitRefundMoney($input['type'],$room,$resident,$orders,$handle_time,$input);
+        $refundMoney    = $this->calcInitRefundMoney($input['type'],$room,$resident,$orders,$handle_time,$input['utility']);
         $charge_order   = $refundMoney['charge_order'];
         $spend_order    = $refundMoney['spend_order'];
         $refund_sum     = $refundMoney['refund_sum'];
@@ -103,13 +103,12 @@ class Checkoutnew extends MY_Controller
     /**
      * 退房-确认验房（确认）
      */
-    public function confirm()
+    public function confirmCheck()
     {
         $field  = [
             'room_id','resident_id',
             'type','refund_time_e','reason_e','remark_e',
-            'coldwater_reading','hotwater_reading','electric_reading',
-            'coldwater_image','hotwater_image','electric_image','check_images',
+            'utility',
             'create_orders','give_up','account_info',
             'account','bank_name','bank_card_number','bank_card_front_img','bank_card_back_img',
             'card_front_img','card_back_img',
@@ -144,57 +143,21 @@ class Checkoutnew extends MY_Controller
         }
         //办理时间
         $handle_time    = Carbon::now();
-//        $refundMoney    = $this->calcInitRefundMoney($input,$room,$resident,$orders,$handle_time);
-//        //计算退房添加的账单
-        $create_orders  = $this->calcConfirmOrder($input['create_orders'],$room,$resident,$handle_time);
-        //merge
-//        $charge_order   = array_merge($refundMoney['charge'],$create_orders);
-//        $spend_order    = $refundMoney['spend'];
-//        $charge_sum     = 0;
-//        foreach ($charge_order as $item) {
-//            $charge_sum += $item['money'];
-//        }
-//        $spend_sum    = 0;
-//        foreach ($spend_order as $item) {
-//            $spend_sum += $item['money'];
-//        }
-//        $refund_sum = $spend_sum-$charge_sum;
-
+        $create_orders  = $input['create_orders'];
         try {
             $this->load->model('checkoutrecordmodel');
             DB::beginTransaction();
             //生成退租单
             $record = $this->createConfirmCheckoutRecord($input);
             // 把水电读数存入记录表
-            $utility_readings   = $this->utilityRecord($input);
-            if (!empty($utility_readings)) {
-               $record->utility_readings    = json_encode($utility_readings);
+            if (!empty($input['utility'])) {
+               $record->utility_readings    = json_encode($input['utility']);
                $record->save();
             }
             if (!empty($create_orders)) {
                 $record->add_orders = json_encode($create_orders);
                 $record->save();
             }
-//            $this->load->model('taskflowmodel');
-//            $this->load->model('storemodel');
-//            $msg    = [
-//                'store_name'=> Storemodel::find($room->store_id)->name,
-//                'number'    => $room->number,
-//                'name'      => $resident->name,
-//                'create_name'   => $this->employee->name,
-//                'phone'     => $resident->phone,
-//            ];
-//            //生成退款任务流
-//            $taskflow_id  = $this->createTaskflow($record,$input['type'],$input['give_up'],$refund_sum,$msg);
-//            if (!empty($taskflow_id)) {
-//                $record->taskflow_id = $taskflow_id;
-//                $record->status = 'AUDIT';
-//                $record->save();
-//            } else {
-//                //如果没有任务流就直接根据记录生成账单
-//                $this->handleCheckoutOrder($record);
-//            }
-
             //保存验房照片
             $this->storeCheckRoomImage($record,$input['check_images']);
             //重置房间状态
@@ -203,11 +166,12 @@ class Checkoutnew extends MY_Controller
                     'status'        =>Roomunionmodel::STATE_BLANK,
                     'resident_id'   => 0,
                     'people_count'  => 0,
+                    'updated_at'    => Carbon::now(),
                     ]
             );
             //更新住户状态
             Residentmodel::where('id', $input['resident_id'])
-                ->update(['status' => 'CHECKOUT','refund_time'=>date('Y-m-d H:i:s')]);
+                ->update(['status' => 'CHECKOUT','refund_time'=>date('Y-m-d H:i:s'),'updated_at'=>Carbon::now()]);
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
@@ -260,63 +224,330 @@ class Checkoutnew extends MY_Controller
     }
 
     /**
+     * 用户签署
+     */
+    public function Signature()
+    {
+        $input  = $this->input->post(null,true);
+        $field  = [
+            'checkout_id','create_orders','give_up',
+            'signature_type','signature_image',
+        ];
+        if (!$this->validationText($this->validateSignature())) {
+            $this->api_res(1002,['error'=>$this->form_first_error($field)]);
+            return;
+        }
+        $type   = $input['signature_type'];
+        switch ($type) {
+            case 'NO':
+                $this->noSignatureSubmit($input);
+                break;
+            case 'UNDER':
+                $this->underSignatureSubmit($input);
+                break;
+            case 'ONLINE':
+                $this->onlineSignatureSubmit($input);
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * 小程序退租列表
+     */
+    public function listRecord()
+    {
+        $store_id   = $this->employee->store_id;
+        $status = [
+            Checkoutmodel::STATUS_APPLIED,
+            Checkoutmodel::STATUS_CONFIRM,
+            Checkoutmodel::STATUS_CHECKED,
+            Checkoutmodel::STATUS_SIGNING,
+            Checkoutmodel::STATUS_SIGNATURE,
+            Checkoutmodel::STATUS_AUDIT,
+            Checkoutmodel::STATUS_UNPAID,
+        ];
+
+        $this->load->model('checkoutmodel');
+        $this->load->model('residentmodel');
+        $this->load->model('roomunionmodel');
+
+        $records    = Checkoutmodel::with('resident','roomunion')
+            ->where('store_id',$store_id)
+            ->whereIn('status',$status)
+            ->get();
+        $this->api_res(0,$records);
+    }
+
+    /**
+     * 无法签署提交
+     */
+    private function noSignatureSubmit($input)
+    {
+        $this->load->model('checkoutmodel');
+        $record = Checkoutmodel::findOrFial($input['checkout_id']);
+        $record->add_orders = json_encode($input['create_orders']);
+        $record->give_up    = $input['give_up'];
+        $record->signature_type  = $input['signature_type'];
+        $record->status     = Checkoutmodel::STATUS_SIGNATURE;
+        $record->save();
+
+        $record = $this->handleTaskflow($record);
+        return $record;
+    }
+
+    /**
+     * 线下签字提交
+     */
+    private function underSignatureSubmit($input)
+    {
+        $this->load->model('checkoutmodel');
+        $record = Checkoutmodel::findOrFial($input['checkout_id']);
+        $record->add_orders = json_encode($input['create_orders']);
+        $record->give_up    = $input['give_up'];
+        $record->signature_type  = $input['signature_type'];
+        $record->status     = Checkoutmodel::STATUS_SIGNATURE;
+        //上传图片，保存地址
+        $target = $this->uploadUnderSignature($input['signature_images']);
+        $record->signature_url  = $target;
+        $record->save();
+
+        $record = $this->handleTaskflow($record);
+        return $record;
+    }
+
+    /**
+     * 选择线上签字
+     */
+    private function onlineSignatureSubmit($input)
+    {
+        $this->load->model('checkoutmodel');
+        $record = Checkoutmodel::findOrFial($input['checkout_id']);
+        $record->add_orders = json_encode($input['create_orders']);
+        $record->give_up    = $input['give_up'];
+        $record->signature_type  = $input['signature_type'];
+        $record->status     = Checkoutmodel::STATUS_SIGNING;
+        $record->save();
+
+        //向用户发送签署链接
+        $this->onlineSignatureSend($record);
+    }
+
+    /**
+     * 线上签署-发送住户签字
+     */
+    private function onlineSignatureSend($record)
+    {
+        //待开发。。。
+        if($record->status!=Checkoutmodel::STATUS_SIGNING){
+            return false;
+        }
+    }
+
+    /**
+     * @param $record
+     * 处理任务流
+     */
+    private function handleTaskflow($record){
+
+        $this->load->model('taskflowmodel');
+        $this->load->model('storemodel');
+        $this->load->model('residentmodel');
+        $this->load->model('roomunionmodel');
+
+        $resident   = Residentmodel::find($record->resident_id);
+        $room       = Roomunionmodel::find($record->room_id);
+        $store      = $room->store;
+        $msg    = [
+            'store_name'    => $store->name,
+            'number'        => $room->number,
+            'name'          => $resident->name,
+            'create_name'   => $this->employee->name,
+            'phone'         => $resident->phone,
+        ];
+
+        $refund = $this->calcRefundMoneyByRecord($record);
+        $refund_sum = $refund['refund_sum'];
+        //生成退款任务流
+        $taskflow_id  = $this->createTaskflow($record,$record->type,$record->give_up,$refund_sum,$msg);
+        if (!empty($taskflow_id)) {
+            $record->taskflow_id = $taskflow_id;
+            $record->status = Checkoutmodel::STATUS_AUDIT;
+            $record->save();
+        } else {
+            $record->status = Checkoutmodel::STATUS_UNPAID;
+            $record->save();
+            //如果没有任务流就直接根据记录生成账单
+            $this->handleCheckoutOrder($record);
+        }
+        return $record;
+    }
+
+    /**
+     * 计算退租是应退金额
+     */
+    private function calcRefundMoneyByRecord($record)
+    {
+        $this->load->model('residentmodel');
+        $this->load->model('roomunionmodel');
+        $this->load->model('ordermodel');
+        $resident   = Residentmodel::find($record->resident_id);
+        $room       = Roomunionmodel::find($record->room_id);
+        $orders  = $resident->orders;
+        $utility_data   = json_decode($record->utility_readings,true);
+
+        $refundMoney    = $this->calcInitRefundMoney($record->type,$room,$resident,$orders,$record->refund_time,$utility_data);
+//        //计算退房添加的账单
+        $create_orders  = $this->calcCreateOrder(json_decode($record->add_orders),$room,$resident);
+        //merge
+        $charge_order   = array_merge($refundMoney['charge_order'],$create_orders);
+        $spend_order    = $refundMoney['spend_order'];
+        $charge_sum     = 0;
+        foreach ($charge_order as $item) {
+            $charge_sum += $item['money'];
+        }
+        $spend_sum    = 0;
+        foreach ($spend_order as $item) {
+            $spend_sum += $item['money'];
+        }
+        $refund_sum = $spend_sum-$charge_sum;
+        return [
+            'charge_order'  => $charge_order,
+            'charge_init_order' => $refundMoney['charge_order'],
+            'create_order'  => $create_orders,
+            'spend_order'   => $spend_order,
+            'charge_sum'    => $charge_sum,
+            'spend_sum'     => $spend_sum,
+            'refund_sum'    => $refund_sum
+        ];
+    }
+
+    /**
+     * 验证用户签署
+     */
+    private function validateSignature()
+    {
+        return array(
+            array(
+                'field' => 'checkout_id',
+                'label' => '选择退房',
+                'rules' => 'required|trim|numeric',
+            ),
+            array(
+                'field' => 'create_orders[]',
+                'label' => '新增的账单',
+                'rules' => 'trim',
+            ),
+            array(
+                'field' => 'give_up',
+                'label' => '是否放弃收益',
+                'rules' => 'required|trim|integer|in_list[0,1]',
+            ),
+            array(
+                'field' => 'signature_type',
+                'label' => '签署类型',
+                'rules' => 'trim|required|in_list[NO,UNDER,ONLINE]',
+            ),
+            array(
+                'field' => 'signature_image[]',
+                'label' => '签署图片',
+                'rules' => 'trim',
+            ),
+        );
+
+    }
+
+    /**
+     * 退房时上传用户线下的签字
+     */
+    private function uploadUnderSignature($images)
+    {
+        $url    = 'http://api.i.funxdata.com/v1/strawberry/generate_pdf';
+        $target = '/'.date('Y-m-d',time()).'/'.uniqid().'.pdf';
+        $params = json_encode([
+            'images'    => $images,
+            'target'    => $target,
+            'env'       => config_item('bucket'),
+        ]);
+        $this->httpCurl($url,'post','',$params,'application/json');
+        return $target;
+    }
+
+
+    /**
+     * 确认账单发起审批流
+     */
+
+
+
+    /**
      * 处理退房的账单
      */
     private function handleCheckoutOrder($record)
     {
+        if($record!==Checkoutmodel::STATUS_UNPAID)
+        {
+            //...
+
+            return false;
+        }
+
         $resident   = Residentmodel::find($record->resident_id);
         $room       = Roomunionmodel::find($record->room_id);
         $orders     = $resident->orders;
         //办理时间
-        $handle_time    = $record->handle_time;
+        $handle_time        = $record->refund_time;
         $utility_readings   = $record->utility_readings;
         //生成水电账单
         if( !empty($utility_readings) ) {
-            $utility_readings   = json_decode($utility_readings,true);
-            $param_utility  = [];
-            foreach ($utility_readings as $utility_reading) {
-                $param_utility['room_id']   = $room->id;
-                $param_utility['$resident'] = $resident->id;
-                switch ($utility_reading['type']) {
-                    case 'COLDWATER':
-                        $param_utility['coldwater_reading'] = $utility_reading['coldwater_reading'];
-                        $param_utility['coldwater_image'] = $utility_reading['coldwater_image'];
-                        $param_utility['coldwater_time'] = $utility_reading['time'];
-                        break;
-                    case 'HOTWATER':
-                        $param_utility['hotwater_reading'] = $utility_reading['hotwater_reading'];
-                        $param_utility['hotwater_image'] = $utility_reading['hotwater_image'];
-                        $param_utility['hotwater_time'] = $utility_reading['time'];
-                        break;
-                    case 'ELECTRIC':
-                        $param_utility['electric_reading'] = $utility_reading['electric_reading'];
-                        $param_utility['electric_image'] = $utility_reading['electric_image'];
-                        $param_utility['electric_time'] = $utility_reading['time'];
-                        break;
-//                    case 'GAS':
-//                        break;
-                }
-            }
-            //这里需要调整
-            $utlity = $this->utility($param_utility);
-            $bills  = [];
-            if (isset($utlity['water'])){
-                $bills['WATER'] = $utlity['water'];
-            }
-            if (isset($utlity['hot_water'])){
-                $bills['HOT_WATER'] = $utlity['hot_water'];
-            }
-            if (isset($utlity['electric'])){
-                $bills['ELECTRICITY'] = $utlity['electric'];
-            }
-            $utility_orders = $this->createCheckoutUtilityOrder($record,$room,$resident,$bills);
 
-            Ordermodel::insert($utility_orders);
+//            $utility_readings   = json_decode($utility_readings,true);
+//            $param_utility  = [];
+//            foreach ($utility_readings as $utility_reading) {
+//                $param_utility['room_id']   = $room->id;
+//                $param_utility['$resident'] = $resident->id;
+//                switch ($utility_reading['type']) {
+//                    case 'COLDWATER':
+//                        $param_utility['coldwater_reading'] = $utility_reading['coldwater_reading'];
+//                        $param_utility['coldwater_image'] = $utility_reading['coldwater_image'];
+//                        $param_utility['coldwater_time'] = $utility_reading['time'];
+//                        break;
+//                    case 'HOTWATER':
+//                        $param_utility['hotwater_reading'] = $utility_reading['hotwater_reading'];
+//                        $param_utility['hotwater_image'] = $utility_reading['hotwater_image'];
+//                        $param_utility['hotwater_time'] = $utility_reading['time'];
+//                        break;
+//                    case 'ELECTRIC':
+//                        $param_utility['electric_reading'] = $utility_reading['electric_reading'];
+//                        $param_utility['electric_image'] = $utility_reading['electric_image'];
+//                        $param_utility['electric_time'] = $utility_reading['time'];
+//                        break;
+////                    case 'GAS':
+////                        break;
+//                }
+//            }
+//            //这里需要调整
+//            $utlity = $this->utility($param_utility);
+//            $bills  = [];
+//            if (isset($utlity['water'])){
+//                $bills['WATER'] = $utlity['water'];
+//            }
+//            if (isset($utlity['hot_water'])){
+//                $bills['HOT_WATER'] = $utlity['hot_water'];
+//            }
+//            if (isset($utlity['electric'])){
+//                $bills['ELECTRICITY'] = $utlity['electric'];
+//            }
+//            $utility_orders = $this->createCheckoutUtilityOrder($record,$room,$resident,$bills);
+//
+//            Ordermodel::insert($utility_orders);
         }
         //生成添加的账单
         if ( !empty($record->add_orders) ) {
             $add_orders = json_decode($record->add_orders);
-            Ordermodel::insert($add_orders);
+            $crete_orders   = $this->calcCreateOrder($add_orders,$room,$resident);
+            Ordermodel::insert($crete_orders);
         }
         //处理退房账单
         $this->handleInitRefundMoney($record,$room,$resident,$orders,$handle_time);
@@ -601,8 +832,8 @@ class Checkoutnew extends MY_Controller
         //计算一下初始的金额返回给前端
         $init_order     = $this->calcInitMoney($checkout_type,$room,$resident,$orders,$handle_time);
         //merge
-        $charge_order   = array_merge($utility_order,$init_order['charge']);
-        $spend_order    = $init_order['spend'];
+        $charge_order   = array_merge($utility_order,$init_order['charge_order']);
+        $spend_order    = $init_order['spend_order'];
         $charge_sum     = 0;
         foreach ($charge_order as $item) {
             $charge_sum += $item['money'];
@@ -664,23 +895,6 @@ class Checkoutnew extends MY_Controller
         $record->remark_e   = $input['remark_e'];
         $record->give_up    = $input['give_up'];
         $record->refund_time= Carbon::now();                //办理退租的时间
-//        $record->signature_type  = $input['signature_type'];
-//        if ($input['signature_type']=='NO') {
-//            //
-//        } elseif ($input['signature_type']=='UNDER'){
-//            //上传图片，保存地址
-//            $url    = 'http://api.i.funxdata.com/v1/strawberry/generate_pdf';
-//            $target = '/'.date('Y-m-d',time()).'/'.uniqid().'.pdf';
-//            $params = json_encode([
-//                'images'    => $input['signature_images'],
-//                'target'    => $target,
-//                'env'       => config_item('bucket'),
-//            ]);
-//            $this->httpCurl($url,'post','',$params,'application/json');
-//            $record->signature_url  = $target;
-//        } else {
-//            //线上签署
-//        }
         if ($input['account_info']==1) {
             $record->bank       = $input['bank_name'];
             $record->account    = $input['account'];
@@ -695,14 +909,14 @@ class Checkoutnew extends MY_Controller
     }
 
     /**
-     * 确认退房时的账单处理
+     * 计算退房时添加的账单处理
      */
-    private function calcConfirmOrder($create_orders,$room,$resident,$handle_time)
+    private function calcCreateOrder($create_orders,$room,$resident)
     {
         $orders = [];
-        $now    = $handle_time;
         if (!empty($create_orders)) {
             foreach ($create_orders as $create_order){
+                $handle_time    = Carbon::parse($create_order['time']);
                 $order  = [
                     'number'=>Ordermodel::newNumber(),
                     'store_id'  => $resident->store_id,
@@ -716,12 +930,12 @@ class Checkoutnew extends MY_Controller
                     'paid'      => $create_order['money'],
                     'type'      => $create_order['type'] ,
                     'remark'    => $create_order['remark'] ,
-                    'year'      => $now->year,
-                    'month'     => $now->month,
+                    'year'      => $handle_time->year,
+                    'month'     => $handle_time->month,
                     'status'    => 'PENDING',
                     'pay_status'=> 'RENEWALS',
-                    'begin_time'=> $now->copy()->startOfMonth()->format('Y-m-d'),
-                    'end_time'  => $now->copy()->endOfMonth()->format('Y-m-d'),
+                    'begin_time'=> $handle_time->copy()->startOfMonth()->format('Y-m-d'),
+                    'end_time'  => $handle_time->copy()->endOfMonth()->format('Y-m-d'),
                     'tag'       => 'CHECKOUT',
             ];
                 $orders[]   = $order;
@@ -740,7 +954,7 @@ class Checkoutnew extends MY_Controller
             array(
                 'field' => 'create_orders[]',
                 'label' => '新增的账单',
-                'rules' => 'required|trim',
+                'rules' => 'trim',
             ),
             array(
                 'field' => 'give_up',
@@ -787,16 +1001,6 @@ class Checkoutnew extends MY_Controller
                 'label' => '身份证反面照',
                 'rules' => 'trim',
             ),
-//            array(
-//                'field' => 'signature_type',
-//                'label' => '签署类型',
-//                'rules' => 'trim|required|in_list[NO,UNDER,ONLINE]',
-//            ),
-//            array(
-//                'field' => 'signature_image[]',
-//                'label' => '签署图片',
-//                'rules' => 'trim',
-//            ),
         );
     }
 
@@ -834,7 +1038,7 @@ class Checkoutnew extends MY_Controller
         $chargeOrders   = $this->calcChargeMoney($type,$room,$resident,$orders,$handle_time);
         //计算已交
         $spendOrders    = $this->calcSpendMoney($type,$room,$resident,$orders,$handle_time);
-        return ['charge'=>$chargeOrders,'spend'=>$spendOrders];
+        return ['charge_order'=>$chargeOrders,'spend_order'=>$spendOrders];
 
     }
 
@@ -876,33 +1080,8 @@ class Checkoutnew extends MY_Controller
                 'rules' => 'required|trim',
             ),
             array(
-                'field' => 'coldwater_reading',
-                'label' => '冷水读数',
-                'rules' => 'trim',
-            ),
-            array(
-                'field' => 'hotwater_reading',
-                'label' => '热水读数',
-                'rules' => 'trim',
-            ),
-            array(
-                'field' => 'electric_reading',
-                'label' => '电表读数',
-                'rules' => 'trim',
-            ),
-            array(
-                'field' => 'coldwater_image',
-                'label' => '冷水图片',
-                'rules' => 'trim',
-            ),
-            array(
-                'field' => 'hotwater_image',
-                'label' => '热水图片',
-                'rules' => 'trim',
-            ),
-            array(
-                'field' => 'electric_image',
-                'label' => '电表读数',
+                'field' => 'utility[]',
+                'label' => '只能水电表信息',
                 'rules' => 'trim',
             ),
             array(
