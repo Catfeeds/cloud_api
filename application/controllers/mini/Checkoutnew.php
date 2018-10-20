@@ -113,7 +113,7 @@ class Checkoutnew extends MY_Controller
         $field  = [
             'room_id','resident_id',
             'type','refund_time_e','reason_e','remark_e',
-            'utility',
+            'utility','check_images',
             'create_orders','give_up','account_info',
             'account','bank_name','bank_card_number','bank_card_front_img','bank_card_back_img',
             'card_front_img','card_back_img',
@@ -201,7 +201,7 @@ class Checkoutnew extends MY_Controller
         $store          = Storemodel::findOrFail($record->store_id);
         $room           = Roomunionmodel::findOrFail($record->room_id);
         $resident       = Residentmodel::findOrFail($record->resident_id);
-        $checkImages    = $this->fullAliossUrl($record->check_images()->pluck('url'),true);
+        $checkImages    = $this->fullAliossUrl($record->check_images()->pluck('url')->toAttay(),true);
         $orders         = $resident->orders;
         //
         $type           = $record->type;
@@ -283,9 +283,9 @@ class Checkoutnew extends MY_Controller
             Checkoutmodel::STATUS_UNPAID,
         ];
         if (empty($room_number)) {
-            $room_ids   = Roomunionmodel::where('store_id',$store_id)->pluck('id');
+            $room_ids   = Roomunionmodel::where('store_id',$store_id)->pluck('id')->toArray();
         } else {
-            $room_ids   = Roomunionmodel::where('store_id',$store_id)->where('number',$room_number)->pluck('id');
+            $room_ids   = Roomunionmodel::where('store_id',$store_id)->where('number',$room_number)->pluck('id')->toArray();
         }
 
         $count  = Checkoutmodel::with('resident','roomunion')
@@ -323,6 +323,9 @@ class Checkoutnew extends MY_Controller
         $record->add_orders     = json_encode($input['create_orders']);
         $record->give_up        = $input['give_up'];
         $record->signature_type = $input['signature_type'];
+        $record->signature_id   = $this->employee->id;
+        $record->signature_time = Carbon::now();
+        $record->signature_type = $input['signature_type'];
         $record->status         = Checkoutmodel::STATUS_SIGNATURE;
         $record->save();
 
@@ -340,6 +343,8 @@ class Checkoutnew extends MY_Controller
         $record->add_orders     = json_encode($input['create_orders']);
         $record->give_up        = $input['give_up'];
         $record->signature_type = $input['signature_type'];
+        $record->signature_id   = $this->employee->id;
+        $record->signature_time = Carbon::now();
         $record->status         = Checkoutmodel::STATUS_SIGNATURE;
         //上传图片，保存地址
         $target = $this->uploadUnderSignature($input['signature_images']);
@@ -473,6 +478,7 @@ class Checkoutnew extends MY_Controller
 
     /**
      * 生成退房记录
+     *
      */
     private function createConfirmCheckoutRecord($input)
     {
@@ -487,6 +493,8 @@ class Checkoutnew extends MY_Controller
         $record->reason_e   = $input['reason_e'];
         $record->remark_e   = $input['remark_e'];
         $record->give_up    = $input['give_up'];
+        $record->creater_role    = 'EMPLOYEE';
+        $record->creater_id      = $this->employee->id;
         $record->refund_time= Carbon::now();                //办理退租的时间
         if ($input['account_info']==1) {
             $record->bank       = $input['bank_name'];
