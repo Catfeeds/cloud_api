@@ -310,6 +310,8 @@ class Taskflow extends MY_Controller{
             case Taskflowmodel::TYPE_CHECKOUT:
             case Taskflowmodel::TYPE_CHECKOUT_NO_LIABILITY:
             case Taskflowmodel::TYPE_CHECKOUT_UNDER_CONTRACT:
+            case Taskflowmodel::TYPE_CHECKOUT_UNDER_CONTRACT_LESS:
+            case Taskflowmodel::TYPE_GIVE_UP:
                 $data   = $this->showCheckoutInfo($taskflow_id);
                 break;
             case Taskflowmodel::TYPE_PRICE:

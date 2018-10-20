@@ -30,6 +30,10 @@ class Checkoutnew extends MY_Controller
             ->where('number',$room_number)
             ->first();
         $resident   = $room->resident;
+        if (!$resident) {
+            $this->api_res(1007);
+            return;
+        }
         $orders  = $resident->orders;
         //检查房间住户信息
         if ($code = $this->checkRoom($room,$resident,$orders)) {
@@ -83,7 +87,7 @@ class Checkoutnew extends MY_Controller
            return;
        }
         $handle_time    = Carbon::now();
-        $refundMoney    = $this->calcInitRefundMoney($input['type'],$room,$resident,$orders,$handle_time,$input['utility']);
+        $refundMoney    = Checkoutmodel::calcInitRefundMoney($input['type'],$room,$resident,$orders,$handle_time,$input['utility'],$this->employee);
         $charge_order   = $refundMoney['charge_order'];
         $spend_order    = $refundMoney['spend_order'];
         $refund_sum     = $refundMoney['refund_sum'];
@@ -145,7 +149,7 @@ class Checkoutnew extends MY_Controller
         $handle_time    = Carbon::now();
         $create_orders  = $input['create_orders'];
         try {
-            $this->load->model('checkoutrecordmodel');
+            $this->load->model('checkoutmodel');
             DB::beginTransaction();
             //生成退租单
             $record = $this->createConfirmCheckoutRecord($input);
@@ -186,15 +190,15 @@ class Checkoutnew extends MY_Controller
     public function showCheckoutDetail()
     {
         $checkout_id    = $this->input->post('checkout_id');
-        $this->load->model('checkoutrecordmodel');
+        $this->load->model('checkoutmodel');
         $this->load->model('roomunionmodel');
         $this->load->model('residentmodel');
         $this->load->model('ordermodel');
         $this->load->model('storemodel');
         $this->load->model('checkoutimagemodel');
-        $record = Checkoutmodel::findOrFail($checkout_id);
-        $store  = Storemodel::findOrFail($record->store_id);
-        $room   = Roomunionmodel::findOrFail($record->room_id);
+        $record         = Checkoutmodel::findOrFail($checkout_id);
+        $store          = Storemodel::findOrFail($record->store_id);
+        $room           = Roomunionmodel::findOrFail($record->room_id);
         $resident       = Residentmodel::findOrFail($record->resident_id);
         $checkImages    = $this->fullAliossUrl($record->check_images()->pluck('url'),true);
         $orders         = $resident->orders;
@@ -202,7 +206,8 @@ class Checkoutnew extends MY_Controller
         $type           = $record->type;
         $utility_data   = json_decode($record->utility_readings,true);
         $handle_time    = $record->refund_time;
-        $refundMoney    = $this->calcInitRefundMoney($type,$room,$resident,$orders,$handle_time,$utility_data);
+        $employee       = Employeemodel::find($record->employee_id);
+        $refundMoney    = Checkoutmodel::calcInitRefundMoney($type,$room,$resident,$orders,$handle_time,$utility_data,$employee);
         $charge_order   = $refundMoney['charge_order'];
         $spend_order    = $refundMoney['spend_order'];
         $refund_sum     = $refundMoney['refund_sum'];
@@ -259,6 +264,10 @@ class Checkoutnew extends MY_Controller
     public function listRecord()
     {
         $store_id   = $this->employee->store_id;
+
+        $this->load->model('checkoutmodel');
+        $this->load->model('residentmodel');
+        $this->load->model('roomunionmodel');
         $status = [
             Checkoutmodel::STATUS_APPLIED,
             Checkoutmodel::STATUS_CONFIRM,
@@ -268,11 +277,6 @@ class Checkoutnew extends MY_Controller
             Checkoutmodel::STATUS_AUDIT,
             Checkoutmodel::STATUS_UNPAID,
         ];
-
-        $this->load->model('checkoutmodel');
-        $this->load->model('residentmodel');
-        $this->load->model('roomunionmodel');
-
         $records    = Checkoutmodel::with('resident','roomunion')
             ->where('store_id',$store_id)
             ->whereIn('status',$status)
@@ -287,10 +291,10 @@ class Checkoutnew extends MY_Controller
     {
         $this->load->model('checkoutmodel');
         $record = Checkoutmodel::findOrFial($input['checkout_id']);
-        $record->add_orders = json_encode($input['create_orders']);
-        $record->give_up    = $input['give_up'];
-        $record->signature_type  = $input['signature_type'];
-        $record->status     = Checkoutmodel::STATUS_SIGNATURE;
+        $record->add_orders     = json_encode($input['create_orders']);
+        $record->give_up        = $input['give_up'];
+        $record->signature_type = $input['signature_type'];
+        $record->status         = Checkoutmodel::STATUS_SIGNATURE;
         $record->save();
 
         $record = $this->handleTaskflow($record);
@@ -304,10 +308,10 @@ class Checkoutnew extends MY_Controller
     {
         $this->load->model('checkoutmodel');
         $record = Checkoutmodel::findOrFial($input['checkout_id']);
-        $record->add_orders = json_encode($input['create_orders']);
-        $record->give_up    = $input['give_up'];
-        $record->signature_type  = $input['signature_type'];
-        $record->status     = Checkoutmodel::STATUS_SIGNATURE;
+        $record->add_orders     = json_encode($input['create_orders']);
+        $record->give_up        = $input['give_up'];
+        $record->signature_type = $input['signature_type'];
+        $record->status         = Checkoutmodel::STATUS_SIGNATURE;
         //上传图片，保存地址
         $target = $this->uploadUnderSignature($input['signature_images']);
         $record->signature_url  = $target;
@@ -355,9 +359,10 @@ class Checkoutnew extends MY_Controller
         $this->load->model('storemodel');
         $this->load->model('residentmodel');
         $this->load->model('roomunionmodel');
+        $this->load->model('ordermodel');
 
-        $resident   = Residentmodel::find($record->resident_id);
-        $room       = Roomunionmodel::find($record->room_id);
+        $resident   = $record->resident;
+        $room       = $record->roomunion;
         $store      = $room->store;
         $msg    = [
             'store_name'    => $store->name,
@@ -367,7 +372,7 @@ class Checkoutnew extends MY_Controller
             'phone'         => $resident->phone,
         ];
 
-        $refund = $this->calcRefundMoneyByRecord($record);
+        $refund = Checkoutmodel::calcRefundMoneyByRecord($record);
         $refund_sum = $refund['refund_sum'];
         //生成退款任务流
         $taskflow_id  = $this->createTaskflow($record,$record->type,$record->give_up,$refund_sum,$msg);
@@ -379,49 +384,11 @@ class Checkoutnew extends MY_Controller
             $record->status = Checkoutmodel::STATUS_UNPAID;
             $record->save();
             //如果没有任务流就直接根据记录生成账单
-            $this->handleCheckoutOrder($record);
+            Checkoutmodel::handleCheckoutOrder($record);
         }
         return $record;
     }
 
-    /**
-     * 计算退租是应退金额
-     */
-    private function calcRefundMoneyByRecord($record)
-    {
-        $this->load->model('residentmodel');
-        $this->load->model('roomunionmodel');
-        $this->load->model('ordermodel');
-        $resident   = Residentmodel::find($record->resident_id);
-        $room       = Roomunionmodel::find($record->room_id);
-        $orders  = $resident->orders;
-        $utility_data   = json_decode($record->utility_readings,true);
-
-        $refundMoney    = $this->calcInitRefundMoney($record->type,$room,$resident,$orders,$record->refund_time,$utility_data);
-//        //计算退房添加的账单
-        $create_orders  = $this->calcCreateOrder(json_decode($record->add_orders),$room,$resident);
-        //merge
-        $charge_order   = array_merge($refundMoney['charge_order'],$create_orders);
-        $spend_order    = $refundMoney['spend_order'];
-        $charge_sum     = 0;
-        foreach ($charge_order as $item) {
-            $charge_sum += $item['money'];
-        }
-        $spend_sum    = 0;
-        foreach ($spend_order as $item) {
-            $spend_sum += $item['money'];
-        }
-        $refund_sum = $spend_sum-$charge_sum;
-        return [
-            'charge_order'  => $charge_order,
-            'charge_init_order' => $refundMoney['charge_order'],
-            'create_order'  => $create_orders,
-            'spend_order'   => $spend_order,
-            'charge_sum'    => $charge_sum,
-            'spend_sum'     => $spend_sum,
-            'refund_sum'    => $refund_sum
-        ];
-    }
 
     /**
      * 验证用户签署
@@ -479,257 +446,45 @@ class Checkoutnew extends MY_Controller
      * 确认账单发起审批流
      */
 
-
-
     /**
-     * 处理退房的账单
+     * 生成退房记录
      */
-    private function handleCheckoutOrder($record)
+    private function createConfirmCheckoutRecord($input)
     {
-        if($record!==Checkoutmodel::STATUS_UNPAID)
-        {
-            //...
-
-            return false;
+        $record = new Checkoutmodel();
+        $record->store_id   = $this->employee->store_id;
+        $record->room_id    = $input['room_id'];
+        $record->resident_id= $input['resident_id'];
+        $record->employee_id= $this->employee->id;
+        $record->status     = Checkoutmodel::STATUS_CONFIRM;
+        $record->type       = $input['type'];
+        $record->refund_time_e  = $input['refund_time_e'];  //员工填写的退租时间
+        $record->reason_e   = $input['reason_e'];
+        $record->remark_e   = $input['remark_e'];
+        $record->give_up    = $input['give_up'];
+        $record->refund_time= Carbon::now();                //办理退租的时间
+        if ($input['account_info']==1) {
+            $record->bank       = $input['bank_name'];
+            $record->account    = $input['account'];
+            $record->back_card_number       = $this->splitAliossUrl($input['back_card_number']);
+            $record->bank_card_front_img    = $this->splitAliossUrl($input['bank_card_front_img']);
+            $record->bank_card_back_img     = $this->splitAliossUrl($input['bank_card_back_img']);
+            $record->card_front_img         = $this->splitAliossUrl($input['card_front_img']);
+            $record->card_back_img          = $this->splitAliossUrl($input['card_back_img']);
         }
-
-        $resident   = Residentmodel::find($record->resident_id);
-        $room       = Roomunionmodel::find($record->room_id);
-        $orders     = $resident->orders;
-        //办理时间
-        $handle_time        = $record->refund_time;
-        $utility_readings   = $record->utility_readings;
-        //生成水电账单
-        if( !empty($utility_readings) ) {
-
-//            $utility_readings   = json_decode($utility_readings,true);
-//            $param_utility  = [];
-//            foreach ($utility_readings as $utility_reading) {
-//                $param_utility['room_id']   = $room->id;
-//                $param_utility['$resident'] = $resident->id;
-//                switch ($utility_reading['type']) {
-//                    case 'COLDWATER':
-//                        $param_utility['coldwater_reading'] = $utility_reading['coldwater_reading'];
-//                        $param_utility['coldwater_image'] = $utility_reading['coldwater_image'];
-//                        $param_utility['coldwater_time'] = $utility_reading['time'];
-//                        break;
-//                    case 'HOTWATER':
-//                        $param_utility['hotwater_reading'] = $utility_reading['hotwater_reading'];
-//                        $param_utility['hotwater_image'] = $utility_reading['hotwater_image'];
-//                        $param_utility['hotwater_time'] = $utility_reading['time'];
-//                        break;
-//                    case 'ELECTRIC':
-//                        $param_utility['electric_reading'] = $utility_reading['electric_reading'];
-//                        $param_utility['electric_image'] = $utility_reading['electric_image'];
-//                        $param_utility['electric_time'] = $utility_reading['time'];
-//                        break;
-////                    case 'GAS':
-////                        break;
-//                }
-//            }
-//            //这里需要调整
-//            $utlity = $this->utility($param_utility);
-//            $bills  = [];
-//            if (isset($utlity['water'])){
-//                $bills['WATER'] = $utlity['water'];
-//            }
-//            if (isset($utlity['hot_water'])){
-//                $bills['HOT_WATER'] = $utlity['hot_water'];
-//            }
-//            if (isset($utlity['electric'])){
-//                $bills['ELECTRICITY'] = $utlity['electric'];
-//            }
-//            $utility_orders = $this->createCheckoutUtilityOrder($record,$room,$resident,$bills);
-//
-//            Ordermodel::insert($utility_orders);
-        }
-        //生成添加的账单
-        if ( !empty($record->add_orders) ) {
-            $add_orders = json_decode($record->add_orders);
-            $crete_orders   = $this->calcCreateOrder($add_orders,$room,$resident);
-            Ordermodel::insert($crete_orders);
-        }
-        //处理退房账单
-        $this->handleInitRefundMoney($record,$room,$resident,$orders,$handle_time);
-
+        $record->save();
+        return $record;
     }
 
-    /**
-     * 处理退房的初始账单
-     */
-    private function handleInitRefundMoney($record,$room,$resident,$orders,$handle_time)
-    {
-        $type   = $record->type;
-        //处理应交
-        $this->handleChargeMoney($type,$room,$resident,$orders,$handle_time);
-        //处理已交
-        $this->handleSpendMoney($type,$room,$resident,$orders,$handle_time);
-    }
 
-    /**
-     * 处理应缴账单
-     */
-    private function handleChargeMoney($type,$room,$resident,$orders,$handle_time)
-    {
-        switch ($type) {
-            case 'NORMAL_REFUND':
-                $chargeOrders   = $this->handleChargeNormalMoney($room,$resident,$orders,$handle_time);
-                break;
-            case 'UNDER_CONTRACT':
-                $chargeOrders   = $this->handleChargeUnderMoney($room,$resident,$orders,$handle_time);
-                break;
-            case 'NO_LIABILITY':
-                $chargeOrders   = $this->handleChargeNoMoney($room,$resident,$orders,$handle_time);
-                break;
-            default:
-                $chargeOrders   = false;
-                break;
-        }
-    }
 
-    private function handleChargeNoMoney($room,$resident,$orders,$handle_time)
-    {
-        $orders = $this->calcChargeNoMoney($room,$resident,$orders,$handle_time);
-        Ordermodel::insert($orders);
-    }
 
-    /**
-     * 处理违约退房的账单
-     */
-    private function handleChargeUnderMoney($room,$resident,$orders,$handle_time)
-    {
-        $now    = $handle_time;
-        $order_end_time = $now->copy()->endOfMonth();
-        //补到当月月底的账单
-        $fillOrders = $this->fillOrder($resident,$room,$order_end_time,$orders);
 
-        $reOrders   = $orders->map(function($order){
-            $time   = $order->year.'-'.$order->month;
-            $order->merge_time  = $time;
-            return $order;
-        });
-        //超出当月的账单（未支付的，关闭掉）
-        $beyondOrders   = $reOrders->where('merge_time','>',$now->format('Y-m'))->where('status','PENDING')
-            ->each(function($order){
-            $order->update(['status'=>'CLOSE','tag'=>'CHECKOUT']);
-        });
-        //当月以及当月之前的未支付账单
-        $pendingOrders  = $reOrders->where('merge_time','<=',$now->format('Y-m'))->where('status','PENDING')
-            ->each(function($order){
-                $order->update(['tag'=>'CHECKOUT']);
-            });
-        //生成当月违约金账单
-        $underOrders = [
-            [
-                'number'=>Ordermodel::newNumber(),
-                'store_id'  => $resident->store_id,
-                'company_id'=> $resident->company_id,
-                'room_id'   => $resident->room_id,
-                'customer_id'   => $resident->customer_id,
-                'uxid'      => $resident->uxid,
-                'employee_id'   => $this->employee->id,
-                'room_type_id'  => $room->room_type_id,
-                'money'     => $resident->real_rent_money,
-                'paid'      => $resident->real_rent_money,
-                'type'      => 'BREAK',
-                'year'      => $now->year,
-                'month'     => $now->month,
-                'status'    => 'PENDING',
-                'pay_status'=> 'RENEWALS',
-                'begin_time'=> $handle_time->copy()->startOfMonth()->format('Y-m-d'),
-                'end_time'  => $handle_time->copy()->endOfMonth()->format('Y-m-d'),
-                'tag'       => 'CHECKOUT',
-            ]
-        ];
-        Ordermodel::insert($fillOrders);
-        Ordermodel::insert($underOrders);
-        return true;
-    }
 
-    /**
-     * 处理正常退房时应缴账单
-     */
-    private function handleChargeNormalMoney($room,$resident,$orders,$handle_time)
-    {
-        //检查住户合同期内的账单是否已经全部生成
-        $end_time   = $handle_time;
-        //补充应该生成的账单
-        $fillOrders = $this->fillOrder($resident,$room,$end_time,$orders);
-        $pendingOrders  = $orders->where('status','PENDING')->each(function($order){
-            $order->update(['tag'=>'CHECKOUT' ]);
-        });
-        Ordermodel::insert($fillOrders);
-        return true;
-    }
 
-    /**
-     * 处理已交账单
-     */
-    private function handleSpendMoney($type,$room,$resident,$orders,$handle_time)
-    {
-        switch ($type) {
-            case 'NORMAL_REFUND':
-                $spendOrders    = $this->handleSpendNormalMoney($room,$resident,$orders,$handle_time);
-                break;
-            case 'UNDER_CONTRACT':
-                $spendOrders    = $this->handleSpendUnderMoney($orders,$handle_time);
-                break;
-            case 'NO_LIABILITY':
-                $spendOrders    = $this->handleSpendNoMoney($orders,$handle_time);
-                break;
-            default:
-                $spendOrders    = [];
-                break;
-        }
-        return $spendOrders;
-    }
 
-    /**
-     * 处理免责退房时的已交账单
-     */
-    private function handleSpendNoMoney($orders,$handle_time)
-    {
-        $spendOrders    = $orders->whereIn('status',['CONFIRM','COMPLATE'])
-        ->each(function($order){
-            $order->update(['tag'=>'CHECKOUT']);
-        });
-        return true;
-    }
 
-    /**
-     * 处理正常退房时的已交账单
-     */
-    private function handleSpendNormalMoney($room,$resident,$orders,$handle_time)
-    {
-        $deposit    = $orders->whereIn('type',['DEPOSIT_R','DEPOSIT_O'])
-        ->each(function($order){
-            $order->update(['tag'=>'CHECKOUT']);
-        });
-        return true;
-    }
 
-    /**
-     * 处理违约退房已交账单
-     */
-    private function handleSpendUnderMoney($orders,$handle_time)
-    {
-        $deposit    = $orders->whereIn('type',['DEPOSIT_R','DEPOSIT_O'])
-            ->each(function($order){
-                $order->update(['tag'=>'CHECKOUT']);
-            });
-        $reOrders   = $orders->map(function($order){
-            $time   = $order->year.'-'.$order->month;
-            $order->merge_time  = $time;
-            return $order;
-        });
-        //超出当月的已支付账单
-        $beyondOrders   = $reOrders->where('merge_time','>',$handle_time->format('Y-m'))
-            ->whereIn('status',['COMPLATE','COMFIRM'])
-            ->each(function($order){
-                $order->update(['tag'=>'CHECKOUT']);
-            });
-        return true;
-    }
 
 
     /**
@@ -775,29 +530,29 @@ class Checkoutnew extends MY_Controller
             //放弃收益走放弃收益的任务流
             $msg['type']='放弃收益';
             $msg = json_encode($msg);
-            $taskflow_id   = $this->taskflowmodel->createTaskflow($this->company_id,Taskflowmodel::TYPE_GIVE_UP,$this->employee->store_id,$checkout->room_id,Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id,null,null,$msg);
+            $taskflow_id   = $this->taskflowmodel->createTaskflow($this->company_id,Taskflowmodel::TYPE_GIVE_UP,$this->employee->store_id,$checkout->room_id,Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id,$checkout->id,null,$msg);
         } else {
             if ($type=='NORMAL_REFUND') {
                 //正常退房走正常退房的任务流
                 $msg['type']='正常';
                 $msg = json_encode($msg);
-                $taskflow_id   = $this->taskflowmodel->createTaskflow($this->company_id,Taskflowmodel::TYPE_CHECKOUT,$this->employee->store_id,$checkout->room_id,Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id,null,null,$msg);
+                $taskflow_id   = $this->taskflowmodel->createTaskflow($this->company_id,Taskflowmodel::TYPE_CHECKOUT,$this->employee->store_id,$checkout->room_id,Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id,$checkout->id,null,$msg);
             } elseif ($type=='NO_LIABILITY') {
                 //三天免责走三天免责的任务流
                 $msg['type']='免责';
                 $msg = json_encode($msg);
-                $taskflow_id   = $this->taskflowmodel->createTaskflow($this->company_id,Taskflowmodel::TYPE_CHECKOUT_NO_LIABILITY,$this->employee->store_id,$checkout->room_id,Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id,null,null,$msg);
+                $taskflow_id   = $this->taskflowmodel->createTaskflow($this->company_id,Taskflowmodel::TYPE_CHECKOUT_NO_LIABILITY,$this->employee->store_id,$checkout->room_id,Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id,$checkout->id,null,$msg);
             } elseif ($type=='UNDER_CONTRACT') {
                 if($refund_money>0){
                     //违约退房退款大于0
                     $msg['type']='违约退款金额小于0';
                     $msg = json_encode($msg);
-                    $taskflow_id   = $this->taskflowmodel->createTaskflow($this->company_id,Taskflowmodel::TYPE_CHECKOUT_UNDER_CONTRACT,$this->employee->store_id,$checkout->room_id,Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id,null,null,$msg);
+                    $taskflow_id   = $this->taskflowmodel->createTaskflow($this->company_id,Taskflowmodel::TYPE_CHECKOUT_UNDER_CONTRACT,$this->employee->store_id,$checkout->room_id,Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id,$checkout->id,null,$msg);
                 }else{
                     //违约退房退款小于0
                     $msg['type']='违约退款金额大于0';
                     $msg = json_encode($msg);
-                    $taskflow_id   = $this->taskflowmodel->createTaskflow($this->company_id,Taskflowmodel::TYPE_CHECKOUT_UNDER_CONTRACT_LESS,$this->employee->store_id,$checkout->room_id,Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id,null,null,$msg);
+                    $taskflow_id   = $this->taskflowmodel->createTaskflow($this->company_id,Taskflowmodel::TYPE_CHECKOUT_UNDER_CONTRACT_LESS,$this->employee->store_id,$checkout->room_id,Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id,$checkout->id,null,$msg);
 
                 }
             }else{
@@ -807,44 +562,7 @@ class Checkoutnew extends MY_Controller
         return $taskflow_id;
     }
 
-    /**
-     * @param $input
-     * [
-     *  'type'
-     * 'coldwater_reading',
-     * 'hotwater_reading',
-     * 'electric_reading',
-     * 'coldwater_image',
-     * 'hotwater_image',
-     * 'electric_image'
-     *
-     * ]
-     * @param $room
-     * @param $resident
-     * @param $orders
-     * @return array
-     * 根据上传的类型已经水电读数计算一个初始的退款
-     */
-    private function calcInitRefundMoney($checkout_type,$room,$resident,$orders,$handle_time,$utility_data)
-    {
-        // 按读数计算应收的水电费账单
-        $utility_order  = $this->calcChargeUtilityMoney($utility_data,$handle_time);
-        //计算一下初始的金额返回给前端
-        $init_order     = $this->calcInitMoney($checkout_type,$room,$resident,$orders,$handle_time);
-        //merge
-        $charge_order   = array_merge($utility_order,$init_order['charge_order']);
-        $spend_order    = $init_order['spend_order'];
-        $charge_sum     = 0;
-        foreach ($charge_order as $item) {
-            $charge_sum += $item['money'];
-        }
-        $spend_sum    = 0;
-        foreach ($spend_order as $item) {
-            $spend_sum += $item['paid'];
-        }
-        $refund_sum = $spend_sum-$charge_sum;
-        return compact('charge_order','spend_order','charge_sum','spend_sum','refund_sum');
-    }
+
 
     /**
      * 生成退房时的水电读数记录
@@ -877,73 +595,6 @@ class Checkoutnew extends MY_Controller
         }
         return $arr;
     }
-
-    /**
-     * 生成退房记录
-     */
-    private function createConfirmCheckoutRecord($input)
-    {
-        $record = new Checkoutmodel();
-        $record->store_id   = $this->employee->store_id;
-        $record->room_id    = $this->$input['room_id'];
-        $record->resident_id= $this->$input['resident_id'];
-        $record->employee_id= $this->employee->id;
-        $record->status     = Checkoutmodel::STATUS_CONFIRM;
-        $record->type       = $input['type'];
-        $record->refund_time_e  = $input['refund_time_e'];  //员工填写的退租时间
-        $record->reason_e   = $input['reason_e'];
-        $record->remark_e   = $input['remark_e'];
-        $record->give_up    = $input['give_up'];
-        $record->refund_time= Carbon::now();                //办理退租的时间
-        if ($input['account_info']==1) {
-            $record->bank       = $input['bank_name'];
-            $record->account    = $input['account'];
-            $record->back_card_number       = $this->splitAliossUrl($input['back_card_number']);
-            $record->bank_card_front_img    = $this->splitAliossUrl($input['bank_card_front_img']);
-            $record->bank_card_back_img     = $this->splitAliossUrl($input['bank_card_back_img']);
-            $record->card_front_img         = $this->splitAliossUrl($input['card_front_img']);
-            $record->card_back_img          = $this->splitAliossUrl($input['card_back_img']);
-        }
-        $record->save();
-        return $record;
-    }
-
-    /**
-     * 计算退房时添加的账单处理
-     */
-    private function calcCreateOrder($create_orders,$room,$resident)
-    {
-        $orders = [];
-        if (!empty($create_orders)) {
-            foreach ($create_orders as $create_order){
-                $handle_time    = Carbon::parse($create_order['time']);
-                $order  = [
-                    'number'=>Ordermodel::newNumber(),
-                    'store_id'  => $resident->store_id,
-                    'company_id'=> $resident->company_id,
-                    'room_id'   => $resident->room_id,
-                    'customer_id'   => $resident->customer_id,
-                    'uxid'      => $resident->uxid,
-                    'employee_id'   => $this->employee->id,
-                    'room_type_id'  => $room->room_type_id,
-                    'money'     => $create_order['money'],
-                    'paid'      => $create_order['money'],
-                    'type'      => $create_order['type'] ,
-                    'remark'    => $create_order['remark'] ,
-                    'year'      => $handle_time->year,
-                    'month'     => $handle_time->month,
-                    'status'    => 'PENDING',
-                    'pay_status'=> 'RENEWALS',
-                    'begin_time'=> $handle_time->copy()->startOfMonth()->format('Y-m-d'),
-                    'end_time'  => $handle_time->copy()->endOfMonth()->format('Y-m-d'),
-                    'tag'       => 'CHECKOUT',
-            ];
-                $orders[]   = $order;
-            }
-        }
-        return $orders;
-    }
-
 
     /**
      * 验证确认验房的提交信息
@@ -1005,14 +656,6 @@ class Checkoutnew extends MY_Controller
     }
 
     /**
-     * 按读数计算应收的水电费账单
-     */
-    private function calcChargeUtilityMoney($utility_data,$handle_time)
-    {
-        return [];
-    }
-
-    /**
      * 检查免责退的资格
      */
     private function checkType($type,$resident)
@@ -1029,18 +672,7 @@ class Checkoutnew extends MY_Controller
     }
 
 
-    /**
-     * 计算初始金额
-     */
-    private function calcInitMoney($type,$room,$resident,$orders,$handle_time)
-    {
-        //计算应缴
-        $chargeOrders   = $this->calcChargeMoney($type,$room,$resident,$orders,$handle_time);
-        //计算已交
-        $spendOrders    = $this->calcSpendMoney($type,$room,$resident,$orders,$handle_time);
-        return ['charge_order'=>$chargeOrders,'spend_order'=>$spendOrders];
 
-    }
 
 
     /**
@@ -1091,443 +723,6 @@ class Checkoutnew extends MY_Controller
             ),
         );
     }
-
-    /**
-     * 计算退房时应收的金额
-     */
-    private function calcChargeMoney($type,$room,$resident,$orders,$handle_time)
-    {
-        switch ($type) {
-            case 'NORMAL_REFUND':
-                $chargeOrders   = $this->calcChargeNormalMoney($room,$resident,$orders,$handle_time);
-                break;
-            case 'UNDER_CONTRACT':
-                $chargeOrders   = $this->calcChargeUnderMoney($room,$resident,$orders,$handle_time);
-                break;
-            case 'NO_LIABILITY':
-                $chargeOrders   = $this->calcChargeNoMoney($room,$resident,$orders,$handle_time);
-                break;
-            default:
-                $chargeOrders   = [];
-                break;
-        }
-        return $chargeOrders;
-    }
-
-    /**
-     * 计算违约退房应收金额
-     */
-    private function calcChargeUnderMoney($room,$resident,$orders,$handle_time)
-    {
-        $now    = $handle_time;
-        $order_end_time = $now->copy()->endOfMonth();
-        //补到当月月底的账单
-        $fillOrders = $this->fillOrder($resident,$room,$order_end_time,$orders);
-
-        $reOrders   = $orders->map(function($order){
-            $time   = $order->year.'-'.$order->month;
-            $order->merge_time  = $time;
-            return $order;
-        });
-        //超出当月的账单（未支付的，后面需要处理）
-        $beyondOrders   = $reOrders->where('merge_time','>',$now->format('Y-m'))->where('status','PENDING');
-        //当月以及当月之前的未支付账单
-        $pendingOrders  = $reOrders->where('merge_time','<=',$now->format('Y-m'))->where('status','PENDING');
-        //生成当月违约金账单
-        $underOrders = [
-            [
-                'number'=>Ordermodel::newNumber(),
-                'store_id'  => $resident->store_id,
-                'company_id'=> $resident->company_id,
-                'room_id'   => $resident->room_id,
-                'customer_id'   => $resident->customer_id,
-                'uxid'      => $resident->uxid,
-                'employee_id'   => $this->employee->id,
-                'room_type_id'  => $room->room_type_id,
-                'money'     => $resident->real_rent_money,
-                'paid'      => $resident->real_rent_money,
-                'type'      => 'BREAK',
-                'year'      => $now->year,
-                'month'     => $now->month,
-                'status'    => 'PENDING',
-                'pay_status'=> 'RENEWALS',
-                'begin_time'=> $handle_time->copy()->startOfMonth()->format('Y-m-d'),
-                'end_time'  => $handle_time->copy()->endOfMonth()->format('Y-m-d'),
-            ]
-        ];
-        $chargeOrders   = array_merge($pendingOrders,$underOrders,$fillOrders);
-        return $chargeOrders;
-    }
-
-    /**
-     * 计算免责退房应收金额
-     */
-    private function calcChargeNoMoney($room,$resident,$orders,$handle_time)
-    {
-        //退租时间就是当前时间
-        $end_time   = $handle_time;
-        $begin_time = Carbon::parse($resident->begin_time);
-        $chargeOrders    = [];
-        if ($begin_time->month==$end_time->month) {
-            $year   = $end_time->year;
-            $month  = $end_time->month;
-            $endDate     = $end_time;
-            $startDay    = $resident->begin_time->lte($endDate->copy()->startOfMonth()) ? 1 : $resident->begin_time->day;
-            $daysOfMonth = $endDate->copy()->endOfMonth()->day;
-            $rent_money  = ceil($resident->real_rent_money * ($endDate->day - $startDay + 1) / $daysOfMonth);
-            $property    = ceil($resident->real_property_costs * ($endDate->day - $startDay + 1) / $daysOfMonth);
-            //@1 先生成房租账单
-            $rent_order  = [
-                'number'    => Ordermodel::newNumber(),
-                'store_id'  => $resident->store_id,
-                'company_id'=> $resident->company_id,
-                'room_id'   => $resident->room_id,
-                'customer_id'   => $resident->customer_id,
-                'uxid'      => $resident->uxid,
-                'employee_id'   => $this->employee->id,
-                'room_type_id'  => $room->room_type_id,
-                'money'     => $rent_money,
-                'paid'      => $rent_money,
-                'type'      => 'ROOM',
-                'year'      => $year,
-                'month'     => $month,
-                'status'    => 'PENDING',
-                'pay_status'=> 'RENEWALS',
-                'begin_time'=> $begin_time->format('Y-m-d'),
-                'end_time'  => $endDate->format('Y-m-d'),
-                'tag'       => 'CHECKOUT',
-            ];
-            //@2再生成物业账单
-            $management_order   = [
-                'number'    => Ordermodel::newNumber(),
-                'store_id'  => $resident->store_id,
-                'company_id'=> $resident->company_id,
-                'room_id'   => $resident->room_id,
-                'customer_id'   => $resident->customer_id,
-                'uxid'      => $resident->uxid,
-                'employee_id'   => $this->employee->id,
-                'room_type_id'  => $room->room_type_id,
-                'money'     => $property,
-                'paid'      => $property,
-                'type'      => 'MANAGEMENT',
-                'year'      => $year,
-                'month'     => $month,
-                'status'    => 'PENDING',
-                'pay_status'=> 'RENEWALS',
-                'begin_time'=> $begin_time->format('Y-m-d'),
-                'end_time'  => $endDate->format('Y-m-d'),
-                'tag'       => 'CHECKOUT',
-            ];
-            $chargeOrders[] = $rent_order;
-            $chargeOrders[] = $management_order;
-        } else {
-            //先生成合同开始当月的账单，
-            $year1  = $begin_time->year;
-            $month1 = $begin_time->month;
-            $rentDays1  = $begin_time->diffInDays($begin_time->copy()->endOfMonth());
-            $allDays1   = $begin_time->copy()->endOfMonth()->day;
-            $rentMoney1 = ceil($resident->real_rent_money* $rentDays1 / $allDays1);
-            $propertyMoney1 = ceil($resident->real_property_costs* $rentDays1 / $allDays1);
-            //@1 先生成房租账单
-            $rent_order1  = [
-                'number'    => Ordermodel::newNumber(),
-                'store_id'  => $resident->store_id,
-                'company_id'=> $resident->company_id,
-                'room_id'   => $resident->room_id,
-                'customer_id'   => $resident->customer_id,
-                'uxid'      => $resident->uxid,
-                'employee_id'   => $this->employee->id,
-                'room_type_id'  => $room->room_type_id,
-                'money'     => $rentMoney1,
-                'paid'      => $rentMoney1,
-                'type'      => 'ROOM',
-                'year'      => $year1,
-                'month'     => $month1,
-                'status'    => 'PENDING',
-                'pay_status'=> 'RENEWALS',
-                'begin_time'=> $begin_time->format('Y-m-d'),
-                'end_time'  => $begin_time->copy()->endOfMonth()->format('Y-m-d'),
-                'tag'       => 'CHECKOUT',
-            ];
-            //@2再生成物业账单
-            $management_order1   = [
-                'number'    => Ordermodel::newNumber(),
-                'store_id'  => $resident->store_id,
-                'company_id'=> $resident->company_id,
-                'room_id'   => $resident->room_id,
-                'customer_id'   => $resident->customer_id,
-                'uxid'      => $resident->uxid,
-                'employee_id'   => $this->employee->id,
-                'room_type_id'  => $room->room_type_id,
-                'money'     => $propertyMoney1,
-                'paid'      => $propertyMoney1,
-                'type'      => 'MANAGEMENT',
-                'year'      => $year1,
-                'month'     => $month1,
-                'status'    => 'PENDING',
-                'pay_status'=> 'RENEWALS',
-                'begin_time'=> $begin_time->format('Y-m-d'),
-                'end_time'  => $begin_time->copy()->endOfMonth()->format('Y-m-d'),
-                'tag'       => 'CHECKOUT',
-            ];
-            //再生成退房当月的账单
-            $year2  = $end_time->year;
-            $month2 = $end_time->month;
-            $rentDays2  = $end_time->diffInDays($end_time->copy()->startOfMonth());
-            $allDays2   = $end_time->copy()->startOfMonth()->day;
-            $rentMoney2 = ceil($resident->real_rent_money* $rentDays2 / $allDays2);
-            $propertyMoney2 = ceil($resident->real_property_costs* $rentDays2 / $allDays2);
-            $rent_order2  = [
-                'number'    => Ordermodel::newNumber(),
-                'store_id'  => $resident->store_id,
-                'company_id'=> $resident->company_id,
-                'room_id'   => $resident->room_id,
-                'customer_id'   => $resident->customer_id,
-                'uxid'      => $resident->uxid,
-                'employee_id'   => $this->employee->id,
-                'room_type_id'  => $room->room_type_id,
-                'money'     => $rentMoney2,
-                'paid'      => $rentMoney2,
-                'type'      => 'ROOM',
-                'year'      => $year2,
-                'month'     => $month2,
-                'status'    => 'PENDING',
-                'pay_status'=> 'RENEWALS',
-                'begin_time'=> $end_time->copy()->startOfMonth()->format('Y-m-d'),
-                'end_time'  => $end_time->format('Y-m-d'),
-                'tag'       => 'CHECKOUT',
-            ];
-            //@2再生成物业账单
-            $management_order2   = [
-                'number'    => Ordermodel::newNumber(),
-                'store_id'  => $resident->store_id,
-                'company_id'=> $resident->company_id,
-                'room_id'   => $resident->room_id,
-                'customer_id'   => $resident->customer_id,
-                'uxid'      => $resident->uxid,
-                'employee_id'   => $this->employee->id,
-                'room_type_id'  => $room->room_type_id,
-                'money'     => $propertyMoney2,
-                'paid'      => $propertyMoney2,
-                'type'      => 'MANAGEMENT',
-                'year'      => $year2,
-                'month'     => $month2,
-                'status'    => 'PENDING',
-                'pay_status'=> 'RENEWALS',
-                'begin_time'=> $end_time->copy()->startOfMonth()->format('Y-m-d'),
-                'end_time'  => $end_time->format('Y-m-d'),
-                'tag'       => 'CHECKOUT',
-            ];
-            $chargeOrders[] = $rent_order1;
-            $chargeOrders[] = $management_order1;
-            $chargeOrders[] = $rent_order2;
-            $chargeOrders[] = $management_order2;
-        }
-        return $chargeOrders;
-    }
-
-    /**
-     * 正常退房时应收金额
-     */
-    private function calcChargeNormalMoney($room,$resident,$orders,$handle_time)
-    {
-        //检查住户合同期内的账单是否已经全部生成
-        $end_time   = $resident->end_time;
-        //补充应该生成的账单
-        $fillOrders = $this->fillOrder($resident,$room,$end_time,$orders);
-        $pendingOrders  = $orders->where('status','PENDING')->toArray();
-        $chargeOrder    = array_merge($fillOrders,$pendingOrders);
-        return $chargeOrder;
-    }
-
-    /**
-     * 补充某个日期内未生成的账单信息，返回array
-     */
-    private function fillOrder($resident,$room,Carbon $time,$orders)
-    {
-        //查看有效账单
-        $orders_time  = $orders->whereIn('status',['COMPLATE','CONFIRM','PENDING','GENERATE'])->map(function($order){
-            $time   = $order->year.'-'.$order->month;
-            return $time;
-        })->toArray();
-        //已生成的最大的账单周期
-        $max_order_time = Carbon::parse(max($orders_time));
-        //比较最新账单和time日期的月份
-        $diff_month   = $time->diffInMonths($max_order_time,false);
-        if ($diff_month<=0) {
-            //如果最新账单就是time当月就是没有需要生成的账单，则返回[]
-            $fill_orders    =  [];
-        } else {
-            //否则就从最新日期月的下一个开始生成账单，直到日期日
-            $fill_orders  = [];
-            for ($i=$diff_month;$i>0;$i--) {
-                $current_time   = $max_order_time->addMonth(1);
-                $year   = $current_time->year;
-                $month  = $current_time->month;
-                if ($i==1) {
-                    //如果是日期的最后一个月按天数生成账单
-                    //当月的房租计算开始日期, 一般应该是从1号开始计算, 但是万一有入住当月就退房的情况呢?
-                    $endDate     = $time;
-                    $startDay    = $resident->begin_time->lte($endDate->copy()->startOfMonth()) ? 1 : $resident->begin_time->day;
-                    $daysOfMonth = $endDate->copy()->endOfMonth()->day;
-                    $rent_money  = ceil($resident->real_rent_money * ($endDate->day - $startDay + 1) / $daysOfMonth);
-                    $property    = ceil($resident->real_property_costs * ($endDate->day - $startDay + 1) / $daysOfMonth);
-                    //@1 先生成房租账单
-                    $rent_order  = [
-                        'number'    => Ordermodel::newNumber(),
-                        'store_id'  => $resident->store_id,
-                        'company_id'=> $resident->company_id,
-                        'room_id'   => $resident->room_id,
-                        'customer_id'   => $resident->customer_id,
-                        'uxid'      => $resident->uxid,
-                        'employee_id'   => $this->employee->id,
-                        'room_type_id'  => $room->room_type_id,
-                        'money'     => $rent_money,
-                        'paid'      => $rent_money,
-                        'type'      => 'ROOM',
-                        'year'      => $year,
-                        'month'     => $month,
-                        'status'    => 'PENDING',
-                        'pay_status'=> 'RENEWALS',
-                        'begin_time'=> $current_time->copy()->startOfMonth()->format('Y-m-d'),
-                        'end_time'  => $endDate->format('Y-m-d'),
-                        'tag'       => 'CHECKOUT',
-                    ];
-                    //@2再生成物业账单
-                    $management_order   = [
-                        'number'    => Ordermodel::newNumber(),
-                        'store_id'  => $resident->store_id,
-                        'company_id'=> $resident->company_id,
-                        'room_id'   => $resident->room_id,
-                        'customer_id'   => $resident->customer_id,
-                        'uxid'      => $resident->uxid,
-                        'employee_id'   => $this->employee->id,
-                        'room_type_id'  => $room->room_type_id,
-                        'money'     => $property,
-                        'paid'      => $property,
-                        'type'      => 'MANAGEMENT',
-                        'year'      => $year,
-                        'month'     => $month,
-                        'status'    => 'PENDING',
-                        'pay_status'=> 'RENEWALS',
-                        'begin_time'=> $current_time->copy()->startOfMonth()->format('Y-m-d'),
-                        'end_time'  => $endDate->format('Y-m-d'),
-                        'tag'       => 'CHECKOUT',
-                    ];
-                    $fill_orders[]  = $rent_order;
-                    $fill_orders[]  = $management_order;
-                }else{
-                    //如果不是最后一个月的，则生成整月账单
-                    //@1 先生成房租账单
-                    $rent_order  = [
-                        'number'    => Ordermodel::newNumber(),
-                        'store_id'  => $resident->store_id,
-                        'company_id'=> $resident->company_id,
-                        'room_id'   => $resident->room_id,
-                        'customer_id'   => $resident->customer_id,
-                        'uxid'      => $resident->uxid,
-                        'employee_id'   => $this->employee->id,
-                        'room_type_id'  => $room->room_type_id,
-                        'money'     => $resident->real_rent_money,
-                        'paid'      => $resident->real_rent_money,
-                        'type'      => 'ROOM',
-                        'year'      => $year,
-                        'month'     => $month,
-                        'status'    => 'PENDING',
-                        'pay_status'=> 'RENEWALS',
-                        'begin_time'=> $current_time->copy()->startOfMonth()->format('Y-m-d'),
-                        'end_time'  => $current_time->copy()->endOfMonth()->format('Y-m-d'),
-                        'tag'       => 'CHECKOUT',
-                    ];
-                    //@2再生成物业账单
-                    $management_order   = [
-                        'number'    => Ordermodel::newNumber(),
-                        'store_id'  => $resident->store_id,
-                        'company_id'=> $resident->company_id,
-                        'room_id'   => $resident->room_id,
-                        'customer_id'   => $resident->customer_id,
-                        'uxid'      => $resident->uxid,
-                        'employee_id'   => $this->employee->id,
-                        'room_type_id'  => $room->room_type_id,
-                        'money'     => $resident->real_property_money,
-                        'paid'      => $resident->real_property_money,
-                        'type'      => 'MANAGEMENT',
-                        'year'      => $year,
-                        'month'     => $month,
-                        'status'    => 'PENDING',
-                        'pay_status'=> 'RENEWALS',
-                        'begin_time'=> $current_time->copy()->startOfMonth()->format('Y-m-d'),
-                        'end_time'  => $current_time->copy()->endOfMonth()->format('Y-m-d'),
-                        'tag'       => 'CHECKOUT',
-                        ];
-                    $fill_orders[]  = $rent_order;
-                    $fill_orders[]  = $management_order;
-                }
-            }
-        }
-        return $fill_orders;
-    }
-
-    /**
-     * 计算退房时应付的金额
-     */
-    private function calcSpendMoney($type,$room,$resident,$orders,$handle_time)
-    {
-        switch ($type) {
-            case 'NORMAL_REFUND':
-                $spendOrders    = $this->calcSpendNormalMoney($room,$resident,$orders,$handle_time);
-                break;
-            case 'UNDER_CONTRACT':
-                $spendOrders    = $this->calcSpendUnderMoney($orders,$handle_time);
-                break;
-            case 'NO_LIABILITY':
-                $spendOrders    = $this->calcSpendNoMoney($orders,$handle_time);
-                break;
-            default:
-                $spendOrders    = [];
-                break;
-        }
-        return $spendOrders;
-    }
-
-    /**
-     * @param $orders
-     * @return mixed
-     * 违约退房已交账单
-     */
-    private function calcSpendUnderMoney($orders,$handle_time){
-        $deposit    = $orders->whereIn('type',['DEPOSIT_R','DEPOSIT_O'])->toArray();
-        $reOrders   = $orders->map(function($order){
-            $time   = $order->year.'-'.$order->month;
-            $order->merge_time  = $time;
-            return $order;
-        });
-        //超出当月的已支付账单
-        $beyondOrders   = $reOrders->where('merge_time','>',$handle_time->format('Y-m'))->where('status','COMPLATE')->toArray();
-        $spendOrders    = array_merge($deposit,$beyondOrders);
-        return $spendOrders;
-    }
-
-    /**
-     * 计算三天免责应付账单
-     */
-    private function calcSpendNoMoney($orders,$handle_time){
-        //已付金额是全部账单
-        $spendOrders    = $orders->whereIn('status',['CONFIRM','COMPLATE'])->toArray();
-        return $spendOrders;
-    }
-
-    /**
-     * 计算正常退房时已交账单
-     */
-    private function calcSpendNormalMoney($room,$resident,$orders,$handle_time)
-    {
-        $deposit    = $orders->whereIn('type',['DEPOSIT_R','DEPOSIT_O'])->toArray();
-        $spendOrder = $deposit;
-        return $spendOrder;
-    }
-
-
 
     /**
      * 验证退房房间
