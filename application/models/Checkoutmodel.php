@@ -561,7 +561,7 @@ class Checkoutmodel extends Basemodel {
      * @return mixed
      * 违约退房已交账单
      */
-    private function calcSpendUnderMoney($orders,$handle_time){
+    private static function calcSpendUnderMoney($orders,$handle_time){
         $deposit    = $orders->whereIn('type',['DEPOSIT_R','DEPOSIT_O'])->toArray();
         $reOrders   = $orders->map(function($order){
             $time   = $order->year.'-'.$order->month;
@@ -577,7 +577,7 @@ class Checkoutmodel extends Basemodel {
     /**
      * 计算三天免责应付账单
      */
-    private function calcSpendNoMoney($orders,$handle_time){
+    private static function calcSpendNoMoney($orders,$handle_time){
         //已付金额是全部账单
         $spendOrders    = $orders->whereIn('status',['CONFIRM','COMPLATE'])->toArray();
         return $spendOrders;
@@ -586,7 +586,7 @@ class Checkoutmodel extends Basemodel {
     /**
      * 计算正常退房时已交账单
      */
-    private function calcSpendNormalMoney($room,$resident,$orders,$handle_time)
+    private static function calcSpendNormalMoney($room,$resident,$orders,$handle_time)
     {
         $deposit    = $orders->whereIn('type',['DEPOSIT_R','DEPOSIT_O'])->toArray();
         $spendOrder = $deposit;
@@ -915,6 +915,27 @@ class Checkoutmodel extends Basemodel {
                 $order->update(['tag'=>'CHECKOUT']);
             });
         return true;
+    }
+
+    /**
+     * 退房类型转换中文
+     */
+    public static function typeTransfer($type)
+    {
+        switch ($type) {
+            case self::TYPE_NORMAL:
+                $transfer   = '正常退房';
+                break;
+            case self::TYPE_ABNORMAL:
+                $transfer   = '违约退房';
+                break;
+            case self::TYPE_NOLIABILITY:
+                $transfer   = '免责退房';
+                break;
+            default:
+                $transfer   = '';
+        }
+        return $transfer;
     }
 
 }

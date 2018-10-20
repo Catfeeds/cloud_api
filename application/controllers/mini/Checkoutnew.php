@@ -73,6 +73,7 @@ class Checkoutnew extends MY_Controller
         $this->load->model('residentmodel');
         $this->load->model('roomunionmodel');
         $this->load->model('ordermodel');
+        $this->load->model('checkoutmodel');
         $resident   = Residentmodel::find($input['resident_id']);
         $room       = Roomunionmodel::find($input['room_id']);
         $orders  = $resident->orders;
@@ -264,7 +265,11 @@ class Checkoutnew extends MY_Controller
     public function listRecord()
     {
         $store_id   = $this->employee->store_id;
-
+        $pre_count  = $this->input->post('pre_count',true);
+        $page       = $this->input->post('page',true);
+        $room_number    = $this->input->post('room_number',true);
+        $offset     = ($page-1)*$pre_count;
+        $limit      = $pre_count;
         $this->load->model('checkoutmodel');
         $this->load->model('residentmodel');
         $this->load->model('roomunionmodel');
@@ -277,10 +282,34 @@ class Checkoutnew extends MY_Controller
             Checkoutmodel::STATUS_AUDIT,
             Checkoutmodel::STATUS_UNPAID,
         ];
+        if (empty($room_number)) {
+            $room_ids   = Roomunionmodel::where('store_id',$store_id)->pluck('id');
+        } else {
+            $room_ids   = Roomunionmodel::where('store_id',$store_id)->where('number',$room_number)->pluck('id');
+        }
+
+        $count  = Checkoutmodel::with('resident','roomunion')
+            ->where('store_id',$store_id)
+            ->whereIn('status',$status)
+            ->whereIn('room_id',$room_ids)
+            ->count();
+        $total_page = ceil($count/$pre_count);
+        if ($total_page<$page) {
+            $this->api_res(0,[]);
+            return;
+        }
         $records    = Checkoutmodel::with('resident','roomunion')
             ->where('store_id',$store_id)
             ->whereIn('status',$status)
-            ->get();
+            ->whereIn('room_id',$room_ids)
+            ->offset($offset)
+            ->limit($limit)
+            ->get()
+            ->map(function($record){
+                $record->type_transfer  = Checkoutmodel::typeTransfer($record->type);
+                return $record;
+            })
+        ;
         $this->api_res(0,$records);
     }
 
@@ -443,10 +472,6 @@ class Checkoutnew extends MY_Controller
 
 
     /**
-     * 确认账单发起审批流
-     */
-
-    /**
      * 生成退房记录
      */
     private function createConfirmCheckoutRecord($input)
@@ -475,17 +500,6 @@ class Checkoutnew extends MY_Controller
         $record->save();
         return $record;
     }
-
-
-
-
-
-
-
-
-
-
-
 
     /**
      * 生成退房时的账单
