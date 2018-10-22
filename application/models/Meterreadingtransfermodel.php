@@ -2,7 +2,7 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 use Illuminate\Database\Capsule\Manager as DB;
-
+use Carbon\Carbon;
 /**
  * Author:      zjh<401967974@qq.com>
  * Date:        2018/6/4 0004
@@ -462,52 +462,6 @@ class Meterreadingtransfermodel extends Basemodel
 			'transfer_id_s' => $last_reading->id,
 			'transfer_id_e' => $this_reading->id,
 		];
-		return $data;
-	}
-	
-	/**
-	 * 获取退租时插入水电读数所需的数组
-	 * @param $this_reading
-	 * @param $year
-	 * @param $month
-	 * @param $room_id
-	 * @param $type
-	 * @param string $image
-	 * @param int $weight
-	 * @return array
-	 */
-	public function getReadingArr($this_reading, $year, $month, $room_id, $type, $image = '', $weight = 100)
-	{
-		$data   = [];
-		$room   = Roomunionmodel::where('id', $room_id)->first();
-		$device = Smartdevicemodel::where('room_id', $room_id)->where('type', $type)->first();
-		if (empty($room)) {
-			$data['error'] = '未查询到room_id为' . $room_id . '的房间信息';
-			log_message('error', $data['error']);
-			return $data;
-		}
-		if (empty($device)) {
-			$data['error'] = '未查询到room_id为' . $room_id . '的设备信息';
-			log_message('error', $data['error']);
-			return $data;
-		}
-		//
-		$data['store_id']      = $room['store_id'];
-		$data['room_id']       = $room_id;
-		$data['building_id']   = 0;
-		$data['resident_id']   = $room['resident_id'];
-		$data['serial_number'] = $device['serial_number'];
-		$data['type']          = $type;
-		$data['year']          = $year;
-		$data['month']         = $month;
-		$data['this_reading']  = $this_reading;
-		$data['this_time']     = date('Y-m-d', time());
-		$data['status']        = self::REFUND;
-		$data['order_status']  = self::ORDER_NOORDER;
-		$data['weight']        = $weight;
-		$data['image']         = $image;
-		$data['created_at']    = date('Y-m-d H:i:s', time());
-		$data['updated_at']    = date('Y-m-d H:i:s', time());
 		return $data;
 	}
 }

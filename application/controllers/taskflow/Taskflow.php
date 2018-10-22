@@ -312,7 +312,8 @@ class Taskflow extends MY_Controller{
             case Taskflowmodel::TYPE_CHECKOUT_UNDER_CONTRACT:
             case Taskflowmodel::TYPE_CHECKOUT_UNDER_CONTRACT_LESS:
             case Taskflowmodel::TYPE_GIVE_UP:
-                $data   = $this->showCheckoutInfo($taskflow_id);
+//                $data   = $this->showCheckoutInfo($taskflow_id);
+                $data   = $this->showCheckoutInfoNew($taskflow_id);
                 break;
             case Taskflowmodel::TYPE_PRICE:
                 $data   = $this->showPriceInfo($taskflow_id);
@@ -384,7 +385,7 @@ class Taskflow extends MY_Controller{
                 ->with('roomunion')
                 ->with('roomtype');
         }])
-            ->where('status','!=',Taskflowstepmodel::STATE_APPROVED)
+            ->whereNotIn('status',[Taskflowstepmodel::STATE_APPROVED,Taskflowmodel::STATE_CLOSED])
             ->whereIn('store_id',$e_store_ids)
             ->where($where)
             ->groupBy('taskflow_id')
@@ -478,10 +479,23 @@ class Taskflow extends MY_Controller{
             //如果 通过 继续/不通过 返回上一个
             if ($audit != Taskflowrecordmodel::STATE_APPROVED) {
                 log_message('debug','审核状态'.$audit);
-                //判断是否有已经审核过的步骤，如果有把上一步改为AUDIT，如果没有呢
-                if ($taskflow->step_id>0 && $taskflow->step_id  != $step_audit_first->id) {
-                    $taskflow->step->update(['status'=>Taskflowstepmodel::STATE_AUDIT]);
-                    log_message('debug','更新上一步步骤'.$audit);
+                if (in_array($taskflow->type,[
+                    Taskflowmodel::TYPE_CHECKOUT,
+                    Taskflowmodel::TYPE_CHECKOUT_UNDER_CONTRACT,
+                    Taskflowmodel::TYPE_CHECKOUT_NO_LIABILITY,
+                    Taskflowmodel::TYPE_CHECKOUT_UNDER_CONTRACT_LESS,
+                    Taskflowmodel::TYPE_GIVE_UP,
+                ])) {
+                    //退房的驳回，驳回到提交的人
+                    $this->checkoutUnApproved($taskflow);
+
+
+                } else {
+                    //判断是否有已经审核过的步骤，如果有把上一步改为AUDIT，如果没有呢
+                    if ($taskflow->step_id>0 && $taskflow->step_id  != $step_audit_first->id) {
+                        $taskflow->step->update(['status'=>Taskflowstepmodel::STATE_AUDIT]);
+                        log_message('debug','更新上一步步骤'.$audit);
+                    }
                 }
             }
             $taskflow->step_id  = $step_audit_first->id;
@@ -492,7 +506,10 @@ class Taskflow extends MY_Controller{
                     case Taskflowmodel::TYPE_CHECKOUT:
                     case Taskflowmodel::TYPE_CHECKOUT_UNDER_CONTRACT:
                     case Taskflowmodel::TYPE_CHECKOUT_NO_LIABILITY:
-                        $this->doneCheckout($taskflow);
+                    case Taskflowmodel::TYPE_CHECKOUT_UNDER_CONTRACT_LESS:
+                    case Taskflowmodel::TYPE_GIVE_UP:
+//                        $this->doneCheckout($taskflow);
+                        $this->doneCheckoutNew($taskflow);
                         break;
                     case Taskflowmodel::TYPE_PRICE:
                         //do change price ...
@@ -596,7 +613,7 @@ class Taskflow extends MY_Controller{
     /**
      * 任务流审核（审核不通过则关闭）
      */
-    public function auditToClose()
+    private function auditToClose()
     {
         $input  = $this->input->post(null,true);
         if(!$this->validationText($this->validate())){
@@ -739,7 +756,7 @@ class Taskflow extends MY_Controller{
     }
 
 
-        /**
+    /**
      * 退房审核完成
      */
     private function doneCheckout($taskflow)
@@ -850,7 +867,7 @@ class Taskflow extends MY_Controller{
     /**
      * 创建任务流验证
      */
- /*   public function validationCreate()
+    /*   public function validationCreate()
     {
         return [
             array(
@@ -872,5 +889,89 @@ class Taskflow extends MY_Controller{
         ];
     }*/
 
+    /************************************** new-checkout **************************************/
+
+    /**
+     * show checkout new info
+     */
+    private function showCheckoutInfoNew($taskflow_id)
+    {
+        $this->load->model('checkoutmodel');
+        $this->load->model('residentmodel');
+        $this->load->model('ordermodel');
+        $this->load->model('storemodel');
+        $this->load->model('roomunionmodel');
+        $this->load->model('checkoutimagemodel');
+        $record   = Checkoutmodel::where('taskflow_id',$taskflow_id)->first();
+
+//        $record         = Checkoutmodel::findOrFail($checkout_id);
+        $store          = Storemodel::findOrFail($record->store_id);
+        $room           = Roomunionmodel::findOrFail($record->room_id);
+        $resident       = Residentmodel::findOrFail($record->resident_id);
+        $checkImages    = $this->fullAliossUrl($record->check_images()->pluck('url')->toArray(),true);
+        $orders         = $resident->orders;
+        //
+        $type           = $record->type;
+        $utility_data   = json_decode($record->utility_readings,true);
+        $handle_time    = $record->refund_time;
+        $employee       = Employeemodel::find($record->employee_id);
+        $refundMoney    = Checkoutmodel::calcInitRefundMoney($type,$room,$resident,$orders,$handle_time,$utility_data,$employee);
+        $charge_order   = $refundMoney['charge_order'];
+        $spend_order    = $refundMoney['spend_order'];
+        $refund_sum     = $refundMoney['refund_sum'];
+        $charge_sum     = $refundMoney['charge_sum'];
+        $spend_sum      = $refundMoney['spend_sum'];
+        $create_orders  = json_decode($record->add_orders,true);
+        if (!empty($record->account)) {
+            $record->back_card_number       = $this->fullAliossUrl($record->back_card_number);
+            $record->bank_card_front_img    = $this->fullAliossUrl($record->bank_card_front_img);
+            $record->bank_card_back_img     = $this->fullAliossUrl($record->bank_card_back_img);
+            $record->card_front_img         = $this->fullAliossUrl($record->card_front_img);
+            $record->card_back_img          = $this->fullAliossUrl($record->card_back_img);
+        }
+
+        //创建人
+        if ($record->creater_role==Checkoutmodel::CREATER_ROLE_EMPLOYEE) {
+            $creater    = Employeemodel::find($record->creater_id);
+        } elseif ($record->creater_role==Checkoutmodel::CREATER_ROLE_CUSTOMER){
+            $creater    = Customermodel::find($record->creater_id);
+        } else {
+            $creater    = Employeemodel::find($record->employee_id);
+        }
+        //验房人
+        $checker    = Employeemodel::find($record->employee_id);
+        //确认签字人
+        $signaturer = Employeemodel::find($record->signature_id);
+
+        return [
+            'checkout'=>$record,'store'=>$store,'room'=>$room,'resident'=>$resident,'check_images'=>$checkImages,
+            'charge_order'=>$charge_order,'spend_order'=>$spend_order,'create_orders'=>$create_orders,
+            'charge_sum'=>$charge_sum,'spend_sum'=>$spend_sum,'refund_sum'=>$refund_sum,
+            'creater'=>$creater,'checker'=>$checker,'signaturer'=>$signaturer
+        ];
+    }
+
+    /**
+     * 退房任务流驳回，关闭未审核的步骤,更新任务流为审核未通过，更新退房单的状态为驳回后的状态以便于驳回后发起
+     */
+    private function checkoutUnApproved($taskflow)
+    {
+        $this->load->model('checkoutmodel');
+        $taskflow->steps()->whereIn('status',[Taskflowstepmodel::STATE_UNAPPROVED,Taskflowstepmodel::STATE_AUDIT])
+            ->update(['status'=>Taskflowstepmodel::STATE_CLOSED,'updated_at'=>date('Y-m-d H:i:s')]);
+        $taskflow->update(['status'=>Taskflowmodel::STATE_UNAPPROVED,'updated_at'=>date('Y-m-d H:i:s')]);
+        $taskflow->checkout()->update(['status'=>Checkoutmodel::STATUS_UNAPPROVED,'updated_at'=>date('Y-m-d H:i:s')]);
+        return true;
+    }
+
+    /**
+     * 退房审核完成
+     */
+    private function doneCheckoutNew($taskflow)
+    {
+        $this->load->model('checkoutmodel');
+        //处理退房
+        Checkoutmodel::handleCheckoutOrder($taskflow->checkout);
+    }
 
 }

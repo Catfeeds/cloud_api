@@ -470,4 +470,68 @@ class Taskflowmodel extends Basemodel
         return true;
     }
 
+    /**
+     * 在原任务流下重新发起任务流审核步骤
+     */
+    public function reissueTaskflow(
+        $taskflow,
+        $company_id,
+        $type,
+        $store_id,
+        $room_id,
+        $create = self::CREATE_EMPLOYEE,
+        $employee_id = null,
+        $data_id = null,
+        $message = null,
+        $msg = ''
+    ) {
+        $this->CI->load->model('taskflowtemplatemodel');
+        $this->CI->load->model('taskflowstepmodel');
+        $this->CI->load->model('taskflowsteptemplatemodel');
+        $template = Taskflowtemplatemodel::where('company_id', $company_id)
+            ->where('type', $type)
+            ->first();
+        if (empty($template)) {
+            return null;
+        }
+        $step_field    = ['id', 'company_id', 'name', 'type', 'seq', 'position_ids', 'employee_ids', 'group'];
+        $step_template = $template->step_template()->get($step_field);
+        if (empty($step_template->toArray())) {
+            return null;
+        }
+
+        $taskflow->fill($template->toArray());
+        $taskflow->template_id   = $template->id;
+//        $taskflow->serial_number = $taskflow->newNumber($store_id);
+        $taskflow->store_id      = $store_id;
+        $taskflow->create_role   = $create;
+        $taskflow->data_id       = $data_id;
+        $taskflow->message       = $message;
+        $taskflow->employee_id   = empty($employee_id) ? null : $employee_id;
+        $taskflow->status        = Taskflowmodel::STATE_AUDIT;
+        $taskflow->group         = $template->group;
+        $taskflow->room_id       = $room_id;
+        $taskflow->save();
+        $step_template_keys_transfer = ['step_template_id', 'company_id', 'name', 'type', 'seq', 'position_ids', 'employee_ids', 'group'];
+        $step_template_arr           = $step_template->toArray();
+        $step_merge_data             = [
+            'store_id'    => $store_id,
+            'taskflow_id' => $taskflow->id,
+            'status'      => Taskflowstepmodel::STATE_AUDIT,
+            'created_at'  => Carbon::now()->toDateTimeString(),
+            'updated_at'  => Carbon::now()->toDateTimeString(),
+        ];
+        $result = [];
+        foreach ($step_template_arr as $step) {
+            $step_combine = array_combine($step_template_keys_transfer, $step);
+            $result[]     = array_merge($step_merge_data, $step_combine);
+        }
+        Taskflowstepmodel::insert($result);
+
+        $this->notify($taskflow->type, $msg, $this->listEmployees($taskflow->id));
+
+        return $taskflow->id;
+    }
+
+
 }

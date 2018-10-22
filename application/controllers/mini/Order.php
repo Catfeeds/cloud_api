@@ -473,7 +473,9 @@ class Order extends MY_Controller {
         }
 
         //判断用户是否有退房记录, 如果有退房记录, 将其标记为已支付待办理状态
-        if ($record = $resident->checkout_record) {
+//        if ($record = $resident->checkout_record) {
+        if (false) {
+            $record = $resident->checkout_record;
             if (in_array($record->status, [Checkoutmodel::STATUS_APPLIED, Checkoutmodel::STATUS_UNPAID])) {
                 $record->status = Checkoutmodel::STATUS_PENDING;
                 $record->save();
