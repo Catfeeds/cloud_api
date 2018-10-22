@@ -127,7 +127,7 @@ class Activity extends MY_Controller
             $prize = Activityprizemodel::where('id', $coupon['prize_id'])->select(['prize', 'count', 'grant','limit'])->first();
             $p = unserialize($prize->prize);
             $count = unserialize($prize->count);
-            $grant = unserialize($prize->grant);
+            $grant = empty($prize->grant)?null:unserialize($prize->grant);
             log_message('debug','PRIZELIMIT'.$prize->limit);
             if(!empty($prize->limit)){
                 $prize_limit = unserialize($prize->limit);
@@ -713,7 +713,7 @@ class Activity extends MY_Controller
             'type'=>Activitymodel::STATE_NORMAL,
             'status'=>Activitymodel::STATE_NORMAL,
             'activity_type'=> Activitymodel::TYPE_ATTRACT,
-            ])->exists()) {
+        ])->exists()) {
             $this->api_res(11109);
             return;
         }
@@ -922,8 +922,9 @@ class Activity extends MY_Controller
             $this->api_res(1002);
             return;
         }
-        $filed = ['id', 'name', 'prize_id', 'start_time', 'end_time', 'status'];
+        $filed = ['id', 'name', 'prize_id', 'start_time', 'end_time', 'type'];
         $activity_prize  = Activitymodel::with('prize')->where('id', $post['id'])->select($filed)->first()->toArray();
+        $activity_prize['status'] = $activity_prize['type'];
         $store_id = [];
         if(!empty($post['store_id'])){$store_id['store_id'] = $post['store_id'];}
         $id = $post['id'];
@@ -933,89 +934,89 @@ class Activity extends MY_Controller
         $prize['receive'] = ['one' => 0, 'two' => 0, 'three' => 0];
         $prize['used'] = ['one' => 0, 'two' => 0, 'three' => 0];
         $draw = [];
-            Couponmodel::where(function($query) use($store_id){
-                if(!empty($store_id)){
-                    $query->wherehas('resident', function($query) use($store_id){
-                        $query->where($store_id);
-                    });}
-            })->where('activity_id', $id)->get()->map(function ($query) use (&$prize) {
-                $query = $query->toArray();
-                foreach ($prize['id'] as $key => $value) {
-                    if ($value == $query['coupon_type_id']) {
-                        $prize['receive'][$key]++;
-                    }
-                }
-            });
-
-            Couponmodel::where(function($query) use($store_id){
-                if(!empty($store_id)){
-                    $query->wherehas('resident', function($query) use($store_id){
-                        $query->where($store_id);
-                    });}
-            })->where(['activity_id' => $post['id'], 'status' => Couponmodel::STATUS_USED])->get()->map(function ($query) use (&$prize) {
-                $query = $query->toArray();
-                foreach ($prize['id'] as $key => $value) {
-                    if ($value == $query['coupon_type_id']) {
-                        $prize['used'][$key]++;
-                    }
-                }
-            });
-            $draw['lottery'] = 0;            $draw['luck_draw'] = 0;
-            $draw['lottery_today'] = 0;      $draw['luck_draw_today'] = 0;
-            $draw['lottery_yesterday'] = 0;  $draw['luck_draw_yesterday'] = 0;
-            Drawmodel::where(function($query) use($store_id){
-                if(!empty($store_id)){
-                    $query->wherehas('resident', function($query) use($store_id){
-                        $query->where($store_id);
-                    });}
-            })->where(['activity_id' => $post['id']])->get()->map(function($query)use(&$draw){
-                if($query->is_draw == 1){
-                    $draw['lottery'] ++;
-                }
-                $draw['luck_draw'] ++;
-                if($query->draw_time > Carbon::today()){
-                    $query->is_draw == 1?$draw['lottery_today'] ++:$draw['luck_draw_today'] ++;
-                }
-                if($query->draw_time > Carbon::yesterday() && $query->draw_time < Carbon::today()){
-                    $query->is_draw == 1?$draw['lottery_yesterday'] ++:$draw['luck_draw_yesterday'] ++;
-                }
-            });
-            $draw['visit'] = 0;           $draw['share'] = 0;
-            $draw['visit_today'] = 0;     $draw['share_today'] = 0;
-            $draw['visit_yesterday'] = 0; $draw['share_yesterday'] = 0;
-            Activityvisitmodel::where(function($query) use($store_id){
-                if(!empty($store_id)){
+        Couponmodel::where(function($query) use($store_id){
+            if(!empty($store_id)){
                 $query->wherehas('resident', function($query) use($store_id){
-                $query->where($store_id);
+                    $query->where($store_id);
                 });}
-            })->where(['activity_id' => $id])->get()->map(function($query)use (&$draw){
-                if(!empty($query)) {
-                    $draw['visit']++;
+        })->where('activity_id', $id)->get()->map(function ($query) use (&$prize) {
+            $query = $query->toArray();
+            foreach ($prize['id'] as $key => $value) {
+                if ($value == $query['coupon_type_id']) {
+                    $prize['receive'][$key]++;
                 }
-                if($query->created_at > Carbon::today()){
-                    $draw['visit_today'] ++;
-                }
-                if($query->created_at > Carbon::yesterday() && $query->created_at < Carbon::today()){
-                    $draw['visit_yesterday'] ++;
-                }
-            });
+            }
+        });
 
-            Activitysharemodel::where(function($query) use($store_id){
-                if(!empty($store_id)){
-                    $query->wherehas('resident', function($query) use($store_id){
-                        $query->where($store_id);
-                    });}
-            })->where(['activity_id' => $id])->get()->map(function($query) use(&$draw){
-                if(!empty($query)) {
-                    $draw['share']++;
+        Couponmodel::where(function($query) use($store_id){
+            if(!empty($store_id)){
+                $query->wherehas('resident', function($query) use($store_id){
+                    $query->where($store_id);
+                });}
+        })->where(['activity_id' => $post['id'], 'status' => Couponmodel::STATUS_USED])->get()->map(function ($query) use (&$prize) {
+            $query = $query->toArray();
+            foreach ($prize['id'] as $key => $value) {
+                if ($value == $query['coupon_type_id']) {
+                    $prize['used'][$key]++;
                 }
-                if($query->created_at > Carbon::today()){
-                    $draw['share_today'] ++;
-                }
-                if($query->created_at > Carbon::yesterday() && $query->created_at < Carbon::today()){
-                    $draw['share_yesterday'] ++;
-                }
-            });
+            }
+        });
+        $draw['lottery'] = 0;            $draw['luck_draw'] = 0;
+        $draw['lottery_today'] = 0;      $draw['luck_draw_today'] = 0;
+        $draw['lottery_yesterday'] = 0;  $draw['luck_draw_yesterday'] = 0;
+        Drawmodel::where(function($query) use($store_id){
+            if(!empty($store_id)){
+                $query->wherehas('resident', function($query) use($store_id){
+                    $query->where($store_id);
+                });}
+        })->where(['activity_id' => $post['id']])->get()->map(function($query)use(&$draw){
+            if($query->is_draw == 1){
+                $draw['lottery'] ++;
+            }
+            $draw['luck_draw'] ++;
+            if($query->draw_time > Carbon::today()){
+                $query->is_draw == 1?$draw['lottery_today'] ++:$draw['luck_draw_today'] ++;
+            }
+            if($query->draw_time > Carbon::yesterday() && $query->draw_time < Carbon::today()){
+                $query->is_draw == 1?$draw['lottery_yesterday'] ++:$draw['luck_draw_yesterday'] ++;
+            }
+        });
+        $draw['visit'] = 0;           $draw['share'] = 0;
+        $draw['visit_today'] = 0;     $draw['share_today'] = 0;
+        $draw['visit_yesterday'] = 0; $draw['share_yesterday'] = 0;
+        Activityvisitmodel::where(function($query) use($store_id){
+            if(!empty($store_id)){
+                $query->wherehas('resident', function($query) use($store_id){
+                    $query->where($store_id);
+                });}
+        })->where(['activity_id' => $id])->get()->map(function($query)use (&$draw){
+            if(!empty($query)) {
+                $draw['visit']++;
+            }
+            if($query->created_at > Carbon::today()){
+                $draw['visit_today'] ++;
+            }
+            if($query->created_at > Carbon::yesterday() && $query->created_at < Carbon::today()){
+                $draw['visit_yesterday'] ++;
+            }
+        });
+
+        Activitysharemodel::where(function($query) use($store_id){
+            if(!empty($store_id)){
+                $query->wherehas('resident', function($query) use($store_id){
+                    $query->where($store_id);
+                });}
+        })->where(['activity_id' => $id])->get()->map(function($query) use(&$draw){
+            if(!empty($query)) {
+                $draw['share']++;
+            }
+            if($query->created_at > Carbon::today()){
+                $draw['share_today'] ++;
+            }
+            if($query->created_at > Carbon::yesterday() && $query->created_at < Carbon::today()){
+                $draw['share_yesterday'] ++;
+            }
+        });
 
 
         $this->api_res(0, ['activity' => $activity_prize, 'prize' => $prize, 'draw' => $draw]);
@@ -1090,7 +1091,8 @@ class Activity extends MY_Controller
         }
         $start_time = $post['start_time'];
         $end_time   = empty($post['end_time'])?null:$post['end_time'];
-        $time = time();
+        $end_time   = date('Y-m-d', strtotime($end_time)+24*60*60);
+        $time = strtotime(Carbon::tomorrow());
         if(strtotime($end_time) < $time){
             $time = strtotime($end_time);
         }
@@ -1104,10 +1106,29 @@ class Activity extends MY_Controller
         $de =  ceil($str / $num);
         $date = [];
         for($i=0; $i<$num; $i++) {
-           $d = $time - $str + $de * $i;
-           $date[] = date("Y-m-d", $d);
+            $d = $time - $str + $de * $i;
+            $date[] = date("Y-m-d", $d);
         }
         $result =  $this->ac_list($store_id, $de, $post['id'], $date);
         $this->api_res(0, $result);
+    }
+    /*
+     * 根据活动获取门店及城市
+     * */
+    public function getActivityStore(){
+        $post = $this->input->post();
+        $this->load->model('storemodel');
+        $this->load->model('storeactivitymodel');
+        if(empty($post['id'])){
+            $this->api_res(1002);
+            return;
+        }
+        $city = [];
+        $id = $post['id'];
+        if(!empty($post['city'])){$city['city'] = trim($post['city']);}
+        $store = Storemodel::wherehas('storeActivity' ,function($query)use($id){
+            $query->where('activity_id', $id);
+        })->where($city)->get(['id', 'name', 'city'])->toArray();
+        $this->api_res(0, ['data' => $store]);
     }
 }

@@ -51,5 +51,7 @@ class Storemodel extends Basemodel {
     public function contracts() {
         return $this->hasMany(Contractmodel::class, 'store_id');
     }
-
+    public function storeActivity(){
+        return $this->hasMany(Storeactivitymodel::class, 'store_id');
+    }
 }
