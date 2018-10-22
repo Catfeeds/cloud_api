@@ -122,7 +122,7 @@ class Checkoutmodel extends Basemodel {
     public static function calcInitRefundMoney($checkout_type,$room,$resident,$orders,$handle_time,$utility_data,$employee)
     {
         // 按读数计算应收的水电费账单
-        $utility_order  = Checkoutmodel::calcChargeUtilityMoney($utility_data,$handle_time,$employee);
+        $utility_order  = Checkoutmodel::calcChargeUtilityMoney($utility_data,$employee);
         //计算一下初始的金额返回给前端
         $init_order     = Checkoutmodel::calcInitMoney($checkout_type,$room,$resident,$orders,$handle_time,$employee);
         //merge
@@ -144,9 +144,19 @@ class Checkoutmodel extends Basemodel {
     /**
      * 按读数计算应收的水电费账单
      */
-    private static function calcChargeUtilityMoney($utility_data,$handle_time,$employee)
+    private static function calcChargeUtilityMoney($utility_data,$employee)
     {
-        return [];
+        $CI = &get_instance();
+        if (empty($utility_data)) {
+            return [];
+        } else {
+            $CI->load->model('meterreadingtransfermodel');
+            foreach ($utility_data as $utility_data_each) {
+                $time   = Carbon::parse($utility_data_each['time']);
+
+
+            }
+        }
     }
 
     /**
@@ -201,8 +211,9 @@ class Checkoutmodel extends Basemodel {
                         'company_id'=> $resident->company_id,
                         'room_id'   => $resident->room_id,
                         'customer_id'   => $resident->customer_id,
-                        'uxid'          => $resident->uxid,
+                        'uxid'          => $resident->id,
                         'employee_id'   => $employee->id,
+                        'resident_id'   => $resident->id,
                         'room_type_id'  => $room->room_type_id,
                         'money'     => $rent_money,
                         'paid'      => $rent_money,
@@ -222,8 +233,9 @@ class Checkoutmodel extends Basemodel {
                         'company_id'=> $resident->company_id,
                         'room_id'   => $resident->room_id,
                         'customer_id'   => $resident->customer_id,
-                        'uxid'          => $resident->uxid,
+                        'uxid'          => $resident->id,
                         'employee_id'   => $employee->id,
+                        'resident_id'   => $resident->id,
                         'room_type_id'  => $room->room_type_id,
                         'money'     => $property,
                         'paid'      => $property,
@@ -247,8 +259,9 @@ class Checkoutmodel extends Basemodel {
                         'company_id'=> $resident->company_id,
                         'room_id'   => $resident->room_id,
                         'customer_id'   => $resident->customer_id,
-                        'uxid'          => $resident->uxid,
+                        'uxid'          => $resident->id,
                         'employee_id'   => $employee->id,
+                        'resident_id'   => $resident->id,
                         'room_type_id'  => $room->room_type_id,
                         'money'     => $resident->real_rent_money,
                         'paid'      => $resident->real_rent_money,
@@ -268,8 +281,9 @@ class Checkoutmodel extends Basemodel {
                         'company_id'=> $resident->company_id,
                         'room_id'   => $resident->room_id,
                         'customer_id'   => $resident->customer_id,
-                        'uxid'          => $resident->uxid,
+                        'uxid'          => $resident->id,
                         'employee_id'   => $employee->id,
+                        'resident_id'   => $resident->id,
                         'room_type_id'  => $room->room_type_id,
                         'money'     => $resident->real_property_money,
                         'paid'      => $resident->real_property_money,
@@ -353,8 +367,9 @@ class Checkoutmodel extends Basemodel {
                 'company_id'=> $resident->company_id,
                 'room_id'   => $resident->room_id,
                 'customer_id'   => $resident->customer_id,
-                'uxid'          => $resident->uxid,
+                'uxid'          => $resident->id,
                 'employee_id'   => $employee->id,
+                'resident_id'   => $resident->id,
                 'room_type_id'  => $room->room_type_id,
                 'money'     => $resident->real_rent_money,
                 'paid'      => $resident->real_rent_money,
@@ -395,8 +410,9 @@ class Checkoutmodel extends Basemodel {
                 'company_id'=> $resident->company_id,
                 'room_id'   => $resident->room_id,
                 'customer_id'   => $resident->customer_id,
-                'uxid'          => $resident->uxid,
+                'uxid'          => $resident->id,
                 'employee_id'   => $employee->id,
+                'resident_id'   => $resident->id,
                 'room_type_id'  => $room->room_type_id,
                 'money'     => $rent_money,
                 'paid'      => $rent_money,
@@ -416,8 +432,9 @@ class Checkoutmodel extends Basemodel {
                 'company_id'=> $resident->company_id,
                 'room_id'   => $resident->room_id,
                 'customer_id'   => $resident->customer_id,
-                'uxid'          => $resident->uxid,
+                'uxid'          => $resident->id,
                 'employee_id'   => $employee->id,
+                'resident_id'   => $resident->id,
                 'room_type_id'  => $room->room_type_id,
                 'money'     => $property,
                 'paid'      => $property,
@@ -447,8 +464,9 @@ class Checkoutmodel extends Basemodel {
                 'company_id'=> $resident->company_id,
                 'room_id'   => $resident->room_id,
                 'customer_id'   => $resident->customer_id,
-                'uxid'          => $resident->uxid,
+                'uxid'          => $resident->id,
                 'employee_id'   => $employee->id,
+                'resident_id'   => $resident->id,
                 'room_type_id'  => $room->room_type_id,
                 'money'     => $rentMoney1,
                 'paid'      => $rentMoney1,
@@ -468,8 +486,9 @@ class Checkoutmodel extends Basemodel {
                 'company_id'=> $resident->company_id,
                 'room_id'   => $resident->room_id,
                 'customer_id'   => $resident->customer_id,
-                'uxid'          => $resident->uxid,
+                'uxid'          => $resident->id,
                 'employee_id'   => $employee->id,
+                'resident_id'   => $resident->id,
                 'room_type_id'  => $room->room_type_id,
                 'money'     => $propertyMoney1,
                 'paid'      => $propertyMoney1,
@@ -495,8 +514,9 @@ class Checkoutmodel extends Basemodel {
                 'company_id'=> $resident->company_id,
                 'room_id'   => $resident->room_id,
                 'customer_id'   => $resident->customer_id,
-                'uxid'          => $resident->uxid,
+                'uxid'          => $resident->id,
                 'employee_id'   => $employee->id,
+                'resident_id'   => $resident->id,
                 'room_type_id'  => $room->room_type_id,
                 'money'     => $rentMoney2,
                 'paid'      => $rentMoney2,
@@ -516,8 +536,9 @@ class Checkoutmodel extends Basemodel {
                 'company_id'=> $resident->company_id,
                 'room_id'   => $resident->room_id,
                 'customer_id'   => $resident->customer_id,
-                'uxid'          => $resident->uxid,
+                'uxid'          => $resident->id,
                 'employee_id'   => $employee->id,
+                'resident_id'   => $resident->id,
                 'room_type_id'  => $room->room_type_id,
                 'money'     => $propertyMoney2,
                 'paid'      => $propertyMoney2,
@@ -648,8 +669,9 @@ class Checkoutmodel extends Basemodel {
                     'company_id'=> $resident->company_id,
                     'room_id'   => $resident->room_id,
                     'customer_id'   => $resident->customer_id,
-                    'uxid'          => $resident->uxid,
+                    'uxid'          => $resident->id,
                     'employee_id'   => $employee->id,
+                    'resident_id'   => $resident->id,
                     'room_type_id'  => $room->room_type_id,
                     'money'     => $create_order['money'],
                     'paid'      => $create_order['money'],
@@ -753,7 +775,7 @@ class Checkoutmodel extends Basemodel {
         //处理应交
         self::handleChargeMoney($type,$room,$resident,$orders,$handle_time,$employee);
         //处理已交
-        self::handleSpendMoney($type,$room,$resident,$orders,$handle_time,$employee);
+        self::handleSpendMoney($type,$room,$resident,$orders,$handle_time);
     }
 
     /**
@@ -816,8 +838,9 @@ class Checkoutmodel extends Basemodel {
                 'company_id'=> $resident->company_id,
                 'room_id'   => $resident->room_id,
                 'customer_id'   => $resident->customer_id,
-                'uxid'          => $resident->uxid,
+                'uxid'          => $resident->id,
                 'employee_id'   => $employee->id,
+                'resident_id'   => $resident->id,
                 'room_type_id'  => $room->room_type_id,
                 'money'     => $resident->real_rent_money,
                 'paid'      => $resident->real_rent_money,

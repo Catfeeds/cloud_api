@@ -232,7 +232,7 @@ class Checkoutnew extends MY_Controller
     /**
      * 用户签署
      */
-    public function Signature()
+    public function signature()
     {
         $input  = $this->input->post(null,true);
         $field  = [
@@ -697,40 +697,6 @@ class Checkoutnew extends MY_Controller
         return $taskflow_id;
     }
 
-
-
-    /**
-     * 生成退房时的水电读数记录
-     */
-    private function utilityRecord($input){
-        $arr    = [];
-        if (!empty($input['coldwater_reading'])) {
-            $arr[]  = [
-                'type' => 'COLDWATER',
-                'coldwater_reading'   => $input['coldwater_reading'],
-                'time'                => date('Y-m-d H:i:s',time()),
-                'coldwater_image'     => $input['coldwater_image']
-            ];
-        }
-        if (!empty($input['hotwater_reading'])) {
-            $arr[]  = [
-                'type'               => 'HOTWATER',
-                'hotwater_reading'   => $input['hotwater_reading'],
-                'time'               => date('Y-m-d H:i:s',time()),
-                'hotwater_image'     => $input['hotwater_image']
-            ];
-        }
-        if (!empty($input['electric_reading'])) {
-            $arr[]  = [
-                'type'              => 'ELECTRIC',
-                'electric_reading'  => $input['electric_reading'],
-                'time'              => date('Y-m-d H:i:s',time()),
-                'electric_image'    => $input['electric_image']
-            ];
-        }
-        return $arr;
-    }
-
     /**
      * 验证确认验房的提交信息
      */
@@ -805,10 +771,6 @@ class Checkoutnew extends MY_Controller
             return true;
         }
     }
-
-
-
-
 
     /**
      * 首次点击下一步计算金额展示给前端的验证规则
@@ -897,126 +859,6 @@ class Checkoutnew extends MY_Controller
         $this->load->model('checkoutimagemodel');
         $res    = Checkoutimagemodel::store($checkout,$this->splitAliossUrl($images,true));
         return $res;
-    }
-
-    /**
-     * 退房计算水电费用
-     */
-    private function utility($post)
-    {
-        $this->load->model('Meterreadingtransfermodel');
-        $this->load->model('roomunionmodel');
-        $this->load->model('smartdevicemodel');
-        $year           = date('Y');
-        $month          = date('m');
-        $last_coldwater = Meterreadingtransfermodel::where('year',$year)->where('month',$month)->where('resident_id',$post['resident_id'])->where('room_id',$post['room_id'])->where('status',Meterreadingtransfermodel::NORMAL)->where('type',Meterreadingtransfermodel::TYPE_WATER_C)->first(['this_reading']);
-        $last_hotwater  = Meterreadingtransfermodel::where('year',$year)->where('month',$month)->where('resident_id',$post['resident_id'])->where('room_id',$post['room_id'])->where('status',Meterreadingtransfermodel::NORMAL)->where('type',Meterreadingtransfermodel::TYPE_WATER_H)->first(['this_reading']);
-        $last_electric  = Meterreadingtransfermodel::where('year',$year)->where('month',$month)->where('resident_id',$post['resident_id'])->where('room_id',$post['room_id'])->where('status',Meterreadingtransfermodel::NORMAL)->where('type',Meterreadingtransfermodel::TYPE_ELECTRIC)->first(['this_reading']);
-        if ($month      == 12){
-            $month      = 1;
-            $year       = $year+1;
-        }else{
-            $month      = $month+1;
-        }
-        $roomunion      = Roomunionmodel::where('id',$post['room_id'])->first(['building_id','store_id','cold_water_price','electricity_price','hot_water_price']);
-        $building_id    = $roomunion->building_id;
-        $store_id       = $roomunion->store_id;
-        $price          = Storemodel::where('id',$store_id)->first(['id','water_price','hot_water_price','electricity_price']);
-        $cold_water     = Smartdevicemodel::where('room_id',$post['room_id'])->where('type',Meterreadingtransfermodel::TYPE_WATER_C)->first(['serial_number']);
-        $hot_water      = Smartdevicemodel::where('room_id',$post['room_id'])->where('type',Meterreadingtransfermodel::TYPE_WATER_H)->first(['serial_number']);
-        $electric       = Smartdevicemodel::where('room_id',$post['room_id'])->where('type',Meterreadingtransfermodel::TYPE_ELECTRIC)->first(['serial_number']);
-        if (empty($cold_water)){
-            $cold_water_number  = '';
-        }else{
-            $cold_water_number  =$cold_water->serial_number;
-        }
-        if (empty($hot_water)){
-            $hot_water_number  = '';
-        }else{
-            $hot_water_number  =$hot_water->serial_number;
-        }
-        if (empty($electric)){
-            $electric_number  = '';
-        }else{
-            $electric_number  =$electric->serial_number;
-        }
-        $money = [];
-        //上传冷水表读数
-        if (!empty($post['coldwater_reading'])){
-            $coldwater      = new Meterreadingtransfermodel();
-            $arr_coldwater  = [
-                'store_id'      => $store_id,
-                'building_id'   => $building_id,
-                'serial_number' => $cold_water_number,
-                'room_id'       => $post['room_id'],
-                'resident_id'   => $post['resident_id'],
-                'year'          => $year,
-                'month'         => $month,
-                'type'          => Meterreadingtransfermodel::TYPE_WATER_C,
-                'this_reading'  => floatval($post['coldwater_reading']),
-                'image'         => empty($post['coldwater_image'])?'':$this->splitAliossUrl($post['coldwater_image']),
-                'this_time'     => $post['coldwater_time'],
-                'status'        => Meterreadingtransfermodel::REFUND,
-            ];
-            $coldwater->fill($arr_coldwater);
-            if ($coldwater->save() && isset($last_coldwater->this_reading)) {
-                $money['water'] = (floatval($post['coldwater_reading']) - $last_coldwater->this_reading) * $roomunion->cold_water_price;
-                if (0.01 > $money['water']) {
-                    return null;
-                }
-            }
-        }
-        //上传电表读数
-        if (!empty($post['electric_reading'])){
-            $electric       = new Meterreadingtransfermodel();
-            $arr_electric   = [
-                'store_id'      => $store_id,
-                'building_id'   => $building_id,
-                'serial_number' => $electric_number,
-                'room_id'       => $post['room_id'],
-                'resident_id'   => $post['resident_id'],
-                'year'          => $year,
-                'month'         => $month,
-                'type'          => Meterreadingtransfermodel::TYPE_ELECTRIC,
-                'this_reading'  => floatval($post['electric_reading']),
-                'image'         => empty($post['electric_image'])?'':$this->splitAliossUrl($post['electric_image']),
-                'this_time'     => $post['electric_time'],
-                'status'        => Meterreadingtransfermodel::REFUND,
-            ];
-            $electric->fill($arr_electric);
-            if($electric->save()&&isset($last_electric->this_reading)){
-                $money['electric']      = (floatval($post['electric_reading']) - $last_electric->this_reading) * $roomunion->electricity_price;
-                if (0.01 > $money['electric']) {
-                    return null;
-                }
-            }
-        }
-        //上传热水表读数
-        if (isset($post['hotwater_reading'])&&!empty($post['hotwater_reading'])){
-            $hotwater       = new Meterreadingtransfermodel();
-            $arr_hotwater   =[
-                'store_id'      => $store_id,
-                'building_id'   => $building_id,
-                'serial_number' => $hot_water_number,
-                'room_id'       => $post['room_id'],
-                'resident_id'   => $post['resident_id'],
-                'year'          => $year,
-                'month'         => $month,
-                'type'          => Meterreadingtransfermodel::TYPE_WATER_H,
-                'this_reading'  => floatval($post['hotwater_reading']),
-                'image'         => $post['hotwater_image'],
-                'this_time'     => $post['hotwater_time'],
-                'status'        => Meterreadingtransfermodel::REFUND,
-            ];
-            $hotwater->fill($arr_hotwater);
-            if($hotwater->save()&&isset($last_hotwater->this_reading)){
-                $money['hot_water']     = (floatval($post['hotwater_reading']) - $last_hotwater->this_reading) * $roomunion->hot_water_price;
-                if (0.01 > $money['hot_water']) {
-                    return null;
-                }
-            }
-        }
-        return $money;
     }
 
     /**
