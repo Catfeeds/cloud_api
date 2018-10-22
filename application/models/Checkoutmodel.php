@@ -39,6 +39,7 @@ class Checkoutmodel extends Basemodel {
     const STATUS_UNPAID             = 'UNPAID';     //审核通过未付款
     const STATUS_CLOSED             = 'CLOSED';     //已关闭退房单
     const STATUS_COMPLETED          = 'COMPLETED';  //已完成
+    const STATUS_UNAPPROVED         = 'UNAPPROVED'; //审核未通过驳回
     //'APPLIED','UNPAID','PENDING','BY_MANAGER','MANAGER_APPROVED','PRINCIPAL_APPROVED','COMPLETED','AUDIT'
 
 
@@ -51,6 +52,9 @@ class Checkoutmodel extends Basemodel {
     const TYPE_NORMAL               = 'NORMAL_REFUND';  //正常退房
     const TYPE_ABNORMAL             = 'UNDER_CONTRACT'; //违约退房
     const TYPE_NOLIABILITY          = 'NO_LIABILITY';   //免责退房
+
+    const CREATER_ROLE_EMPLOYEE     = 'EMPLOYEE';
+    const CREATER_ROLE_CUSTOMER     = 'CUSTOMER';
 
     public function __construct(array $attributes = [])
     {

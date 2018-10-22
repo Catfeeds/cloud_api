@@ -257,6 +257,7 @@ class Checkoutnew extends MY_Controller
             default:
                 break;
         }
+        $this->api_res(0);
     }
 
     /**
@@ -311,6 +312,118 @@ class Checkoutnew extends MY_Controller
             })
         ;
         $this->api_res(0,['total_page'=>$total_page,'count'=>$count,'current_page'=>$page,'list'=>$records]);
+    }
+
+    /**
+     * 审核驳回后提交审核
+     */
+    public function submitUnApprovedAudit()
+    {
+        $field  = [
+            'checkout_id','create_orders','give_up',
+        ];
+        if (!$this->validationText($this->validateSubmitUnApprovedAudit())) {
+            $this->api_res(0,['error'=>$this->form_first_error($field)]);
+            return;
+        }
+        $input  = $this->input->post(null,true);
+        $this->load->model('checkoutmodel');
+        $record = Checkoutmodel::find($input['checkout_id']);
+        if ($record->status!=Checkoutmodel::STATUS_UNAPPROVED) {
+            return;
+        }
+        $record->add_orders     = json_encode($input['create_orders']);
+        $record->give_up        = $input['give_up'];
+        $record->save();
+        $this->handleUnApprovedTaskflow($record);
+        $this->api_res(0);
+    }
+
+    /**
+     * 驳回后重新提交审核
+     */
+    private function handleUnApprovedTaskflow($record)
+    {
+        $this->load->model('taskflowmodel');
+        $this->load->model('storemodel');
+        $this->load->model('residentmodel');
+        $this->load->model('roomunionmodel');
+        $this->load->model('ordermodel');
+
+        if ($record->status!=Checkoutmodel::STATUS_UNAPPROVED) {
+            return false;
+        }
+
+        $resident   = $record->resident;
+        $room       = $record->roomunion;
+        $store      = $room->store;
+        $taskflow   = $record->taskflow;
+        $msg    = [
+            'store_name'    => $store->name,
+            'number'        => $room->number,
+            'name'          => $resident->name,
+            'create_name'   => $this->employee->name,
+            'phone'         => $resident->phone,
+        ];
+
+        $refund = Checkoutmodel::calcRefundMoneyByRecord($record);
+        $refund_sum = $refund['refund_sum'];
+        $taskflow_id    = $this->reissueTaskflow($taskflow,$record,$record->type,$record->give_up,$refund_sum,$msg);
+        if (!empty($taskflow_id)) {
+            $record->status = Checkoutmodel::STATUS_AUDIT;
+            $record->save();
+        } else {
+            $record->status = Checkoutmodel::STATUS_UNPAID;
+            $record->save();
+            //如果没有任务流就直接根据记录生成账单
+            Checkoutmodel::handleCheckoutOrder($record);
+        }
+    }
+
+    /**
+     * @param $checkout
+     * @param $type
+     * @param $give_up
+     * @param $refund_money
+     * @param $msg
+     * @return null
+     * 重新发送任务流审核
+     */
+    private function reissueTaskflow($taskflow,$checkout,$type,$give_up,$refund_money,$msg)
+    {
+        if ($give_up==1) {
+            //放弃收益走放弃收益的任务流
+            $msg['type']='放弃收益';
+            $msg = json_encode($msg);
+            $taskflow_id   = $this->taskflowmodel->reissueTaskflow($taskflow,$this->company_id,Taskflowmodel::TYPE_GIVE_UP,$this->employee->store_id,$checkout->room_id,Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id,$checkout->id,null,$msg);
+        } else {
+            if ($type=='NORMAL_REFUND') {
+                //正常退房走正常退房的任务流
+                $msg['type']='正常';
+                $msg = json_encode($msg);
+                $taskflow_id   = $this->taskflowmodel->reissueTaskflow($taskflow,$this->company_id,Taskflowmodel::TYPE_CHECKOUT,$this->employee->store_id,$checkout->room_id,Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id,$checkout->id,null,$msg);
+            } elseif ($type=='NO_LIABILITY') {
+                //三天免责走三天免责的任务流
+                $msg['type']='免责';
+                $msg = json_encode($msg);
+                $taskflow_id   = $this->taskflowmodel->reissueTaskflow($taskflow,$this->company_id,Taskflowmodel::TYPE_CHECKOUT_NO_LIABILITY,$this->employee->store_id,$checkout->room_id,Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id,$checkout->id,null,$msg);
+            } elseif ($type=='UNDER_CONTRACT') {
+                if($refund_money>0){
+                    //违约退房退款大于0
+                    $msg['type']='违约退款金额小于0';
+                    $msg = json_encode($msg);
+                    $taskflow_id   = $this->taskflowmodel->reissueTaskflow($taskflow,$this->company_id,Taskflowmodel::TYPE_CHECKOUT_UNDER_CONTRACT,$this->employee->store_id,$checkout->room_id,Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id,$checkout->id,null,$msg);
+                }else{
+                    //违约退房退款小于0
+                    $msg['type']='违约退款金额大于0';
+                    $msg = json_encode($msg);
+                    $taskflow_id   = $this->taskflowmodel->reissueTaskflow($taskflow,$this->company_id,Taskflowmodel::TYPE_CHECKOUT_UNDER_CONTRACT_LESS,$this->employee->store_id,$checkout->room_id,Taskflowmodel::CREATE_EMPLOYEE,$this->employee->id,$checkout->id,null,$msg);
+                }
+            }else{
+                $taskflow_id = null;
+            }
+        }
+        return $taskflow_id;
     }
 
     /**
@@ -904,6 +1017,30 @@ class Checkoutnew extends MY_Controller
             }
         }
         return $money;
+    }
+
+    /**
+     * 驳回后提交审核
+     */
+    private function validateSubmitUnApprovedAudit()
+    {
+        return array(
+            array(
+                'field' => 'checkout_id',
+                'label' => '退房信息',
+                'rules' => 'required|trim'
+            ),
+            array(
+                'field' => 'create_orders[]',
+                'label' => '添加的账单',
+                'rules' => 'trim'
+            ),
+            array(
+                'field' => 'give_up',
+                'label' => '是否放弃收益',
+                'rules' => 'required|trim|integer|in_list[0,1]',
+            ),
+        );
     }
 
 }
