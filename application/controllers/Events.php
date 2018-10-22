@@ -329,12 +329,18 @@ class Events extends MY_Controller
 					$this->ticket = $array_e->item(0)->nodeValue;
 //					log_message('debug', '解密得到的ticket为-->' . $this->ticket);
 					$this->m_redis->saveComponentVerifyTicket($this->ticket);
-					$this->i += 1;
-					if ($this->i >= 10) {
-						$this->getAccessToken();
-						log_message('debug', 'ticket计数为-->' . $this->i . '<--');
-						$this->i = 0;
-					}
+					$count = $this->m_redis->getTicketCount();
+					if ($count) {
+						$count += 1;
+						log_message('debug', 'ticket计数为-->' . $count . '<--');
+						$this->m_redis->saveTicketCount($count);
+						if ($count > 10) {
+							$this->getAccessToken();
+						}
+					} else {
+						$count = 0;
+						$this->m_redis->saveTicketCount($count);
+					};
 					break;
 				}
 				case 'authorized': {
@@ -510,5 +516,21 @@ class Events extends MY_Controller
 //		$this->debug('按钮信息-->', json_encode($buttons, JSON_UNESCAPED_UNICODE));
 		$res = $this->httpCurl($url, 'post', 'json', json_encode($buttons, JSON_UNESCAPED_UNICODE));
 		var_dump($res);
+	}
+	
+	public function test()
+	{
+		$this->load->library('m_redis');
+		$count = $this->m_redis->getTicketCount();
+		if ($count) {
+			$count += 1;
+			$this->m_redis->saveTicketCount($count);
+			if ($count > 10) {
+				$this->getAccessToken();
+			}
+		} else {
+			$count = 0;
+			$this->m_redis->saveTicketCount($count);
+		}
 	}
 }

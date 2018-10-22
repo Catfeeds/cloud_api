@@ -255,4 +255,22 @@ class M_redis
 		$token  = $this->redis->get($key);
 		return $token;
 	}
+	
+	/**
+	 * ticket计数
+	 */
+	public function saveTicketCount($redis){
+		$key    = TICKETCOUNT;
+		$this->redis->set($key,$redis,15*60);
+		return true;
+	}
+	
+	/**
+	 * ticket计数
+	 */
+	public function getTicketCount(){
+		$key    = TICKETCOUNT;
+		$token  = $this->redis->get($key);
+		return $token;
+	}
 }
