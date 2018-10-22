@@ -135,15 +135,16 @@ class Meter extends MY_Controller
 				"and t_store.id = ? " .
 				"and t_reading.deleted_at is null ";
 			//账单状态
-			$order_status = "and t_reading.order_status = 'NOORDER' ";
+			$order_status    = "and t_reading.order_status = 'NOORDER' ";
+			$order_noreading = "and t_reading.order_status <> 'NOREADING' ";
 			//本次读数
 			$this_reading = DB::select($sql . $order_status, $condition_this);
 			//上月月底读数
-			$last_reading = DB::select($sql, $condition_last);
+			$last_reading = DB::select($sql . $order_noreading, $condition_last);
 			//换表初始读数
-			$new_reading = DB::select($sql, $condition_new);
+			$new_reading = DB::select($sql . $order_noreading, $condition_new);
 			//入住时读数
-			$rent_reading = DB::select($sql, $condition_rent);
+			$rent_reading = DB::select($sql . $order_noreading, $condition_rent);
 			
 			/**
 			 * 不同的账单逻辑,处理不同情况下的水电数据包括:
@@ -411,5 +412,20 @@ class Meter extends MY_Controller
 		$phpexcel->getActiveSheet()->getColumnDimension('C')->setWidth(28);
 		$phpexcel->getActiveSheet()->getColumnDimension('D')->setWidth(20);
 		$phpexcel->getActiveSheet()->getColumnDimension('E')->setWidth(20);
+	}
+	
+	public function test()
+	{
+		$this->load->model('meterreadingtransfermodel');
+		$this->load->model('roomunionmodel');
+		$this->load->model('smartdevicemodel');
+		$this->load->model('ordermodel');
+		$this->load->model('residentmodel');
+		$transfer = new Meterreadingtransfermodel();
+		//
+		$res = $transfer->getReadingArr(100, 2018, 11, 100, 'COLD_WATER_METER');
+		$res = $transfer->getUtilityArr(2018, 11, 100, 'COLD_WATER_METER');
+		//$transfer->insert($res);
+		var_dump($res);
 	}
 }
