@@ -207,7 +207,6 @@ class Builder
         $this->connection = $connection;
         $this->grammar = $grammar ?: $connection->getQueryGrammar();
         $this->processor = $processor ?: $connection->getPostProcessor();
-        
     }
 
     /**
@@ -1241,7 +1240,7 @@ class Builder
     {
         $type = $not ? 'NotExists' : 'Exists';
 
-        $this->wheres[] = compact('type', 'operator', 'query', 'boolean');
+        $this->wheres[] = compact('type', 'query', 'boolean');
 
         $this->addBinding($query->getBindings(), 'where');
 
@@ -2295,7 +2294,6 @@ class Builder
      */
     public function raw($value)
     {
-        
         return $this->connection->raw($value);
     }
 

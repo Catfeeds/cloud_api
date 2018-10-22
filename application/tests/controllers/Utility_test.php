@@ -19,7 +19,8 @@ class Utility_test extends TestCase
 	{
 		$output = $this->request('POST',
 			'utility/meter/meterofstore',
-			['room_id' => 1]
+			['room_id'  => 1,
+			 'store_id' => 1]
 		);
 		
 		$this->assertResponseCode(200);

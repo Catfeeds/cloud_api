@@ -5,7 +5,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 - 2017 Paragon Initiative Enterprises
+ * Copyright (c) 2015 - 2018 Paragon Initiative Enterprises
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -14,7 +14,7 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this employee notice shall be included in
+ * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -50,14 +50,16 @@ if (!is_callable('RandomCompat_intval')) {
         if (is_int($number) || is_float($number)) {
             $number += 0;
         } elseif (is_numeric($number)) {
+            /** @psalm-suppress InvalidOperand */
             $number += 0;
         }
+        /** @var int|float $number */
 
         if (
             is_float($number)
-            &&
+                &&
             $number > ~PHP_INT_MAX
-            &&
+                &&
             $number < PHP_INT_MAX
         ) {
             $number = (int) $number;

@@ -32,7 +32,7 @@ namespace Symfony\Component\Translation\Extractor;
  *
  *     * The names of the contributors may not be used to endorse or
  *       promote products derived from this software without specific
- *       prior written employee.
+ *       prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -89,7 +89,7 @@ class PhpStringTokenParser
      * Parses escape sequences in strings (all string types apart from single quoted).
      *
      * @param string      $str   String without quotes
-     * @param null|string $quote Quote type
+     * @param string|null $quote Quote type
      *
      * @return string String with escape sequences parsed
      */
@@ -113,9 +113,9 @@ class PhpStringTokenParser
         if (isset(self::$replacements[$str])) {
             return self::$replacements[$str];
         } elseif ('x' === $str[0] || 'X' === $str[0]) {
-            return chr(hexdec($str));
+            return \chr(hexdec($str));
         } else {
-            return chr(octdec($str));
+            return \chr(octdec($str));
         }
     }
 

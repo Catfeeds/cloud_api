@@ -450,7 +450,7 @@ class Statistical
         //    I have not checked the accuracy of this implementation. Be aware that PHP
         //    will truncate the coeficcients to 14 digits.
 
-        //    You have employee to use and distribute this function freely for
+        //    You have permission to use and distribute this function freely for
         //    whatever purpose you want, but please show common courtesy and give credit
         //    where credit is due.
 

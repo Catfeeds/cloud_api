@@ -135,15 +135,16 @@ class Meter extends MY_Controller
 				"and t_store.id = ? " .
 				"and t_reading.deleted_at is null ";
 			//账单状态
-			$order_status = "and t_reading.order_status = 'NOORDER' ";
+			$order_status    = "and t_reading.order_status = 'NOORDER' ";
+			$order_noreading = "and t_reading.order_status <> 'NOREADING' ";
 			//本次读数
 			$this_reading = DB::select($sql . $order_status, $condition_this);
 			//上月月底读数
-			$last_reading = DB::select($sql, $condition_last);
+			$last_reading = DB::select($sql . $order_noreading, $condition_last);
 			//换表初始读数
-			$new_reading = DB::select($sql, $condition_new);
+			$new_reading = DB::select($sql . $order_noreading, $condition_new);
 			//入住时读数
-			$rent_reading = DB::select($sql, $condition_rent);
+			$rent_reading = DB::select($sql . $order_noreading, $condition_rent);
 			
 			/**
 			 * 不同的账单逻辑,处理不同情况下的水电数据包括:
@@ -206,9 +207,57 @@ class Meter extends MY_Controller
 	}
 	
 	/**
-	 * 判断房间有哪些表
+	 * 此接口3.7版本即将废弃
+	 * 判断门店或有哪些表
 	 */
 	public function meterOfStore()
+	{
+		$this->load->model('storemodel');
+		$this->load->model('roomunionmodel');
+		$this->load->model('meterreadingtransfermodel');
+		$post = $this->input->post(null, true);
+		if (!empty($post['room_id'])) {
+			$room_id = $post['room_id'];
+			$meter   = Roomunionmodel::where('id', $room_id)->first(['id', 'cold_water_price', 'hot_water_price',
+			                                                         'electricity_price', 'gas_price'])->toArray();
+			$arr     = [];
+			if (floatval($meter['cold_water_price']) > 0) {
+				$arr[] = Meterreadingtransfermodel::TYPE_WATER_C;
+			}
+			if (floatval($meter['hot_water_price']) > 0) {
+				$arr[] = Meterreadingtransfermodel::TYPE_WATER_H;
+			}
+			if (floatval($meter['electricity_price']) > 0) {
+				$arr[] = Meterreadingtransfermodel::TYPE_ELECTRIC;
+			}
+			if (floatval($meter['gas_price']) > 0) {
+				$arr[] = Meterreadingtransfermodel::TYPE_GAS;
+			}
+		} elseif (!empty($post['store_id'])) {
+			$store_id = $post['store_id'];
+			$meter    = Storemodel::where('id', $store_id)->first(['id', 'water_price', 'hot_water_price',
+			                                                       'electricity_price'])->toArray();
+			$arr      = [];
+			if (floatval($meter['water_price']) > 0) {
+				$arr[] = Meterreadingtransfermodel::TYPE_WATER_C;
+			}
+			if (floatval($meter['hot_water_price']) > 0) {
+				$arr[] = Meterreadingtransfermodel::TYPE_WATER_H;
+			}
+			if (floatval($meter['electricity_price']) > 0) {
+				$arr[] = Meterreadingtransfermodel::TYPE_ELECTRIC;
+			}
+		} else {
+			$this->api_res(1002);
+			return false;
+		}
+		$this->api_res(0, ['meter' => $arr]);
+	}
+	
+	/**
+	 * 判断房间有哪些表
+	 */
+	public function meterOfRoom()
 	{
 		$this->load->model('roomunionmodel');
 		$this->load->model('meterreadingtransfermodel');
@@ -363,5 +412,20 @@ class Meter extends MY_Controller
 		$phpexcel->getActiveSheet()->getColumnDimension('C')->setWidth(28);
 		$phpexcel->getActiveSheet()->getColumnDimension('D')->setWidth(20);
 		$phpexcel->getActiveSheet()->getColumnDimension('E')->setWidth(20);
+	}
+	
+	public function test()
+	{
+		$this->load->model('meterreadingtransfermodel');
+		$this->load->model('roomunionmodel');
+		$this->load->model('smartdevicemodel');
+		$this->load->model('ordermodel');
+		$this->load->model('residentmodel');
+		$transfer = new Meterreadingtransfermodel();
+		//
+		$res = $transfer->getReadingArr(100, 2018, 11, 100, 'COLD_WATER_METER');
+		$res = $transfer->getUtilityArr(2018, 11, 100, 'COLD_WATER_METER');
+		//$transfer->insert($res);
+		var_dump($res);
 	}
 }

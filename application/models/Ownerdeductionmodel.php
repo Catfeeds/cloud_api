@@ -15,4 +15,11 @@ class Ownerdeductionmodel extends Basemodel {
 
     protected $hidden = ['created_at', 'updated_at'];
 
+    public function ownerEarning(){
+        return $this->hasOne(Ownerearningmodel::class, 'id', 'earnings_id');
+    }
+
+    public function house(){
+        return $this->belongsTo(Ownerhousemodel::class, 'house_id');
+    }
 }

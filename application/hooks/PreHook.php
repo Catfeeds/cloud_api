@@ -5,7 +5,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Author:      weijinlong
  * Date:        2018/4/19
  * Time:        09:11
- * Describe:    [未完成]通过在框架早期植入各种基础校验来提升性能
+ * Describe:    框架早起添加跨域header、快速相应所有options请求、应用防火墙WAF
  */
 
 class PreHook {

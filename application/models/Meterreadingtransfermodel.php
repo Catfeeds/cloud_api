@@ -57,6 +57,11 @@ class Meterreadingtransfermodel extends Basemodel
 	const NEW_RENT = 'NEW_RENT'; //月中入住
 	const REFUND = 'REFUND'; //退房
 	
+	const ORDER_HASORDER = 'HASORDER';//已经生成账单
+	const ORDER_NORESIDENT = 'NORESIDENT';//无住户
+	const ORDER_NOORDER = 'NOORDER';//未生成账单
+	const ORDER_NOREADING = 'NOREADING';//未录入读数
+	
 	const  UNCONFIRMED = 0;
 	const  CONFIRMED = 1;
 	
@@ -339,6 +344,171 @@ class Meterreadingtransfermodel extends Basemodel
 			DB::rollBack();
 			return false;
 		}
+	}
+	
+	/**
+	 * 获取退租生成水电账单所需的数组
+	 * @param $year
+	 * @param $month
+	 * @param $room_id
+	 * @param $type
+	 * @return array
+	 * @throws Exception
+	 */
+	public function getUtilityArr($year, $month, $room_id, $type)
+	{
+		$room = Roomunionmodel::where('id', $room_id)
+			->first(['resident_id', 'cold_water_price', 'hot_water_price',
+			         'electricity_price', 'gas_price']);
+		if ($month - 1 == 0) {
+			$year_last  = $year - 1;
+			$month_last = 12;
+		} else {
+			$year_last  = $year;
+			$month_last = $month - 1;
+		}
+		//
+		$condition_this = [$year, $month, $type, $room['resident_id'], self::REFUND, $room_id,];
+		$condition_last = [$year_last, $month_last, $type, $room['resident_id'], "NORMAL", $room_id,];
+		$condition_new  = [$year, $month, $type, $room['resident_id'], "CHANGE_NEW", $room_id,];
+		$condition_rent = [$year, $month, $type, $room['resident_id'], "NEW_RENT", $room_id,];
+		//sql
+		$sql = "select t_reading.* " .
+			"from boss_meter_reading_transfer as t_reading " .
+			"LEFT JOIN boss_room_union as t_room ON t_reading.room_id = t_room.id " .
+			"where t_reading.year = ? " .
+			"and t_reading.month = ? " .
+			"and t_reading.type = ? " .
+			"and t_reading.resident_id = ? " .
+			"and t_reading.status = ? " .
+			"and t_reading.room_id = ? " .
+			"and t_reading.deleted_at is null ";
+		//账单状态
+		$order_status    = "and t_reading.order_status = 'NOORDER' ";
+		$order_noreading = "and t_reading.order_status <> 'NOREADING' ";
+		//本次读数
+		$this_reading = DB::select($sql . $order_status, $condition_this);
+		//上月月底读数
+		$last_reading = DB::select($sql . $order_noreading, $condition_last);
+		//换表初始读数
+		$new_reading = DB::select($sql . $order_noreading, $condition_new);
+		//入住时读数
+		$rent_reading = DB::select($sql . $order_noreading, $condition_rent);
+		//
+		switch ($type) {
+			case self::TYPE_ELECTRIC:
+				$type  = Ordermodel::PAYTYPE_ELECTRIC;
+				$price = $room['electricity_price'];
+				break;
+			case self::TYPE_WATER_H:
+				$type  = Ordermodel::PAYTYPE_WATER_HOT;
+				$price = $room['hot_water_price'];
+				break;
+			case self::TYPE_WATER_C:
+				$type  = Ordermodel::PAYTYPE_WATER;
+				$price = $room['cold_water_price'];
+				break;
+			case self::TYPE_GAS:
+				$type  = Ordermodel::PAYTYPE_GAS;
+				$price = $room['gas_price'];
+				break;
+			default:
+				throw new Exception('未识别的账单类型！');
+				break;
+		}
+		$data = [];
+		if (empty($this_reading)) {
+			log_message('debug', 'getUtilityArr->未查询到的本次读数');
+			$data['error'] = '未查询到的本次读数';
+			return $data;
+		}
+		$this_reading = $this_reading[0];
+		if (!empty($new_reading[0])) {
+			$last_reading = $new_reading[0];
+		} elseif (!empty($rent_reading[0])) {
+			$last_reading = $rent_reading[0];
+		} elseif (!empty($last_reading[0])) {
+			$last_reading = $last_reading[0];
+		} else {
+			log_message('debug', 'getUtilityArr->未查询到的上次读数');
+			$data['error'] = '未查询到的上次读数';
+			return $data;
+		}
+		$money = ($this_reading->this_reading - $last_reading->this_reading) * $price;
+		if (0.01 > $money) {
+			log_message('debug', 'getUtilityArr->水电账单金额有误');
+			$data['error'] = '水电账单金额有误';
+			return $data;
+		}
+		$this->CI = &get_instance();
+		$this->CI->load->helper('string');
+		$resident = Residentmodel::where('id', $this_reading->resident_id)->first(['id', 'customer_id', 'uxid']);
+		$data     = [
+			'number'        => date('YmdHis') . random_string('numeric', 10),
+			'type'          => $type,
+			'year'          => $this_reading->year,
+			'month'         => $this_reading->month,
+			'money'         => $money,
+			'paid'          => $money,
+			'store_id'      => $this_reading->store_id,
+			'resident_id'   => $this_reading->resident_id,
+			'room_id'       => $this_reading->room_id,
+			'employee_id'   => $this->CI->employee->id,
+			'customer_id'   => $resident->customer_id,
+			'uxid'          => $resident->uxid,
+			'status'        => Ordermodel::STATE_GENERATED,
+			'deal'          => Ordermodel::DEAL_UNDONE,
+			'pay_status'    => Ordermodel::PAYSTATE_RENEWALS,
+			'transfer_id_s' => $last_reading->id,
+			'transfer_id_e' => $this_reading->id,
+		];
+		return $data;
+	}
+	
+	/**
+	 * 获取退租时插入水电读数所需的数组
+	 * @param $this_reading
+	 * @param $year
+	 * @param $month
+	 * @param $room_id
+	 * @param $type
+	 * @param string $image
+	 * @param int $weight
+	 * @return array
+	 */
+	public function getReadingArr($this_reading, $year, $month, $room_id, $type, $image = '', $weight = 100)
+	{
+		$data   = [];
+		$room   = Roomunionmodel::where('id', $room_id)->first();
+		$device = Smartdevicemodel::where('room_id', $room_id)->where('type', $type)->first();
+		if (empty($room)) {
+			$data['error'] = '未查询到room_id为' . $room_id . '的房间信息';
+			log_message('error', $data['error']);
+			return $data;
+		}
+		if (empty($device)) {
+			$data['error'] = '未查询到room_id为' . $room_id . '的设备信息';
+			log_message('error', $data['error']);
+			return $data;
+		}
+		//
+		$data['store_id']      = $room['store_id'];
+		$data['room_id']       = $room_id;
+		$data['building_id']   = 0;
+		$data['resident_id']   = $room['resident_id'];
+		$data['serial_number'] = $device['serial_number'];
+		$data['type']          = $type;
+		$data['year']          = $year;
+		$data['month']         = $month;
+		$data['this_reading']  = $this_reading;
+		$data['this_time']     = date('Y-m-d', time());
+		$data['status']        = self::REFUND;
+		$data['order_status']  = self::ORDER_NOORDER;
+		$data['weight']        = $weight;
+		$data['image']         = $image;
+		$data['created_at']    = date('Y-m-d H:i:s', time());
+		$data['updated_at']    = date('Y-m-d H:i:s', time());
+		return $data;
 	}
 }
 

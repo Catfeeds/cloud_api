@@ -111,6 +111,34 @@ CREATE TABLE `boss_activity_record` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1824 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `boss_activity_visit` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `activity_id` int(10) NOT NULL,
+  `customer_id` int(10) DEFAULT NULL,
+  `source_customer_id` int(10) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `updated_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `deleted_at` datetime NULL ,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `boss_activity_share` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `activity_id` int(10) NOT NULL,
+  `customer_id` int(10) DEFAULT NULL,
+  `source_customer_id` int(10) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `deleted_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `updated_at` datetime NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `boss_api`
 --
@@ -869,6 +897,8 @@ CREATE TABLE `boss_owner_house` (
   `people_count` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT '房间人数',
   `status` enum('BLANK','RENT','REPAIR') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'BLANK' COMMENT '房间状态:空 出租 维修',
   `address` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT '房间地址',
+  `layer_total` smallint(6) NOT NULL DEFAULT '0' COMMENT '总楼层',
+  `unit` smallint(6) NOT NULL DEFAULT '0' COMMENT '单元',
   `created_at` datetime NOT NULL DEFAULT '1970-01-01 00:00:00' COMMENT '创建时间',
   `updated_at` datetime NOT NULL DEFAULT '1970-01-01 00:00:00' COMMENT '更新时间',
   `deleted_at` datetime DEFAULT NULL,
