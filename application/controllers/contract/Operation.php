@@ -184,7 +184,7 @@ class Operation extends MY_Controller {
             var_dump($this->upload->display_errors());exit;
         }
         $data = $this->upload->data('full_path');
-        // var_dump($data);die();
+        // var_dump($data);die(); 
         if (Contractmodel::where('', $contractNumber)->exists()) {
             //若存在
             $this->api_res(1008);
