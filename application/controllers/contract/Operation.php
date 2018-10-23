@@ -81,6 +81,9 @@ class Operation extends MY_Controller {
                     $s->reserve_begin_time   = date('Y-m-d', strtotime($s->residents->reserve_begin_time->toDateTimeString()));
                     $s->reserve_end_time   = date('Y-m-d', strtotime($s->residents->reserve_end_time->toDateTimeString()));
                 }
+                if (!empty($s->residents->check_images)){
+	                $s->residents->check_images = $this->fullAliossUrl(json_decode($s->residents->check_images,true),true);
+                }
                 return $s;
             });
         $this->api_res(0, ['info' => $operation]);
