@@ -333,12 +333,16 @@ class Events extends MY_Controller
 					if ($count) {
 						$count += 1;
 						log_message('debug', 'ticket计数为-->' . $count . '<--');
-						$this->m_redis->saveTicketCount($count);
 						if ($count > 10) {
-							$this->getAccessToken();
+							$res = $this->getAccessToken();
+							if ($res){
+								log_message('info','-->AccessToken刷新成功<--' );
+							}
+							$count = 1;
+							$this->m_redis->saveTicketCount($count);
 						}
 					} else {
-						$count = 0;
+						$count = 1;
 						$this->m_redis->saveTicketCount($count);
 					};
 					break;
@@ -524,12 +528,17 @@ class Events extends MY_Controller
 		$count = $this->m_redis->getTicketCount();
 		if ($count) {
 			$count += 1;
+			echo $count;
 			$this->m_redis->saveTicketCount($count);
 			if ($count > 10) {
+				echo "sucesses";
 				$this->getAccessToken();
+				$count = 1;
+				$this->m_redis->saveTicketCount($count);
 			}
 		} else {
-			$count = 0;
+			echo 111111;
+			$count = 1;
 			$this->m_redis->saveTicketCount($count);
 		}
 	}
